@@ -74,12 +74,12 @@ void server_setup()
     server.begin(80);
   }
 
-  server.on("/$", HTTP_GET, [](MongooseHttpServerRequest *request) {
+  server.on("/", HTTP_GET, [](MongooseHttpServerRequest *request) {
     //Check if the client already has the same version and respond with a 304 (Not modified)
     if (request->headers("If-Modified-Since").equals(last_modified)) {
         request->send(304);
     } else {
-        MongooseHttpServerResponseBasic *response = request->beginResponse();
+        MongooseHttpServerResponse *response = request->beginResponse();
         response->setCode(200);
         response->setContentType("text/html");
 
@@ -97,7 +97,7 @@ void server_setup()
   });
 
   // Test the stream response class
-  server.on("/ws$")->
+  server.on("/ws")->
     onConnect([](MongooseHttpWebSocketConnection *connection) {
       Serial.println("[socket] new connection");
     })->
@@ -116,7 +116,7 @@ void server_setup()
     });
 
   //our main api connection
-  server.on("/api/endpoint$", HTTP_GET, [](MongooseHttpServerRequest *request)
+  server.on("/api/endpoint", HTTP_GET, [](MongooseHttpServerRequest *request)
   {
     StaticJsonDocument<1024> json;
     String body = request->body();
@@ -126,7 +126,7 @@ void server_setup()
   });
 
   //send config json
-  server.on("/api/config$", HTTP_GET, [](MongooseHttpServerRequest *request)
+  server.on("/api/config", HTTP_GET, [](MongooseHttpServerRequest *request)
   {
     StaticJsonDocument<256> json;
     json["cmd"] = "get_config";
@@ -135,7 +135,7 @@ void server_setup()
   });
 
   //send stats json
-  server.on("/api/stats$", HTTP_GET, [](MongooseHttpServerRequest *request)
+  server.on("/api/stats", HTTP_GET, [](MongooseHttpServerRequest *request)
   {
     StaticJsonDocument<256> json;
     json["cmd"] = "get_stats";
@@ -144,7 +144,7 @@ void server_setup()
   });
 
   //send update json
-  server.on("/api/update$", HTTP_GET, [](MongooseHttpServerRequest *request)
+  server.on("/api/update", HTTP_GET, [](MongooseHttpServerRequest *request)
   {
     StaticJsonDocument<256> json;
     json["cmd"] = "get_update";
@@ -153,7 +153,7 @@ void server_setup()
   });
 
   //downloadable coredump file
-  server.on("/coredump.txt$", HTTP_GET, [](MongooseHttpServerRequest *request)
+  server.on("/coredump.txt", HTTP_GET, [](MongooseHttpServerRequest *request)
   {
     //delete the coredump here, but not from littlefs
 		deleteCoreDump();
@@ -161,7 +161,7 @@ void server_setup()
     //dont bug the client anymore
     has_coredump = false;
 
-    MongooseHttpServerResponseBasic *response = request->beginResponse();
+    MongooseHttpServerResponse *response = request->beginResponse();
     response->setContentType("text/plain");
 
     if (LittleFS.exists("/coredump.txt"))
@@ -191,7 +191,7 @@ void server_setup()
 
 void server_loop()
 {
-  Mongoose.poll(0);
+  Mongoose.poll(1);
 
   //process our websockets outside the callback.
   if (!wsRequests.isEmpty())
