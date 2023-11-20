@@ -119,7 +119,7 @@ void handleSerialJson()
   }
 }
 
-void handleReceivedJSON(JsonVariantConst input, JsonVariant output, byte mode, MongooseHttpWebSocketConnection *connection)
+void handleReceivedJSON(JsonVariantConst input, JsonVariant output, byte mode, PsychicHttpWebSocketConnection *connection)
 {
   //make sure its correct
   if (!input.containsKey("cmd"))
@@ -385,7 +385,7 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   ESP.restart();
 }
 
-void handleLogin(JsonVariantConst input, JsonVariant output, byte mode, MongooseHttpWebSocketConnection *connection)
+void handleLogin(JsonVariantConst input, JsonVariant output, byte mode, PsychicHttpWebSocketConnection *connection)
 {
     if (!require_login)
       return generateErrorJSON(output, "Login not required.");
