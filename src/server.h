@@ -14,8 +14,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <CircularBuffer.h>
-#include <MongooseCore.h>
-#include <MongooseHttpServer.h>
+#include <PsychicHttp.h>
 
 #include "protocol.h"
 #include "prefs.h"
@@ -38,18 +37,18 @@ extern String server_cert;
 extern String server_key;
 
 typedef struct {
-  MongooseHttpWebSocketConnection *client;
+  PsychicHttpWebSocketConnection *client;
   char buffer[YB_RECEIVE_BUFFER_LENGTH];
 } WebsocketRequest;
 
 void server_setup();
 void server_loop();
 
-bool isLoggedIn(JsonVariantConst input, byte mode, MongooseHttpWebSocketConnection *connection);
-bool logClientIn(MongooseHttpWebSocketConnection *connection);
-void closeClientConnection(MongooseHttpWebSocketConnection *connection);
-bool addClientToAuthList(MongooseHttpWebSocketConnection *connection);
-bool isWebsocketClientLoggedIn(JsonVariantConst input, MongooseHttpWebSocketConnection *connection);
+bool isLoggedIn(JsonVariantConst input, byte mode, PsychicHttpWebSocketConnection *connection);
+bool logClientIn(PsychicHttpWebSocketConnection *connection);
+void closeClientConnection(PsychicHttpWebSocketConnection *connection);
+bool addClientToAuthList(PsychicHttpWebSocketConnection *connection);
+bool isWebsocketClientLoggedIn(JsonVariantConst input, PsychicHttpWebSocketConnection *connection);
 bool isApiClientLoggedIn(JsonVariantConst input);
 bool isSerialClientLoggedIn(JsonVariantConst input);
 
@@ -60,8 +59,8 @@ int getWebsocketRequestSlot();
 void sendToAllWebsockets(const char * jsonString);
 void handleWebsocketMessageLoop(WebsocketRequest* request);
 
-void handleWebServerRequest(JsonVariant input, MongooseHttpServerRequest *request);
-void handleWebSocketMessage(MongooseHttpWebSocketConnection *connection, uint8_t *data, size_t len);
+void handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *request);
+void handleWebSocketMessage(PsychicHttpWebSocketConnection *connection, uint8_t *data, size_t len);
 
 /*
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);

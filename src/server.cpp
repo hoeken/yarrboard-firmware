@@ -1,13 +1,13 @@
 #include "server.h"
 
-MongooseHttpServer server;
+PsychicHttpServer server;
 
 // Variable to hold the last modification datetime
 char last_modified[50];
 
 CircularBuffer<WebsocketRequest*, YB_RECEIVE_BUFFER_COUNT> wsRequests;
 
-MongooseHttpWebSocketConnection * authenticatedConnections[YB_CLIENT_LIMIT];
+PsychicHttpWebSocketConnection * authenticatedConnections[YB_CLIENT_LIMIT];
 
 String server_cert;
 String server_key;
@@ -62,8 +62,6 @@ void server_setup()
     fp2.close();
   }
 
-  Mongoose.begin();
-
   //do we want secure or not?
   if (app_enable_ssl)
   {
@@ -74,12 +72,13 @@ void server_setup()
     server.begin(80);
   }
 
-  server.on("/", HTTP_GET, [](MongooseHttpServerRequest *request) {
+  server.on("/", HTTP_GET, [](PsychicHttpServerRequest *request) {
+    //TODO: how to make this work?
     //Check if the client already has the same version and respond with a 304 (Not modified)
-    if (request->headers("If-Modified-Since").equals(last_modified)) {
-        request->send(304);
-    } else {
-        MongooseHttpServerResponse *response = request->beginResponse();
+    // if (strcmp(request->headers("If-Modified-Since").equals(last_modified)) {
+    //     request->send(304);
+    // } else {
+        PsychicHttpServerResponse *response = request->beginResponse();
         response->setCode(200);
         response->setContentType("text/html");
 
@@ -93,67 +92,77 @@ void server_setup()
         response->setContent(index_html_gz, index_html_gz_len);
 
         request->send(response);
-   }
+
+        return ESP_OK;
+  //  }
   });
 
-  // Test the stream response class
-  server.on("/ws")->
-    onConnect([](MongooseHttpWebSocketConnection *connection) {
-      Serial.println("[socket] new connection");
-    })->
-    onClose([](MongooseHttpServerRequest *c) {
-      MongooseHttpWebSocketConnection *connection = static_cast<MongooseHttpWebSocketConnection *>(c);
-      Serial.println("[socket] connection closed");
+  // // Test the stream response class
+  // server.on("/ws")->
+  //   onConnect([](PsychicHttpWebSocketConnection *connection) {
+  //     Serial.println("[socket] new connection");
+  //   })->
+  //   onClose([](PsychicHttpServerRequest *c) {
+  //     PsychicHttpWebSocketConnection *connection = static_cast<PsychicHttpWebSocketConnection *>(c);
+  //     Serial.println("[socket] connection closed");
 
-      //stop tracking the connection
-      if (require_login)
-        for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-          if (authenticatedConnections[i] == connection)
-            authenticatedConnections[i] = NULL;
-    })->
-    onFrame([](MongooseHttpWebSocketConnection *connection, int flags, uint8_t *data, size_t len) {
-      handleWebSocketMessage(connection, data, len);
-    });
+  //     //stop tracking the connection
+  //     if (require_login)
+  //       for (byte i=0; i<YB_CLIENT_LIMIT; i++)
+  //         if (authenticatedConnections[i] == connection)
+  //           authenticatedConnections[i] = NULL;
+  //   })->
+  //   onFrame([](PsychicHttpWebSocketConnection *connection, int flags, uint8_t *data, size_t len) {
+  //     handleWebSocketMessage(connection, data, len);
+  //   });
 
   //our main api connection
-  server.on("/api/endpoint", HTTP_GET, [](MongooseHttpServerRequest *request)
+  server.on("/api/endpoint", HTTP_GET, [](PsychicHttpServerRequest *request)
   {
     StaticJsonDocument<1024> json;
     String body = request->body();
     DeserializationError err = deserializeJson(json, body);
 
     handleWebServerRequest(json, request);
+
+    return ESP_OK;
   });
 
   //send config json
-  server.on("/api/config", HTTP_GET, [](MongooseHttpServerRequest *request)
+  server.on("/api/config", HTTP_GET, [](PsychicHttpServerRequest *request)
   {
     StaticJsonDocument<256> json;
     json["cmd"] = "get_config";
 
     handleWebServerRequest(json, request);
+
+    return ESP_OK;
   });
 
   //send stats json
-  server.on("/api/stats", HTTP_GET, [](MongooseHttpServerRequest *request)
+  server.on("/api/stats", HTTP_GET, [](PsychicHttpServerRequest *request)
   {
     StaticJsonDocument<256> json;
     json["cmd"] = "get_stats";
 
     handleWebServerRequest(json, request);
+
+    return ESP_OK;
   });
 
   //send update json
-  server.on("/api/update", HTTP_GET, [](MongooseHttpServerRequest *request)
+  server.on("/api/update", HTTP_GET, [](PsychicHttpServerRequest *request)
   {
     StaticJsonDocument<256> json;
     json["cmd"] = "get_update";
 
     handleWebServerRequest(json, request);
+
+    return ESP_OK;
   });
 
   //downloadable coredump file
-  server.on("/coredump.txt", HTTP_GET, [](MongooseHttpServerRequest *request)
+  server.on("/coredump.txt", HTTP_GET, [](PsychicHttpServerRequest *request)
   {
     //delete the coredump here, but not from littlefs
 		deleteCoreDump();
@@ -161,7 +170,7 @@ void server_setup()
     //dont bug the client anymore
     has_coredump = false;
 
-    MongooseHttpServerResponse *response = request->beginResponse();
+    PsychicHttpServerResponse *response = request->beginResponse();
     response->setContentType("text/plain");
 
     if (LittleFS.exists("/coredump.txt"))
@@ -180,19 +189,21 @@ void server_setup()
     }
 
     request->send(response);
+
+    return ESP_OK;
   });
 
   //a 404 is nice
-  server.onNotFound([](MongooseHttpServerRequest *request)
+  server.onNotFound([](PsychicHttpServerRequest *request)
   {
     request->send(404, "text/plain", "Not found");
+
+    return ESP_OK;
   });
 }
 
 void server_loop()
 {
-  Mongoose.poll(1);
-
   //process our websockets outside the callback.
   if (!wsRequests.isEmpty())
     handleWebsocketMessageLoop(wsRequests.shift());
@@ -212,7 +223,7 @@ void sendToAllWebsockets(const char * jsonString)
     server.sendAll(jsonString);
 }
 
-bool logClientIn(MongooseHttpWebSocketConnection *connection)
+bool logClientIn(PsychicHttpWebSocketConnection *connection)
 {
   //did we not find a spot?
   if (!addClientToAuthList(connection))
@@ -228,7 +239,7 @@ bool logClientIn(MongooseHttpWebSocketConnection *connection)
   return true;
 }
 
-void handleWebServerRequest(JsonVariant input, MongooseHttpServerRequest *request)
+void handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *request)
 {
   DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
 
@@ -245,17 +256,18 @@ void handleWebServerRequest(JsonVariant input, MongooseHttpServerRequest *reques
   //we can have empty messages
   if (output.size())
   {
-    MongooseHttpServerResponseStream *response = request->beginResponseStream();
-    response->setContentType("application/json");
-    serializeJson(output.as<JsonObject>(), *response);
-    request->send(response);
+    //TODO: test this.
+    // PsychicHttpServerResponseStream *response = request->beginResponseStream();
+    // response->setContentType("application/json");
+    // serializeJson(output.as<JsonObject>(), *response);
+    // request->send(response);
   }
   //give them valid json at least
   else
     request->send(200, "application/json", "{}");
 }
 
-void handleWebSocketMessage(MongooseHttpWebSocketConnection *connection, uint8_t *data, size_t len)
+void handleWebSocketMessage(PsychicHttpWebSocketConnection *connection, uint8_t *data, size_t len)
 {
   if (!wsRequests.isFull())
   {
@@ -273,7 +285,7 @@ void handleWebSocketMessage(MongooseHttpWebSocketConnection *connection, uint8_t
     generateErrorJSON(output, "Websocket busy, throttle connection.");
     serializeJson(output, jsonBuffer);
 
-    connection->send(jsonBuffer);
+    connection->send(jsonBuffer.c_str());
   }
 }
 
@@ -304,7 +316,7 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
   delete request;
 }
 
-bool isLoggedIn(JsonVariantConst input, byte mode, MongooseHttpWebSocketConnection *connection)
+bool isLoggedIn(JsonVariantConst input, byte mode, PsychicHttpWebSocketConnection *connection)
 {
   //also only if enabled
   if (!require_login)
@@ -321,7 +333,7 @@ bool isLoggedIn(JsonVariantConst input, byte mode, MongooseHttpWebSocketConnecti
     return false;
 }
 
-bool isWebsocketClientLoggedIn(JsonVariantConst doc, MongooseHttpWebSocketConnection *connection)
+bool isWebsocketClientLoggedIn(JsonVariantConst doc, PsychicHttpWebSocketConnection *connection)
 {
   //are they in our auth array?
   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
@@ -361,7 +373,7 @@ bool isSerialClientLoggedIn(JsonVariantConst doc)
     return isApiClientLoggedIn(doc);
 }
 
-bool addClientToAuthList(MongooseHttpWebSocketConnection *connection)
+bool addClientToAuthList(PsychicHttpWebSocketConnection *connection)
 {
   byte i;
   for (i=0; i<YB_CLIENT_LIMIT; i++)
