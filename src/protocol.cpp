@@ -68,7 +68,7 @@ void protocol_loop()
     #endif
 
     //read and send out our json update
-    //sendUpdate();
+    sendUpdate();
   
     //how fast are we?
     //Serial.printf("Framerate: %f\n", framerate);
