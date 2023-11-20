@@ -68,7 +68,7 @@ void protocol_loop()
     #endif
 
     //read and send out our json update
-    sendUpdate();
+    //sendUpdate();
   
     //how fast are we?
     //Serial.printf("Framerate: %f\n", framerate);
@@ -387,8 +387,8 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
 
 void handleLogin(JsonVariantConst input, JsonVariant output, byte mode, PsychicHttpWebSocketConnection *connection)
 {
-    if (!require_login)
-      return generateErrorJSON(output, "Login not required.");
+  if (!require_login)
+    return generateErrorJSON(output, "Login not required.");
 
   if (!input.containsKey("user"))
     return generateErrorJSON(output, "'user' is a required parameter");
@@ -405,16 +405,16 @@ void handleLogin(JsonVariantConst input, JsonVariant output, byte mode, PsychicH
     //morpheus... i'm in.
     if (!strcmp(app_user, myuser) && !strcmp(app_pass, mypass))
     {
-        //check to see if there's room for us.
-        if (mode == YBP_MODE_WEBSOCKET)
-        {
-          if (!logClientIn(connection))
-            return generateErrorJSON(output, "Too many connections.");
-        }
-        else if (mode == YBP_MODE_SERIAL)
-          is_serial_authenticated = true;
+      //check to see if there's room for us.
+      if (mode == YBP_MODE_WEBSOCKET)
+      {
+        if (!logClientIn(connection))
+          return generateErrorJSON(output, "Too many connections.");
+      }
+      else if (mode == YBP_MODE_SERIAL)
+        is_serial_authenticated = true;
 
-        return generateSuccessJSON(output, "Login successful.");
+      return generateSuccessJSON(output, "Login successful.");
     }
 
     //gtfo.

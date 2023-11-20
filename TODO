@@ -1,7 +1,7 @@
 Firmware:
-    * mongoose conversion
-        * figure out why inital load isnt as snappy
-        * long term: update to mongoose 7.x
+    * psychichttp conversion
+        * remove all references to sendAll();
+        * remove references to authentication of websockets
     * web ui
         * static height on switches / led / analog rows
         * add a total row to the mosfet stats page
