@@ -7,13 +7,14 @@ char last_modified[50];
 
 CircularBuffer<WebsocketRequest*, YB_RECEIVE_BUFFER_COUNT> wsRequests;
 
-PsychicHttpWebSocketConnection * authenticatedConnections[YB_CLIENT_LIMIT];
+int authenticatedConnections[YB_CLIENT_LIMIT];
 
 String server_cert;
 String server_key;
 
 void server_setup()
 {
+  server.config.max_open_sockets = YB_CLIENT_LIMIT;
   // Populate the last modification date based on build datetime
   sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
 
@@ -97,32 +98,34 @@ void server_setup()
   //  }
   });
 
-  // // Test the stream response class
-  // server.on("/ws")->
-  //   onConnect([](PsychicHttpWebSocketConnection *connection) {
-  //     Serial.println("[socket] new connection");
-  //   })->
-  //   onClose([](PsychicHttpServerRequest *c) {
-  //     PsychicHttpWebSocketConnection *connection = static_cast<PsychicHttpWebSocketConnection *>(c);
-  //     Serial.println("[socket] connection closed");
+  // Test the stream response class
+  server.websocket("/ws")->
+    onConnect([](PsychicHttpWebSocketConnection *connection) {
+      Serial.println("[socket] new connection");
+      return ESP_OK;
+    })->
+    // onClose([](PsychicHttpServerRequest *c) {
+    //   PsychicHttpWebSocketConnection *connection = static_cast<PsychicHttpWebSocketConnection *>(c);
+    //   Serial.println("[socket] connection closed");
 
-  //     //stop tracking the connection
-  //     if (require_login)
-  //       for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-  //         if (authenticatedConnections[i] == connection)
-  //           authenticatedConnections[i] = NULL;
-  //   })->
-  //   onFrame([](PsychicHttpWebSocketConnection *connection, int flags, uint8_t *data, size_t len) {
-  //     handleWebSocketMessage(connection, data, len);
-  //   });
+    //   //stop tracking the connection
+    //   if (require_login)
+    //     for (byte i=0; i<YB_CLIENT_LIMIT; i++)
+    //       if (authenticatedConnections[i] == connection)
+    //         authenticatedConnections[i] = NULL;
+    // })->
+    onFrame([](PsychicHttpWebSocketConnection *connection, httpd_ws_frame *frame) {
+      handleWebSocketMessage(connection, frame->payload, frame->len);
+      return ESP_OK;
+    });
 
   //our main api connection
-  server.on("/api/endpoint", HTTP_GET, [](PsychicHttpServerRequest *request)
+  server.on("/api/endpoint", HTTP_POST, [](PsychicHttpServerRequest *request)
   {
     StaticJsonDocument<1024> json;
+
     String body = request->body();
     DeserializationError err = deserializeJson(json, body);
-
     handleWebServerRequest(json, request);
 
     return ESP_OK;
@@ -144,6 +147,12 @@ void server_setup()
   {
     StaticJsonDocument<256> json;
     json["cmd"] = "get_stats";
+
+    DUMP(request->queryString());
+    DUMP(request->hasParam("user"));
+    DUMP(request->getParam("user"));
+    DUMP(request->header("Host"));
+    DUMP(request->header("User-Agent"));
 
     handleWebServerRequest(json, request);
 
@@ -193,6 +202,18 @@ void server_setup()
     return ESP_OK;
   });
 
+  //downloadable coredump file
+  server.on("/test", HTTP_GET, [](PsychicHttpServerRequest *request)
+  {
+    PsychicHttpServerResponse *response = request->beginResponse();
+    response->setContentType("text/plain");
+    response->setCode(200);
+    response->setContent("hello world");
+    request->send(response);
+
+    return ESP_OK;
+  });
+
   //a 404 is nice
   server.onNotFound([](PsychicHttpServerRequest *request)
   {
@@ -212,14 +233,18 @@ void server_loop()
 void sendToAllWebsockets(const char * jsonString)
 {
   //send the message to all authenticated clients.
-  if (require_login)
-  {
-    for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-      if (authenticatedConnections[i] != NULL)
-        authenticatedConnections[i]->send(jsonString);
-  }
-  //nope, just sent it to all.
-  else
+  // if (require_login)
+  // {
+  //   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
+  //     if (authenticatedConnections[i])
+  //     {
+
+  //       //TODO: figure out how to do this.
+  //       //authenticatedConnections[i]->send(jsonString);
+  //     }
+  // }
+  // //nope, just sent it to all.
+  // else
     server.sendAll(jsonString);
 }
 
@@ -256,11 +281,13 @@ void handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *request
   //we can have empty messages
   if (output.size())
   {
-    //TODO: test this.
-    // PsychicHttpServerResponseStream *response = request->beginResponseStream();
-    // response->setContentType("application/json");
-    // serializeJson(output.as<JsonObject>(), *response);
-    // request->send(response);
+    PsychicHttpServerResponse *response = request->beginResponse();
+    response->setContentType("application/json");
+
+    String jsonBuffer;
+    serializeJson(output.as<JsonObject>(), jsonBuffer);
+    response->setContent(jsonBuffer.c_str());
+    request->send(response);
   }
   //give them valid json at least
   else
@@ -269,34 +296,12 @@ void handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *request
 
 void handleWebSocketMessage(PsychicHttpWebSocketConnection *connection, uint8_t *data, size_t len)
 {
-  if (!wsRequests.isFull())
-  {
-    WebsocketRequest* wr = new WebsocketRequest;
-    wr->client = connection;
-    strlcpy(wr->buffer, (char*)data, YB_RECEIVE_BUFFER_LENGTH); 
-    wsRequests.push(wr);
-  }
-
-  //start throttling a little bit early so we don't miss anything
-  if (wsRequests.capacity <= YB_RECEIVE_BUFFER_COUNT/2)
-  {
-    StaticJsonDocument<128> output;
-    String jsonBuffer;
-    generateErrorJSON(output, "Websocket busy, throttle connection.");
-    serializeJson(output, jsonBuffer);
-
-    connection->send(jsonBuffer.c_str());
-  }
-}
-
-void handleWebsocketMessageLoop(WebsocketRequest* request)
-{
   char jsonBuffer[YB_MAX_JSON_LENGTH];
   DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
   DynamicJsonDocument input(1024);
 
   //was there a problem, officer?
-  DeserializationError err = deserializeJson(input, request->buffer);
+  DeserializationError err = deserializeJson(input, data);
   if (err)
   {
     char error[64];
@@ -304,16 +309,61 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
     generateErrorJSON(output, error);
   }
   else
-    handleReceivedJSON(input, output, YBP_MODE_WEBSOCKET, request->client);
+    handleReceivedJSON(input, output, YBP_MODE_WEBSOCKET, connection);
 
   //empty messages are valid, so don't send a response
   if (output.size())
   {
     serializeJson(output, jsonBuffer);
-    request->client->send(jsonBuffer);
+    connection->send(jsonBuffer);
   }
 
-  delete request;
+  /* trying the direct message handling now */
+  // if (!wsRequests.isFull())
+  // {
+  //   WebsocketRequest* wr = new WebsocketRequest;
+  //   wr->client = connection;
+  //   strlcpy(wr->buffer, (char *)data, YB_RECEIVE_BUFFER_LENGTH); 
+  //   wsRequests.push(wr);
+  // }
+
+  // //start throttling a little bit early so we don't miss anything
+  // if (wsRequests.capacity <= YB_RECEIVE_BUFFER_COUNT/2)
+  // {
+  //   StaticJsonDocument<128> output;
+  //   String jsonBuffer;
+  //   generateErrorJSON(output, "Websocket busy, throttle connection.");
+  //   serializeJson(output, jsonBuffer);
+
+  //   connection->send(jsonBuffer.c_str());
+  // }
+}
+
+void handleWebsocketMessageLoop(WebsocketRequest* request)
+{
+  // char jsonBuffer[YB_MAX_JSON_LENGTH];
+  // DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
+  // DynamicJsonDocument input(1024);
+
+  // //was there a problem, officer?
+  // DeserializationError err = deserializeJson(input, request->buffer);
+  // if (err)
+  // {
+  //   char error[64];
+  //   sprintf(error, "deserializeJson() failed with code %s", err.c_str());
+  //   generateErrorJSON(output, error);
+  // }
+  // else
+  //   handleReceivedJSON(input, output, YBP_MODE_WEBSOCKET, request->client);
+
+  // //empty messages are valid, so don't send a response
+  // if (output.size())
+  // {
+  //   serializeJson(output, jsonBuffer);
+  //   request->client->send(jsonBuffer);
+  // }
+
+  // delete request;
 }
 
 bool isLoggedIn(JsonVariantConst input, byte mode, PsychicHttpWebSocketConnection *connection)
@@ -337,7 +387,7 @@ bool isWebsocketClientLoggedIn(JsonVariantConst doc, PsychicHttpWebSocketConnect
 {
   //are they in our auth array?
   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-    if (authenticatedConnections[i] == connection)
+    if (authenticatedConnections[i] == connection->getConnection())
       return true;
 
   //okay check for passed-in credentials
@@ -379,14 +429,14 @@ bool addClientToAuthList(PsychicHttpWebSocketConnection *connection)
   for (i=0; i<YB_CLIENT_LIMIT; i++)
   {
     //did we find an empty slot?
-    if (authenticatedConnections[i] == NULL)
+    if (!authenticatedConnections[i])
     {
-      authenticatedConnections[i] = connection;
+      authenticatedConnections[i] = connection->getConnection();
       break;
     }
 
     //are we already authenticated?
-    if (authenticatedConnections[i] == connection)
+    if (authenticatedConnections[i] == connection->getConnection())
       break;
   }
 
