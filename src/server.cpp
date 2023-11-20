@@ -101,7 +101,7 @@ void server_setup()
   // Test the stream response class
   server.websocket("/ws")->
     onConnect([](PsychicHttpWebSocketConnection *connection) {
-      Serial.println("[socket] new connection");
+      Serial.printf("[socket] new connection (id %u)\n", connection->getConnection());
       return ESP_OK;
     })->
     // onClose([](PsychicHttpServerRequest *c) {

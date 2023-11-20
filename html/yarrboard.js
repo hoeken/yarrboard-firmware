@@ -1076,6 +1076,10 @@ function open_page(page)
   if (page == "stats")
     get_stats_data();
 
+  //request our stats.
+  // if (page == "control")
+  //   get_update_data();
+
   //hide all pages.
   $("div.pageContainer").hide();
 
@@ -1138,6 +1142,20 @@ function get_stats_data()
   //keep loading it while we are here.
   if (current_page == "stats")
     setTimeout(get_stats_data, 1000);
+}
+
+function get_update_data()
+{
+  if (socket.readyState == WebSocket.OPEN)
+  {
+    immediateSend({
+      "cmd": "get_update",
+    });
+  }
+
+  //keep loading it while we are here.
+  if (current_page == "control")
+    setTimeout(get_update_data, 500);
 }
 
 //drops messages if sent too fast.

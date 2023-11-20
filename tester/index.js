@@ -83,8 +83,7 @@ function main()
                     var i;
                     for (i=0; i<8; i++)
                     {
-                        console.log(`fading ${i}`);
-                        await rgbFade(i, 25);                      
+                        await rgbFade(i, 10);                      
                     }
                 }    
             }, 1);
