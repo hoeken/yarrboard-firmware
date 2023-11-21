@@ -91,17 +91,14 @@ void server_setup()
         //add our actual content
         response->setContent(index_html_gz, index_html_gz_len);
 
-        response->send();
-
-        return ESP_OK;
+        return response->send();
   //  }
   });
 
   // Test the stream response class
   server.websocket("/ws")->
     onFrame([](PsychicHttpWebSocketConnection *connection, httpd_ws_frame *frame) {
-      handleWebSocketMessage(connection, frame->payload, frame->len);
-      return ESP_OK;
+      return handleWebSocketMessage(connection, frame->payload, frame->len);
     })->
     onConnect([](PsychicHttpWebSocketConnection *connection) {
       Serial.printf("[socket] new connection (#%u)\n", connection->getConnection());
@@ -132,9 +129,7 @@ void server_setup()
 
     String body = request->body();
     DeserializationError err = deserializeJson(json, body);
-    handleWebServerRequest(json, request);
-
-    return ESP_OK;
+    return handleWebServerRequest(json, request);
   });
 
   //send config json
@@ -197,40 +192,26 @@ void server_setup()
       response->setContent("Coredump not found.");
     }
 
-    response->send();
-
-    return ESP_OK;
+    return response->send();
   });
 
   // server.on("/redirect", HTTP_GET, [](PsychicHttpServerRequest *request)
   // {
-  //   request->redirect("/");
-
-  //   return ESP_OK;
+  //   return request->redirect("/");
   // });
 
   // server.on("/auth-basic", HTTP_GET, [](PsychicHttpServerRequest *request)
   // {
   //   if (!request->authenticate(app_user, app_pass))
-  //   {
-  //     request->requestAuthentication(BASIC_AUTH, board_name, "You must log in.");
-  //     return ESP_OK;
-  //   }
-
-  //   request->send("Success!");
-  //   return ESP_OK;
+  //     return request->requestAuthentication(BASIC_AUTH, board_name, "You must log in.");
+  //   return request->reply("Success!");
   // });
 
   // server.on("/auth-digest", HTTP_GET, [](PsychicHttpServerRequest *request)
   // {
   //   if (!request->authenticate(app_user, app_pass))
-  //   {
-  //     request->requestAuthentication(DIGEST_AUTH, board_name, "You must log in.");
-  //     return ESP_OK;
-  //   }
-
-  //   request->send("Success!");
-  //   return ESP_OK;
+  //     return request->requestAuthentication(DIGEST_AUTH, board_name, "You must log in.");
+  //   return request->reply("Success!");
   // });
 
   // server.on("/cookies", HTTP_GET, [](PsychicHttpServerRequest *request)
@@ -249,9 +230,7 @@ void server_setup()
 
   //   response->setCookie("counter", cookie);
   //   response->setContent(cookie);
-  //   request->send(response);
-
-  //   return ESP_OK;
+  //   return response->send();
   // });
 }
 
@@ -296,7 +275,7 @@ bool logClientIn(PsychicHttpWebSocketConnection *connection)
   return true;
 }
 
-void handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *request)
+esp_err_t handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *request)
 {
   DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
 
@@ -319,14 +298,14 @@ void handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *request
     String jsonBuffer;
     serializeJson(output.as<JsonObject>(), jsonBuffer);
     response->setContent(jsonBuffer.c_str());
-    response->send();
+    return response->send();
   }
   //give them valid json at least
   else
-    request->reply(200, "application/json", "{}");
+    return request->reply(200, "application/json", "{}");
 }
 
-void handleWebSocketMessage(PsychicHttpWebSocketConnection *connection, uint8_t *data, size_t len)
+esp_err_t handleWebSocketMessage(PsychicHttpWebSocketConnection *connection, uint8_t *data, size_t len)
 {
   char jsonBuffer[YB_MAX_JSON_LENGTH];
   DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
@@ -347,8 +326,10 @@ void handleWebSocketMessage(PsychicHttpWebSocketConnection *connection, uint8_t 
   if (output.size())
   {
     serializeJson(output, jsonBuffer);
-    connection->send(jsonBuffer);
+    return connection->send(jsonBuffer);
   }
+
+  return ESP_OK;
 
   /* trying the direct message handling now */
   // if (!wsRequests.isFull())
