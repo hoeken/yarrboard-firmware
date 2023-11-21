@@ -148,12 +148,6 @@ void server_setup()
     StaticJsonDocument<256> json;
     json["cmd"] = "get_stats";
 
-    DUMP(request->queryString());
-    DUMP(request->hasParam("user"));
-    DUMP(request->getParam("user"));
-    DUMP(request->header("Host"));
-    DUMP(request->header("User-Agent"));
-
     handleWebServerRequest(json, request);
 
     return ESP_OK;
@@ -209,30 +203,50 @@ void server_setup()
     return ESP_OK;
   });
 
-  server.on("/private", HTTP_GET, [](PsychicHttpServerRequest *request)
+  // server.on("/auth-basic", HTTP_GET, [](PsychicHttpServerRequest *request)
+  // {
+  //   if (!request->authenticate(app_user, app_pass))
+  //   {
+  //     request->requestAuthentication(BASIC_AUTH, board_name, "You must log in.");
+  //     return ESP_OK;
+  //   }
+
+  //   request->send("Success!");
+  //   return ESP_OK;
+  // });
+
+  // server.on("/auth-digest", HTTP_GET, [](PsychicHttpServerRequest *request)
+  // {
+  //   if (!request->authenticate(app_user, app_pass))
+  //   {
+  //     request->requestAuthentication(DIGEST_AUTH, board_name, "You must log in.");
+  //     return ESP_OK;
+  //   }
+
+  //   request->send("Success!");
+  //   return ESP_OK;
+  // });
+
+  server.on("/cookies", HTTP_GET, [](PsychicHttpServerRequest *request)
   {
-    if (!request->authenticate(app_user, app_pass))
+    PsychicHttpServerResponse *response = request->beginResponse();
+
+    int counter = 0;
+    if (request->hasCookie("counter"))
     {
-      request->requestAuthentication(BASIC_AUTH, board_name, "You must log in.");
-      return ESP_OK;
+      counter = std::stoi(request->getCookie("counter").c_str());
+      counter++;
     }
 
-    request->send("Success!");
+    char cookie[10];
+    sprintf(cookie, "%i", counter);
+
+    response->setCookie("counter", cookie);
+    response->setContent(cookie);
+    request->send(response);
+
     return ESP_OK;
   });
-
-  server.on("/private2", HTTP_GET, [](PsychicHttpServerRequest *request)
-  {
-    if (!request->authenticate(app_user, app_pass))
-    {
-      request->requestAuthentication(DIGEST_AUTH, board_name, "You must log in.");
-      return ESP_OK;
-    }
-
-    request->send("Success!");
-    return ESP_OK;
-  });
-
 }
 
 void server_loop()
