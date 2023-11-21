@@ -91,7 +91,7 @@ void server_setup()
         //add our actual content
         response->setContent(index_html_gz, index_html_gz_len);
 
-        request->send(response);
+        response->send();
 
         return ESP_OK;
   //  }
@@ -104,20 +104,18 @@ void server_setup()
       return ESP_OK;
     })->
     onConnect([](PsychicHttpWebSocketConnection *connection) {
-      TRACE();
-      //Serial.printf("[socket] new connection (id %u)\n", connection->getConnection());
+      Serial.printf("[socket] new connection (#%u)\n", connection->getConnection());
       return ESP_OK;
     });
 
-  server.onOpen([](httpd_handle_t hd, int sockfd) {
-    TRACE();
-    //Serial.printf("[socket] new connection (id %u)\n", connection->getConnection());
-    return ESP_OK;
-  });
+  // server.onOpen([](httpd_handle_t hd, int sockfd) {
+  //   //TRACE();
+  //   //Serial.printf("[socket] new connection (id %u)\n", connection->getConnection());
+  //   return ESP_OK;
+  // });
 
   server.onClose([](httpd_handle_t hd, int sockfd) {
-    TRACE();
-    //Serial.println("[socket] connection closed");
+    Serial.printf("[socket] connection closed (#%u)\n", sockfd);
     // //stop tracking the connection
     // if (require_login)
     //   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
@@ -199,7 +197,7 @@ void server_setup()
       response->setContent("Coredump not found.");
     }
 
-    request->send(response);
+    response->send();
 
     return ESP_OK;
   });
@@ -321,11 +319,11 @@ void handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *request
     String jsonBuffer;
     serializeJson(output.as<JsonObject>(), jsonBuffer);
     response->setContent(jsonBuffer.c_str());
-    request->send(response);
+    response->send();
   }
   //give them valid json at least
   else
-    request->send(200, "application/json", "{}");
+    request->reply(200, "application/json", "{}");
 }
 
 void handleWebSocketMessage(PsychicHttpWebSocketConnection *connection, uint8_t *data, size_t len)
