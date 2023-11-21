@@ -1140,9 +1140,6 @@ void sendFastUpdate()
 
   serializeJson(output, jsonBuffer);
   sendToAll(jsonBuffer);
-
-  Serial.println("Fast Update: ");
-  Serial.println(jsonBuffer);
 }
 
 
