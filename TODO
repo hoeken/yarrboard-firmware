@@ -1,4 +1,5 @@
 Firmware:
+    * migrate to esp32 arduino 3.0: https://docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html
     * psychichttp conversion
         * remove all references to sendAll();
         * remove references to authentication of websockets
