@@ -99,24 +99,33 @@ void server_setup()
 
   // Test the stream response class
   server.websocket("/ws")->
-    onConnect([](PsychicHttpWebSocketConnection *connection) {
-      Serial.printf("[socket] new connection (id %u)\n", connection->getConnection());
-      return ESP_OK;
-    })->
-    // onClose([](PsychicHttpServerRequest *c) {
-    //   PsychicHttpWebSocketConnection *connection = static_cast<PsychicHttpWebSocketConnection *>(c);
-    //   Serial.println("[socket] connection closed");
-
-    //   //stop tracking the connection
-    //   if (require_login)
-    //     for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-    //       if (authenticatedConnections[i] == connection)
-    //         authenticatedConnections[i] = NULL;
-    // })->
     onFrame([](PsychicHttpWebSocketConnection *connection, httpd_ws_frame *frame) {
       handleWebSocketMessage(connection, frame->payload, frame->len);
       return ESP_OK;
+    })->
+    onConnect([](PsychicHttpWebSocketConnection *connection) {
+      TRACE();
+      //Serial.printf("[socket] new connection (id %u)\n", connection->getConnection());
+      return ESP_OK;
     });
+
+  server.onOpen([](httpd_handle_t hd, int sockfd) {
+    TRACE();
+    //Serial.printf("[socket] new connection (id %u)\n", connection->getConnection());
+    return ESP_OK;
+  });
+
+  server.onClose([](httpd_handle_t hd, int sockfd) {
+    TRACE();
+    //Serial.println("[socket] connection closed");
+    // //stop tracking the connection
+    // if (require_login)
+    //   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
+    //     if (authenticatedConnections[i] == connection)
+    //       authenticatedConnections[i] = NULL;
+
+    return ESP_OK;
+  });
 
   //our main api connection
   server.on("/api/endpoint", HTTP_POST, [](PsychicHttpServerRequest *request)
