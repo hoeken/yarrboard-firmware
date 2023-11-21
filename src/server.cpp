@@ -202,25 +202,37 @@ void server_setup()
     return ESP_OK;
   });
 
-  //downloadable coredump file
-  server.on("/test", HTTP_GET, [](PsychicHttpServerRequest *request)
+  server.on("/redirect", HTTP_GET, [](PsychicHttpServerRequest *request)
   {
-    PsychicHttpServerResponse *response = request->beginResponse();
-    response->setContentType("text/plain");
-    response->setCode(200);
-    response->setContent("hello world");
-    request->send(response);
+    request->redirect("/");
 
     return ESP_OK;
   });
 
-  //a 404 is nice
-  server.onNotFound([](PsychicHttpServerRequest *request)
+  server.on("/private", HTTP_GET, [](PsychicHttpServerRequest *request)
   {
-    request->send(404, "text/plain", "Not found");
+    if (!request->authenticate(app_user, app_pass))
+    {
+      request->requestAuthentication(BASIC_AUTH, board_name, "You must log in.");
+      return ESP_OK;
+    }
 
+    request->send("Success!");
     return ESP_OK;
   });
+
+  server.on("/private2", HTTP_GET, [](PsychicHttpServerRequest *request)
+  {
+    if (!request->authenticate(app_user, app_pass))
+    {
+      request->requestAuthentication(DIGEST_AUTH, board_name, "You must log in.");
+      return ESP_OK;
+    }
+
+    request->send("Success!");
+    return ESP_OK;
+  });
+
 }
 
 void server_loop()
