@@ -195,12 +195,12 @@ void server_setup()
     return ESP_OK;
   });
 
-  server.on("/redirect", HTTP_GET, [](PsychicHttpServerRequest *request)
-  {
-    request->redirect("/");
+  // server.on("/redirect", HTTP_GET, [](PsychicHttpServerRequest *request)
+  // {
+  //   request->redirect("/");
 
-    return ESP_OK;
-  });
+  //   return ESP_OK;
+  // });
 
   // server.on("/auth-basic", HTTP_GET, [](PsychicHttpServerRequest *request)
   // {
@@ -226,33 +226,33 @@ void server_setup()
   //   return ESP_OK;
   // });
 
-  server.on("/cookies", HTTP_GET, [](PsychicHttpServerRequest *request)
-  {
-    PsychicHttpServerResponse *response = request->beginResponse();
+  // server.on("/cookies", HTTP_GET, [](PsychicHttpServerRequest *request)
+  // {
+  //   PsychicHttpServerResponse *response = request->beginResponse();
 
-    int counter = 0;
-    if (request->hasCookie("counter"))
-    {
-      counter = std::stoi(request->getCookie("counter").c_str());
-      counter++;
-    }
+  //   int counter = 0;
+  //   if (request->hasCookie("counter"))
+  //   {
+  //     counter = std::stoi(request->getCookie("counter").c_str());
+  //     counter++;
+  //   }
 
-    char cookie[10];
-    sprintf(cookie, "%i", counter);
+  //   char cookie[10];
+  //   sprintf(cookie, "%i", counter);
 
-    response->setCookie("counter", cookie);
-    response->setContent(cookie);
-    request->send(response);
+  //   response->setCookie("counter", cookie);
+  //   response->setContent(cookie);
+  //   request->send(response);
 
-    return ESP_OK;
-  });
+  //   return ESP_OK;
+  // });
 }
 
 void server_loop()
 {
-  //process our websockets outside the callback.
-  if (!wsRequests.isEmpty())
-    handleWebsocketMessageLoop(wsRequests.shift());
+  // //process our websockets outside the callback.
+  // if (!wsRequests.isEmpty())
+  //   handleWebsocketMessageLoop(wsRequests.shift());
 }
 
 void sendToAllWebsockets(const char * jsonString)
@@ -329,8 +329,8 @@ void handleWebSocketMessage(PsychicHttpWebSocketConnection *connection, uint8_t 
   DeserializationError err = deserializeJson(input, data);
   if (err)
   {
-    char error[64];
-    sprintf(error, "deserializeJson() failed with code %s", err.c_str());
+    char error[256];
+    sprintf(error, "deserializeJson() failed with: %s", err.c_str());
     generateErrorJSON(output, error);
   }
   else
