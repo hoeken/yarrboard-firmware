@@ -65,13 +65,12 @@ void server_setup()
 
   //do we want secure or not?
   if (app_enable_ssl)
-  {
-    server.begin(443, server_cert.c_str(), server_key.c_str());
-  }
+    server.listen(443, server_cert.c_str(), server_key.c_str());
   else
-  {
-    server.begin(80);
-  }
+    server.listen(80);
+
+  //lets gooo!
+  server.start();
 
   server.on("/", HTTP_GET, [](PsychicHttpServerRequest *request) {
     //TODO: how to make this work?
