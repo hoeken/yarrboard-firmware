@@ -44,8 +44,7 @@
 #define YBP_MODE_SERIAL    2
 
 //for handling messages outside of the loop
-#define YB_RECEIVE_BUFFER_LENGTH 4096
-#define YB_RECEIVE_BUFFER_COUNT 16
+#define YB_RECEIVE_BUFFER_COUNT 20
 
 //milliseconds between sending updates on websocket and serial
 #define YB_UPDATE_FREQUENCY 250

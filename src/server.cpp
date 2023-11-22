@@ -5,7 +5,7 @@ PsychicHttpServer server;
 // Variable to hold the last modification datetime
 char last_modified[50];
 
-CircularBuffer<WebsocketRequest*, YB_RECEIVE_BUFFER_COUNT> wsRequests;
+QueueHandle_t wsRequests;
 
 int authenticatedConnections[YB_CLIENT_LIMIT];
 
@@ -14,6 +14,11 @@ String server_key;
 
 void server_setup()
 {
+  //prepare our message queue
+  wsRequests = xQueueCreate(YB_RECEIVE_BUFFER_COUNT, sizeof(WebsocketRequest));
+  if (wsRequests == 0)
+    Serial.printf("Failed to create queue= %p\n", wsRequests);
+
   server.config.max_open_sockets = YB_CLIENT_LIMIT;
   // Populate the last modification date based on build datetime
   sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
@@ -98,7 +103,9 @@ void server_setup()
   // Test the stream response class
   server.websocket("/ws")->
     onFrame([](PsychicHttpWebSocketRequest *request, httpd_ws_frame *frame) {
-      return handleWebSocketMessage(request, frame->payload, frame->len);
+      handleWebSocketMessage(request, frame->payload, frame->len);
+
+      return ESP_OK;
     })->
     onConnect([](PsychicHttpWebSocketRequest *request) {
       Serial.printf("[socket] new connection (#%u)\n", request->connection->id());
@@ -236,9 +243,15 @@ void server_setup()
 
 void server_loop()
 {
-  // //process our websockets outside the callback.
-  // if (!wsRequests.isEmpty())
-  //   handleWebsocketMessageLoop(wsRequests.shift());
+  //process our websockets outside the callback.
+  WebsocketRequest request;
+  if (xQueueReceive(wsRequests, &request, 0) == pdTRUE)
+  {
+    handleWebsocketMessageLoop(&request);
+
+    //make sure to release our memory!
+    free(request.buffer);
+  }
 }
 
 void sendToAllWebsockets(const char * jsonString)
@@ -304,40 +317,47 @@ esp_err_t handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *re
     return request->reply(200, "application/json", "{}");
 }
 
-esp_err_t handleWebSocketMessage(PsychicHttpWebSocketRequest *request, uint8_t *data, size_t len)
+void handleWebSocketMessage(PsychicHttpWebSocketRequest *request, uint8_t *data, size_t len)
 {
-  char jsonBuffer[YB_MAX_JSON_LENGTH];
-  DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
-  DynamicJsonDocument input(1024);
+  // char jsonBuffer[YB_MAX_JSON_LENGTH];
+  // DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
+  // DynamicJsonDocument input(1024);
 
-  //was there a problem, officer?
-  DeserializationError err = deserializeJson(input, data);
-  if (err)
-  {
-    char error[256];
-    sprintf(error, "deserializeJson() failed with: %s", err.c_str());
-    generateErrorJSON(output, error);
-  }
-  else
-    handleReceivedJSON(input, output, YBP_MODE_WEBSOCKET, request->connection);
-
-  //empty messages are valid, so don't send a response
-  if (output.size())
-  {
-    serializeJson(output, jsonBuffer);
-    return request->reply(jsonBuffer);
-  }
-
-  return ESP_OK;
-
-  /* trying the direct message handling now */
-  // if (!wsRequests.isFull())
+  // //was there a problem, officer?
+  // DeserializationError err = deserializeJson(input, data);
+  // if (err)
   // {
-  //   WebsocketRequest* wr = new WebsocketRequest;
-  //   wr->client = connection;
-  //   strlcpy(wr->buffer, (char *)data, YB_RECEIVE_BUFFER_LENGTH); 
-  //   wsRequests.push(wr);
+  //   char error[256];
+  //   sprintf(error, "deserializeJson() failed with: %s", err.c_str());
+  //   generateErrorJSON(output, error);
   // }
+  // else
+  //   handleReceivedJSON(input, output, YBP_MODE_WEBSOCKET, request->connection);
+
+  // //empty messages are valid, so don't send a response
+  // if (output.size())
+  // {
+  //   serializeJson(output, jsonBuffer);
+  //   return request->reply(jsonBuffer);
+  // }
+
+  // return ESP_OK;
+
+  //build our websocket request
+  //we are allocating memory here, and the worker will free it
+  WebsocketRequest wr;
+  wr.client_id = request->connection->id();
+  wr.buffer = (char *)malloc(len+1);
+  strlcpy(wr.buffer, (char *)data, len+1); 
+  wr.len = len+1;
+
+  if (xQueueSend(wsRequests, &wr, 0) != pdTRUE)
+  {
+    Serial.println("[socket] work queue full");
+
+    //free the memory... no worker to do it for us.
+    free(wr.buffer);
+  }
 
   // //start throttling a little bit early so we don't miss anything
   // if (wsRequests.capacity <= YB_RECEIVE_BUFFER_COUNT/2)
@@ -353,29 +373,29 @@ esp_err_t handleWebSocketMessage(PsychicHttpWebSocketRequest *request, uint8_t *
 
 void handleWebsocketMessageLoop(WebsocketRequest* request)
 {
-  // char jsonBuffer[YB_MAX_JSON_LENGTH];
-  // DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
-  // DynamicJsonDocument input(1024);
+  char jsonBuffer[YB_MAX_JSON_LENGTH];
+  DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
+  DynamicJsonDocument input(1024);
 
-  // //was there a problem, officer?
-  // DeserializationError err = deserializeJson(input, request->buffer);
-  // if (err)
-  // {
-  //   char error[64];
-  //   sprintf(error, "deserializeJson() failed with code %s", err.c_str());
-  //   generateErrorJSON(output, error);
-  // }
-  // else
-  //   handleReceivedJSON(input, output, YBP_MODE_WEBSOCKET, request->client);
+  PsychicHttpWebSocketConnection connection(server.server, request->client_id);
 
-  // //empty messages are valid, so don't send a response
-  // if (output.size())
-  // {
-  //   serializeJson(output, jsonBuffer);
-  //   request->client->send(jsonBuffer);
-  // }
+  //was there a problem, officer?
+  DeserializationError err = deserializeJson(input, request->buffer);
+  if (err)
+  {
+    char error[64];
+    sprintf(error, "deserializeJson() failed with code %s", err.c_str());
+    generateErrorJSON(output, error);
+  }
+  else
+    handleReceivedJSON(input, output, YBP_MODE_WEBSOCKET, &connection);
 
-  // delete request;
+  //empty messages are valid, so don't send a response
+  if (output.size())
+  {
+    serializeJson(output, jsonBuffer);
+    connection.queueMessage(jsonBuffer);
+  }
 }
 
 bool isLoggedIn(JsonVariantConst input, byte mode, PsychicHttpWebSocketConnection *connection)
