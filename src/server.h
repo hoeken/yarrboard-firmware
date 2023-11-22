@@ -37,7 +37,7 @@ extern String server_cert;
 extern String server_key;
 
 typedef struct {
-  PsychicHttpWebSocketConnection *client;
+  int client_id;
   char buffer[YB_RECEIVE_BUFFER_LENGTH];
 } WebsocketRequest;
 
@@ -60,7 +60,7 @@ void sendToAllWebsockets(const char * jsonString);
 void handleWebsocketMessageLoop(WebsocketRequest* request);
 
 esp_err_t handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *request);
-esp_err_t handleWebSocketMessage(PsychicHttpWebSocketConnection *connection, uint8_t *data, size_t len);
+esp_err_t handleWebSocketMessage(PsychicHttpWebSocketRequest *request, uint8_t *data, size_t len);
 
 /*
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);

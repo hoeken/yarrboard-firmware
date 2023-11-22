@@ -97,17 +97,17 @@ void server_setup()
 
   // Test the stream response class
   server.websocket("/ws")->
-    onFrame([](PsychicHttpWebSocketConnection *connection, httpd_ws_frame *frame) {
-      return handleWebSocketMessage(connection, frame->payload, frame->len);
+    onFrame([](PsychicHttpWebSocketRequest *request, httpd_ws_frame *frame) {
+      return handleWebSocketMessage(request, frame->payload, frame->len);
     })->
-    onConnect([](PsychicHttpWebSocketConnection *connection) {
-      Serial.printf("[socket] new connection (#%u)\n", connection->getConnection());
+    onConnect([](PsychicHttpWebSocketRequest *request) {
+      Serial.printf("[socket] new connection (#%u)\n", request->connection->id());
       return ESP_OK;
     });
 
   // server.onOpen([](httpd_handle_t hd, int sockfd) {
   //   //TRACE();
-  //   //Serial.printf("[socket] new connection (id %u)\n", connection->getConnection());
+  //   //Serial.printf("[socket] new connection (id %u)\n", sockfd);
   //   return ESP_OK;
   // });
 
@@ -244,18 +244,17 @@ void server_loop()
 void sendToAllWebsockets(const char * jsonString)
 {
   //send the message to all authenticated clients.
-  // if (require_login)
-  // {
-  //   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-  //     if (authenticatedConnections[i])
-  //     {
-
-  //       //TODO: figure out how to do this.
-  //       //authenticatedConnections[i]->send(jsonString);
-  //     }
-  // }
-  // //nope, just sent it to all.
-  // else
+  if (require_login)
+  {
+    for (byte i=0; i<YB_CLIENT_LIMIT; i++)
+      if (authenticatedConnections[i])
+      {
+        PsychicHttpWebSocketConnection connection(server.server, authenticatedConnections[i]);
+        connection.queueMessage(jsonString);
+      }
+  }
+  //nope, just sent it to all.
+  else
     server.sendAll(jsonString);
 }
 
@@ -305,7 +304,7 @@ esp_err_t handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *re
     return request->reply(200, "application/json", "{}");
 }
 
-esp_err_t handleWebSocketMessage(PsychicHttpWebSocketConnection *connection, uint8_t *data, size_t len)
+esp_err_t handleWebSocketMessage(PsychicHttpWebSocketRequest *request, uint8_t *data, size_t len)
 {
   char jsonBuffer[YB_MAX_JSON_LENGTH];
   DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
@@ -320,13 +319,13 @@ esp_err_t handleWebSocketMessage(PsychicHttpWebSocketConnection *connection, uin
     generateErrorJSON(output, error);
   }
   else
-    handleReceivedJSON(input, output, YBP_MODE_WEBSOCKET, connection);
+    handleReceivedJSON(input, output, YBP_MODE_WEBSOCKET, request->connection);
 
   //empty messages are valid, so don't send a response
   if (output.size())
   {
     serializeJson(output, jsonBuffer);
-    return connection->send(jsonBuffer);
+    return request->reply(jsonBuffer);
   }
 
   return ESP_OK;
@@ -400,7 +399,7 @@ bool isWebsocketClientLoggedIn(JsonVariantConst doc, PsychicHttpWebSocketConnect
 {
   //are they in our auth array?
   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-    if (authenticatedConnections[i] == connection->getConnection())
+    if (authenticatedConnections[i] == connection->id())
       return true;
 
   //okay check for passed-in credentials
@@ -444,12 +443,12 @@ bool addClientToAuthList(PsychicHttpWebSocketConnection *connection)
     //did we find an empty slot?
     if (!authenticatedConnections[i])
     {
-      authenticatedConnections[i] = connection->getConnection();
+      authenticatedConnections[i] = connection->id();
       break;
     }
 
     //are we already authenticated?
-    if (authenticatedConnections[i] == connection->getConnection())
+    if (authenticatedConnections[i] == connection->id())
       break;
   }
 
