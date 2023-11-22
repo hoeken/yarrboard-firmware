@@ -1154,8 +1154,6 @@ void sendUpdate()
 
   serializeJson(output, jsonBuffer);
   sendToAll(jsonBuffer);
-
-  DUMP(millis());
 }
 
 void sendOTAProgressUpdate(float progress)

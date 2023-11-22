@@ -43,7 +43,7 @@
 unsigned long lastFrameMillis = 0;
 
 //16kb stack size.
-SET_LOOP_TASK_STACK_SIZE(16*1024);
+//SET_LOOP_TASK_STACK_SIZE(16*1024);
 
 void setup()
 {
