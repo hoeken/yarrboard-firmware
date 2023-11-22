@@ -112,14 +112,14 @@ void server_setup()
       return ESP_OK;
     });
 
-  // server.onOpen([](httpd_handle_t hd, int sockfd) {
-  //   //TRACE();
-  //   //Serial.printf("[socket] new connection (id %u)\n", sockfd);
-  //   return ESP_OK;
-  // });
+  server.onOpen([](httpd_handle_t hd, int sockfd) {
+    //TRACE();
+    Serial.printf("[http] new connection (id %u)\n", sockfd);
+    return ESP_OK;
+  });
 
   server.onClose([](httpd_handle_t hd, int sockfd) {
-    Serial.printf("[socket] connection closed (#%u)\n", sockfd);
+    Serial.printf("[http] connection closed (#%u)\n", sockfd);
 
     //stop tracking the connection
     if (require_login)
@@ -277,10 +277,10 @@ bool logClientIn(PsychicHttpWebSocketConnection *connection)
   //did we not find a spot?
   if (!addClientToAuthList(connection))
   {
-    //TODO: is there a way to close a connection?
-    //TODO: we need to test the max connections, mongoose may just handle it for us.
-    // AsyncWebSocketClient* client = ws.client(client_id);
-    // client->close();
+    Serial.println("Error: could not add to auth list.");
+
+    //i'm pretty sure this closes our connection
+    close(connection->id());
 
     return false;
   }
@@ -346,8 +346,8 @@ void handleWebSocketMessage(PsychicHttpWebSocketRequest *request, uint8_t *data,
     free(wr.buffer);
   }
 
-  //start throttling a little bit early so we don't miss anything
-  if (uxQueueSpacesAvailable(wsRequests) <= YB_RECEIVE_BUFFER_COUNT/2)
+  //send a throttle message if we're full
+  if (!uxQueueSpacesAvailable(wsRequests))
   {
     StaticJsonDocument<128> output;
     String jsonBuffer;
