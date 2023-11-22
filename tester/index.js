@@ -21,7 +21,6 @@ yb = new YarrboardClient(options.host, options.user, options.pass, options.login
 function main()
 {
     yb = new YarrboardClient(options.host, options.user, options.pass, options.login);
-    //yb.addMessageId = true;
 
     setTimeout(yb.printMessageStats.bind(yb), 1000);    
 
@@ -97,8 +96,6 @@ function main()
     }, 1000);
 
     yb.onmessage = function (msg) {
-        if (msg.msgid)
-            this.log(msg.msgid);
     }
     yb.start();
 }
@@ -201,42 +198,42 @@ async function rgbFade(channel = 0, d = 25)
     for (i=0; i<=steps; i++)
     {
         let duty = (i / steps) * max_duty;
-        yb.setRGB(channel, duty, 0, 0);
+        yb.setRGB(channel, duty, 0, 0, false);
         await delay(d)
     }
 
     for (i=steps; i>=0; i--)
     {
         let duty = (i / steps) * max_duty;
-        yb.setRGB(channel, duty, 0, 0);
+        yb.setRGB(channel, duty, 0, 0, false);
         await delay(d)
     }
 
     for (i=0; i<=steps; i++)
     {
         let duty = (i / steps) * max_duty;
-        yb.setRGB(channel, 0, duty, 0);
+        yb.setRGB(channel, 0, duty, 0, false);
         await delay(d)
     }
 
     for (i=steps; i>=0; i--)
     {
         let duty = (i / steps) * max_duty;
-        yb.setRGB(channel, 0, duty, 0);
+        yb.setRGB(channel, 0, duty, 0, false);
         await delay(d)
     }
 
     for (i=0; i<=steps; i++)
     {
         let duty = (i / steps) * max_duty;
-        yb.setRGB(channel, 0, 0, duty);
+        yb.setRGB(channel, 0, 0, duty, false);
         await delay(d)
     }
 
     for (i=steps; i>=0; i--)
     {
         let duty = (i / steps) * max_duty;
-        yb.setRGB(channel, 0, 0, duty);
+        yb.setRGB(channel, 0, 0, duty, false);
         await delay(d)
     }
 
