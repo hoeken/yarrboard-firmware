@@ -114,13 +114,12 @@ void server_setup()
 
   server.onOpen([](httpd_handle_t hd, int sockfd) {
     //TRACE();
-    Serial.printf("[http] new connection (id %u)\n", sockfd);
+    //Serial.printf("[http] new connection (id %u)\n", sockfd);
     return ESP_OK;
   });
 
   server.onClose([](httpd_handle_t hd, int sockfd) {
-    Serial.printf("[http] connection closed (#%u)\n", sockfd);
-
+    //Serial.printf("[http] connection closed (#%u)\n", sockfd);
     //stop tracking the connection
     if (require_login)
       for (byte i=0; i<YB_CLIENT_LIMIT; i++)
@@ -201,6 +200,11 @@ void server_setup()
     }
 
     return response->send();
+  });
+
+  server.on("/test", HTTP_GET, [](PsychicHttpServerRequest *request)
+  {
+    return request->reply("Success");
   });
 
   // server.on("/redirect", HTTP_GET, [](PsychicHttpServerRequest *request)
