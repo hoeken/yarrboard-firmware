@@ -1076,9 +1076,9 @@ function open_page(page)
   if (page == "stats")
     get_stats_data();
 
-  //request our stats.
-  // if (page == "control")
-  //   get_update_data();
+  //request our control updates.
+  if (page == "control")
+    get_update_data();
 
   //hide all pages.
   $("div.pageContainer").hide();
@@ -1600,7 +1600,7 @@ function check_for_updates()
   if (current_config)
   {
     $.ajax({
-      url: "https://raw.githubusercontent.com/hoeken/yarrboard/main/firmware/firmware.json",
+      url: "https://raw.githubusercontent.com/hoeken/yarrboard-firmware/main/firmware.json",
       cache: false,
       dataType: "json",
       success: function(jdata) {
