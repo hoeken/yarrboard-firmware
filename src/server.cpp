@@ -120,11 +120,12 @@ void server_setup()
 
   server.onClose([](httpd_handle_t hd, int sockfd) {
     Serial.printf("[socket] connection closed (#%u)\n", sockfd);
-    // //stop tracking the connection
-    // if (require_login)
-    //   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-    //     if (authenticatedConnections[i] == connection)
-    //       authenticatedConnections[i] = NULL;
+
+    //stop tracking the connection
+    if (require_login)
+      for (byte i=0; i<YB_CLIENT_LIMIT; i++)
+        if (authenticatedConnections[i] == sockfd)
+          authenticatedConnections[i] = 0;
 
     return ESP_OK;
   });
@@ -319,39 +320,25 @@ esp_err_t handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *re
 
 void handleWebSocketMessage(PsychicHttpWebSocketRequest *request, uint8_t *data, size_t len)
 {
-  // char jsonBuffer[YB_MAX_JSON_LENGTH];
-  // DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
-  // DynamicJsonDocument input(1024);
-
-  // //was there a problem, officer?
-  // DeserializationError err = deserializeJson(input, data);
-  // if (err)
-  // {
-  //   char error[256];
-  //   sprintf(error, "deserializeJson() failed with: %s", err.c_str());
-  //   generateErrorJSON(output, error);
-  // }
-  // else
-  //   handleReceivedJSON(input, output, YBP_MODE_WEBSOCKET, request->connection);
-
-  // //empty messages are valid, so don't send a response
-  // if (output.size())
-  // {
-  //   serializeJson(output, jsonBuffer);
-  //   return request->reply(jsonBuffer);
-  // }
-
-  // return ESP_OK;
-
-  //build our websocket request
+  //build our websocket request - copy the existing one
   //we are allocating memory here, and the worker will free it
   WebsocketRequest wr;
   wr.client_id = request->connection->id();
-  wr.buffer = (char *)malloc(len+1);
-  strlcpy(wr.buffer, (char *)data, len+1); 
   wr.len = len+1;
+  wr.buffer = (char *)malloc(len+1);
 
-  if (xQueueSend(wsRequests, &wr, 0) != pdTRUE)
+  //did we flame out?
+  if (wr.buffer == NULL)
+  {
+    Serial.printf("Queue message: unable to allocate %d bytes\n", len+1);
+    return;    
+  }
+
+  //okay, copy it over
+  memcpy(wr.buffer, data, len+1); 
+
+  //throw it in our queue
+  if (xQueueSend(wsRequests, &wr, 1) != pdTRUE)
   {
     Serial.println("[socket] work queue full");
 
@@ -359,16 +346,16 @@ void handleWebSocketMessage(PsychicHttpWebSocketRequest *request, uint8_t *data,
     free(wr.buffer);
   }
 
-  // //start throttling a little bit early so we don't miss anything
-  // if (wsRequests.capacity <= YB_RECEIVE_BUFFER_COUNT/2)
-  // {
-  //   StaticJsonDocument<128> output;
-  //   String jsonBuffer;
-  //   generateErrorJSON(output, "Websocket busy, throttle connection.");
-  //   serializeJson(output, jsonBuffer);
+  //start throttling a little bit early so we don't miss anything
+  if (uxQueueSpacesAvailable(wsRequests) <= YB_RECEIVE_BUFFER_COUNT/2)
+  {
+    StaticJsonDocument<128> output;
+    String jsonBuffer;
+    generateErrorJSON(output, "Queue Full");
+    serializeJson(output, jsonBuffer);
 
-  //   connection->send(jsonBuffer.c_str());
-  // }
+    request->reply(jsonBuffer.c_str());
+  }
 }
 
 void handleWebsocketMessageLoop(WebsocketRequest* request)
@@ -474,7 +461,10 @@ bool addClientToAuthList(PsychicHttpWebSocketConnection *connection)
 
   //did we not find a spot?
   if (i == YB_CLIENT_LIMIT)
+  {
     return false;
+    Serial.println("ERROR: max clients reached");
+  }
   else
    return true;
 }

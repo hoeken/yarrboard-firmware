@@ -1,19 +1,18 @@
 Firmware:
-    * migrate to esp32 arduino 3.0: https://docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html
-    * psychichttp conversion
-        * remove all references to sendAll();
-        * remove references to authentication of websockets
+    * move back to on-demand status updates
+        * update web client, make interval configurable
+        * same with npm client + signalk
     * web ui
         * static height on switches / led / analog rows
         * add a total row to the mosfet stats page
     * ssl
-        * need to upgrade to latest mongoose before going further
         * explore using letsencrypt
     * find in signalk app where it sends the discovery info to mfd's and see if we can copy?
         * I think the magic happens here: https://github.com/SignalK/signalk-server/blob/master/src/interfaces/mfd_webapp.ts
     * protocol documentation
     * learn about building components for node-red, maybe make a yarrboard toolkit
     * more ui work and column sizing
+    * migrate to esp32 arduino 3.0: https://docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html
 
 8ch MOSFET:
     * remove CAN port - never going to use it.
@@ -27,6 +26,10 @@ Firmware:
 RGB Input:
     * move to 4 layer design signal / gnd / gnd / signal
     * remove the MISO line completely, doesnt work.
+
+RGB Button Board:
+    * number buttons/leds like pins on a chip
+    * flip the connector pins
 
 Electronics:
     * update 3dp case for 8ch mosfet
