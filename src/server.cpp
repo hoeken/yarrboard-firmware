@@ -83,20 +83,20 @@ void server_setup()
     // if (strcmp(request->headers("If-Modified-Since").equals(last_modified)) {
     //     request->send(304);
     // } else {
-        PsychicHttpServerResponse *response = request->beginResponse();
-        response->setCode(200);
-        response->setContentType("text/html");
+        PsychicHttpServerResponse response(request);
+        response.setCode(200);
+        response.setContentType("text/html");
 
         // Tell the browswer the contemnt is Gzipped
-        response->addHeader("Content-Encoding", "gzip");
+        response.addHeader("Content-Encoding", "gzip");
 
         // And set the last-modified datetime so we can check if we need to send it again next time or not
-        response->addHeader("Last-Modified", last_modified);
+        response.addHeader("Last-Modified", last_modified);
 
         //add our actual content
-        response->setContent(index_html_gz, index_html_gz_len);
+        response.setContent(index_html_gz, index_html_gz_len);
 
-        return response->send();
+        return response.send();
   //  }
   });
 
@@ -181,25 +181,25 @@ void server_setup()
     //dont bug the client anymore
     has_coredump = false;
 
-    PsychicHttpServerResponse *response = request->beginResponse();
-    response->setContentType("text/plain");
+    PsychicHttpServerResponse response(request);
+    response.setContentType("text/plain");
 
     if (LittleFS.exists("/coredump.txt"))
     {
-      response->setCode(200);
+      response.setCode(200);
 
       //this feels a little bit hacky...
       File fp = LittleFS.open("/coredump.txt");
       String data = fp.readString();
-      response->setContent(data.c_str());
+      response.setContent(data.c_str());
     }
     else
     {
-      response->setCode(404);
-      response->setContent("Coredump not found.");
+      response.setCode(404);
+      response.setContent("Coredump not found.");
     }
 
-    return response->send();
+    return response.send();
   });
 
   server.on("/test", HTTP_GET, [](PsychicHttpServerRequest *request)
@@ -309,13 +309,13 @@ esp_err_t handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *re
   //we can have empty messages
   if (output.size())
   {
-    PsychicHttpServerResponse *response = request->beginResponse();
-    response->setContentType("application/json");
+    PsychicHttpServerResponse response(request);
+    response.setContentType("application/json");
 
     String jsonBuffer;
     serializeJson(output.as<JsonObject>(), jsonBuffer);
-    response->setContent(jsonBuffer.c_str());
-    return response->send();
+    response.setContent(jsonBuffer.c_str());
+    return response.send();
   }
   //give them valid json at least
   else
