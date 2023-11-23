@@ -95,8 +95,7 @@ function main()
     
     }, 1000);
 
-    yb.onmessage = function (msg) {
-    }
+    //yb.onmessage = function (msg) {}
     yb.start();
 }
 
