@@ -28,8 +28,6 @@ function main() {
 
     setTimeout(yb.printMessageStats.bind(yb), 1);
 
-    console.log(options.channels);
-
     twerkIt();
 }
 
