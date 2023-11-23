@@ -24,10 +24,7 @@ const yb = new YarrboardClient(options.host, options.user, options.pass, options
 
 function main() {
     yb.start();
-    console.log("Starting tester.");
-
     setTimeout(yb.printMessageStats.bind(yb), 1);
-
     twerkIt();
 }
 
