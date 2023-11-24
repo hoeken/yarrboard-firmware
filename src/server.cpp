@@ -191,49 +191,6 @@ void server_setup()
 
     return response.send();
   });
-
-  server.on("/test", HTTP_GET, [](PsychicHttpServerRequest *request)
-  {
-    return request->reply("Success");
-  });
-
-  // server.on("/redirect", HTTP_GET, [](PsychicHttpServerRequest *request)
-  // {
-  //   return request->redirect("/");
-  // });
-
-  // server.on("/auth-basic", HTTP_GET, [](PsychicHttpServerRequest *request)
-  // {
-  //   if (!request->authenticate(app_user, app_pass))
-  //     return request->requestAuthentication(BASIC_AUTH, board_name, "You must log in.");
-  //   return request->reply("Success!");
-  // });
-
-  // server.on("/auth-digest", HTTP_GET, [](PsychicHttpServerRequest *request)
-  // {
-  //   if (!request->authenticate(app_user, app_pass))
-  //     return request->requestAuthentication(DIGEST_AUTH, board_name, "You must log in.");
-  //   return request->reply("Success!");
-  // });
-
-  // server.on("/cookies", HTTP_GET, [](PsychicHttpServerRequest *request)
-  // {
-  //   PsychicHttpServerResponse *response = request->beginResponse();
-
-  //   int counter = 0;
-  //   if (request->hasCookie("counter"))
-  //   {
-  //     counter = std::stoi(request->getCookie("counter").c_str());
-  //     counter++;
-  //   }
-
-  //   char cookie[10];
-  //   sprintf(cookie, "%i", counter);
-
-  //   response->setCookie("counter", cookie);
-  //   response->setContent(cookie);
-  //   return response->send();
-  // });
 }
 
 void server_loop()
