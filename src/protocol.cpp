@@ -11,6 +11,7 @@
 char board_name[YB_BOARD_NAME_LENGTH] = "Yarrboard";
 char app_user[YB_USERNAME_LENGTH] = "admin";
 char app_pass[YB_PASSWORD_LENGTH] = "admin";
+unsigned int app_update_interval = 500;
 bool require_login = true;
 bool app_enable_api = true;
 bool app_enable_serial = false;
@@ -34,6 +35,8 @@ void protocol_setup()
     strlcpy(app_user, preferences.getString("app_user").c_str(), sizeof(app_user));
   if (preferences.isKey("app_pass"))
     strlcpy(app_pass, preferences.getString("app_pass").c_str(), sizeof(app_pass));
+  if (preferences.isKey("appUpdateInter"))
+    app_update_interval = preferences.getUInt("appUpdateInter");
   if (preferences.isKey("require_login"))
     require_login = preferences.getBool("require_login");
   if (preferences.isKey("appEnableApi"))
@@ -328,6 +331,8 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output)
 
 void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
 {
+  bool old_app_enable_ssl = app_enable_ssl;
+  
   if (!input.containsKey("app_user"))
     return generateErrorJSON(output, "'app_user' is a required parameter");
   if (!input.containsKey("app_pass"))
@@ -357,9 +362,17 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   app_enable_serial = input["app_enable_serial"];
   app_enable_ssl = input["app_enable_ssl"];
 
+  if (input.containsKey("app_update_interval"))
+  {
+    app_update_interval = input["app_update_interval"] | 500;
+    app_update_interval = max(100, (int)app_update_interval);
+    app_update_interval = min(5000, (int)app_update_interval);
+  }
+
   //no special cases here.
   preferences.putString("app_user", app_user);
   preferences.putString("app_pass", app_pass);
+  preferences.putUInt("appUpdateInter", app_update_interval);
   preferences.putBool("require_login", require_login);  
   preferences.putBool("appEnableApi", app_enable_api);
   preferences.putBool("appEnableSerial", app_enable_serial);
@@ -370,19 +383,14 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   fp.print(input["server_cert"] | "");
   fp.close();
 
-  // Serial.println("ssl cert:");
-  // Serial.println(input["server_cert"] | "");
-
   //write our key to local storage
   File fp2 = LittleFS.open("/server.key", "w");
   fp2.print(input["server_key"] | "");
   fp2.close();
 
-  // Serial.println("ssl key:");
-  // Serial.println(input["server_key"] | "");
-
   //restart the board.
-  ESP.restart();
+  if (old_app_enable_ssl != app_enable_ssl)
+    ESP.restart();
 }
 
 void handleLogin(JsonVariantConst input, JsonVariant output, byte mode, PsychicHttpWebSocketConnection *connection)
@@ -1087,6 +1095,7 @@ void generateAppConfigJSON(JsonVariant output)
   output["require_login"] = require_login;
   output["app_user"] = app_user;
   output["app_pass"] = app_pass;
+  output["app_update_interval"] = app_update_interval;
   output["app_enable_api"] = app_enable_api;
   output["app_enable_serial"] = app_enable_serial;
   output["app_enable_ssl"] = app_enable_ssl;

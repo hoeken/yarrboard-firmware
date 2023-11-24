@@ -1,19 +1,20 @@
-var socket = false;
-var current_page;
-var current_config;
-var app_username;
-var app_password;
-var network_config;
-var app_config;
+let socket;
+let current_page;
+let current_config;
+let app_username;
+let app_password;
+let app_update_interval = 500;
+let network_config;
+let app_config;
 
-var socket_retries = 0;
-var retry_time = 0;
-var last_heartbeat = 0;
-const heartbeat_rate = 5000;
-var ota_started = false;
+let socket_retries = 0;
+let retry_time = 0;
+let last_heartbeat = 0;
+let heartbeat_rate = 5000;
+let ota_started = false;
 
-var page_list = ["control", "config", "stats", "network", "settings", "system"];
-var page_ready = {
+const page_list = ["control", "config", "stats", "network", "settings", "system"];
+const page_ready = {
   "control": false,
   "config":  false,
   "stats":   false,
@@ -839,6 +840,10 @@ function start_websocket()
       else
         $('#logoutNav').hide();
 
+      //what is our update interval?
+      if (msg.app_update_interval)
+        app_update_interval = msg.app_update_interval;
+
       //enabled/disable user/pass fields
       $(`#app_user`).prop('disabled', !msg.require_login);
       $(`#app_pass`).prop('disabled', !msg.require_login);
@@ -850,6 +855,7 @@ function start_websocket()
       //console.log(msg);
       $("#app_user").val(msg.app_user);
       $("#app_pass").val(msg.app_pass);
+      $("#app_update_interval").val(msg.app_update_interval);
       $("#require_login").prop("checked", msg.require_login);
       $("#app_enable_api").prop("checked", msg.app_enable_api);
       $("#app_enable_serial").prop("checked", msg.app_enable_serial);
@@ -1141,7 +1147,7 @@ function get_stats_data()
 
   //keep loading it while we are here.
   if (current_page == "stats")
-    setTimeout(get_stats_data, 1000);
+    setTimeout(get_stats_data, app_update_interval);
 }
 
 function get_update_data()
@@ -1155,7 +1161,7 @@ function get_update_data()
 
   //keep loading it while we are here.
   if (current_page == "control")
-    setTimeout(get_update_data, 500);
+    setTimeout(get_update_data, app_update_interval);
 }
 
 //drops messages if sent too fast.
@@ -1312,8 +1318,6 @@ function validate_pwm_soft_fuse(e)
   {
     $(ele).removeClass("is-invalid");
     $(ele).addClass("is-valid");
-
-    console.log(value);
 
     //save it
     immediateSend({
@@ -1524,6 +1528,7 @@ function save_app_settings()
   //get our data
   let app_user = $("#app_user").val();
   let app_pass = $("#app_pass").val();
+  let update_interval = $("#app_update_interval").val();
   let require_login = $("#require_login").prop("checked");
   let app_enable_api = $("#app_enable_api").prop("checked");
   let app_enable_serial = $("#app_enable_serial").prop("checked");
@@ -1532,6 +1537,9 @@ function save_app_settings()
   let server_key = $("#server_key").val();
 
   //we should probably do a bit of verification here
+  update_interval = Math.max(100, update_interval);
+  update_interval = Math.min(5000, update_interval);
+  app_update_interval = update_interval;
 
   //app login?
   if (require_login)
@@ -1552,6 +1560,7 @@ function save_app_settings()
     "cmd": "set_app_config",
     "app_user": app_user,
     "app_pass": app_pass,
+    "app_update_interval": app_update_interval,
     "require_login": require_login,
     "app_enable_api": app_enable_api,
     "app_enable_serial": app_enable_serial,

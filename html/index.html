@@ -308,22 +308,6 @@
                         </div>
                         <div class="mb-3">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="app_enable_api" checked>
-                                <label class="form-check-label" for="app_enable_api">
-                                    Enable Web API (<a href="https://github.com/hoeken/yarrboard#web-api-protocol">documentation</a>)
-                                </label>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="app_enable_serial" checked>
-                                <label class="form-check-label" for="app_enable_serial">
-                                    Enable Serial / USB API (<a href="https://github.com/hoeken/yarrboard#serial-api-protocol">documentation</a>)
-                                </label>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="" id="app_enable_ssl" checked>
                                 <label class="form-check-label" for="app_enable_ssl">
                                     Enable SSL / HTTPS Encryption? (<a href="https://github.com/hoeken/yarrboard#enable-ssl">documentation</a>)
@@ -340,6 +324,28 @@
                             <label for="server_key" class="col-form-label">Server Private Key</label>
                             <div class="">
                                 <textarea class="form-control" id="server_key" rows="4"></textarea>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="app_update_interval" class="col-form-label">Update Interval (ms)</label>
+                            <div class="">
+                                <input id="app_update_interval" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="app_enable_api" checked>
+                                <label class="form-check-label" for="app_enable_api">
+                                    Enable Web API (<a href="https://github.com/hoeken/yarrboard#web-api-protocol">documentation</a>)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="app_enable_serial" checked>
+                                <label class="form-check-label" for="app_enable_serial">
+                                    Enable Serial / USB API (<a href="https://github.com/hoeken/yarrboard#serial-api-protocol">documentation</a>)
+                                </label>
                             </div>
                         </div>
                     </div>
