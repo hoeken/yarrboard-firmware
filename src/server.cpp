@@ -39,30 +39,20 @@ void server_setup()
   {
     File fp = LittleFS.open("/server.crt");
     if (fp)
-    {
       server_cert = fp.readString();
-
-      Serial.println("Server Cert:");
-      Serial.println(server_cert);
-    }
     else
     {
-      Serial.println("server.pem not found, SSL not available");
+      Serial.println("LittleFS /server.pem not found, SSL not available");
       app_enable_ssl = false;
     }
     fp.close();
 
     File fp2 = LittleFS.open("/server.key");
     if (fp2)
-    {
       server_key = fp2.readString();
-
-      Serial.println("Server Key:");
-      Serial.println(server_key);
-    }
     else
     {
-      Serial.println("server.key not found, SSL not available");
+      Serial.println("LittleFS /server.key not found, SSL not available");
       app_enable_ssl = false;
     }
     fp2.close();

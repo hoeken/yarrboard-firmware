@@ -265,7 +265,12 @@ function start_websocket()
   //do we want ssl?
   let protocol = "ws://";
   if (document.location.protocol == 'https:')
+  {
     protocol = "wss://";
+
+    //ssl is slow on the esp32, give it time.
+    heartbeat_rate = 20000;
+  }
 
   //open it.
   socket = new WebSocket(protocol + window.location.host + "/ws");
