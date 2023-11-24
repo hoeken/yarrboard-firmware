@@ -68,11 +68,21 @@ void server_setup()
   server.start();
 
   server.on("/", HTTP_GET, [](PsychicHttpServerRequest *request) {
-    //TODO: how to make this work?
+
     //Check if the client already has the same version and respond with a 304 (Not modified)
-    // if (strcmp(request->headers("If-Modified-Since").equals(last_modified)) {
-    //     request->send(304);
-    // } else {
+    if (request->header("If-Modified-Since").indexOf(last_modified) > 0)
+    {
+      TRACE();
+      return request->reply(304);
+    }
+    //What about our ETag?
+    else if (request->header("If-None-Match").equals(YB_FIRMWARE_VERSION))
+    {
+      TRACE();
+      return request->reply(304);
+    }
+    else
+    {
         PsychicHttpServerResponse response(request);
         response.setCode(200);
         response.setContentType("text/html");
@@ -82,12 +92,14 @@ void server_setup()
 
         // And set the last-modified datetime so we can check if we need to send it again next time or not
         response.addHeader("Last-Modified", last_modified);
+        response.addHeader("ETag", YB_FIRMWARE_VERSION);
+        //response.addHeader("Cache-Control", "max-age=604800"); // cache for 1 week
 
         //add our actual content
         response.setContent(index_html_gz, index_html_gz_len);
 
         return response.send();
-  //  }
+    }
   });
 
   // Test the stream response class
