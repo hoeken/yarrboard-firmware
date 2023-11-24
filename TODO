@@ -1,18 +1,21 @@
 Firmware:
-    * move back to on-demand status updates
+    * can we use the npm module class for connections?
+    * on-demand status updates
         * update web client, make interval configurable
         * same with npm client + signalk
+        * push new yarrboard-client and signalk plugin
     * web ui
         * static height on switches / led / analog rows
         * add a total row to the mosfet stats page
-    * ssl
-        * explore using letsencrypt
+        * add messages/second to stats page
+        * stats page right column needs header
+        * stats page clean up memory info into ram usage %
+    * ssl - try it again!
     * find in signalk app where it sends the discovery info to mfd's and see if we can copy?
         * I think the magic happens here: https://github.com/SignalK/signalk-server/blob/master/src/interfaces/mfd_webapp.ts
     * protocol documentation
     * learn about building components for node-red, maybe make a yarrboard toolkit
-    * more ui work and column sizing
-    * migrate to esp32 arduino 3.0: https://docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html
+    * attempt to migrate to esp32 arduino 3.0: https://docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html
 
 8ch MOSFET:
     * remove CAN port - never going to use it.
@@ -22,6 +25,7 @@ Firmware:
     * maybe switch to "pcb welding terminal" connection like 74650073R or C5370858 or C3029538
         * or at least a 9.5mm pitch barrier terminal like C496131 or C430699 or C430687 or C707586
     * move to 4 layer design signal / gnd / gnd / signal
+    * bypass current sensing too with fuse + 4 layer board (use bottom layer)
 
 RGB Input:
     * move to 4 layer design signal / gnd / gnd / signal
