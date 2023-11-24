@@ -1,5 +1,5 @@
 Firmware:
-    * "waiting for connection on client"
+    * double client loads when making new websocket
     * on-demand status updates
         * same with npm client + signalk
         * push new yarrboard-client and signalk plugin
