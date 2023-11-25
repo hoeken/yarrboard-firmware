@@ -10,7 +10,6 @@ Firmware:
         * stats page right column needs header
         * stats page clean up memory info into ram usage %
     * can we use the npm module class for connections?
-    * ssl - try it again!
     * find in signalk app where it sends the discovery info to mfd's and see if we can copy?
         * I think the magic happens here: https://github.com/SignalK/signalk-server/blob/master/src/interfaces/mfd_webapp.ts
     * protocol documentation

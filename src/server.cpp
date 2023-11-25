@@ -64,9 +64,6 @@ void server_setup()
   else
     server.listen(80);
 
-  //lets gooo!
-  server.start();
-
   server.on("/", HTTP_GET, [](PsychicHttpServerRequest *request) {
 
     //Check if the client already has the same version and respond with a 304 (Not modified)
@@ -110,26 +107,13 @@ void server_setup()
       return ESP_OK;
     })->
     onConnect([](PsychicHttpWebSocketRequest *request) {
-      Serial.printf("[socket] new connection (#%u)\n", request->connection->id());
+      Serial.printf("[socket] connected (#%u)\n", request->connection->id());
+      return ESP_OK;
+    })->
+    onClose([](PsychicHttpServer *server, int sockfd) {
+      Serial.printf("[socket] closed (#%u)\n", sockfd);
       return ESP_OK;
     });
-
-  server.onOpen([](httpd_handle_t hd, int sockfd) {
-    //TRACE();
-    //Serial.printf("[http] new connection (id %u)\n", sockfd);
-    return ESP_OK;
-  });
-
-  server.onClose([](httpd_handle_t hd, int sockfd) {
-    //Serial.printf("[http] connection closed (#%u)\n", sockfd);
-    //stop tracking the connection
-    if (require_login)
-      for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-        if (authenticatedConnections[i] == sockfd)
-          authenticatedConnections[i] = 0;
-
-    return ESP_OK;
-  });
 
   //our main api connection
   server.on("/api/endpoint", HTTP_POST, [](PsychicHttpServerRequest *request)
