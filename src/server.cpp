@@ -103,7 +103,6 @@ void server_setup()
   server.websocket("/ws")->
     onFrame([](PsychicHttpWebSocketRequest *request, httpd_ws_frame *frame) {
       handleWebSocketMessage(request, frame->payload, frame->len);
-
       return ESP_OK;
     })->
     onConnect([](PsychicHttpWebSocketRequest *request) {
