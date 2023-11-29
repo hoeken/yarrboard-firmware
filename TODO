@@ -1,5 +1,5 @@
 Firmware:
-    * double client loads when making new websocket
+    * do not show the ssl option if PSY_ENABLE_SSL is not defined
     * on-demand status updates
         * same with npm client + signalk
         * push new yarrboard-client and signalk plugin
