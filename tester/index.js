@@ -58,7 +58,6 @@ function twerkIt() {
     
     if (options.update)
     {
-        console.log(options.update);
         yb.startUpdatePoller(options.update);
     }
 }
