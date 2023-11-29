@@ -16,6 +16,7 @@ program
     .option('--rgb', 'RGB Fade Channel')
     .option('--toggle', 'Toggle Channel')
     .option('--fade', 'Fade Channel')
+    .option('--update <value>', 'Poll for updates (ms)')
     .parse(process.argv);
 
 const options = program.opts();
@@ -53,7 +54,13 @@ function twerkIt() {
     {
         console.log(`Hardware Fade on channel ${options.channels} / delay ${options.delay}ms`)
         setTimeout(function (){fadePinHardware(options.channels, options.delay)}, 50); 
-    }        
+    }    
+    
+    if (options.update)
+    {
+        console.log(options.update);
+        yb.startUpdatePoller(options.update);
+    }
 }
 
 async function togglePin(channels, d = 10) {
