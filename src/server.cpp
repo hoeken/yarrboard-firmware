@@ -59,14 +59,10 @@ void server_setup()
   }
 
   //do we want secure or not?
-  #ifdef PSY_ENABLE_SSL
-    if (app_enable_ssl)
-      server.listen(443, server_cert.c_str(), server_key.c_str());
-    else
-      server.listen(80);
-  #else
+  if (app_enable_ssl)
+    server.listen(443, server_cert.c_str(), server_key.c_str());
+  else
     server.listen(80);
-  #endif
 
   server.on("/", HTTP_GET, [](PsychicHttpServerRequest *request) {
 
