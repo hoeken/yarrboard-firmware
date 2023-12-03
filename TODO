@@ -1,6 +1,4 @@
 Firmware:
-    * web ui
-        * add a total row to the mosfet stats page
     * make sure all our millis() are okay: https://www.gammon.com.au/millis
     * move to 64bit uptime timer
     * sometimes an ESP_ED7A79 wifi shows up
