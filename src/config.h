@@ -42,7 +42,7 @@
 //for handling messages outside of the loop
 #define YB_RECEIVE_BUFFER_COUNT 20
 
-//milliseconds between sending updates on websocket and serial
+//milliseconds between updating various things
 #define YB_UPDATE_FREQUENCY 250
 #define YB_ADC_INTERVAL 50
 #define YB_ADC_SAMPLES 1

@@ -55,6 +55,11 @@ extern bool app_enable_serial;
 extern bool app_enable_ssl;
 extern bool is_serial_authenticated;
 
+extern unsigned int sentMessages;
+extern unsigned long totalSentMessages;
+extern unsigned int websocketClientCount;
+extern unsigned int httpClientCount;
+
 void protocol_setup();
 void protocol_loop();
 

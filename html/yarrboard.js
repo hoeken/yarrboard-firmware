@@ -89,7 +89,7 @@ const PWMEditRow = (id, name, soft_fuse) => `
 const SwitchControlRow = (id, name) => `
 <tr id="switch${id}" class="switchRow">
   <td class="text-center"><button id="switchState${id}" type="button" class="btn btn-sm" style="width: 80px"></button></td>
-  <td class="switchName">${name}</td>
+  <td class="switchName align-middle">${name}</td>
 </tr>
 `;
 
@@ -115,7 +115,7 @@ const SwitchEditRow = (id, name) => `
 const RGBControlRow = (id, name) => `
 <tr id="rgb${id}" class="rgbRow">
   <td class="text-center"><input id="rgbPicker${id}" type="text"></td>
-  <td class="rgbName">${name}</td>
+  <td class="rgbName align-middle">${name}</td>
 </tr>
 `;
 
@@ -139,11 +139,33 @@ const RGBEditRow = (id, name) => `
 `;
 
 const ADCControlRow = (id, name) => `
-<tr id="adc${id}" class="adcRow">
-  <td class="adcName">${name}</td>
-  <td class="text-center" id="adcReading${id}"></td>
-  <td class="text-center" id="adcVoltage${id}"></td>
-  <td class="text-center" id="adcPercentage${id}"></td>
+<tr id="adc${id}" class="adcRow" onclick="toggle_adc_details(${id})">
+  <td class="adcName align-middle">${name}</td>
+  <td class="adcBar align-middle">
+    <div id="adcBar${id}" class="progress" role="progressbar" aria-label="ADC ${id} Reading" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar" style="width: 0%"></div>
+    </div>
+  </td>
+</tr>
+<tr id="adc${id}Details" style="display: none">
+  <td colspan="2">
+    <table style="width: 100%">
+      <thead>
+          <tr>
+              <th class="text-center" scope="col" style="width: 33%">Raw</th>
+              <th class="text-center" scope="col" style="width: 33%">Voltage</th>
+              <th class="text-center" scope="col" style="width: 33%">%</th>
+          </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-center" id="adcReading${id}"></td>
+          <td class="text-center" id="adcVoltage${id}"></td>
+          <td class="text-center" id="adcPercentage${id}"></td>
+        </tr>
+      </tbody>
+    </table>
+  </td>
 </tr>
 `;
 
@@ -396,7 +418,7 @@ function start_websocket()
         {
           if (ch.enabled)
           {
-            $('#pwmStatsTableBody').append(`<tr id="pwmStats${ch.id}" class="pwmRow"></tr>`);
+            $('#pwmStatsTableBody').append(`<tr id="pwmStats${ch.id}"></tr>`);
             $('#pwmStats' + ch.id).append(`<td class="pwmName">${ch.name}</td>`);
             $('#pwmStats' + ch.id).append(`<td id="pwmAmpHours${ch.id}" class="text-end"></td>`);
             $('#pwmStats' + ch.id).append(`<td id="pwmWattHours${ch.id}" class="text-end"></td>`);
@@ -426,7 +448,7 @@ function start_websocket()
         {
           if (ch.enabled)
           {
-            $('#switchStatsTableBody').append(`<tr id="switchStats${ch.id}" class="switchRow"></tr>`);
+            $('#switchStatsTableBody').append(`<tr id="switchStats${ch.id}"></tr>`);
             $('#switchStats' + ch.id).append(`<td class="switchName">${ch.name}</td>`);
             $('#switchStats' + ch.id).append(`<td id="switchOnCount${ch.id}" class="text-end"></td>`);
           }
@@ -748,10 +770,13 @@ function start_websocket()
             let reading = Math.round(ch.reading);
             let voltage = ch.voltage.toFixed(2);
             let percentage = ch.percentage.toFixed(1);
-
+            
             $("#adcReading" + ch.id).html(reading);
             $("#adcVoltage" + ch.id).html(voltage + "V")
             $("#adcPercentage" + ch.id).html(percentage + "%")
+
+            $(`#adcBar${ch.id} div`).css("width", percentage + "%");
+            $(`#adcBar${ch.id}`).attr("aria-valuenow", percentage); 
           }
         }
       }
@@ -767,13 +792,33 @@ function start_websocket()
         return;
 
       $("#uptime").html(secondsToDhms(Math.round(msg.uptime/1000)));
-      $("#messages").html(msg.messages.toLocaleString("en-US"));
       if (msg.fps)
-        $("#fps").html(msg.fps.toLocaleString("en-US"));
-      $("#heap_size").html(formatBytes(msg.heap_size));
-      $("#free_heap").html(formatBytes(msg.free_heap));
-      $("#min_free_heap").html(formatBytes(msg.min_free_heap));
-      $("#max_alloc_heap").html(formatBytes(msg.max_alloc_heap));
+        $("#fps").html(msg.fps.toLocaleString("en-US") + " lps");
+
+      //message info
+      $("#messages").html(msg.received_message_mps.toLocaleString("en-US") + " mps");
+      $("#received_message_mps").html(msg.received_message_mps.toLocaleString("en-US") + " mps");
+      $("#received_message_total").html(msg.received_message_total.toLocaleString("en-US"));
+      $("#sent_message_mps").html(msg.sent_message_mps.toLocaleString("en-US") + " mps");
+      $("#sent_message_total").html(msg.sent_message_total.toLocaleString("en-US"));
+
+      //client info
+      $("#total_client_count").html(msg.http_client_count + msg.websocket_client_count);
+      $("#http_client_count").html(msg.http_client_count);
+      $("#websocket_client_count").html(msg.websocket_client_count);
+
+      //raw data
+      $("#heap_size").html(formatBytes(msg.heap_size, 0));
+      $("#free_heap").html(formatBytes(msg.free_heap, 0));
+      $("#min_free_heap").html(formatBytes(msg.min_free_heap, 0));
+      $("#max_alloc_heap").html(formatBytes(msg.max_alloc_heap, 0));
+
+      //our memory bar
+      let memory_used = Math.round((msg.heap_size / (msg.heap_size + msg.free_heap)) * 100);
+      $(`#memory_usage div`).css("width", memory_used + "%");
+      $(`#memory_usage div`).html(formatBytes(msg.heap_size, 0));
+      $(`#memory_usage`).attr("aria-valuenow", memory_used); 
+
       $("#rssi").html(msg.rssi + "dBm");
       $("#uuid").html(msg.uuid);
       $("#ip_address").html(msg.ip_address);
@@ -1067,6 +1112,11 @@ function toggle_state(id)
     "id": id,
     "state": new_state
   });
+}
+
+function toggle_adc_details(id)
+{
+  $(`#adc${id}Details`).toggle();
 }
 
 function toggle_duty_cycle(id)

@@ -107,12 +107,25 @@ void server_setup()
     })->
     onConnect([](PsychicHttpWebSocketRequest *request) {
       Serial.printf("[socket] connected (#%u)\n", request->connection->id());
+      websocketClientCount++;
       return ESP_OK;
     })->
     onClose([](PsychicHttpServer *server, int sockfd) {
       Serial.printf("[socket] closed (#%u)\n", sockfd);
+      websocketClientCount--;
       return ESP_OK;
     });
+
+    server.onOpen([](httpd_handle_t hd, int sockfd) {
+      httpClientCount++;
+      return ESP_OK;
+    });
+
+    server.onClose([](httpd_handle_t hd, int sockfd) {
+      httpClientCount--;
+      return ESP_OK;
+    });
+
 
   //our main api connection
   server.on("/api/endpoint", HTTP_POST, [](PsychicHttpServerRequest *request)
@@ -328,6 +341,10 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
   {
     serializeJson(output, jsonBuffer);
     connection.queueMessage(jsonBuffer);
+
+    //keep track!
+    sentMessages++;
+    totalSentMessages++;
   }
 }
 

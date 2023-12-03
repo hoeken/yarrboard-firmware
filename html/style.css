@@ -43,3 +43,7 @@ div#firmware_update_available h1 {
 div#firmware_update_available h2 {
     font-size: 1.0rem;
 }
+
+tr.switchRow, tr.rgbRow, tr.adcRow, tr.pwmRow #statsTable tbody tr {
+    height: 48px;
+}

@@ -20,9 +20,16 @@ bool is_serial_authenticated = false;
 
 //for tracking our message loop
 unsigned long previousMessageMillis = 0;
-unsigned int lastHandledMessages = 0;
-unsigned int handledMessages = 0;
-unsigned long totalHandledMessages = 0;
+
+unsigned int receivedMessages = 0;
+unsigned int receivedMessagesPerSecond = 0;
+unsigned long totalReceivedMessages = 0;
+unsigned int sentMessages = 0;
+unsigned int sentMessagesPerSecond = 0;
+unsigned long totalSentMessages = 0;
+
+unsigned int websocketClientCount = 0;
+unsigned int httpClientCount = 0;
 
 void protocol_setup()
 {
@@ -58,30 +65,26 @@ void protocol_loop()
 {
   //lookup our info periodically
   unsigned int messageDelta = millis() - previousMessageMillis;
-  if (messageDelta >= YB_UPDATE_FREQUENCY)
+  if (messageDelta >= 1000)
   {
+    //TODO: move this to pwm loop
     #ifdef YB_HAS_PWM_CHANNELS
       //update our averages, etc.
       for (byte i=0; i<YB_PWM_CHANNEL_COUNT; i++)
         pwm_channels[i].calculateAverages(messageDelta);
     #endif
     
+    //TODO: move this to bus voltage loop
     #ifdef YB_HAS_BUS_VOLTAGE
       busVoltage = getBusVoltage();
     #endif
 
-    //read and send out our json update
-    //sendUpdate();
-  
-    //how fast are we?
-    //Serial.printf("Framerate: %f\n", framerate);
-    //Serial.print(messageDelta);
-    //Serial.print("ms | msg/s: ");
-    //Serial.print(handledMessages - lastHandledMessages);
-    //Serial.println();
-
     //for keeping track.
-    lastHandledMessages = handledMessages;
+    receivedMessagesPerSecond = receivedMessages;
+    receivedMessages = 0;
+    sentMessagesPerSecond = sentMessages;
+    sentMessages = 0;
+
     previousMessageMillis = millis();
   }
 
@@ -118,7 +121,12 @@ void handleSerialJson()
 
     //we can have empty responses
     if (output.size())
+    {
       serializeJson(output, Serial);    
+
+      sentMessages++;
+      totalSentMessages++;
+    }
   }
 }
 
@@ -140,8 +148,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, byte mode, P
   }
 
   //keep track!
-  handledMessages++;
-  totalHandledMessages++;
+  receivedMessages++;
+  totalReceivedMessages++;
 
   //only pages with no login requirements
   if (!strcmp(cmd, "login") || !strcmp(cmd, "ping"))
@@ -1033,14 +1041,19 @@ void generateStatsJSON(JsonVariant output)
   //some basic statistics and info
   output["msg"] = "stats";
   output["uuid"] = uuid;
-  output["messages"] = totalHandledMessages;
+  output["received_message_total"] = totalReceivedMessages;
+  output["received_message_mps"] = receivedMessagesPerSecond;
+  output["sent_message_total"] = totalSentMessages;
+  output["sent_message_mps"] = sentMessagesPerSecond;
+  output["websocket_client_count"] = websocketClientCount;
+  output["http_client_count"] = httpClientCount - websocketClientCount;
   output["fps"] = (int)framerate;
   output["uptime"] = millis();
   output["heap_size"] = ESP.getHeapSize();
   output["free_heap"] = ESP.getFreeHeap();
   output["min_free_heap"] = ESP.getMinFreeHeap();
   output["max_alloc_heap"] = ESP.getMaxAllocHeap();
-  output["rssi"] = WiFi.RSSI();
+  output["rssi"] = WiFi.RSSI();  
 
   //what is our IP address?
   if (!strcmp(wifi_mode, "ap"))
