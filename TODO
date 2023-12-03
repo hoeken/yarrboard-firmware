@@ -1,6 +1,5 @@
 Firmware:
     * make sure all our millis() are okay: https://www.gammon.com.au/millis
-    * sometimes an ESP_ED7A79 wifi shows up
     * move to dynamic buffer for json output
     * can we use the npm module class for connections?
     * find in signalk app where it sends the discovery info to mfd's and see if we can copy?

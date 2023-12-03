@@ -66,7 +66,6 @@ void setupWifi()
   //WiFi.setSleep(false);
   //WiFi.useStaticBuffers(true);  //from: https://github.com/espressif/arduino-esp32/issues/7183
   WiFi.setHostname(local_hostname);
-  WiFi.mode(WIFI_AP_STA);
 
   Serial.print("Hostname: ");
   Serial.print(local_hostname);
@@ -91,6 +90,7 @@ void setupWifi()
     Serial.print(" / ");
     Serial.println(wifi_pass);
 
+    WiFi.mode(WIFI_AP);
     WiFi.softAP(wifi_ssid, wifi_pass);
     WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
 
@@ -115,6 +115,7 @@ bool connectToWifi(const char * ssid, const char * pass)
   Serial.print("[WiFi] Connecting to ");
   Serial.println(ssid);
 
+  WiFi.mode(WIFI_STA);
   WiFi.setAutoReconnect(true);
   WiFi.begin(ssid, pass);
 
