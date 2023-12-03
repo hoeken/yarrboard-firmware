@@ -1,6 +1,5 @@
 Firmware:
     * make sure all our millis() are okay: https://www.gammon.com.au/millis
-    * move to 64bit uptime timer
     * sometimes an ESP_ED7A79 wifi shows up
     * move to dynamic buffer for json output
     * can we use the npm module class for connections?

@@ -652,7 +652,7 @@ function start_websocket()
 
       if (msg.uptime)
       {
-        $("#uptime_footer").html("Uptime: " + secondsToDhms(Math.round(msg.uptime/1000)));
+        $("#uptime_footer").html("Uptime: " + secondsToDhms(Math.round(msg.uptime/1000000)));
         $("#uptime_footer").show();
       }
       else
@@ -798,7 +798,7 @@ function start_websocket()
       if (!current_config)
         return;
 
-      $("#uptime").html(secondsToDhms(Math.round(msg.uptime/1000)));
+      $("#uptime").html(secondsToDhms(Math.round(msg.uptime/1000000)));
       if (msg.fps)
         $("#fps").html(msg.fps.toLocaleString("en-US") + " lps");
 

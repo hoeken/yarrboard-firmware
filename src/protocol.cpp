@@ -946,7 +946,7 @@ void generateConfigJSON(JsonVariant output)
 void generateUpdateJSON(JsonVariant output)
 {
   output["msg"] = "update";
-  output["uptime"] = millis();
+  output["uptime"] = esp_timer_get_time();
 
   #ifdef YB_HAS_BUS_VOLTAGE
     output["bus_voltage"] = busVoltage;
@@ -1000,7 +1000,7 @@ void generateUpdateJSON(JsonVariant output)
 void generateFastUpdateJSON(JsonVariant output)
 {
   output["msg"] = "update";
-  output["uptime"] = millis();
+  output["uptime"] = esp_timer_get_time();
 
   #ifdef YB_HAS_BUS_VOLTAGE
     output["bus_voltage"] = busVoltage;
@@ -1048,7 +1048,7 @@ void generateStatsJSON(JsonVariant output)
   output["websocket_client_count"] = websocketClientCount;
   output["http_client_count"] = httpClientCount - websocketClientCount;
   output["fps"] = (int)framerate;
-  output["uptime"] = millis();
+  output["uptime"] = esp_timer_get_time();
   output["heap_size"] = ESP.getHeapSize();
   output["free_heap"] = ESP.getFreeHeap();
   output["min_free_heap"] = ESP.getMinFreeHeap();
