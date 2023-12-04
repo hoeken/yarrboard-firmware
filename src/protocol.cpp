@@ -1153,51 +1153,59 @@ void generatePongJSON(JsonVariant output)
 
 void sendFastUpdate()
 {
-  //StaticJsonDocument<YB_LARGE_JSON_SIZE> output;
   DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
-
-  char jsonBuffer[YB_MAX_JSON_LENGTH];
-
   generateFastUpdateJSON(output);
 
-  serializeJson(output, jsonBuffer);
-  sendToAll(jsonBuffer);
-}
+  //dynamically allocate our buffer
+  size_t jsonSize = measureJson(output);
+  char * jsonBuffer = (char *)malloc(jsonSize+1);
+  jsonBuffer[jsonSize] = '\0'; // null terminate
 
-
-void sendUpdate()
-{
-  //StaticJsonDocument<YB_LARGE_JSON_SIZE> output;
-  DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
-
-  char jsonBuffer[YB_MAX_JSON_LENGTH];
-
-  generateUpdateJSON(output);
-
-  serializeJson(output, jsonBuffer);
-  sendToAll(jsonBuffer);
+  //did we get anything?
+  if (jsonBuffer != NULL)
+  {
+    serializeJson(output, jsonBuffer, jsonSize+1);
+    sendToAll(jsonBuffer);
+  }
+  free(jsonBuffer);
 }
 
 void sendOTAProgressUpdate(float progress)
 {
   StaticJsonDocument<256> output;
-  char jsonBuffer[256];
-
   generateOTAProgressUpdateJSON(output, progress);
 
-  serializeJson(output, jsonBuffer);
-  sendToAll(jsonBuffer);
+  //dynamically allocate our buffer
+  size_t jsonSize = measureJson(output);
+  char * jsonBuffer = (char *)malloc(jsonSize+1);
+  jsonBuffer[jsonSize] = '\0'; // null terminate
+
+  //did we get anything?
+  if (jsonBuffer != NULL)
+  {
+    serializeJson(output, jsonBuffer, jsonSize+1);
+    sendToAll(jsonBuffer);
+  }
+  free(jsonBuffer);
 }
 
 void sendOTAProgressFinished()
 {
   StaticJsonDocument<256> output;
-  char jsonBuffer[256];
-
   generateOTAProgressFinishedJSON(output);
 
-  serializeJson(output, jsonBuffer);
-  sendToAll(jsonBuffer);
+  //dynamically allocate our buffer
+  size_t jsonSize = measureJson(output);
+  char * jsonBuffer = (char *)malloc(jsonSize+1);
+  jsonBuffer[jsonSize] = '\0'; // null terminate
+
+  //did we get anything?
+  if (jsonBuffer != NULL)
+  {
+    serializeJson(output, jsonBuffer, jsonSize+1);
+    sendToAll(jsonBuffer);
+  }
+  free(jsonBuffer);
 }
 
 void sendToAll(const char * jsonString)

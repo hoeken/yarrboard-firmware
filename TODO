@@ -1,8 +1,7 @@
 Firmware:
-    * move to dynamic buffer for json output
-    * can we use the npm module class for connections?
     * find in signalk app where it sends the discovery info to mfd's and see if we can copy?
         * I think the magic happens here: https://github.com/SignalK/signalk-server/blob/master/src/interfaces/mfd_webapp.ts
+    * can we use the npm module class for connections?
     * protocol documentation
     * learn about building components for node-red, maybe make a yarrboard toolkit
     * attempt to migrate to esp32 arduino 3.0: https://docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html

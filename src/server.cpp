@@ -249,6 +249,7 @@ bool logClientIn(PsychicHttpWebSocketConnection *connection)
 
 esp_err_t handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *request)
 {
+  esp_err_t err = ESP_OK;
   DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
 
   if (request->hasParam("user"))
@@ -264,17 +265,32 @@ esp_err_t handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *re
   //we can have empty messages
   if (output.size())
   {
-    PsychicHttpServerResponse response(request);
-    response.setContentType("application/json");
+    //allocate memory for this output
+    size_t jsonSize = measureJson(output);
+    char * jsonBuffer = (char *)malloc(jsonSize+1);
+    jsonBuffer[jsonSize] = '\0'; // null terminate
 
-    String jsonBuffer;
-    serializeJson(output.as<JsonObject>(), jsonBuffer);
-    response.setContent(jsonBuffer.c_str());
-    return response.send();
+    //did we get anything?
+    if (jsonBuffer != NULL)
+    {
+      PsychicHttpServerResponse response(request);
+      response.setContentType("application/json");
+      serializeJson(output.as<JsonObject>(), jsonBuffer, jsonSize+1);
+      response.setContent(jsonBuffer);
+      err = response.send();
+    }
+    //send overloaded response
+    else
+      err = request->reply(503, "application/json", "{}");
+
+    //no leaks!
+    free(jsonBuffer);
   }
   //give them valid json at least
   else
-    return request->reply(200, "application/json", "{}");
+    err = request->reply(200, "application/json", "{}");
+
+  return err;
 }
 
 void handleWebSocketMessage(PsychicHttpWebSocketRequest *request, uint8_t *data, size_t len)
@@ -309,17 +325,25 @@ void handleWebSocketMessage(PsychicHttpWebSocketRequest *request, uint8_t *data,
   if (!uxQueueSpacesAvailable(wsRequests))
   {
     StaticJsonDocument<128> output;
-    String jsonBuffer;
-    generateErrorJSON(output, "Queue Full");
-    serializeJson(output, jsonBuffer);
 
-    request->reply(jsonBuffer.c_str());
+    //dynamically allocate our buffer
+    size_t jsonSize = measureJson(output);
+    char * jsonBuffer = (char *)malloc(jsonSize+1);
+    jsonBuffer[jsonSize] = '\0'; // null terminate
+
+    //did we get anything?
+    if (jsonBuffer != NULL)
+    {
+      generateErrorJSON(output, "Queue Full");
+      serializeJson(output, jsonBuffer, jsonSize+1);
+      request->reply(jsonBuffer);
+    }
+    free(jsonBuffer);
   }
 }
 
 void handleWebsocketMessageLoop(WebsocketRequest* request)
 {
-  char jsonBuffer[YB_MAX_JSON_LENGTH];
   DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
   DynamicJsonDocument input(1024);
 
@@ -339,12 +363,23 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
   //empty messages are valid, so don't send a response
   if (output.size())
   {
-    serializeJson(output, jsonBuffer);
-    connection.queueMessage(jsonBuffer);
+    //allocate memory for this output
+    size_t jsonSize = measureJson(output);
+    char * jsonBuffer = (char *)malloc(jsonSize+1);
+    jsonBuffer[jsonSize] = '\0'; // null terminate
 
-    //keep track!
-    sentMessages++;
-    totalSentMessages++;
+    //did we get anything?
+    if (jsonBuffer != NULL)
+    {
+      serializeJson(output, jsonBuffer, jsonSize+1);
+      connection.queueMessage(jsonBuffer);
+
+      //keep track!
+      sentMessages++;
+      totalSentMessages++;
+    }
+
+    free(jsonBuffer);    
   }
 }
 

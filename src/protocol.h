@@ -95,7 +95,6 @@ void generateLoginRequiredJSON(JsonVariant output);
 void generateInvalidChannelJSON(JsonVariant output, byte cid);
 void generatePongJSON(JsonVariant output);
 
-void sendUpdate();
 void sendFastUpdate();
 void sendOTAProgressUpdate(float progress);
 void sendOTAProgressFinished();
