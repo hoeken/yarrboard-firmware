@@ -99,6 +99,25 @@ void server_setup()
     }
   });
 
+  server.on("/logo-navico.png", HTTP_GET, [](PsychicHttpServerRequest *request)
+  {
+    PsychicHttpServerResponse response(request);
+    response.setCode(200);
+    response.setContentType("image/png");
+
+    // Tell the browswer the contemnt is Gzipped
+    response.addHeader("Content-Encoding", "gzip");
+
+    // And set the last-modified datetime so we can check if we need to send it again next time or not
+    response.addHeader("Last-Modified", last_modified);
+    //response.addHeader("ETag", YB_FIRMWARE_VERSION);
+
+    //add our actual content
+    response.setContent(logo_navico_gz, logo_navico_gz_len);
+
+    return response.send();
+  });
+
   // Test the stream response class
   server.websocket("/ws")->
     onFrame([](PsychicHttpWebSocketRequest *request, httpd_ws_frame *frame) {

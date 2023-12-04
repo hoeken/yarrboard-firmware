@@ -24,6 +24,7 @@
 
 //generated at build by running "gulp" in the firmware directory.
 #include "index.html.gz.h"
+#include "logo-navico.png.gz.h"
 
 #ifdef YB_HAS_PWM_CHANNELS
   #include "pwm_channel.h"

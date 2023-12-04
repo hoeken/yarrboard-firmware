@@ -77,7 +77,28 @@ function buildfs_inline(cb) {
 function buildfs_embeded(cb) {
     var source = 'dist/index.html.gz';
     var destination = 'src/index.html.gz.h';
+    write_header_file(source, destination, "index_html_gz");
 
+    cb();
+}
+
+function buildfs_logo_gz(cb) {
+    return src('html/logo-navico.png')
+        .pipe(gzip())
+        .pipe(dest("dist"));
+}
+
+function buildfs_logo_embedded(cb) {
+    var source = 'dist/logo-navico.png.gz';
+    var destination = 'src/logo-navico.png.gz.h';
+
+    write_header_file(source, destination, "logo_navico_gz");
+
+    cb();
+}
+
+function write_header_file(source, destination, name)
+{
     var wstream = fs.createWriteStream(destination);
     wstream.on('error', function (err) {
         console.log(err);
@@ -85,8 +106,8 @@ function buildfs_embeded(cb) {
 
     var data = fs.readFileSync(source);
 
-    wstream.write('#define index_html_gz_len ' + data.length + '\n');
-    wstream.write('const uint8_t index_html_gz[] PROGMEM = {')
+    wstream.write(`#define ${name}_len ${data.length}\n`);
+    wstream.write(`const uint8_t ${name}[] PROGMEM = {`);
 
     for (var i=0; i<data.length; i++) {
         if (i % 1000 == 0) wstream.write("\n");
@@ -97,12 +118,10 @@ function buildfs_embeded(cb) {
     wstream.write('\n};')
     wstream.end();
 
-     deleteAsync([source]);
-
-    cb();
+    deleteAsync([source]);
 }
   
-const all = series(clean, buildfs_inline, buildfs_embeded);
+const all = series(clean, buildfs_inline, buildfs_embeded, buildfs_logo_gz, buildfs_logo_embedded);
 
 export default all;
 //export build;

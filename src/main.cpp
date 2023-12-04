@@ -15,6 +15,7 @@
 #include "adchelper.h"
 #include "debug.h"
 #include <LittleFS.h>
+#include "navico.h"
 
 #ifdef YB_HAS_PWM_CHANNELS
   #include "pwm_channel.h"
@@ -113,6 +114,9 @@ void setup()
   
   protocol_setup();
   Serial.println("Protocol ok");
+
+  navico_setup();
+  Serial.println("Navico ok");
 }
 
 void loop()
@@ -145,6 +149,7 @@ void loop()
   server_loop();
   protocol_loop();
   ota_loop();
+  navico_loop();
 
   //calculate our framerate
   framerate = calculateFramerate(millis() - lastFrameMillis);
