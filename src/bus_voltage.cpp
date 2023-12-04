@@ -46,7 +46,7 @@ void bus_voltage_setup()
 void bus_voltage_loop()
 {
   unsigned long foo;
-  if (millis() > lastBusVoltageCheckMillis + 10)
+  if (millis() - lastBusVoltageCheckMillis >= 10)
   {
     //check what our power is.
     foo = busADC.getReading();

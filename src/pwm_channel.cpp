@@ -259,7 +259,7 @@ void PWMChannel::setFade(float duty, int max_fade_time_ms)
 
     this->fadeDutyCycleEnd = duty;
     this->fadeStartTime = millis();
-    this->fadeEndTime = millis() + max_fade_time_ms + 100;
+    this->fadeDuration = max_fade_time_ms + 100;
 
     //call our hardware fader
     int target_duty = duty * MAX_DUTY_CYCLE;
@@ -273,7 +273,7 @@ void PWMChannel::checkIfFadeOver()
   if (this->fadeRequested)
   {
     //has our fade ended?
-    if (millis() > this->fadeEndTime)
+    if (millis() - this->fadeStartTime >= this->fadeDuration)
     {
       //this is a potential bug fix.. had the board "lock" into a fade.
       //it was responsive but wouldnt toggle some pins.  I think it was this flag not getting cleared
@@ -299,13 +299,12 @@ void PWMChannel::checkIfFadeOver()
     //okay, update our duty cycle as we go for good UI
     else
     {
-      unsigned long delta = this->fadeEndTime - this->fadeStartTime;
       unsigned long nowDelta = millis() - this->fadeStartTime;
       float dutyDelta = this->fadeDutyCycleEnd - this->fadeDutyCycleStart;
 
-      if (delta > 0)
+      if (this->fadeDuration > 0)
       {
-        float currentDuty = this->fadeDutyCycleStart + ((float)nowDelta / (float)delta) * dutyDelta;
+        float currentDuty = this->fadeDutyCycleStart + ((float)nowDelta / (float)this->fadeDuration) * dutyDelta;
         this->dutyCycle = currentDuty;
       }
 

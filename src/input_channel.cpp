@@ -31,7 +31,7 @@ void input_channels_loop()
 {
   bool doSendFastUpdate = false;
 
-  if (millis() > lastInputCheckMillis + YB_INPUT_DEBOUNCE_RATE_MS)
+  if (millis() - lastInputCheckMillis >= YB_INPUT_DEBOUNCE_RATE_MS)
   {
     //maintenance on our channels.
     for (byte id = 0; id < YB_INPUT_CHANNEL_COUNT; id++)

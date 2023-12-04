@@ -14,7 +14,6 @@
 
 //the main star of the event
 ADCChannel adc_channels[YB_ADC_CHANNEL_COUNT];
-unsigned long lastADCCheckMillis = 0;
 
 #ifdef YB_ADC_DRIVER_MCP3208
     MCP3208 _adcAnalogMCP3208;

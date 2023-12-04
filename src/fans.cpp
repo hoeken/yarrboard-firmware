@@ -61,8 +61,6 @@ void fans_setup()
     }
 }
 
-//unsigned long lastFanCheckMillis = 0;
-
 void fans_loop()
 {
     //get our rpm numbers
@@ -70,7 +68,7 @@ void fans_loop()
         measure_fan_rpm(i);
 
     //get our current averages
-    if ((unsigned long)(millis() - lastFanCheckMillis) >= 1000)
+    if (millis() - lastFanCheckMillis >= 1000)
     {
         //calculate our amperages
         float amps_avg = 0;
@@ -132,7 +130,7 @@ float map_float(float x, float in_min, float in_max, float out_min, float out_ma
 
 void measure_fan_rpm(byte i)
 {
-    if ((unsigned long)(millis() - last_tacho_measurement[i]) >= 1000)
+    if (millis() - last_tacho_measurement[i] >= 1000)
     {
         // detach interrupt while calculating rpm
         detachInterrupt(digitalPinToInterrupt(fan_tach_pins[i])); 
