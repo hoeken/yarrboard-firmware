@@ -13,6 +13,7 @@ char app_user[YB_USERNAME_LENGTH] = "admin";
 char app_pass[YB_PASSWORD_LENGTH] = "admin";
 unsigned int app_update_interval = 500;
 bool require_login = true;
+bool app_enable_mfd = true;
 bool app_enable_api = true;
 bool app_enable_serial = false;
 bool app_enable_ssl = false;
@@ -46,6 +47,8 @@ void protocol_setup()
     app_update_interval = preferences.getUInt("appUpdateInter");
   if (preferences.isKey("require_login"))
     require_login = preferences.getBool("require_login");
+  if (preferences.isKey("appEnableMFD"))
+    app_enable_mfd = preferences.getBool("appEnableMFD");
   if (preferences.isKey("appEnableApi"))
     app_enable_api = preferences.getBool("appEnableApi");
   if (preferences.isKey("appEnableSerial"))
@@ -366,6 +369,7 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   strlcpy(app_user, input["app_user"] | "admin", sizeof(app_user));
   strlcpy(app_pass, input["app_pass"] | "admin", sizeof(app_pass));
   require_login = input["require_login"];
+  app_enable_mfd = input["app_enable_mfd"];
   app_enable_api = input["app_enable_api"];
   app_enable_serial = input["app_enable_serial"];
   app_enable_ssl = input["app_enable_ssl"];
@@ -382,6 +386,7 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   preferences.putString("app_pass", app_pass);
   preferences.putUInt("appUpdateInter", app_update_interval);
   preferences.putBool("require_login", require_login);  
+  preferences.putBool("appEnableMFD", app_enable_mfd);
   preferences.putBool("appEnableApi", app_enable_api);
   preferences.putBool("appEnableSerial", app_enable_serial);
   preferences.putBool("appEnableSSL", app_enable_ssl);
@@ -1109,6 +1114,7 @@ void generateAppConfigJSON(JsonVariant output)
   output["app_user"] = app_user;
   output["app_pass"] = app_pass;
   output["app_update_interval"] = app_update_interval;
+  output["app_enable_mfd"] = app_enable_mfd;
   output["app_enable_api"] = app_enable_api;
   output["app_enable_serial"] = app_enable_serial;
   output["app_enable_ssl"] = app_enable_ssl;

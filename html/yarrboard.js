@@ -928,6 +928,7 @@ function start_websocket()
       $("#app_pass").val(msg.app_pass);
       $("#app_update_interval").val(msg.app_update_interval);
       $("#require_login").prop("checked", msg.require_login);
+      $("#app_enable_mfd").prop("checked", msg.app_enable_mfd);
       $("#app_enable_api").prop("checked", msg.app_enable_api);
       $("#app_enable_serial").prop("checked", msg.app_enable_serial);
 
@@ -1606,6 +1607,7 @@ function save_app_settings()
   let app_pass = $("#app_pass").val();
   let update_interval = $("#app_update_interval").val();
   let require_login = $("#require_login").prop("checked");
+  let app_enable_mfd = $("#app_enable_mfd").prop("checked");
   let app_enable_api = $("#app_enable_api").prop("checked");
   let app_enable_serial = $("#app_enable_serial").prop("checked");
   let app_enable_ssl = $("#app_enable_ssl").prop("checked");
@@ -1638,6 +1640,7 @@ function save_app_settings()
     "app_pass": app_pass,
     "app_update_interval": app_update_interval,
     "require_login": require_login,
+    "app_enable_mfd": app_enable_mfd,
     "app_enable_api": app_enable_api,
     "app_enable_serial": app_enable_serial,
     "app_enable_ssl": app_enable_ssl,

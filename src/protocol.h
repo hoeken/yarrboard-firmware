@@ -53,6 +53,7 @@ extern bool require_login;
 extern bool app_enable_api;
 extern bool app_enable_serial;
 extern bool app_enable_ssl;
+extern bool app_enable_mfd;
 extern bool is_serial_authenticated;
 
 extern unsigned int sentMessages;

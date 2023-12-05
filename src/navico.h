@@ -13,7 +13,6 @@
 #include "protocol.h"
 #include "server.h"
 
-void navico_setup();
 void navico_loop();
 
 #endif /* !YARR_NAVICO_H */

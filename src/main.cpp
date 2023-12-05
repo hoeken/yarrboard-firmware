@@ -114,9 +114,6 @@ void setup()
   
   protocol_setup();
   Serial.println("Protocol ok");
-
-  navico_setup();
-  Serial.println("Navico ok");
 }
 
 void loop()
@@ -149,7 +146,9 @@ void loop()
   server_loop();
   protocol_loop();
   ota_loop();
-  navico_loop();
+
+  if (app_enable_mfd)
+    navico_loop();
 
   //calculate our framerate
   framerate = calculateFramerate(millis() - lastFrameMillis);

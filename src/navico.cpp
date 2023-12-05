@@ -15,25 +15,9 @@ int port;
 String protocol;
 String url;
 
-unsigned long lastNavicoPublishMillis;
+unsigned long lastNavicoPublishMillis = 0;
 
 WiFiUDP Udp;
-
-void navico_setup()
-{
-    if (app_enable_ssl)
-    {
-        port = 443;
-        protocol = "https";
-    }
-    else
-    {
-        port = 80;
-        protocol = "http";
-    }
-
-    url = protocol + "://" + WiFi.localIP().toString() + ":" + String(port);
-}
 
 // This code borrowed from the SignalK project:
 // https://github.com/SignalK/signalk-server/blob/master/src/interfaces/mfd_webapp.ts
@@ -41,6 +25,13 @@ void navico_loop()
 {
     if (millis() - lastNavicoPublishMillis > 10000)
     {
+        //which protocol to use?
+        if (app_enable_ssl)
+            url = "https://" + WiFi.localIP().toString() + ":443";
+        else
+            url = "http://" + WiFi.localIP().toString() + ":80";
+
+        //generate our config JSON
         StaticJsonDocument<512> doc;
 
         doc["Version"] = "1";
@@ -64,6 +55,7 @@ void navico_loop()
         BrowserPanel_MenuText_0["Language"] = "en";
         BrowserPanel_MenuText_0["Name"] = "Home";
 
+        //make our dynamic buffer for the output
         size_t jsonSize = measureJson(doc);
         char * jsonBuffer = (char *)malloc(jsonSize+1);
         jsonBuffer[jsonSize] = '\0'; // null terminate

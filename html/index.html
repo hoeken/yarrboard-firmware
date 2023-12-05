@@ -339,13 +339,13 @@
                     <div class="col-lg-9 col-md-12 col-10 mb-3">
                         <h5>App Configuration</h5>
                         <div class="mb-3">
-                            <label for="app_user" class="col-form-label">App Username</label>
+                            <label for="app_user" class="col-form-label">Admin Username</label>
                             <div class="">
                                 <input id="app_user" type="text" class="form-control">
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="app_pass" class="col-form-label">App Password</label>
+                            <label for="app_pass" class="col-form-label">Admin Password</label>
                             <div class="">
                                 <input id="app_pass" type="text" class="form-control">
                             </div>
@@ -379,9 +379,11 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="app_update_interval" class="col-form-label">Update Interval (ms)</label>
-                            <div class="">
-                                <input id="app_update_interval" type="text" class="form-control">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="app_enable_mfd" checked>
+                                <label class="form-check-label" for="app_enable_mfd">
+                                    Enable MFD Integration (<a href="https://github.com/hoeken/yarrboard#mfd-integration">documentation</a>)
+                                </label>
                             </div>
                         </div>
                         <div class="mb-3">
@@ -398,6 +400,12 @@
                                 <label class="form-check-label" for="app_enable_serial">
                                     Enable Serial / USB API (<a href="https://github.com/hoeken/yarrboard#serial-api-protocol">documentation</a>)
                                 </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="app_update_interval" class="col-form-label">Update Interval (ms)</label>
+                            <div class="">
+                                <input id="app_update_interval" type="text" class="form-control">
                             </div>
                         </div>
                     </div>
