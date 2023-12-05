@@ -918,14 +918,20 @@ function start_websocket()
       //enabled/disable user/pass fields
       $(`#admin_user`).prop('disabled', !msg.require_login);
       $(`#admin_pass`).prop('disabled', !msg.require_login);
+      $(`#guest_user`).prop('disabled', !msg.require_login);
+      $(`#guest_pass`).prop('disabled', !msg.require_login);
       $(`#require_login`).change(function (){
         $(`#admin_user`).prop('disabled', !$("#require_login").prop("checked"))
         $(`#admin_pass`).prop('disabled', !$("#require_login").prop("checked"))
+        $(`#guest_user`).prop('disabled', !$("#require_login").prop("checked"))
+        $(`#guest_pass`).prop('disabled', !$("#require_login").prop("checked"))
       });
 
       //console.log(msg);
       $("#admin_user").val(msg.admin_user);
       $("#admin_pass").val(msg.admin_pass);
+      $("#guest_user").val(msg.guest_user);
+      $("#guest_pass").val(msg.guest_pass);
       $("#app_update_interval").val(msg.app_update_interval);
       $("#require_login").prop("checked", msg.require_login);
       $("#app_enable_mfd").prop("checked", msg.app_enable_mfd);
@@ -1605,6 +1611,8 @@ function save_app_settings()
   //get our data
   let admin_user = $("#admin_user").val();
   let admin_pass = $("#admin_pass").val();
+  let guest_user = $("#guest_user").val();
+  let guest_pass = $("#guest_pass").val();
   let update_interval = $("#app_update_interval").val();
   let require_login = $("#require_login").prop("checked");
   let app_enable_mfd = $("#app_enable_mfd").prop("checked");
@@ -1638,6 +1646,8 @@ function save_app_settings()
     "cmd": "set_app_config",
     "admin_user": admin_user,
     "admin_pass": admin_pass,
+    "guest_user": guest_user,
+    "guest_pass": guest_pass,
     "app_update_interval": app_update_interval,
     "require_login": require_login,
     "app_enable_mfd": app_enable_mfd,

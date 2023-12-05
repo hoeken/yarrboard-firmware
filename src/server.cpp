@@ -446,6 +446,8 @@ bool isApiClientLoggedIn(JsonVariantConst doc)
   //morpheus... i'm in.
   if (!strcmp(admin_user, myuser) && !strcmp(admin_pass, mypass))
     return true;
+  if (!strcmp(guest_user, myuser) && !strcmp(guest_pass, mypass))
+    return true;
 
   //default to fail then.
   return false;  

@@ -11,6 +11,8 @@
 char board_name[YB_BOARD_NAME_LENGTH] = "Yarrboard";
 char admin_user[YB_USERNAME_LENGTH] = "admin";
 char admin_pass[YB_PASSWORD_LENGTH] = "admin";
+char guest_user[YB_USERNAME_LENGTH] = "guest";
+char guest_pass[YB_PASSWORD_LENGTH] = "guest";
 unsigned int app_update_interval = 500;
 bool require_login = true;
 bool app_enable_mfd = true;
@@ -43,6 +45,10 @@ void protocol_setup()
     strlcpy(admin_user, preferences.getString("admin_user").c_str(), sizeof(admin_user));
   if (preferences.isKey("admin_pass"))
     strlcpy(admin_pass, preferences.getString("admin_pass").c_str(), sizeof(admin_pass));
+  if (preferences.isKey("guest_user"))
+    strlcpy(guest_user, preferences.getString("guest_user").c_str(), sizeof(guest_user));
+  if (preferences.isKey("guest_pass"))
+    strlcpy(guest_pass, preferences.getString("guest_pass").c_str(), sizeof(guest_pass));
   if (preferences.isKey("appUpdateInter"))
     app_update_interval = preferences.getUInt("appUpdateInter");
   if (preferences.isKey("require_login"))
@@ -348,26 +354,48 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
     return generateErrorJSON(output, "'admin_user' is a required parameter");
   if (!input.containsKey("admin_pass"))
     return generateErrorJSON(output, "'admin_pass' is a required parameter");
+  if (!input.containsKey("guest_user"))
+    return generateErrorJSON(output, "'guest_user' is a required parameter");
+  if (!input.containsKey("guest_pass"))
+    return generateErrorJSON(output, "'guest_pass' is a required parameter");
 
   //username length checker
   if (strlen(input["admin_user"]) > YB_USERNAME_LENGTH-1)
   {
-    char error[50];
-    sprintf(error, "Maximum username length is %s characters.", YB_USERNAME_LENGTH-1);
+    char error[60];
+    sprintf(error, "Maximum admin username length is %s characters.", YB_USERNAME_LENGTH-1);
     return generateErrorJSON(output, error);
   }
 
   //password length checker
   if (strlen(input["admin_pass"]) > YB_PASSWORD_LENGTH-1)
   {
-    char error[50];
-    sprintf(error, "Maximum password length is %s characters.", YB_PASSWORD_LENGTH-1);
+    char error[60];
+    sprintf(error, "Maximum admin password length is %s characters.", YB_PASSWORD_LENGTH-1);
+    return generateErrorJSON(output, error);
+  }
+
+  //username length checker
+  if (strlen(input["guest_user"]) > YB_USERNAME_LENGTH-1)
+  {
+    char error[60];
+    sprintf(error, "Maximum guest username length is %s characters.", YB_USERNAME_LENGTH-1);
+    return generateErrorJSON(output, error);
+  }
+
+  //password length checker
+  if (strlen(input["guest_pass"]) > YB_PASSWORD_LENGTH-1)
+  {
+    char error[60];
+    sprintf(error, "Maximum guest password length is %s characters.", YB_PASSWORD_LENGTH-1);
     return generateErrorJSON(output, error);
   }
 
   //get our data
   strlcpy(admin_user, input["admin_user"] | "admin", sizeof(admin_user));
   strlcpy(admin_pass, input["admin_pass"] | "admin", sizeof(admin_pass));
+  strlcpy(guest_user, input["guest_user"] | "guest", sizeof(guest_user));
+  strlcpy(guest_pass, input["guest_pass"] | "guest", sizeof(guest_pass));
   require_login = input["require_login"];
   app_enable_mfd = input["app_enable_mfd"];
   app_enable_api = input["app_enable_api"];
@@ -384,6 +412,8 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   //no special cases here.
   preferences.putString("admin_user", admin_user);
   preferences.putString("admin_pass", admin_pass);
+  preferences.putString("guest_user", guest_user);
+  preferences.putString("guest_pass", guest_pass);
   preferences.putUInt("appUpdateInter", app_update_interval);
   preferences.putBool("require_login", require_login);  
   preferences.putBool("appEnableMFD", app_enable_mfd);
@@ -424,7 +454,7 @@ void handleLogin(JsonVariantConst input, JsonVariant output, byte mode, PsychicH
     strlcpy(mypass, input["pass"] | "", sizeof(mypass));
 
     //morpheus... i'm in.
-    if (!strcmp(admin_user, myuser) && !strcmp(admin_pass, mypass))
+    if ((!strcmp(admin_user, myuser) && !strcmp(admin_pass, mypass)) || (!strcmp(guest_user, myuser) && !strcmp(guest_pass, mypass)))
     {
       //check to see if there's room for us.
       if (mode == YBP_MODE_WEBSOCKET)
@@ -1113,6 +1143,8 @@ void generateAppConfigJSON(JsonVariant output)
   output["require_login"] = require_login;
   output["admin_user"] = admin_user;
   output["admin_pass"] = admin_pass;
+  output["guest_user"] = guest_user;
+  output["guest_pass"] = guest_pass;
   output["app_update_interval"] = app_update_interval;
   output["app_enable_mfd"] = app_enable_mfd;
   output["app_enable_api"] = app_enable_api;
