@@ -1,7 +1,7 @@
 Firmware:
+    * add secondary user that can view/interact but no config?
     * can we use the npm module class for connections?
     * learn about building components for node-red, maybe make a yarrboard toolkit
-    * add secondary user that can view/interact but no config?
     * protocol documentation
     * attempt to migrate to esp32 arduino 3.0: https://docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html
 

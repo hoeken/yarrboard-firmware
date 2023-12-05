@@ -916,16 +916,16 @@ function start_websocket()
         app_update_interval = msg.app_update_interval;
 
       //enabled/disable user/pass fields
-      $(`#app_user`).prop('disabled', !msg.require_login);
-      $(`#app_pass`).prop('disabled', !msg.require_login);
+      $(`#admin_user`).prop('disabled', !msg.require_login);
+      $(`#admin_pass`).prop('disabled', !msg.require_login);
       $(`#require_login`).change(function (){
-        $(`#app_user`).prop('disabled', !$("#require_login").prop("checked"))
-        $(`#app_pass`).prop('disabled', !$("#require_login").prop("checked"))
+        $(`#admin_user`).prop('disabled', !$("#require_login").prop("checked"))
+        $(`#admin_pass`).prop('disabled', !$("#require_login").prop("checked"))
       });
 
       //console.log(msg);
-      $("#app_user").val(msg.app_user);
-      $("#app_pass").val(msg.app_pass);
+      $("#admin_user").val(msg.admin_user);
+      $("#admin_pass").val(msg.admin_pass);
       $("#app_update_interval").val(msg.app_update_interval);
       $("#require_login").prop("checked", msg.require_login);
       $("#app_enable_mfd").prop("checked", msg.app_enable_mfd);
@@ -1603,8 +1603,8 @@ function save_network_settings()
 function save_app_settings()
 {
   //get our data
-  let app_user = $("#app_user").val();
-  let app_pass = $("#app_pass").val();
+  let admin_user = $("#admin_user").val();
+  let admin_pass = $("#admin_pass").val();
   let update_interval = $("#app_update_interval").val();
   let require_login = $("#require_login").prop("checked");
   let app_enable_mfd = $("#app_enable_mfd").prop("checked");
@@ -1623,8 +1623,8 @@ function save_app_settings()
   if (require_login)
   {
     $('#logoutNav').show();
-    Cookies.set('username', app_user, { expires: 365 });
-    Cookies.set('password', app_pass, { expires: 365 });
+    Cookies.set('username', admin_user, { expires: 365 });
+    Cookies.set('password', admin_pass, { expires: 365 });
   }
   else
   {
@@ -1636,8 +1636,8 @@ function save_app_settings()
   //okay, send it off.
   immediateSend({
     "cmd": "set_app_config",
-    "app_user": app_user,
-    "app_pass": app_pass,
+    "admin_user": admin_user,
+    "admin_pass": admin_pass,
     "app_update_interval": app_update_interval,
     "require_login": require_login,
     "app_enable_mfd": app_enable_mfd,

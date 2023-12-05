@@ -47,8 +47,8 @@
 
 //extern unsigned int handledMessages;
 extern char board_name[YB_BOARD_NAME_LENGTH];
-extern char app_user[YB_USERNAME_LENGTH];
-extern char app_pass[YB_PASSWORD_LENGTH];
+extern char admin_user[YB_USERNAME_LENGTH];
+extern char admin_pass[YB_PASSWORD_LENGTH];
 extern bool require_login;
 extern bool app_enable_api;
 extern bool app_enable_serial;

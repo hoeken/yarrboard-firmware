@@ -444,7 +444,7 @@ bool isApiClientLoggedIn(JsonVariantConst doc)
   strlcpy(mypass, doc["pass"] | "", sizeof(myuser));
 
   //morpheus... i'm in.
-  if (!strcmp(app_user, myuser) && !strcmp(app_pass, mypass))
+  if (!strcmp(admin_user, myuser) && !strcmp(admin_pass, mypass))
     return true;
 
   //default to fail then.

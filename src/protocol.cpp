@@ -9,8 +9,8 @@
 #include "protocol.h"
 
 char board_name[YB_BOARD_NAME_LENGTH] = "Yarrboard";
-char app_user[YB_USERNAME_LENGTH] = "admin";
-char app_pass[YB_PASSWORD_LENGTH] = "admin";
+char admin_user[YB_USERNAME_LENGTH] = "admin";
+char admin_pass[YB_PASSWORD_LENGTH] = "admin";
 unsigned int app_update_interval = 500;
 bool require_login = true;
 bool app_enable_mfd = true;
@@ -39,10 +39,10 @@ void protocol_setup()
     strlcpy(board_name, preferences.getString("boardName").c_str(), sizeof(board_name));
 
   //look up our username/password
-  if (preferences.isKey("app_user"))
-    strlcpy(app_user, preferences.getString("app_user").c_str(), sizeof(app_user));
-  if (preferences.isKey("app_pass"))
-    strlcpy(app_pass, preferences.getString("app_pass").c_str(), sizeof(app_pass));
+  if (preferences.isKey("admin_user"))
+    strlcpy(admin_user, preferences.getString("admin_user").c_str(), sizeof(admin_user));
+  if (preferences.isKey("admin_pass"))
+    strlcpy(admin_pass, preferences.getString("admin_pass").c_str(), sizeof(admin_pass));
   if (preferences.isKey("appUpdateInter"))
     app_update_interval = preferences.getUInt("appUpdateInter");
   if (preferences.isKey("require_login"))
@@ -344,13 +344,13 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
 {
   bool old_app_enable_ssl = app_enable_ssl;
   
-  if (!input.containsKey("app_user"))
-    return generateErrorJSON(output, "'app_user' is a required parameter");
-  if (!input.containsKey("app_pass"))
-    return generateErrorJSON(output, "'app_pass' is a required parameter");
+  if (!input.containsKey("admin_user"))
+    return generateErrorJSON(output, "'admin_user' is a required parameter");
+  if (!input.containsKey("admin_pass"))
+    return generateErrorJSON(output, "'admin_pass' is a required parameter");
 
   //username length checker
-  if (strlen(input["app_user"]) > YB_USERNAME_LENGTH-1)
+  if (strlen(input["admin_user"]) > YB_USERNAME_LENGTH-1)
   {
     char error[50];
     sprintf(error, "Maximum username length is %s characters.", YB_USERNAME_LENGTH-1);
@@ -358,7 +358,7 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   }
 
   //password length checker
-  if (strlen(input["app_pass"]) > YB_PASSWORD_LENGTH-1)
+  if (strlen(input["admin_pass"]) > YB_PASSWORD_LENGTH-1)
   {
     char error[50];
     sprintf(error, "Maximum password length is %s characters.", YB_PASSWORD_LENGTH-1);
@@ -366,8 +366,8 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   }
 
   //get our data
-  strlcpy(app_user, input["app_user"] | "admin", sizeof(app_user));
-  strlcpy(app_pass, input["app_pass"] | "admin", sizeof(app_pass));
+  strlcpy(admin_user, input["admin_user"] | "admin", sizeof(admin_user));
+  strlcpy(admin_pass, input["admin_pass"] | "admin", sizeof(admin_pass));
   require_login = input["require_login"];
   app_enable_mfd = input["app_enable_mfd"];
   app_enable_api = input["app_enable_api"];
@@ -382,8 +382,8 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   }
 
   //no special cases here.
-  preferences.putString("app_user", app_user);
-  preferences.putString("app_pass", app_pass);
+  preferences.putString("admin_user", admin_user);
+  preferences.putString("admin_pass", admin_pass);
   preferences.putUInt("appUpdateInter", app_update_interval);
   preferences.putBool("require_login", require_login);  
   preferences.putBool("appEnableMFD", app_enable_mfd);
@@ -424,7 +424,7 @@ void handleLogin(JsonVariantConst input, JsonVariant output, byte mode, PsychicH
     strlcpy(mypass, input["pass"] | "", sizeof(mypass));
 
     //morpheus... i'm in.
-    if (!strcmp(app_user, myuser) && !strcmp(app_pass, mypass))
+    if (!strcmp(admin_user, myuser) && !strcmp(admin_pass, mypass))
     {
       //check to see if there's room for us.
       if (mode == YBP_MODE_WEBSOCKET)
@@ -1111,8 +1111,8 @@ void generateAppConfigJSON(JsonVariant output)
   //our identifying info
   output["msg"] = "app_config";
   output["require_login"] = require_login;
-  output["app_user"] = app_user;
-  output["app_pass"] = app_pass;
+  output["admin_user"] = admin_user;
+  output["admin_pass"] = admin_pass;
   output["app_update_interval"] = app_update_interval;
   output["app_enable_mfd"] = app_enable_mfd;
   output["app_enable_api"] = app_enable_api;
