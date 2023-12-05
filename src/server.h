@@ -34,8 +34,10 @@
   #include "fans.h"
 #endif
 
-extern String server_cert;
-extern String server_key;
+typedef struct  {
+  int connection_id;
+  UserRole role;
+} AuthenticatedConnection;
 
 typedef struct {
   int client_id;
@@ -43,30 +45,27 @@ typedef struct {
   size_t len;
 } WebsocketRequest;
 
+extern String server_cert;
+extern String server_key;
+
 void server_setup();
 void server_loop();
 
 bool isLoggedIn(JsonVariantConst input, byte mode, PsychicHttpWebSocketConnection *connection);
-bool logClientIn(PsychicHttpWebSocketConnection *connection);
-void closeClientConnection(PsychicHttpWebSocketConnection *connection);
-bool addClientToAuthList(PsychicHttpWebSocketConnection *connection);
+bool logClientIn(PsychicHttpWebSocketConnection *connection, UserRole role);
+bool addClientToAuthList(PsychicHttpWebSocketConnection *connection, UserRole role);
+void removeClientFromAuthList(PsychicHttpWebSocketConnection *connection);
 bool isWebsocketClientLoggedIn(JsonVariantConst input, PsychicHttpWebSocketConnection *connection);
-bool isApiClientLoggedIn(JsonVariantConst input);
+bool isApiClientLoggedIn(JsonVariantConst doc);
 bool isSerialClientLoggedIn(JsonVariantConst input);
-
-
-int getFreeSlots();
-int getWebsocketRequestSlot();
+bool checkLoginCredentials(JsonVariantConst doc, UserRole &role);
+UserRole getUserRole(JsonVariantConst input, byte mode, PsychicHttpWebSocketConnection *connection);
+UserRole getWebsocketRole(JsonVariantConst doc, PsychicHttpWebSocketConnection *connection);
 
 void sendToAllWebsockets(const char * jsonString);
 void handleWebsocketMessageLoop(WebsocketRequest* request);
 
 esp_err_t handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *request);
 void handleWebSocketMessage(PsychicHttpWebSocketRequest *request, uint8_t *data, size_t len);
-
-/*
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
-*/
-
 
 #endif /* !YARR_SERVER_H */

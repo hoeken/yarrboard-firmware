@@ -1,5 +1,10 @@
 Firmware:
     * add secondary user that can view/interact but no config?
+        * test new roles code thoroughly
+        * split set_* commands into config_* and set_*
+        * update yarrboard-client code
+        * add a logout command
+    * change YB_MODE_* in config.h to enum
     * can we use the npm module class for connections?
     * learn about building components for node-red, maybe make a yarrboard toolkit
     * protocol documentation

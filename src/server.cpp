@@ -7,13 +7,20 @@ char last_modified[50];
 
 QueueHandle_t wsRequests;
 
-int authenticatedConnections[YB_CLIENT_LIMIT];
+AuthenticatedConnection authenticatedConnections[YB_CLIENT_LIMIT];
 
 String server_cert;
 String server_key;
 
 void server_setup()
 {
+  //init our authentication stuff
+  for (byte i=0; i<YB_CLIENT_LIMIT; i++)
+  {
+    authenticatedConnections[i].connection_id = 0;
+    authenticatedConnections[i].role = NOBODY;
+  }
+
   //prepare our message queue
   wsRequests = xQueueCreate(YB_RECEIVE_BUFFER_COUNT, sizeof(WebsocketRequest));
   if (wsRequests == 0)
@@ -118,7 +125,7 @@ void server_setup()
     return response.send();
   });
 
-  // Test the stream response class
+  // Our websocket handler
   server.websocket("/ws")->
     onFrame([](PsychicHttpWebSocketRequest *request, httpd_ws_frame *frame) {
       handleWebSocketMessage(request, frame->payload, frame->len);
@@ -132,6 +139,9 @@ void server_setup()
     onClose([](PsychicHttpServer *server, int sockfd) {
       Serial.printf("[socket] closed (#%u)\n", sockfd);
       websocketClientCount--;
+
+      PsychicHttpWebSocketConnection connection(server->server, sockfd);
+      removeClientFromAuthList(&connection);
       return ESP_OK;
     });
 
@@ -239,21 +249,23 @@ void sendToAllWebsockets(const char * jsonString)
   if (require_login)
   {
     for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-      if (authenticatedConnections[i])
+    {
+      if (authenticatedConnections[i].connection_id)
       {
-        PsychicHttpWebSocketConnection connection(server.server, authenticatedConnections[i]);
+        PsychicHttpWebSocketConnection connection(server.server, authenticatedConnections[i].connection_id);
         connection.queueMessage(jsonString);
       }
+    }
   }
   //nope, just sent it to all.
   else
     server.sendAll(jsonString);
 }
 
-bool logClientIn(PsychicHttpWebSocketConnection *connection)
+bool logClientIn(PsychicHttpWebSocketConnection *connection, UserRole role)
 {
   //did we not find a spot?
-  if (!addClientToAuthList(connection))
+  if (!addClientToAuthList(connection, role))
   {
     Serial.println("Error: could not add to auth list.");
 
@@ -419,18 +431,46 @@ bool isLoggedIn(JsonVariantConst input, byte mode, PsychicHttpWebSocketConnectio
     return false;
 }
 
+UserRole getUserRole(JsonVariantConst input, byte mode, PsychicHttpWebSocketConnection *connection)
+{
+  //also only if enabled
+  if (!require_login)
+    return ADMIN;
+
+  //login only required for websockets.
+  if (mode == YBP_MODE_WEBSOCKET)
+    return getWebsocketRole(input, connection);
+  else if (mode == YBP_MODE_HTTP)
+    return api_role;
+  else if (mode == YBP_MODE_SERIAL)
+    return serial_role;
+  else
+    return NOBODY;
+
+}
+
 bool isWebsocketClientLoggedIn(JsonVariantConst doc, PsychicHttpWebSocketConnection *connection)
 {
   //are they in our auth array?
   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-    if (authenticatedConnections[i] == connection->id())
+    if (authenticatedConnections[i].connection_id == connection->id())
       return true;
 
-  //okay check for passed-in credentials
-  return isApiClientLoggedIn(doc);
+  return false;
 }
 
-bool isApiClientLoggedIn(JsonVariantConst doc)
+UserRole getWebsocketRole(JsonVariantConst doc, PsychicHttpWebSocketConnection *connection)
+{
+  //are they in our auth array?
+  for (byte i=0; i<YB_CLIENT_LIMIT; i++)
+    if (authenticatedConnections[i].connection_id == connection->id())
+      return authenticatedConnections[i].role;
+
+  return NOBODY;
+}
+
+
+bool checkLoginCredentials(JsonVariantConst doc, UserRole &role)
 {
   if (!doc.containsKey("user"))
     return false;
@@ -445,11 +485,19 @@ bool isApiClientLoggedIn(JsonVariantConst doc)
 
   //morpheus... i'm in.
   if (!strcmp(admin_user, myuser) && !strcmp(admin_pass, mypass))
+  {
+    role = ADMIN;
     return true;
+  }
+
   if (!strcmp(guest_user, myuser) && !strcmp(guest_pass, mypass))
+  {
+    role = GUEST;
     return true;
+  }
 
   //default to fail then.
+  role = NOBODY;
   return false;  
 }
 
@@ -458,23 +506,29 @@ bool isSerialClientLoggedIn(JsonVariantConst doc)
   if (is_serial_authenticated)
     return true;
   else
-    return isApiClientLoggedIn(doc);
+    return checkLoginCredentials(doc, serial_role);
 }
 
-bool addClientToAuthList(PsychicHttpWebSocketConnection *connection)
+bool isApiClientLoggedIn(JsonVariantConst doc)
+{
+  return checkLoginCredentials(doc, api_role);
+}
+
+bool addClientToAuthList(PsychicHttpWebSocketConnection *connection, UserRole role)
 {
   byte i;
   for (i=0; i<YB_CLIENT_LIMIT; i++)
   {
     //did we find an empty slot?
-    if (!authenticatedConnections[i])
+    if (!authenticatedConnections[i].connection_id)
     {
-      authenticatedConnections[i] = connection->id();
+      authenticatedConnections[i].connection_id = connection->id();
+      authenticatedConnections[i].role = role;
       break;
     }
 
     //are we already authenticated?
-    if (authenticatedConnections[i] == connection->id())
+    if (authenticatedConnections[i].connection_id == connection->id())
       break;
   }
 
@@ -486,4 +540,18 @@ bool addClientToAuthList(PsychicHttpWebSocketConnection *connection)
   }
   else
    return true;
+}
+
+void removeClientFromAuthList(PsychicHttpWebSocketConnection *connection)
+{
+  byte i;
+  for (i=0; i<YB_CLIENT_LIMIT; i++)
+  {
+    //did we find an empty slot?
+    if (authenticatedConnections[i].connection_id == connection->id())
+    {
+      authenticatedConnections[i].connection_id = 0;
+      authenticatedConnections[i].role = NOBODY;
+    }
+  }
 }

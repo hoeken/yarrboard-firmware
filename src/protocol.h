@@ -57,6 +57,8 @@ extern bool app_enable_serial;
 extern bool app_enable_ssl;
 extern bool app_enable_mfd;
 extern bool is_serial_authenticated;
+extern UserRole serial_role;
+extern UserRole api_role;
 
 extern unsigned int sentMessages;
 extern unsigned long totalSentMessages;

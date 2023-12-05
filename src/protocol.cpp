@@ -20,6 +20,8 @@ bool app_enable_api = true;
 bool app_enable_serial = false;
 bool app_enable_ssl = false;
 bool is_serial_authenticated = false;
+UserRole serial_role = NOBODY;
+UserRole api_role = NOBODY;
 
 //for tracking our message loop
 unsigned long previousMessageMillis = 0;
@@ -174,43 +176,60 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, byte mode, P
     if (!isLoggedIn(input, mode, connection))
         return generateLoginRequiredJSON(output);
 
+    UserRole role = getUserRole(input, mode, connection);
+
+    // Serial.println((int)mode);
+    // Serial.println((int)role);
+
     //what is your command?
-    if (!strcmp(cmd, "set_boardname"))
-      return handleSetBoardName(input, output);   
-    else if (!strcmp(cmd, "get_config"))
-      return generateConfigJSON(output);
-    else if (!strcmp(cmd, "get_network_config"))
-      return generateNetworkConfigJSON(output);
-    else if (!strcmp(cmd, "set_network_config"))
-      return handleSetNetworkConfig(input, output);
-    else if (!strcmp(cmd, "get_app_config"))
-      return generateAppConfigJSON(output);
-    else if (!strcmp(cmd, "set_app_config"))
-      return handleSetAppConfig(input, output);
-    else if (!strcmp(cmd, "get_stats"))
-      return generateStatsJSON(output);
-    else if (!strcmp(cmd, "get_update"))
-      return generateUpdateJSON(output);
-    else if (!strcmp(cmd, "restart"))
-      return handleRestart(input, output);
-    else if (!strcmp(cmd, "factory_reset"))
-      return handleFactoryReset(input, output);
-    else if (!strcmp(cmd, "ota_start"))
-      return handleOTAStart(input, output);
-    else if (!strcmp(cmd, "set_pwm_channel"))
-      return handleSetPWMChannel(input, output);
-    else if (!strcmp(cmd, "toggle_pwm_channel"))
-      return handleTogglePWMChannel(input, output);
-    else if (!strcmp(cmd, "fade_pwm_channel"))
-      return handleFadePWMChannel(input, output);
-    else if (!strcmp(cmd, "set_switch"))
-      return handleSetSwitch(input, output);
-    else if (!strcmp(cmd, "set_rgb"))
-      return handleSetRGB(input, output);
-    else if (!strcmp(cmd, "set_adc"))
-      return handleSetADC(input, output);
-    else
-      return generateErrorJSON(output, "Invalid command.");
+    if (role == ADMIN || role == GUEST)
+    {
+      if (!strcmp(cmd, "get_config"))
+        return generateConfigJSON(output);
+      else if (!strcmp(cmd, "get_stats"))
+        return generateStatsJSON(output);
+      else if (!strcmp(cmd, "get_update"))
+        return generateUpdateJSON(output);
+      else if (!strcmp(cmd, "set_pwm_channel"))
+        return handleSetPWMChannel(input, output);
+      else if (!strcmp(cmd, "toggle_pwm_channel"))
+        return handleTogglePWMChannel(input, output);
+      else if (!strcmp(cmd, "fade_pwm_channel"))
+        return handleFadePWMChannel(input, output);
+      else if (!strcmp(cmd, "set_rgb"))
+        return handleSetRGB(input, output);
+      // else if (!strcmp(cmd, "logout"))
+      //   return handleLogout(input, output);
+    }
+    
+    //admin role only
+    if (role == ADMIN)
+    {
+      if (!strcmp(cmd, "set_boardname"))
+        return handleSetBoardName(input, output);   
+      else if (!strcmp(cmd, "get_network_config"))
+        return generateNetworkConfigJSON(output);
+      else if (!strcmp(cmd, "set_network_config"))
+        return handleSetNetworkConfig(input, output);
+      else if (!strcmp(cmd, "get_app_config"))
+        return generateAppConfigJSON(output);
+      else if (!strcmp(cmd, "set_app_config"))
+        return handleSetAppConfig(input, output);
+      else if (!strcmp(cmd, "restart"))
+        return handleRestart(input, output);
+      else if (!strcmp(cmd, "factory_reset"))
+        return handleFactoryReset(input, output);
+      else if (!strcmp(cmd, "ota_start"))
+        return handleOTAStart(input, output);
+      else if (!strcmp(cmd, "set_switch"))
+        return handleSetSwitch(input, output);
+      else if (!strcmp(cmd, "set_adc"))
+        return handleSetADC(input, output);
+    }
+
+    //if we got here, no bueno.
+    String error = "Invalid command: " + String(cmd);
+    return generateErrorJSON(output, error.c_str());
   }
 
   //unknown command.
@@ -453,19 +472,41 @@ void handleLogin(JsonVariantConst input, JsonVariant output, byte mode, PsychicH
     strlcpy(myuser, input["user"] | "", sizeof(myuser));
     strlcpy(mypass, input["pass"] | "", sizeof(mypass));
 
-    //morpheus... i'm in.
-    if ((!strcmp(admin_user, myuser) && !strcmp(admin_pass, mypass)) || (!strcmp(guest_user, myuser) && !strcmp(guest_pass, mypass)))
+    //check their credentials
+    bool is_authenticated = false;
+    UserRole role = NOBODY;
+    if (!strcmp(admin_user, myuser) && !strcmp(admin_pass, mypass))
+    {
+      is_authenticated = true;
+      role = ADMIN;
+      output["role"] = "admin";
+    }
+    if (!strcmp(guest_user, myuser) && !strcmp(guest_pass, mypass))
+    {
+      is_authenticated = true;
+      role = GUEST;
+      output["role"] = "guest";
+    }
+
+    //okay, are we in?
+    if (is_authenticated)
     {
       //check to see if there's room for us.
       if (mode == YBP_MODE_WEBSOCKET)
       {
-        if (!logClientIn(connection))
+        if (!logClientIn(connection, role))
           return generateErrorJSON(output, "Too many connections.");
       }
       else if (mode == YBP_MODE_SERIAL)
+      {
         is_serial_authenticated = true;
+        serial_role = role;
+      }
 
-      return generateSuccessJSON(output, "Login successful.");
+      output["msg"] = "login";
+      output["message"] = "Login successful.";
+
+      return;
     }
 
     //gtfo.
@@ -924,6 +965,7 @@ void generateConfigJSON(JsonVariant output)
   output["hostname"] = local_hostname;
   output["use_ssl"] = app_enable_ssl;
   output["uuid"] = uuid;
+  output["require_login"] = require_login;
 
   //some debug info
   output["last_restart_reason"] = getResetReason();

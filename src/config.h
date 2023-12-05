@@ -58,4 +58,10 @@
 
 #define YB_FPS_SAMPLES 256
 
+typedef enum {
+  NOBODY,
+  ADMIN,
+  GUEST
+} UserRole;
+
 #endif // YARR_CONFIG_H

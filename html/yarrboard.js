@@ -3,6 +3,7 @@ let current_page;
 let current_config;
 let app_username;
 let app_password;
+let app_role = "nobody";
 let app_update_interval = 500;
 let network_config;
 let app_config;
@@ -22,6 +23,28 @@ const page_ready = {
   "settings": false,
   "system":  true,
   "login":  true
+};
+
+const page_permissions = {
+  "nobody": [
+    "login"
+  ],
+  "admin": [
+    "control",
+    "config",
+    "stats",
+    "network",
+    "settings",
+    "system",
+    "login",
+    "logout"
+  ],
+  "guest": [
+    "control",
+    "stats",
+    "login",
+    "logout"
+  ]
 };
 
 const BoardNameEdit = (name) => `
@@ -235,18 +258,11 @@ function start_yarrboard()
   //main data connection
   start_websocket();
 
+  //default startup
+  update_role_ui();
+
   //let the rest of the site load first.
   setTimeout(check_for_updates, 1000);
-
-  //check to see if we want a certain page
-  if (window.location.hash)
-  {
-    let page = window.location.hash.substring(1);
-    if (page_list.includes(page))
-      open_page(page);
-  }
-  else
-    open_page("control");  
 }
 
 function load_configs()
@@ -256,26 +272,29 @@ function load_configs()
     "cmd": "get_config"
   });
 
-  //load our network config
-  setTimeout(function (){
+  // //load our stats config
+  // setTimeout(function (){
+  //   immediateSend({
+  //     "cmd": "get_stats"
+  //   });  
+  // }, 150);  
+
+}
+
+function load_admin_configs()
+{
+  if(app_role == "admin")
+  {
+    //load our network config
     immediateSend({
       "cmd": "get_network_config"
     });  
-  }, 50);
 
-  //load our network config
-  setTimeout(function (){
+    //load our network config
     immediateSend({
       "cmd": "get_app_config"
     });  
-  }, 100);
-
-  //load our stats config
-  setTimeout(function (){
-    immediateSend({
-      "cmd": "get_stats"
-    });  
-  }, 150);
+  }
 }
 
 function start_websocket()
@@ -344,7 +363,20 @@ function start_websocket()
 
       //is it our first boot?
       if (msg.first_boot && current_page != "network")
+      {
+        app_role = 'admin';
+        load_admin_configs();
+        update_role_ui();
         show_alert(`Welcome to Yarrboard, head over to <a href="#network" onclick="open_page('network')">Network</a> to setup your WiFi.`, "primary");
+      }
+
+      //we are an admin
+      if (!msg.require_login)
+      {
+        app_role = "admin";
+        load_admin_configs();
+        update_role_ui();
+      }
 
       //did we get a crash?
       if (msg.has_coredump)
@@ -1007,17 +1039,24 @@ function start_websocket()
       //keep the u gotta login to the login page.
       if (msg.message == "You must be logged in.")
       {
-        console.log("you must log in");
         open_page("login");
       }
       else
         show_alert(msg.message);
     }
-    else if (msg.status == "success")
+    else if (msg.msg == "login")
     {
       //keep the login success stuff on the login page.
       if (msg.message == "Login successful.")
       {
+        //once we know our role, we can load our other configs.
+        app_role = msg.role;
+        load_admin_configs();
+
+        console.log(app_role);
+
+        update_role_ui();
+
         //only needed for login page, otherwise its autologin
         if (current_page == "login")
         {
@@ -1037,6 +1076,8 @@ function start_websocket()
           //this is super fast otherwise.
           open_page("control");
         }
+        else
+          open_default_page();
       }
       else
         show_alert(msg.message, "success");
@@ -1154,8 +1195,17 @@ function toggle_duty_cycle(id)
 
 function open_page(page)
 {
-  if (page == current_page)
+  if (!page_permissions[app_role].includes(page))
+  {
+    console.log(`${page} not allowed for ${app_role}`);
     return;
+  }
+
+  if (page == current_page)
+  {
+    console.log(`already on ${page}.`);
+    //return;
+  }
 
   current_page = page;
 
@@ -1752,6 +1802,36 @@ function update_firmware()
   });  
 
   ota_started = true;
+}
+
+function update_role_ui()
+{
+  //what nav tabs should we be able to see?
+  if (app_role == "admin")
+    $(".nav-permission").show();
+  else if (app_role == "guest")
+  {
+    $(".nav-permission").hide();
+    page_permissions[app_role].forEach((page) => {
+      console.log(`#${page}Nav`);
+      $(`#${page}Nav`).show();
+    });
+  }
+  else
+    $(".nav-permission").hide();
+}
+
+function open_default_page()
+{
+  //check to see if we want a certain page
+  if (window.location.hash)
+  {
+    let page = window.location.hash.substring(1);
+    if (page_list.includes(page))
+      open_page(page);
+  }
+  else
+    open_page("control");
 }
 
 function secondsToDhms(seconds)
