@@ -5,6 +5,8 @@ Firmware:
         * update yarrboard-client code
         * add a logout command
     * change YB_MODE_* in config.h to enum
+    * add in a dark mode and corresponding set_lightmode command
+    * set max brightness on rgb leds
     * can we use the npm module class for connections?
     * learn about building components for node-red, maybe make a yarrboard toolkit
     * protocol documentation

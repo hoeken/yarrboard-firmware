@@ -1,13 +1,14 @@
 #include "server.h"
 
 PsychicHttpServer server;
+PsychicWebSocketHandler websocketHandler;
 
 // Variable to hold the last modification datetime
 char last_modified[50];
 
 QueueHandle_t wsRequests;
 
-AuthenticatedConnection authenticatedConnections[YB_CLIENT_LIMIT];
+AuthenticatedClient authenticatedClients[YB_CLIENT_LIMIT];
 
 String server_cert;
 String server_key;
@@ -17,8 +18,8 @@ void server_setup()
   //init our authentication stuff
   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
   {
-    authenticatedConnections[i].connection_id = 0;
-    authenticatedConnections[i].role = NOBODY;
+    authenticatedClients[i].client = NULL;
+    authenticatedClients[i].role = NOBODY;
   }
 
   //prepare our message queue
@@ -71,7 +72,7 @@ void server_setup()
   else
     server.listen(80);
 
-  server.on("/", HTTP_GET, [](PsychicHttpServerRequest *request) {
+  server.on("/", HTTP_GET, [](PsychicRequest *request) {
 
     //Check if the client already has the same version and respond with a 304 (Not modified)
     if (request->header("If-Modified-Since").indexOf(last_modified) > 0)
@@ -87,7 +88,7 @@ void server_setup()
     }
     else
     {
-        PsychicHttpServerResponse response(request);
+        PsychicResponse response(request);
         response.setCode(200);
         response.setContentType("text/html");
 
@@ -106,9 +107,9 @@ void server_setup()
     }
   });
 
-  server.on("/logo-navico.png", HTTP_GET, [](PsychicHttpServerRequest *request)
+  server.on("/logo-navico.png", HTTP_GET, [](PsychicRequest *request)
   {
-    PsychicHttpServerResponse response(request);
+    PsychicResponse response(request);
     response.setCode(200);
     response.setContentType("image/png");
 
@@ -126,38 +127,33 @@ void server_setup()
   });
 
   // Our websocket handler
-  server.websocket("/ws")->
-    onFrame([](PsychicHttpWebSocketRequest *request, httpd_ws_frame *frame) {
-      handleWebSocketMessage(request, frame->payload, frame->len);
-      return ESP_OK;
-    })->
-    onConnect([](PsychicHttpWebSocketRequest *request) {
-      Serial.printf("[socket] connected (#%u)\n", request->connection->id());
-      websocketClientCount++;
-      return ESP_OK;
-    })->
-    onClose([](PsychicHttpServer *server, int sockfd) {
-      Serial.printf("[socket] closed (#%u)\n", sockfd);
-      websocketClientCount--;
+  websocketHandler.onFrame([](PsychicWebSocketRequest *request, httpd_ws_frame *frame) {
+    handleWebSocketMessage(request, frame->payload, frame->len);
+    return ESP_OK;
+  });
+  websocketHandler.onOpen([](PsychicWebSocketClient *client) {
+    Serial.printf("[socket] connection #%u connected from %s\n", client->socket(), client->remoteIP().toString());
+    websocketClientCount++;
+  });
+  websocketHandler.onClose([](PsychicWebSocketClient *client) {
+    Serial.printf("[socket] connection #%u closed from %s\n", client->socket(), client->remoteIP().toString());
+    websocketClientCount--;
 
-      PsychicHttpWebSocketConnection connection(server->server, sockfd);
-      removeClientFromAuthList(&connection);
-      return ESP_OK;
-    });
+    removeClientFromAuthList(client);
+  });
+  server.on("/ws", &websocketHandler);
 
-    server.onOpen([](httpd_handle_t hd, int sockfd) {
-      httpClientCount++;
-      return ESP_OK;
-    });
+  server.onOpen([](PsychicClient *client) {
+    httpClientCount++;
+  });
 
-    server.onClose([](httpd_handle_t hd, int sockfd) {
-      httpClientCount--;
-      return ESP_OK;
-    });
+  server.onClose([](PsychicClient *client) {
+    httpClientCount--;
+  });
 
 
   //our main api connection
-  server.on("/api/endpoint", HTTP_POST, [](PsychicHttpServerRequest *request)
+  server.on("/api/endpoint", HTTP_POST, [](PsychicRequest *request)
   {
     StaticJsonDocument<1024> json;
 
@@ -167,7 +163,7 @@ void server_setup()
   });
 
   //send config json
-  server.on("/api/config", HTTP_GET, [](PsychicHttpServerRequest *request)
+  server.on("/api/config", HTTP_GET, [](PsychicRequest *request)
   {
     StaticJsonDocument<256> json;
     json["cmd"] = "get_config";
@@ -178,7 +174,7 @@ void server_setup()
   });
 
   //send stats json
-  server.on("/api/stats", HTTP_GET, [](PsychicHttpServerRequest *request)
+  server.on("/api/stats", HTTP_GET, [](PsychicRequest *request)
   {
     StaticJsonDocument<256> json;
     json["cmd"] = "get_stats";
@@ -189,7 +185,7 @@ void server_setup()
   });
 
   //send update json
-  server.on("/api/update", HTTP_GET, [](PsychicHttpServerRequest *request)
+  server.on("/api/update", HTTP_GET, [](PsychicRequest *request)
   {
     StaticJsonDocument<256> json;
     json["cmd"] = "get_update";
@@ -200,7 +196,7 @@ void server_setup()
   });
 
   //downloadable coredump file
-  server.on("/coredump.txt", HTTP_GET, [](PsychicHttpServerRequest *request)
+  server.on("/coredump.txt", HTTP_GET, [](PsychicRequest *request)
   {
     //delete the coredump here, but not from littlefs
 		deleteCoreDump();
@@ -208,7 +204,7 @@ void server_setup()
     //dont bug the client anymore
     has_coredump = false;
 
-    PsychicHttpServerResponse response(request);
+    PsychicResponse response(request);
     response.setContentType("text/plain");
 
     if (LittleFS.exists("/coredump.txt"))
@@ -250,27 +246,29 @@ void sendToAllWebsockets(const char * jsonString)
   {
     for (byte i=0; i<YB_CLIENT_LIMIT; i++)
     {
-      if (authenticatedConnections[i].connection_id)
+      if (authenticatedClients[i].client)
       {
-        PsychicHttpWebSocketConnection connection(server.server, authenticatedConnections[i].connection_id);
-        connection.queueMessage(jsonString);
+        //make sure its a valid client
+        PsychicWebSocketClient *client = websocketHandler.getClient(authenticatedClients[i].client);
+        if (client != NULL)
+          client->sendMessage(jsonString);
       }
     }
   }
   //nope, just sent it to all.
   else
-    server.sendAll(jsonString);
+    websocketHandler.sendAll(jsonString);
 }
 
-bool logClientIn(PsychicHttpWebSocketConnection *connection, UserRole role)
+bool logClientIn(PsychicWebSocketClient *client, UserRole role)
 {
   //did we not find a spot?
-  if (!addClientToAuthList(connection, role))
+  if (!addClientToAuthList(client, role))
   {
     Serial.println("Error: could not add to auth list.");
 
     //i'm pretty sure this closes our connection
-    close(connection->id());
+    close(client->socket());
 
     return false;
   }
@@ -278,15 +276,15 @@ bool logClientIn(PsychicHttpWebSocketConnection *connection, UserRole role)
   return true;
 }
 
-esp_err_t handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *request)
+esp_err_t handleWebServerRequest(JsonVariant input, PsychicRequest *request)
 {
   esp_err_t err = ESP_OK;
   DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
 
   if (request->hasParam("user"))
-    input["user"] = request->getParam("user");
+    input["user"] = request->getParam("user")->value();
   if (request->hasParam("pass"))
-    input["pass"] = request->getParam("pass");
+    input["pass"] = request->getParam("pass")->value();
 
   if (app_enable_api)
     handleReceivedJSON(input, output, YBP_MODE_HTTP);
@@ -304,7 +302,7 @@ esp_err_t handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *re
     //did we get anything?
     if (jsonBuffer != NULL)
     {
-      PsychicHttpServerResponse response(request);
+      PsychicResponse response(request);
       response.setContentType("application/json");
       serializeJson(output.as<JsonObject>(), jsonBuffer, jsonSize+1);
       response.setContent(jsonBuffer);
@@ -324,12 +322,12 @@ esp_err_t handleWebServerRequest(JsonVariant input, PsychicHttpServerRequest *re
   return err;
 }
 
-void handleWebSocketMessage(PsychicHttpWebSocketRequest *request, uint8_t *data, size_t len)
+void handleWebSocketMessage(PsychicWebSocketRequest *request, uint8_t *data, size_t len)
 {
   //build our websocket request - copy the existing one
   //we are allocating memory here, and the worker will free it
   WebsocketRequest wr;
-  wr.client_id = request->connection->id();
+  wr.socket = request->wsclient->socket();
   wr.len = len+1;
   wr.buffer = (char *)malloc(len+1);
 
@@ -375,10 +373,14 @@ void handleWebSocketMessage(PsychicHttpWebSocketRequest *request, uint8_t *data,
 
 void handleWebsocketMessageLoop(WebsocketRequest* request)
 {
+  //make sure our client is still good.
+  PsychicClient client(server.server, request->socket);
+  PsychicWebSocketClient *ws = websocketHandler.getClient(&client);
+  if (ws == NULL)
+    return;
+
   DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
   DynamicJsonDocument input(1024);
-
-  PsychicHttpWebSocketConnection connection(server.server, request->client_id);
 
   //was there a problem, officer?
   DeserializationError err = deserializeJson(input, request->buffer);
@@ -389,7 +391,7 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
     generateErrorJSON(output, error);
   }
   else
-    handleReceivedJSON(input, output, YBP_MODE_WEBSOCKET, &connection);
+    handleReceivedJSON(input, output, YBP_MODE_WEBSOCKET, ws);
 
   //empty messages are valid, so don't send a response
   if (output.size())
@@ -403,7 +405,7 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
     if (jsonBuffer != NULL)
     {
       serializeJson(output, jsonBuffer, jsonSize+1);
-      connection.queueMessage(jsonBuffer);
+      ws->sendMessage(jsonBuffer);
 
       //keep track!
       sentMessages++;
@@ -414,7 +416,7 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
   }
 }
 
-bool isLoggedIn(JsonVariantConst input, byte mode, PsychicHttpWebSocketConnection *connection)
+bool isLoggedIn(JsonVariantConst input, byte mode, PsychicWebSocketClient *connection)
 {
   //also only if enabled
   if (!require_login)
@@ -431,7 +433,7 @@ bool isLoggedIn(JsonVariantConst input, byte mode, PsychicHttpWebSocketConnectio
     return false;
 }
 
-UserRole getUserRole(JsonVariantConst input, byte mode, PsychicHttpWebSocketConnection *connection)
+UserRole getUserRole(JsonVariantConst input, byte mode, PsychicWebSocketClient *connection)
 {
   //also only if enabled
   if (!require_login)
@@ -449,22 +451,22 @@ UserRole getUserRole(JsonVariantConst input, byte mode, PsychicHttpWebSocketConn
 
 }
 
-bool isWebsocketClientLoggedIn(JsonVariantConst doc, PsychicHttpWebSocketConnection *connection)
+bool isWebsocketClientLoggedIn(JsonVariantConst doc, PsychicWebSocketClient *client)
 {
   //are they in our auth array?
   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-    if (authenticatedConnections[i].connection_id == connection->id())
+    if (authenticatedClients[i].client == client)
       return true;
 
   return false;
 }
 
-UserRole getWebsocketRole(JsonVariantConst doc, PsychicHttpWebSocketConnection *connection)
+UserRole getWebsocketRole(JsonVariantConst doc, PsychicWebSocketClient *client)
 {
   //are they in our auth array?
   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-    if (authenticatedConnections[i].connection_id == connection->id())
-      return authenticatedConnections[i].role;
+    if (authenticatedClients[i].client == client)
+      return authenticatedClients[i].role;
 
   return NOBODY;
 }
@@ -514,21 +516,21 @@ bool isApiClientLoggedIn(JsonVariantConst doc)
   return checkLoginCredentials(doc, api_role);
 }
 
-bool addClientToAuthList(PsychicHttpWebSocketConnection *connection, UserRole role)
+bool addClientToAuthList(PsychicWebSocketClient *client, UserRole role)
 {
   byte i;
   for (i=0; i<YB_CLIENT_LIMIT; i++)
   {
     //did we find an empty slot?
-    if (!authenticatedConnections[i].connection_id)
+    if (!authenticatedClients[i].client)
     {
-      authenticatedConnections[i].connection_id = connection->id();
-      authenticatedConnections[i].role = role;
+      authenticatedClients[i].client = client;
+      authenticatedClients[i].role = role;
       break;
     }
 
     //are we already authenticated?
-    if (authenticatedConnections[i].connection_id == connection->id())
+    if (authenticatedClients[i].client == client)
       break;
   }
 
@@ -542,16 +544,16 @@ bool addClientToAuthList(PsychicHttpWebSocketConnection *connection, UserRole ro
    return true;
 }
 
-void removeClientFromAuthList(PsychicHttpWebSocketConnection *connection)
+void removeClientFromAuthList(PsychicWebSocketClient *client)
 {
   byte i;
   for (i=0; i<YB_CLIENT_LIMIT; i++)
   {
     //did we find an empty slot?
-    if (authenticatedConnections[i].connection_id == connection->id())
+    if (authenticatedClients[i].client == client)
     {
-      authenticatedConnections[i].connection_id = 0;
-      authenticatedConnections[i].role = NOBODY;
+      authenticatedClients[i].client = NULL;
+      authenticatedClients[i].role = NOBODY;
     }
   }
 }

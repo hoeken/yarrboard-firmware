@@ -71,11 +71,11 @@ void protocol_loop();
 
 void handleSerialJson();
 
-void handleReceivedJSON(JsonVariantConst input, JsonVariant output, byte mode, PsychicHttpWebSocketConnection *connection = NULL);
+void handleReceivedJSON(JsonVariantConst input, JsonVariant output, byte mode, PsychicWebSocketClient *connection = NULL);
 void handleSetBoardName(JsonVariantConst input, JsonVariant output);
 void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output);
 void handleSetAppConfig(JsonVariantConst input, JsonVariant output);
-void handleLogin(JsonVariantConst input, JsonVariant output, byte mode, PsychicHttpWebSocketConnection *connection = NULL);
+void handleLogin(JsonVariantConst input, JsonVariant output, byte mode, PsychicWebSocketClient *connection = NULL);
 void handleRestart(JsonVariantConst input, JsonVariant output);
 void handleFactoryReset(JsonVariantConst input, JsonVariant output);
 void handleOTAStart(JsonVariantConst input, JsonVariant output);
