@@ -37,7 +37,7 @@ class PWMChannel
 
     bool fadeRequested = false;
     unsigned long fadeStartTime = 0;
-    unsigned long fadeEndTime = 0;
+    unsigned long fadeDuration = 0;
     float fadeDutyCycleStart = 0;
     float fadeDutyCycleEnd = 0;
 

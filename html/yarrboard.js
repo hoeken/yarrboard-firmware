@@ -261,20 +261,10 @@ function start_yarrboard()
 
 function load_configs()
 {
-  yarrboard_log("load_configs");
-
   //load our config... will also trigger login
   immediateSend({
     "cmd": "get_config"
   });
-
-  // //load our stats config
-  // setTimeout(function (){
-  //   immediateSend({
-  //     "cmd": "get_stats"
-  //   });  
-  // }, 150);  
-
 }
 
 function load_admin_configs()
@@ -350,9 +340,9 @@ function start_websocket()
 
     if (msg.msg == 'config')
     {
-      yarrboard_log("config");
+      // yarrboard_log("config");
       // yarrboard_log(msg);
-      yarrboard_log(event.data);
+      // yarrboard_log(event.data);
       // yarrboard_log(event.data.length);
 
       current_config = msg;
@@ -1057,7 +1047,7 @@ function start_websocket()
         app_role = msg.role;
         load_admin_configs();
 
-        yarrboard_log(app_role);
+        // yarrboard_log(app_role);
 
         update_role_ui();
 
@@ -1103,14 +1093,13 @@ function start_websocket()
   
   socket.onclose = function(event)
   {
-    //yarrboard_log(`[socket] Connection closed code=${event.code} reason=${event.reason}`);
+    yarrboard_log(`[socket] Connection closed code=${event.code} reason=${event.reason}`);
   };
   
-  // socket.onerror = function(error)
-  // {
-  //   //yarrboard_log(`[socket] error`);
-  //   //yarrboard_log(error);
-  // };
+  socket.onerror = function()
+  {
+    yarrboard_log(`[socket] error`);
+  };
 }
 
 function retry_connection()
@@ -1393,7 +1382,7 @@ function validate_pwm_name(e)
 
     //set our new pwm name!
     immediateSend({
-      "cmd": "set_pwm_channel",
+      "cmd": "config_pwm_channel",
       "id": id,
       "name": value
     });
@@ -1411,7 +1400,7 @@ function validate_pwm_dimmable(e)
 
   //save it
   immediateSend({
-    "cmd": "set_pwm_channel",
+    "cmd": "config_pwm_channel",
     "id": id,
     "isDimmable": value
   });
@@ -1433,7 +1422,7 @@ function validate_pwm_enabled(e)
 
   //save it
   immediateSend({
-    "cmd": "set_pwm_channel",
+    "cmd": "config_pwm_channel",
     "id": id,
     "enabled": value
   });
@@ -1458,7 +1447,7 @@ function validate_pwm_soft_fuse(e)
 
     //save it
     immediateSend({
-      "cmd": "set_pwm_channel",
+      "cmd": "config_pwm_channel",
       "id": id,
       "softFuse": value
     });
@@ -1483,7 +1472,7 @@ function validate_switch_name(e)
 
     //set our new pwm name!
     immediateSend({
-      "cmd": "set_switch",
+      "cmd": "config_switch",
       "id": id,
       "name": value
     });
@@ -1504,7 +1493,7 @@ function validate_switch_enabled(e)
 
   //save it
   immediateSend({
-    "cmd": "set_switch",
+    "cmd": "config_switch",
     "id": id,
     "enabled": value
   });
@@ -1548,7 +1537,7 @@ function validate_rgb_name(e)
 
     //set our new pwm name!
     immediateSend({
-      "cmd": "set_rgb",
+      "cmd": "config_rgb",
       "id": id,
       "name": value
     });
@@ -1569,7 +1558,7 @@ function validate_rgb_enabled(e)
 
   //save it
   immediateSend({
-    "cmd": "set_rgb",
+    "cmd": "config_rgb",
     "id": id,
     "enabled": value
   });
@@ -1593,7 +1582,7 @@ function validate_adc_name(e)
 
     //set our new pwm name!
     immediateSend({
-      "cmd": "set_adc",
+      "cmd": "config_adc",
       "id": id,
       "name": value
     });
@@ -1614,7 +1603,7 @@ function validate_adc_enabled(e)
 
   //save it
   immediateSend({
-    "cmd": "set_adc",
+    "cmd": "config_adc",
     "id": id,
     "enabled": value
   });
@@ -1817,7 +1806,6 @@ function update_role_ui()
   {
     $(".nav-permission").hide();
     page_permissions[app_role].forEach((page) => {
-      yarrboard_log(`#${page}Nav`);
       $(`#${page}Nav`).show();
     });
   }

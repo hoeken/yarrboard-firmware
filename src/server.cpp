@@ -379,7 +379,7 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
   PsychicClient *client = server.getClient(request->socket);
   if (client == NULL || !websocketHandler.hasClient(client))
   {
-    TRACE();
+    Serial.printf("[socket] client #%d bad, bailing", request->socket);
     return;
   }
   PsychicWebSocketClient ws(client);

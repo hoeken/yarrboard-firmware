@@ -39,7 +39,7 @@
 #define YBP_MODE_SERIAL    2
 
 //for handling messages outside of the loop
-#define YB_RECEIVE_BUFFER_COUNT 20
+#define YB_RECEIVE_BUFFER_COUNT 100
 
 //milliseconds between updating various things
 #define YB_UPDATE_FREQUENCY 250

@@ -218,10 +218,14 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, byte mode, P
         return handleFactoryReset(input, output);
       else if (!strcmp(cmd, "ota_start"))
         return handleOTAStart(input, output);
-      else if (!strcmp(cmd, "set_switch"))
-        return handleSetSwitch(input, output);
-      else if (!strcmp(cmd, "set_adc"))
-        return handleSetADC(input, output);
+      else if (!strcmp(cmd, "config_pwm_channel"))
+        return handleSetPWMChannel(input, output);
+      else if (!strcmp(cmd, "config_switch"))
+        return handleConfigSwitch(input, output);
+      else if (!strcmp(cmd, "config_adc"))
+        return handleConfigADC(input, output);
+      else if (!strcmp(cmd, "config_rgb"))
+        return handleConfigRGB(input, output);
     }
 
     //if we got here, no bueno.
@@ -600,6 +604,24 @@ void handleSetPWMChannel(JsonVariantConst input, JsonVariant output)
       //change our output pin to reflect
       pwm_channels[cid].updateOutput();
     }
+  #else
+    return generateErrorJSON(output, "Board does not have output channels.");
+  #endif
+}
+
+void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
+{
+  #ifdef YB_HAS_PWM_CHANNELS
+    char prefIndex[YB_PREF_KEY_LENGTH];
+
+    //id is required
+    if (!input.containsKey("id"))
+      return generateErrorJSON(output, "'id' is a required parameter");
+
+    //is it a valid channel?
+    byte cid = input["id"];
+    if (!isValidPWMChannel(cid))
+      return generateErrorJSON(output, "Invalid channel id");
 
     //channel name
     if (input.containsKey("name"))
@@ -753,7 +775,7 @@ void handleFadePWMChannel(JsonVariantConst input, JsonVariant output)
   #endif
 }
 
-void handleSetSwitch(JsonVariantConst input, JsonVariant output)
+void handleConfigSwitch(JsonVariantConst input, JsonVariant output)
 {
   #ifdef YB_HAS_INPUT_CHANNELS
     char prefIndex[YB_PREF_KEY_LENGTH];
@@ -806,7 +828,7 @@ void handleSetSwitch(JsonVariantConst input, JsonVariant output)
   #endif
 }
 
-void handleSetRGB(JsonVariantConst input, JsonVariant output)
+void handleConfigRGB(JsonVariantConst input, JsonVariant output)
 {
   #ifdef YB_HAS_RGB_CHANNELS
     char prefIndex[YB_PREF_KEY_LENGTH];
@@ -854,6 +876,24 @@ void handleSetRGB(JsonVariantConst input, JsonVariant output)
       //give them the updated config
       return generateConfigJSON(output);
     }
+  #else
+    return generateErrorJSON(output, "Board does not have RGB channels.");
+  #endif
+}
+
+void handleSetRGB(JsonVariantConst input, JsonVariant output)
+{
+  #ifdef YB_HAS_RGB_CHANNELS
+    char prefIndex[YB_PREF_KEY_LENGTH];
+
+    //id is required
+    if (!input.containsKey("id"))
+      return generateErrorJSON(output, "'id' is a required parameter");
+
+    //is it a valid channel?
+    byte cid = input["id"];
+    if (!isValidRGBChannel(cid))
+      return generateErrorJSON(output, "Invalid channel id");
 
     //new color?
     if (input.containsKey("red") || input.containsKey("green") || input.containsKey("blue"))
@@ -899,7 +939,7 @@ void handleSetRGB(JsonVariantConst input, JsonVariant output)
   #endif
 }
 
-void handleSetADC(JsonVariantConst input, JsonVariant output)
+void handleConfigADC(JsonVariantConst input, JsonVariant output)
 {
   #ifdef YB_HAS_ADC_CHANNELS
     char prefIndex[YB_PREF_KEY_LENGTH];
