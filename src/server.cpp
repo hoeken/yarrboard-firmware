@@ -18,7 +18,7 @@ void server_setup()
   //init our authentication stuff
   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
   {
-    authenticatedClients[i].client = NULL;
+    authenticatedClients[i].socket = 0;
     authenticatedClients[i].role = NOBODY;
   }
 
@@ -28,6 +28,7 @@ void server_setup()
     Serial.printf("Failed to create queue= %p\n", wsRequests);
 
   server.config.max_open_sockets = YB_CLIENT_LIMIT;
+
   // Populate the last modification date based on build datetime
   sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
 
@@ -376,7 +377,7 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
 {
   //make sure our client is still good.
   PsychicClient *client = server.getClient(request->socket);
-  if (client == NULL)
+  if (client == NULL || !websocketHandler.hasClient(client))
   {
     TRACE();
     return;
@@ -459,7 +460,7 @@ bool isWebsocketClientLoggedIn(JsonVariantConst doc, PsychicWebSocketClient *cli
 {
   //are they in our auth array?
   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-    if (authenticatedClients[i].client == client)
+    if (authenticatedClients[i].socket == client->socket())
       return true;
 
   return false;
@@ -469,7 +470,7 @@ UserRole getWebsocketRole(JsonVariantConst doc, PsychicWebSocketClient *client)
 {
   //are they in our auth array?
   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-    if (authenticatedClients[i].client == client)
+    if (authenticatedClients[i].socket == client->socket())
       return authenticatedClients[i].role;
 
   return NOBODY;
@@ -526,15 +527,15 @@ bool addClientToAuthList(PsychicWebSocketClient *client, UserRole role)
   for (i=0; i<YB_CLIENT_LIMIT; i++)
   {
     //did we find an empty slot?
-    if (!authenticatedClients[i].client)
+    if (!authenticatedClients[i].socket)
     {
-      authenticatedClients[i].client = client;
+      authenticatedClients[i].socket = client->socket();
       authenticatedClients[i].role = role;
       break;
     }
 
     //are we already authenticated?
-    if (authenticatedClients[i].client == client)
+    if (authenticatedClients[i].socket == client->socket())
       break;
   }
 
@@ -554,9 +555,9 @@ void removeClientFromAuthList(PsychicWebSocketClient *client)
   for (i=0; i<YB_CLIENT_LIMIT; i++)
   {
     //did we find an empty slot?
-    if (authenticatedClients[i].client == client)
+    if (authenticatedClients[i].socket == client->socket())
     {
-      authenticatedClients[i].client = NULL;
+      authenticatedClients[i].socket = 0;
       authenticatedClients[i].role = NOBODY;
     }
   }

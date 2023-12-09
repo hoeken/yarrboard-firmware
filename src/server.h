@@ -36,7 +36,7 @@
 #endif
 
 typedef struct  {
-  PsychicClient *client;
+  int socket;
   UserRole role;
 } AuthenticatedClient;
 

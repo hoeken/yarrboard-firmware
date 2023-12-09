@@ -178,9 +178,6 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, byte mode, P
 
     UserRole role = getUserRole(input, mode, connection);
 
-    // Serial.println((int)mode);
-    // Serial.println((int)role);
-
     //what is your command?
     if (role == ADMIN || role == GUEST)
     {

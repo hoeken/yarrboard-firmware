@@ -1,5 +1,5 @@
 let socket;
-let current_page;
+let current_page = null;
 let current_config;
 let app_username;
 let app_password;
@@ -228,7 +228,7 @@ function send_heartbeat()
   //did we not get a heartbeat?
   if (Date.now() - last_heartbeat > heartbeat_rate * 2)
   {
-    console.log("Missed heartbeat: " + (Date.now() - last_heartbeat))
+    yarrboard_log("Missed heartbeat: " + (Date.now() - last_heartbeat))
     socket.close();
     retry_connection();
   }
@@ -241,13 +241,13 @@ function send_heartbeat()
   }
   else if (socket.readyState == WebSocket.CLOSING)
   {
-    console.log("she closing " + socket.readyState);
+    yarrboard_log("she closing " + socket.readyState);
     //socket.close();
     retry_connection();
   }
   else if (socket.readyState == WebSocket.CLOSED)
   {
-    console.log("she closed " + socket.readyState);
+    yarrboard_log("she closed " + socket.readyState);
     //socket.close();
     retry_connection();
   }
@@ -257,13 +257,12 @@ function start_yarrboard()
 {
   //main data connection
   start_websocket();
-
-  //let the rest of the site load first.
-  setTimeout(check_for_updates, 1000);
 }
 
 function load_configs()
 {
+  yarrboard_log("load_configs");
+
   //load our config... will also trigger login
   immediateSend({
     "cmd": "get_config"
@@ -313,11 +312,11 @@ function start_websocket()
   //open it.
   socket = new WebSocket(protocol + window.location.host + "/ws");
   
-  console.log("Opening new websocket");
+  yarrboard_log("Opening new websocket");
 
   socket.onopen = function(e)
   {
-    console.log("[socket] Connected");
+    yarrboard_log("[socket] Connected");
 
     //we are connected, reload
     socket_retries = 0;
@@ -333,7 +332,7 @@ function start_websocket()
 
     //auto login?
     if (Cookies.get("username") && Cookies.get("password")){
-      console.log("auto login");
+      yarrboard_log("auto login");
       immediateSend({
         "cmd": "login",
         "user": Cookies.get("username"),
@@ -351,10 +350,10 @@ function start_websocket()
 
     if (msg.msg == 'config')
     {
-      // console.log("config");
-      // console.log(msg);
-      // console.log(event.data);
-      // console.log(event.data.length);
+      yarrboard_log("config");
+      // yarrboard_log(msg);
+      yarrboard_log(event.data);
+      // yarrboard_log(event.data.length);
 
       current_config = msg;
 
@@ -373,6 +372,7 @@ function start_websocket()
         app_role = "admin";
         load_admin_configs();
         update_role_ui();
+        open_page("control");
       }
 
       //did we get a crash?
@@ -403,6 +403,7 @@ function start_websocket()
       //populate our pwm control table
       $('#controlDiv').hide();
       $('#pwmStatsDiv').hide();
+
       if (msg.pwm)
       {
         $('#pwmTableBody').html("");
@@ -656,13 +657,16 @@ function start_websocket()
 
       //ready!
       page_ready.config = true;
+
+      if (!current_page)
+        open_page('control');
     }
     else if (msg.msg == 'update')
     {
-      // console.log("update");
-      // console.log(msg);
-      // console.log(event.data);
-      // console.log(event.data.length);
+      // yarrboard_log("update");
+      // yarrboard_log(msg);
+      // yarrboard_log(event.data);
+      // yarrboard_log(event.data.length);
 
       //we need a config loaded.
       if (!current_config)
@@ -821,7 +825,7 @@ function start_websocket()
     }
     else if (msg.msg == "stats")
     {
-      //console.log("stats");
+      //yarrboard_log("stats");
 
       //we need this
       if (!current_config)
@@ -913,12 +917,12 @@ function start_websocket()
     //load up our network config.
     else if (msg.msg == "network_config")
     {
-      //console.log("network config");
+      //yarrboard_log("network config");
 
       //save our config.
       network_config = msg;
 
-      //console.log(msg);
+      //yarrboard_log(msg);
       $("#wifi_mode").val(msg.wifi_mode);
       $("#wifi_ssid").val(msg.wifi_ssid);
       $("#wifi_pass").val(msg.wifi_pass);
@@ -929,7 +933,7 @@ function start_websocket()
     //load up our network config.
     else if (msg.msg == "app_config")
     {
-      //console.log("network config");
+      //yarrboard_log("network config");
 
       //save our config.
       app_config = msg;
@@ -956,7 +960,7 @@ function start_websocket()
         $(`#guest_pass`).prop('disabled', !$("#require_login").prop("checked"))
       });
 
-      //console.log(msg);
+      //yarrboard_log(msg);
       $("#admin_user").val(msg.admin_user);
       $("#admin_pass").val(msg.admin_pass);
       $("#guest_user").val(msg.guest_user);
@@ -998,7 +1002,7 @@ function start_websocket()
     //load up our network config.
     else if (msg.msg == "ota_progress")
     {
-      //console.log("ota progress");
+      //yarrboard_log("ota progress");
 
       //OTA is blocking... so update our heartbeat
       last_heartbeat = Date.now();
@@ -1026,6 +1030,8 @@ function start_websocket()
     }
     else if (msg.status == "error")
     {
+      yarrboard_log(msg.message);
+
       //did we turn login off?
       if (msg.message == "Login not required.")
       {
@@ -1051,7 +1057,7 @@ function start_websocket()
         app_role = msg.role;
         load_admin_configs();
 
-        console.log(app_role);
+        yarrboard_log(app_role);
 
         update_role_ui();
 
@@ -1083,28 +1089,28 @@ function start_websocket()
     else if (msg.pong)
     {
       //we are connected still
-      //console.log("pong: " + msg.pong);
+      //yarrboard_log("pong: " + msg.pong);
 
       //we got the heartbeat
       last_heartbeat = Date.now();
     }
     else
     {
-      console.log("[socket] Unknown message: ");
-      console.log(msg);
+      yarrboard_log("[socket] Unknown message: ");
+      yarrboard_log(msg);
     }
   };
   
   socket.onclose = function(event)
   {
-    //console.log(`[socket] Connection closed code=${event.code} reason=${event.reason}`);
+    //yarrboard_log(`[socket] Connection closed code=${event.code} reason=${event.reason}`);
   };
   
-  socket.onerror = function(error)
-  {
-    //console.log(`[socket] error`);
-    //console.log(error);
-  };
+  // socket.onerror = function(error)
+  // {
+  //   //yarrboard_log(`[socket] error`);
+  //   //yarrboard_log(error);
+  // };
 }
 
 function retry_connection()
@@ -1116,7 +1122,7 @@ function retry_connection()
   //keep watching if we are connecting
   if (socket.readyState == WebSocket.CONNECTING)
   {
-    console.log("Waiting for connection");
+    yarrboard_log("Waiting for connection");
     
     retry_time++;
     $("#retries_count").html(retry_time);
@@ -1130,7 +1136,7 @@ function retry_connection()
   //keep track of stuff.
   retry_time = 0;
   socket_retries++;
-  console.log("Reconnecting... " + socket_retries);
+  yarrboard_log("Reconnecting... " + socket_retries);
 
   //our connection status
   $(".connection_status").hide();
@@ -1193,21 +1199,21 @@ function toggle_duty_cycle(id)
 
 function open_page(page)
 {
+  yarrboard_log(`opening ${page}`);
+
   if (!page_permissions[app_role].includes(page))
   {
-    console.log(`${page} not allowed for ${app_role}`);
+    yarrboard_log(`${page} not allowed for ${app_role}`);
     return;
   }
 
   if (page == current_page)
   {
-    console.log(`already on ${page}.`);
+    yarrboard_log(`already on ${page}.`);
     //return;
   }
 
   current_page = page;
-
-  console.log(`Opening page ${page}`);
 
   //request our stats.
   if (page == "stats")
@@ -1310,7 +1316,7 @@ function throttledSend(jdata)
     lastSentTime = Date.now();
   }
   else
-    console.log("message dropped, too fast");
+    yarrboard_log("message dropped, too fast");
 }
 
 function immediateSend(jdata)
@@ -1811,7 +1817,7 @@ function update_role_ui()
   {
     $(".nav-permission").hide();
     page_permissions[app_role].forEach((page) => {
-      console.log(`#${page}Nav`);
+      yarrboard_log(`#${page}Nav`);
       $(`#${page}Nav`).show();
     });
   }
@@ -1950,3 +1956,43 @@ function compareVersions(first, second)
 
     return true;
 }
+
+function yarrboard_log(message)
+{
+  // Create a new Date object
+  const currentDate = new Date();
+
+  // Get the parts of the date and time
+  const year = currentDate.getFullYear();
+  const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+  const day = String(currentDate.getDate()).padStart(2, '0');
+  const hours = String(currentDate.getHours()).padStart(2, '0');
+  const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+  const seconds = String(currentDate.getSeconds()).padStart(2, '0');
+
+  // Create the formatted timestamp
+  const formattedTimestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
+
+  //put it in our textarea - useful for debugging on non-computer interfaces
+  let textarea = document.getElementById("debug_log_text");
+  textarea.append(`${formattedTimestamp} ${message}\n`);
+  textarea.scrollTop = textarea.scrollHeight;
+
+  //standard log.
+  console.log(`${formattedTimestamp} ${message}`);
+}
+
+window.onerror = function (errorMsg, url, lineNumber) {
+  yarrboard_log(`Error: ${errorMsg} on ${url} line ${lineNumber}`);
+  return false;
+}
+
+window.addEventListener("error", function (e) {
+  yarrboard_log(`Error Listener: ${e.error.message}`);
+  return false;
+});
+
+window.addEventListener('unhandledrejection', function (e) {
+  yarrboard_log(`Unhandled Rejection: ${e.reason.message}`);
+  return false;
+});

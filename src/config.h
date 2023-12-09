@@ -11,7 +11,7 @@
 
 #include <ArduinoTrace.h>
 
-#define YB_FIRMWARE_VERSION "1.3.0"
+#define YB_FIRMWARE_VERSION "1.3.1"
 
 #if defined YB_CONFIG_8CH_MOSFET_REV_A
   #include "./configs/config.8ch-mosfet-reva.h"
@@ -32,7 +32,7 @@
 
 //bytes for sending json
 #define YB_LARGE_JSON_SIZE 4096
-#define YB_CLIENT_LIMIT 8
+#define YB_CLIENT_LIMIT 10
 
 #define YBP_MODE_WEBSOCKET 0
 #define YBP_MODE_HTTP      1
