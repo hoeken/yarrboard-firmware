@@ -258,9 +258,6 @@ function start_yarrboard()
   //main data connection
   start_websocket();
 
-  //default startup
-  update_role_ui();
-
   //let the rest of the site load first.
   setTimeout(check_for_updates, 1000);
 }
@@ -1039,6 +1036,7 @@ function start_websocket()
       //keep the u gotta login to the login page.
       if (msg.message == "You must be logged in.")
       {
+        update_role_ui();
         open_page("login");
       }
       else

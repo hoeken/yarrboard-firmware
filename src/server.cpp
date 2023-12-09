@@ -1,6 +1,6 @@
 #include "server.h"
 
-PsychicHttpServer server;
+PsychicHttpsServer server;
 PsychicWebSocketHandler websocketHandler;
 
 // Variable to hold the last modification datetime
@@ -241,23 +241,24 @@ void server_loop()
 
 void sendToAllWebsockets(const char * jsonString)
 {
-  //send the message to all authenticated clients.
-  if (require_login)
-  {
-    for (byte i=0; i<YB_CLIENT_LIMIT; i++)
-    {
-      if (authenticatedClients[i].client)
-      {
-        //make sure its a valid client
-        PsychicWebSocketClient *client = websocketHandler.getClient(authenticatedClients[i].client);
-        if (client != NULL)
-          client->sendMessage(jsonString);
-      }
-    }
-  }
-  //nope, just sent it to all.
-  else
-    websocketHandler.sendAll(jsonString);
+  //TODO: check that all sendToAllWebsockets commands are benign
+  // //send the message to all authenticated clients.
+  // if (require_login)
+  // {
+  //   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
+  //   {
+  //     if (authenticatedClients[i].client)
+  //     {
+  //       //make sure its a valid client
+  //       PsychicWebSocketClient *client = websocketHandler.getClient(authenticatedClients[i].client);
+  //       if (client != NULL)
+  //         client->sendMessage(jsonString);
+  //     }
+  //   }
+  // }
+  // //nope, just sent it to all.
+  // else
+  websocketHandler.sendAll(jsonString);
 }
 
 bool logClientIn(PsychicWebSocketClient *client, UserRole role)
@@ -327,7 +328,7 @@ void handleWebSocketMessage(PsychicWebSocketRequest *request, uint8_t *data, siz
   //build our websocket request - copy the existing one
   //we are allocating memory here, and the worker will free it
   WebsocketRequest wr;
-  wr.socket = request->wsclient->socket();
+  wr.socket = request->client()->socket();
   wr.len = len+1;
   wr.buffer = (char *)malloc(len+1);
 
@@ -351,33 +352,36 @@ void handleWebSocketMessage(PsychicWebSocketRequest *request, uint8_t *data, siz
   }
 
   //send a throttle message if we're full
-  if (!uxQueueSpacesAvailable(wsRequests))
-  {
-    StaticJsonDocument<128> output;
+  // if (!uxQueueSpacesAvailable(wsRequests))
+  // {
+  //   StaticJsonDocument<128> output;
 
-    //dynamically allocate our buffer
-    size_t jsonSize = measureJson(output);
-    char * jsonBuffer = (char *)malloc(jsonSize+1);
-    jsonBuffer[jsonSize] = '\0'; // null terminate
+  //   //dynamically allocate our buffer
+  //   size_t jsonSize = measureJson(output);
+  //   char * jsonBuffer = (char *)malloc(jsonSize+1);
+  //   jsonBuffer[jsonSize] = '\0'; // null terminate
 
-    //did we get anything?
-    if (jsonBuffer != NULL)
-    {
-      generateErrorJSON(output, "Queue Full");
-      serializeJson(output, jsonBuffer, jsonSize+1);
-      request->reply(jsonBuffer);
-    }
-    free(jsonBuffer);
-  }
+  //   //did we get anything?
+  //   if (jsonBuffer != NULL)
+  //   {
+  //     generateErrorJSON(output, "Queue Full");
+  //     serializeJson(output, jsonBuffer, jsonSize+1);
+  //     request->reply(jsonBuffer);
+  //   }
+  //   free(jsonBuffer);
+  // }
 }
 
 void handleWebsocketMessageLoop(WebsocketRequest* request)
 {
   //make sure our client is still good.
-  PsychicClient client(server.server, request->socket);
-  PsychicWebSocketClient *ws = websocketHandler.getClient(&client);
-  if (ws == NULL)
+  PsychicClient *client = server.getClient(request->socket);
+  if (client == NULL)
+  {
+    TRACE();
     return;
+  }
+  PsychicWebSocketClient ws(client);
 
   DynamicJsonDocument output(YB_LARGE_JSON_SIZE);
   DynamicJsonDocument input(1024);
@@ -391,7 +395,7 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
     generateErrorJSON(output, error);
   }
   else
-    handleReceivedJSON(input, output, YBP_MODE_WEBSOCKET, ws);
+    handleReceivedJSON(input, output, YBP_MODE_WEBSOCKET, &ws);
 
   //empty messages are valid, so don't send a response
   if (output.size())
@@ -405,7 +409,7 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
     if (jsonBuffer != NULL)
     {
       serializeJson(output, jsonBuffer, jsonSize+1);
-      ws->sendMessage(jsonBuffer);
+      ws.sendMessage(jsonBuffer);
 
       //keep track!
       sentMessages++;

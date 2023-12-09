@@ -14,6 +14,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <PsychicHttp.h>
+#include <PsychicHttpsServer.h>
 #include <freertos/queue.h>
 
 #include "protocol.h"
