@@ -81,7 +81,7 @@ void server_setup()
       return request->reply(304);
     }
     //What about our ETag?
-    else if (request->header("If-None-Match").equals(YB_FIRMWARE_VERSION))
+    else if (request->header("If-None-Match").equals(index_html_gz_sha))
     {
       TRACE();
       return request->reply(304);
@@ -97,7 +97,7 @@ void server_setup()
 
         // And set the last-modified datetime so we can check if we need to send it again next time or not
         response.addHeader("Last-Modified", last_modified);
-        response.addHeader("ETag", YB_FIRMWARE_VERSION);
+        response.addHeader("ETag", index_html_gz_sha);
         //response.addHeader("Cache-Control", "max-age=604800"); // cache for 1 week
 
         //add our actual content
@@ -118,7 +118,7 @@ void server_setup()
 
     // And set the last-modified datetime so we can check if we need to send it again next time or not
     response.addHeader("Last-Modified", last_modified);
-    //response.addHeader("ETag", YB_FIRMWARE_VERSION);
+    response.addHeader("ETag", logo_navico_gz_sha);
 
     //add our actual content
     response.setContent(logo_navico_gz, logo_navico_gz_len);

@@ -45,6 +45,7 @@ import inline from 'gulp-inline';
 import inlineImages from 'gulp-css-base64';
 import favicon from 'gulp-base64-favicon';
 import fs from 'fs';
+import crypto from 'crypto';
 
 function clean(cb) {
      deleteAsync([ "dist/*" ]);
@@ -99,15 +100,20 @@ function buildfs_logo_embedded(cb) {
 
 function write_header_file(source, destination, name)
 {
-    var wstream = fs.createWriteStream(destination);
+    const wstream = fs.createWriteStream(destination);
     wstream.on('error', function (err) {
         console.log(err);
     });
 
-    var data = fs.readFileSync(source);
+    const data = fs.readFileSync(source);
+
+    const hashSum = crypto.createHash('sha256');
+    hashSum.update(data);
+    const hex = hashSum.digest('hex');
 
     wstream.write(`#define ${name}_len ${data.length}\n`);
-    wstream.write(`const uint8_t ${name}[] PROGMEM = {`);
+    wstream.write(`const char ${name}_sha[] = "${hex}";\n`);
+    wstream.write(`const uint8_t ${name}[] = {`);
 
     for (var i=0; i<data.length; i++) {
         if (i % 1000 == 0) wstream.write("\n");
