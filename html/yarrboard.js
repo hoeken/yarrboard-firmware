@@ -4,6 +4,7 @@ let current_config;
 let app_username;
 let app_password;
 let app_role = "nobody";
+let default_app_role = "nobody";
 let app_update_interval = 500;
 let network_config;
 let app_config;
@@ -320,25 +321,44 @@ function start_websocket()
     $(".connection_status").hide();
     $("#connection_good").show();
 
-    //auto login?
-    if (Cookies.get("username") && Cookies.get("password")){
-      yarrboard_log("auto login");
-      immediateSend({
-        "cmd": "login",
-        "user": Cookies.get("username"),
-        "pass": Cookies.get("password")
-      });
-    }
-  
-    //get our basic info
-    load_configs();
+    //figure out what our login situation is
+    immediateSend({"cmd": "hello"});
   };
 
   socket.onmessage = function(event)
   {
     const msg = JSON.parse(event.data);
 
-    if (msg.msg == 'config')
+    if (msg.msg == 'hello')
+    {
+      yarrboard_log("hello");
+      yarrboard_log(event.data);
+      app_role = msg.role;
+      default_app_role = msg.default_role;
+
+      //auto login?
+      if (Cookies.get("username") && Cookies.get("password")){
+        yarrboard_log("auto login");
+        immediateSend({
+          "cmd": "login",
+          "user": Cookies.get("username"),
+          "pass": Cookies.get("password")
+        });
+      }
+
+      update_role_ui();
+
+      if (app_role == 'admin')
+      {
+        load_configs();
+        load_admin_configs();
+      }
+      else if (app_role == 'guest')
+        load_configs();
+
+      open_default_page();
+    }
+    else if (msg.msg == 'config')
     {
       // yarrboard_log("config");
       // yarrboard_log(msg);
@@ -350,19 +370,8 @@ function start_websocket()
       //is it our first boot?
       if (msg.first_boot && current_page != "network")
       {
-        app_role = 'admin';
         load_admin_configs();
-        update_role_ui();
         show_alert(`Welcome to Yarrboard, head over to <a href="#network" onclick="open_page('network')">Network</a> to setup your WiFi.`, "primary");
-      }
-
-      //we are an admin
-      if (!msg.require_login)
-      {
-        app_role = "admin";
-        load_admin_configs();
-        update_role_ui();
-        open_page("control");
       }
 
       //did we get a crash?
@@ -928,27 +937,24 @@ function start_websocket()
       //save our config.
       app_config = msg;
 
-      //update login stuff.
-      if (msg.require_login)
-        $('#logoutNav').show();
-      else
-        $('#logoutNav').hide();
+      update_role_ui();
 
       //what is our update interval?
       if (msg.app_update_interval)
         app_update_interval = msg.app_update_interval;
 
       //enabled/disable user/pass fields
-      $(`#admin_user`).prop('disabled', !msg.require_login);
-      $(`#admin_pass`).prop('disabled', !msg.require_login);
-      $(`#guest_user`).prop('disabled', !msg.require_login);
-      $(`#guest_pass`).prop('disabled', !msg.require_login);
-      $(`#require_login`).change(function (){
-        $(`#admin_user`).prop('disabled', !$("#require_login").prop("checked"))
-        $(`#admin_pass`).prop('disabled', !$("#require_login").prop("checked"))
-        $(`#guest_user`).prop('disabled', !$("#require_login").prop("checked"))
-        $(`#guest_pass`).prop('disabled', !$("#require_login").prop("checked"))
-      });
+      //TODO: update this
+      // $(`#admin_user`).prop('disabled', !msg.require_login);
+      // $(`#admin_pass`).prop('disabled', !msg.require_login);
+      // $(`#guest_user`).prop('disabled', !msg.require_login);
+      // $(`#guest_pass`).prop('disabled', !msg.require_login);
+      // $(`#require_login`).change(function (){
+      //   $(`#admin_user`).prop('disabled', !$("#require_login").prop("checked"))
+      //   $(`#admin_pass`).prop('disabled', !$("#require_login").prop("checked"))
+      //   $(`#guest_user`).prop('disabled', !$("#require_login").prop("checked"))
+      //   $(`#guest_pass`).prop('disabled', !$("#require_login").prop("checked"))
+      // });
 
       //yarrboard_log(msg);
       $("#admin_user").val(msg.admin_user);
@@ -956,7 +962,8 @@ function start_websocket()
       $("#guest_user").val(msg.guest_user);
       $("#guest_pass").val(msg.guest_pass);
       $("#app_update_interval").val(msg.app_update_interval);
-      $("#require_login").prop("checked", msg.require_login);
+      $("#default_role select").val(msg.default_role).change();
+      // $("#require_login").prop("checked", msg.require_login);
       $("#app_enable_mfd").prop("checked", msg.app_enable_mfd);
       $("#app_enable_api").prop("checked", msg.app_enable_api);
       $("#app_enable_serial").prop("checked", msg.app_enable_serial);
@@ -1031,10 +1038,7 @@ function start_websocket()
 
       //keep the u gotta login to the login page.
       if (msg.message == "You must be logged in.")
-      {
-        update_role_ui();
         open_page("login");
-      }
       else
         show_alert(msg.message);
     }
@@ -1047,7 +1051,7 @@ function start_websocket()
         app_role = msg.role;
         load_admin_configs();
 
-        // yarrboard_log(app_role);
+        yarrboard_log(app_role);
 
         update_role_ui();
 
@@ -1658,33 +1662,34 @@ function save_app_settings()
   let admin_pass = $("#admin_pass").val();
   let guest_user = $("#guest_user").val();
   let guest_pass = $("#guest_pass").val();
-  let update_interval = $("#app_update_interval").val();
-  let require_login = $("#require_login").prop("checked");
+  let default_role = $("#default_role option : selected").val()
+//  let require_login = $("#require_login").prop("checked");
   let app_enable_mfd = $("#app_enable_mfd").prop("checked");
   let app_enable_api = $("#app_enable_api").prop("checked");
   let app_enable_serial = $("#app_enable_serial").prop("checked");
   let app_enable_ssl = $("#app_enable_ssl").prop("checked");
   let server_cert = $("#server_cert").val();
   let server_key = $("#server_key").val();
+  let update_interval = $("#app_update_interval").val();
 
   //we should probably do a bit of verification here
   update_interval = Math.max(100, update_interval);
   update_interval = Math.min(5000, update_interval);
   app_update_interval = update_interval;
 
-  //app login?
-  if (require_login)
-  {
-    $('#logoutNav').show();
-    Cookies.set('username', admin_user, { expires: 365 });
-    Cookies.set('password', admin_pass, { expires: 365 });
-  }
-  else
-  {
-    $('#logoutNav').hide();
-    Cookies.remove("username");
-    Cookies.remove("password");    
-  }
+  //TODO: look at our default role vs current role
+  // if (require_login)
+  // {
+  //   $('#logoutNav').show();
+  //   Cookies.set('username', admin_user, { expires: 365 });
+  //   Cookies.set('password', admin_pass, { expires: 365 });
+  // }
+  // else
+  // {
+  //   $('#logoutNav').hide();
+  //   Cookies.remove("username");
+  //   Cookies.remove("password");    
+  // }
 
   //okay, send it off.
   immediateSend({
@@ -1694,7 +1699,7 @@ function save_app_settings()
     "guest_user": guest_user,
     "guest_pass": guest_pass,
     "app_update_interval": app_update_interval,
-    "require_login": require_login,
+    "default_role": default_role,
     "app_enable_mfd": app_enable_mfd,
     "app_enable_api": app_enable_api,
     "app_enable_serial": app_enable_serial,
@@ -1813,19 +1818,38 @@ function update_role_ui()
   }
   else
     $(".nav-permission").hide();
+
+  //show login or not?
+  $('#loginNav').hide();
+  if (default_app_role == 'nobody' && app_role == 'nobody')
+    $('#loginNav').show();
+  if (default_app_role == 'guest' && app_role == 'guest')
+    $('#loginNav').show();
+
+  //show logout or not?
+  $('#logoutNav').hide();
+  if (default_app_role == 'nobody' && app_role != 'nobody')
+    $('#logoutNav').show();
+  if (default_app_role == 'guest' && app_role == 'admin')
+    $('#logoutNav').show();  
 }
 
 function open_default_page()
 {
-  //check to see if we want a certain page
-  if (window.location.hash)
+  if (app_role != 'nobody')
   {
-    let page = window.location.hash.substring(1);
-    if (page_list.includes(page))
-      open_page(page);
+    //check to see if we want a certain page
+    if (window.location.hash)
+    {
+      let page = window.location.hash.substring(1);
+      if (page_list.includes(page))
+        open_page(page);
+    }
+    else
+      open_page("control");
   }
   else
-    open_page("control");
+    open_page('login');
 }
 
 function secondsToDhms(seconds)

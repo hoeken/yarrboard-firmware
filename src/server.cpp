@@ -19,7 +19,7 @@ void server_setup()
   for (byte i=0; i<YB_CLIENT_LIMIT; i++)
   {
     authenticatedClients[i].socket = 0;
-    authenticatedClients[i].role = NOBODY;
+    authenticatedClients[i].role = app_default_role;
   }
 
   //prepare our message queue
@@ -242,8 +242,8 @@ void server_loop()
 
 void sendToAllWebsockets(const char * jsonString, UserRole auth_level)
 {
-  //TODO: check that all sendToAllWebsockets commands are benign
-  if (require_login)
+  //make sure we're allowed to see the message
+  if (auth_level > app_default_role)
   {
     for (byte i=0; i<YB_CLIENT_LIMIT; i++)
     {
@@ -424,10 +424,6 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
 
 bool isLoggedIn(JsonVariantConst input, byte mode, PsychicWebSocketClient *connection)
 {
-  //also only if enabled
-  if (!require_login)
-    return true;
-
   //login only required for websockets.
   if (mode == YBP_MODE_WEBSOCKET)
     return isWebsocketClientLoggedIn(input, connection);
@@ -441,10 +437,6 @@ bool isLoggedIn(JsonVariantConst input, byte mode, PsychicWebSocketClient *conne
 
 UserRole getUserRole(JsonVariantConst input, byte mode, PsychicWebSocketClient *connection)
 {
-  //also only if enabled
-  if (!require_login)
-    return ADMIN;
-
   //login only required for websockets.
   if (mode == YBP_MODE_WEBSOCKET)
     return getWebsocketRole(input, connection);
@@ -453,7 +445,7 @@ UserRole getUserRole(JsonVariantConst input, byte mode, PsychicWebSocketClient *
   else if (mode == YBP_MODE_SERIAL)
     return serial_role;
   else
-    return NOBODY;
+    return app_default_role;
 
 }
 
@@ -474,7 +466,7 @@ UserRole getWebsocketRole(JsonVariantConst doc, PsychicWebSocketClient *client)
     if (authenticatedClients[i].socket == client->socket())
       return authenticatedClients[i].role;
 
-  return NOBODY;
+  return app_default_role;
 }
 
 
@@ -505,7 +497,7 @@ bool checkLoginCredentials(JsonVariantConst doc, UserRole &role)
   }
 
   //default to fail then.
-  role = NOBODY;
+  role = app_default_role;
   return false;  
 }
 
@@ -559,7 +551,7 @@ void removeClientFromAuthList(PsychicWebSocketClient *client)
     if (authenticatedClients[i].socket == client->socket())
     {
       authenticatedClients[i].socket = 0;
-      authenticatedClients[i].role = NOBODY;
+      authenticatedClients[i].role = app_default_role;
     }
   }
 }

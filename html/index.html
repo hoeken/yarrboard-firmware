@@ -51,7 +51,10 @@
                         <li id="systemNav" class="nav-item nav-permission">
                             <a class="nav-link" onclick="open_page('system')" href="#system">System</a>
                         </li>
-                        <li id="logoutNav" class="nav-item">
+                        <li id="loginNav" class="nav-item" style="display: none">
+                            <a class="nav-link" onclick="open_page('login')" href="#login">Login</a>
+                        </li>
+                        <li id="logoutNav" class="nav-item" style="display: none">
                             <a class="nav-link" onclick="open_page('logout')" href="#logout">Logout</a>
                         </li>
                     </ul>
@@ -339,35 +342,35 @@
                     <div class="col-lg-9 col-md-12 col-10 mb-3">
                         <h5>App Configuration</h5>
                         <div class="mb-3">
+                            <label for="default_role" class="col-form-label">Default User Role</label>
+                            <select id="default_role" class="form-select" aria-label="Default User Role">
+                                <option value="nobody">Nobody - Everyone must login.</option>
+                                <option value="guest">Guest - Anyone can view and interact. (Admin must login)</option>
+                                <option value="admin">Admin - Anyone has full control. (No login)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 admin_credentials">
                             <label for="admin_user" class="col-form-label">Admin Username</label>
                             <div class="">
                                 <input id="admin_user" type="text" class="form-control">
                             </div>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-3 admin_credentials">
                             <label for="admin_pass" class="col-form-label">Admin Password</label>
                             <div class="">
                                 <input id="admin_pass" type="text" class="form-control">
                             </div>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-3 guest_credentials">
                             <label for="guest_user" class="col-form-label">Guest Username</label>
                             <div class="">
                                 <input id="guest_user" type="text" class="form-control">
                             </div>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-3 guest_credentials">
                             <label for="guest_pass" class="col-form-label">Guest Password</label>
                             <div class="">
                                 <input id="guest_pass" type="text" class="form-control">
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="require_login" checked>
-                                <label class="form-check-label" for="require_login">
-                                  Require login with username / password
-                                </label>
                             </div>
                         </div>
                         <div class="mb-3">

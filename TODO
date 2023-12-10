@@ -1,14 +1,12 @@
 Firmware:
     * add secondary user that can view/interact but no config?
+        * save default_role as a string, not int
         * change require_login to default user level
-            * change initial call to be 'hello' command
-                * determine UI and such from there
-                    * if role == default_role, no login
-                    * if role != admin, enable login
-            * add app_default_role to UI and backend
-            * remove require_login from UI and backend
-            * on new user, set role to default role
-        * change sendAll commands to have a user_role associated with them.
+            * add app_default_role to UI
+            * remove require_login from UI
+            * determine UI and such from there
+                * if role == default_role, no login
+                * if role != admin, enable login
     * add in a dark mode and corresponding set_lightmode command
     * set max brightness on rgb leds
     * can we use the npm module class for connections?

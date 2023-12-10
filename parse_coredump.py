@@ -1,11 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse, os
 
 if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser()
-	parser.add_argument("version", help="Version of the firmware, eg. 1.2.3")
+	parser.add_argument("--version", help="Version of the firmware, eg. 1.2.3", default="dev")
 	parser.add_argument("board", help="Hardware board revision, eg. RGB_INPUT_REV_A")
 
 	args = parser.parse_args()
@@ -21,6 +21,9 @@ if __name__ == '__main__':
 		
 		#keep our ELF file for debugging later on....
 		print("Analyzing coredump")
-		cmd = f'. /home/hoeken/esp/esp-idf/export.sh && espcoredump.py info_corefile -c coredump.bin -t raw releases/{args.board}-{args.version}.elf'
+		if args.version == 'dev':
+			cmd = f'. ~/esp/esp-idf/export.sh && espcoredump.py info_corefile -c coredump.bin -t raw .pio/build/{args.board}/firmware.elf'
+		else:
+			cmd = f'. ~/esp/esp-idf/export.sh && espcoredump.py info_corefile -c coredump.bin -t raw releases/{args.board}-{args.version}.elf'
 		#os.system(cmd)
 		print(cmd)

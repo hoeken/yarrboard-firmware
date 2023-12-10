@@ -14,13 +14,13 @@ char admin_pass[YB_PASSWORD_LENGTH] = "admin";
 char guest_user[YB_USERNAME_LENGTH] = "guest";
 char guest_pass[YB_PASSWORD_LENGTH] = "guest";
 unsigned int app_update_interval = 500;
-UserRole app_default_role = NOBODY;
-bool require_login = true;
+//bool require_login = true;
 bool app_enable_mfd = true;
 bool app_enable_api = true;
 bool app_enable_serial = false;
 bool app_enable_ssl = false;
 bool is_serial_authenticated = false;
+UserRole app_default_role = NOBODY;
 UserRole serial_role = NOBODY;
 UserRole api_role = NOBODY;
 
@@ -54,8 +54,14 @@ void protocol_setup()
     strlcpy(guest_pass, preferences.getString("guest_pass").c_str(), sizeof(guest_pass));
   if (preferences.isKey("appUpdateInter"))
     app_update_interval = preferences.getUInt("appUpdateInter");
-  if (preferences.isKey("require_login"))
-    require_login = preferences.getBool("require_login");
+  if (preferences.isKey("appDefaultRole"))
+  {
+    app_default_role = (UserRole)preferences.getUInt("appDefaultRole");
+    serial_role = app_default_role;
+    api_role = app_default_role;  
+  }
+  // if (preferences.isKey("require_login"))
+  //   require_login = preferences.getBool("require_login");
   if (preferences.isKey("appEnableMFD"))
     app_enable_mfd = preferences.getBool("appEnableMFD");
   if (preferences.isKey("appEnableApi"))
@@ -236,12 +242,10 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
 
 const char * getRoleText(UserRole role)
 {
-  if (role == NOBODY)
-    return "nobody";
+  if (role == ADMIN)
+    return "admin";
   else if (role == GUEST)
     return "guest";
-  else if (role == ADMIN)
-    return "admin";
   else
     return "nobody";  
 }
@@ -394,6 +398,8 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
     return generateErrorJSON(output, "'guest_user' is a required parameter");
   if (!input.containsKey("guest_pass"))
     return generateErrorJSON(output, "'guest_pass' is a required parameter");
+  if (!input.containsKey("default_role"))
+    return generateErrorJSON(output, "'default_role' is a required parameter");
 
   //username length checker
   if (strlen(input["admin_user"]) > YB_USERNAME_LENGTH-1)
@@ -432,7 +438,14 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   strlcpy(admin_pass, input["admin_pass"] | "admin", sizeof(admin_pass));
   strlcpy(guest_user, input["guest_user"] | "guest", sizeof(guest_user));
   strlcpy(guest_pass, input["guest_pass"] | "guest", sizeof(guest_pass));
-  require_login = input["require_login"];
+
+  if (!strcmp(input["default_role"], "admin"))
+    app_default_role = ADMIN;
+  else if (!strcmp(input["default_role"], "guest"))
+    app_default_role = GUEST;
+  else
+    app_default_role = NOBODY;
+
   app_enable_mfd = input["app_enable_mfd"];
   app_enable_api = input["app_enable_api"];
   app_enable_serial = input["app_enable_serial"];
@@ -451,7 +464,8 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   preferences.putString("guest_user", guest_user);
   preferences.putString("guest_pass", guest_pass);
   preferences.putUInt("appUpdateInter", app_update_interval);
-  preferences.putBool("require_login", require_login);  
+  preferences.putUInt("appDefaultRole", app_default_role);
+  //preferences.putBool("require_login", require_login);  
   preferences.putBool("appEnableMFD", app_enable_mfd);
   preferences.putBool("appEnableApi", app_enable_api);
   preferences.putBool("appEnableSerial", app_enable_serial);
@@ -474,8 +488,8 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
 
 void handleLogin(JsonVariantConst input, JsonVariant output, YBMode mode, PsychicWebSocketClient *connection)
 {
-  if (!require_login)
-    return generateErrorJSON(output, "Login not required.");
+  // if (!require_login)
+  //   return generateErrorJSON(output, "Login not required.");
 
   if (!input.containsKey("user"))
     return generateErrorJSON(output, "'user' is a required parameter");
@@ -491,13 +505,15 @@ void handleLogin(JsonVariantConst input, JsonVariant output, YBMode mode, Psychi
 
     //check their credentials
     bool is_authenticated = false;
-    UserRole role = NOBODY;
+    UserRole role = app_default_role;
+
     if (!strcmp(admin_user, myuser) && !strcmp(admin_pass, mypass))
     {
       is_authenticated = true;
       role = ADMIN;
       output["role"] = "admin";
     }
+
     if (!strcmp(guest_user, myuser) && !strcmp(guest_pass, mypass))
     {
       is_authenticated = true;
@@ -521,6 +537,7 @@ void handleLogin(JsonVariantConst input, JsonVariant output, YBMode mode, Psychi
       }
 
       output["msg"] = "login";
+      output["role"] = getRoleText(role);
       output["message"] = "Login successful.";
 
       return;
@@ -532,8 +549,8 @@ void handleLogin(JsonVariantConst input, JsonVariant output, YBMode mode, Psychi
 
 void handleLogout(JsonVariantConst input, JsonVariant output, YBMode mode, PsychicWebSocketClient *connection)
 {
-  if (!require_login)
-    return generateErrorJSON(output, "Logout not required.");
+  // if (!require_login)
+  //   return generateErrorJSON(output, "Logout not required.");
 
   if (!isLoggedIn(input, mode, connection))
     return generateErrorJSON(output, "You are not logged in.");
@@ -547,7 +564,7 @@ void handleLogout(JsonVariantConst input, JsonVariant output, YBMode mode, Psych
   else if (mode == YBP_MODE_SERIAL)
   {
     is_serial_authenticated = false;
-    serial_role = NOBODY;
+    serial_role = app_default_role;
   }
 }
 
@@ -1039,7 +1056,8 @@ void generateConfigJSON(JsonVariant output)
   output["hostname"] = local_hostname;
   output["use_ssl"] = app_enable_ssl;
   output["uuid"] = uuid;
-  output["require_login"] = require_login;
+  output["default_role"] = getRoleText(app_default_role);
+  // output["require_login"] = require_login;
 
   //some debug info
   output["last_restart_reason"] = getResetReason();
@@ -1256,7 +1274,8 @@ void generateAppConfigJSON(JsonVariant output)
 {
   //our identifying info
   output["msg"] = "app_config";
-  output["require_login"] = require_login;
+  //output["require_login"] = require_login;
+  output["default_role"] = getRoleText(app_default_role);
   output["admin_user"] = admin_user;
   output["admin_pass"] = admin_pass;
   output["guest_user"] = guest_user;
