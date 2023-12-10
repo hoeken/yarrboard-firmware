@@ -77,16 +77,10 @@ void server_setup()
 
     //Check if the client already has the same version and respond with a 304 (Not modified)
     if (request->header("If-Modified-Since").indexOf(last_modified) > 0)
-    {
-      TRACE();
       return request->reply(304);
-    }
     //What about our ETag?
     else if (request->header("If-None-Match").equals(index_html_gz_sha))
-    {
-      TRACE();
       return request->reply(304);
-    }
     else
     {
         PsychicResponse response(request);
@@ -348,31 +342,32 @@ void handleWebSocketMessage(PsychicWebSocketRequest *request, uint8_t *data, siz
   //throw it in our queue
   if (xQueueSend(wsRequests, &wr, 1) != pdTRUE)
   {
-    Serial.println("[socket] queue full");
+    request->client()->close();
+    Serial.printf("[socket] queue full #%d\n", wr.socket);
 
     //free the memory... no worker to do it for us.
     free(wr.buffer);
   }
 
   //send a throttle message if we're full
-  if (!uxQueueSpacesAvailable(wsRequests))
-  {
-    StaticJsonDocument<128> output;
+  // if (!uxQueueSpacesAvailable(wsRequests))
+  // {
+  //   StaticJsonDocument<128> output;
 
-    //dynamically allocate our buffer
-    size_t jsonSize = measureJson(output);
-    char * jsonBuffer = (char *)malloc(jsonSize+1);
-    jsonBuffer[jsonSize] = '\0'; // null terminate
+  //   //dynamically allocate our buffer
+  //   size_t jsonSize = measureJson(output);
+  //   char * jsonBuffer = (char *)malloc(jsonSize+1);
+  //   jsonBuffer[jsonSize] = '\0'; // null terminate
 
-    //did we get anything?
-    if (jsonBuffer != NULL)
-    {
-      generateErrorJSON(output, "Queue Full");
-      serializeJson(output, jsonBuffer, jsonSize+1);
-      request->reply(jsonBuffer);
-    }
-    free(jsonBuffer);
-  }
+  //   //did we get anything?
+  //   if (jsonBuffer != NULL)
+  //   {
+  //     generateErrorJSON(output, "Queue Full");
+  //     serializeJson(output, jsonBuffer, jsonSize+1);
+  //     request->reply(jsonBuffer);
+  //   }
+  //   free(jsonBuffer);
+  // }
 }
 
 void handleWebsocketMessageLoop(WebsocketRequest* request)
@@ -381,7 +376,7 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
   PsychicWebSocketClient *client = websocketHandler.getClient(request->socket);
   if (client == NULL)
   {
-    Serial.printf("[socket] client #%d bad, bailing\n", request->socket);
+    //Serial.printf("[socket] client #%d bad, bailing\n", request->socket);
     return;
   }
 
