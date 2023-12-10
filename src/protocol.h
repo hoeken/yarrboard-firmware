@@ -52,6 +52,7 @@ extern char admin_pass[YB_PASSWORD_LENGTH];
 extern char guest_user[YB_USERNAME_LENGTH];
 extern char guest_pass[YB_PASSWORD_LENGTH];
 extern bool require_login;
+extern UserRole app_default_role;
 extern bool app_enable_api;
 extern bool app_enable_serial;
 extern bool app_enable_ssl;
@@ -88,6 +89,7 @@ void handleConfigRGB(JsonVariantConst input, JsonVariant output);
 void handleSetRGB(JsonVariantConst input, JsonVariant output);
 void handleConfigADC(JsonVariantConst input, JsonVariant output);
 
+void generateHelloJSON(JsonVariant output, UserRole role);
 void generateUpdateJSON(JsonVariant output);
 void generateFastUpdateJSON(JsonVariant output);
 void generateConfigJSON(JsonVariant output);

@@ -1,14 +1,13 @@
 Firmware:
     * add secondary user that can view/interact but no config?
         * change require_login to default user level
-            * admin = no login
-            * guest = admin login only
-            * nobody = everyone login
-            * get_config changes
-                * pass in mode and role
-                * add user_role
-                * add default_user_role
-                * remove require_login
+            * change initial call to be 'hello' command
+                * determine UI and such from there
+                    * if role == default_role, no login
+                    * if role != admin, enable login
+            * add app_default_role to UI and backend
+            * remove require_login from UI and backend
+            * on new user, set role to default role
         * change sendAll commands to have a user_role associated with them.
     * add in a dark mode and corresponding set_lightmode command
     * set max brightness on rgb leds

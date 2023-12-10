@@ -14,6 +14,7 @@ char admin_pass[YB_PASSWORD_LENGTH] = "admin";
 char guest_user[YB_USERNAME_LENGTH] = "guest";
 char guest_pass[YB_PASSWORD_LENGTH] = "guest";
 unsigned int app_update_interval = 500;
+UserRole app_default_role = NOBODY;
 bool require_login = true;
 bool app_enable_mfd = true;
 bool app_enable_api = true;
@@ -162,79 +163,94 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
   receivedMessages++;
   totalReceivedMessages++;
 
+  //what would you say you do around here?
+  UserRole role = getUserRole(input, mode, connection);
+
   //only pages with no login requirements
-  if (!strcmp(cmd, "login") || !strcmp(cmd, "ping"))
+  if (!strcmp(cmd, "login"))
+    return handleLogin(input, output, mode, connection);
+  else if (!strcmp(cmd, "ping"))
+    return generatePongJSON(output);
+  else if (!strcmp(cmd, "hello"))
+    return generateHelloJSON(output, role);
+
+  //TODO: we don't actually need to require login
+  //need to be logged in from here on out.
+  // if (!isLoggedIn(input, mode, connection))
+  //     return generateLoginRequiredJSON(output);
+
+  //commands for using the boards
+  if (role == GUEST || role == ADMIN)
   {
-    if (!strcmp(cmd, "login"))
-      return handleLogin(input, output, mode, connection);
-    else if (!strcmp(cmd, "ping"))
-      return generatePongJSON(output);
+    if (!strcmp(cmd, "get_config"))
+      return generateConfigJSON(output);
+    else if (!strcmp(cmd, "get_stats"))
+      return generateStatsJSON(output);
+    else if (!strcmp(cmd, "get_update"))
+      return generateUpdateJSON(output);
+    else if (!strcmp(cmd, "set_pwm_channel"))
+      return handleSetPWMChannel(input, output);
+    else if (!strcmp(cmd, "toggle_pwm_channel"))
+      return handleTogglePWMChannel(input, output);
+    else if (!strcmp(cmd, "fade_pwm_channel"))
+      return handleFadePWMChannel(input, output);
+    else if (!strcmp(cmd, "set_rgb"))
+      return handleSetRGB(input, output);
+    else if (!strcmp(cmd, "logout"))
+      return handleLogout(input, output, mode, connection);
   }
+  
+  //commands for changing settings
+  if (role == ADMIN)
+  {
+    if (!strcmp(cmd, "set_boardname"))
+      return handleSetBoardName(input, output);   
+    else if (!strcmp(cmd, "get_network_config"))
+      return generateNetworkConfigJSON(output);
+    else if (!strcmp(cmd, "set_network_config"))
+      return handleSetNetworkConfig(input, output);
+    else if (!strcmp(cmd, "get_app_config"))
+      return generateAppConfigJSON(output);
+    else if (!strcmp(cmd, "set_app_config"))
+      return handleSetAppConfig(input, output);
+    else if (!strcmp(cmd, "restart"))
+      return handleRestart(input, output);
+    else if (!strcmp(cmd, "factory_reset"))
+      return handleFactoryReset(input, output);
+    else if (!strcmp(cmd, "ota_start"))
+      return handleOTAStart(input, output);
+    else if (!strcmp(cmd, "config_pwm_channel"))
+      return handleSetPWMChannel(input, output);
+    else if (!strcmp(cmd, "config_switch"))
+      return handleConfigSwitch(input, output);
+    else if (!strcmp(cmd, "config_adc"))
+      return handleConfigADC(input, output);
+    else if (!strcmp(cmd, "config_rgb"))
+      return handleConfigRGB(input, output);
+  }
+
+  //if we got here, no bueno.
+  String error = "Invalid command: " + String(cmd);
+  return generateErrorJSON(output, error.c_str());
+}
+
+const char * getRoleText(UserRole role)
+{
+  if (role == NOBODY)
+    return "nobody";
+  else if (role == GUEST)
+    return "guest";
+  else if (role == ADMIN)
+    return "admin";
   else
-  {
-    //need to be logged in here.
-    if (!isLoggedIn(input, mode, connection))
-        return generateLoginRequiredJSON(output);
+    return "nobody";  
+}
 
-    UserRole role = getUserRole(input, mode, connection);
-
-    //GUEST or ADMIN level commands
-    if (role >= GUEST)
-    {
-      if (!strcmp(cmd, "get_config"))
-        return generateConfigJSON(output);
-      else if (!strcmp(cmd, "get_stats"))
-        return generateStatsJSON(output);
-      else if (!strcmp(cmd, "get_update"))
-        return generateUpdateJSON(output);
-      else if (!strcmp(cmd, "set_pwm_channel"))
-        return handleSetPWMChannel(input, output);
-      else if (!strcmp(cmd, "toggle_pwm_channel"))
-        return handleTogglePWMChannel(input, output);
-      else if (!strcmp(cmd, "fade_pwm_channel"))
-        return handleFadePWMChannel(input, output);
-      else if (!strcmp(cmd, "set_rgb"))
-        return handleSetRGB(input, output);
-      else if (!strcmp(cmd, "logout"))
-        return handleLogout(input, output, mode, connection);
-    }
-    
-    //admin role only
-    if (role == ADMIN)
-    {
-      if (!strcmp(cmd, "set_boardname"))
-        return handleSetBoardName(input, output);   
-      else if (!strcmp(cmd, "get_network_config"))
-        return generateNetworkConfigJSON(output);
-      else if (!strcmp(cmd, "set_network_config"))
-        return handleSetNetworkConfig(input, output);
-      else if (!strcmp(cmd, "get_app_config"))
-        return generateAppConfigJSON(output);
-      else if (!strcmp(cmd, "set_app_config"))
-        return handleSetAppConfig(input, output);
-      else if (!strcmp(cmd, "restart"))
-        return handleRestart(input, output);
-      else if (!strcmp(cmd, "factory_reset"))
-        return handleFactoryReset(input, output);
-      else if (!strcmp(cmd, "ota_start"))
-        return handleOTAStart(input, output);
-      else if (!strcmp(cmd, "config_pwm_channel"))
-        return handleSetPWMChannel(input, output);
-      else if (!strcmp(cmd, "config_switch"))
-        return handleConfigSwitch(input, output);
-      else if (!strcmp(cmd, "config_adc"))
-        return handleConfigADC(input, output);
-      else if (!strcmp(cmd, "config_rgb"))
-        return handleConfigRGB(input, output);
-    }
-
-    //if we got here, no bueno.
-    String error = "Invalid command: " + String(cmd);
-    return generateErrorJSON(output, error.c_str());
-  }
-
-  //unknown command.
-  return generateErrorJSON(output, "Malformed json.");
+void generateHelloJSON(JsonVariant output, UserRole role)
+{
+  output["msg"] = "hello";
+  output["role"] = getRoleText(role);
+  output["default_role"] = getRoleText(app_default_role);
 }
 
 void handleSetBoardName(JsonVariantConst input, JsonVariant output)
