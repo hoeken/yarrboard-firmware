@@ -262,14 +262,9 @@ function start_yarrboard()
 
 function load_configs()
 {
-  //load our config... will also trigger login
-  immediateSend({
-    "cmd": "get_config"
-  });
-}
+  if (app_role == "nobody")
+    return;
 
-function load_admin_configs()
-{
   if(app_role == "admin")
   {
     //load our network config
@@ -282,6 +277,10 @@ function load_admin_configs()
       "cmd": "get_app_config"
     });  
   }
+
+  immediateSend({
+    "cmd": "get_config"
+  });
 }
 
 function start_websocket()
@@ -344,19 +343,11 @@ function start_websocket()
           "user": Cookies.get("username"),
           "pass": Cookies.get("password")
         });
+      } else {
+        update_role_ui();
+        load_configs();  
+        open_default_page();  
       }
-
-      update_role_ui();
-
-      if (app_role == 'admin')
-      {
-        load_configs();
-        load_admin_configs();
-      }
-      else if (app_role == 'guest')
-        load_configs();
-
-      open_default_page();
     }
     else if (msg.msg == 'config')
     {
@@ -369,10 +360,7 @@ function start_websocket()
 
       //is it our first boot?
       if (msg.first_boot && current_page != "network")
-      {
-        load_admin_configs();
         show_alert(`Welcome to Yarrboard, head over to <a href="#network" onclick="open_page('network')">Network</a> to setup your WiFi.`, "primary");
-      }
 
       //did we get a crash?
       if (msg.has_coredump)
@@ -943,8 +931,10 @@ function start_websocket()
       if (msg.app_update_interval)
         app_update_interval = msg.app_update_interval;
 
-      //enabled/disable user/pass fields
       //TODO: update this
+      //enabled/disable user/pass fields
+      // if (default_app_role == "admin")
+      // {}
       // $(`#admin_user`).prop('disabled', !msg.require_login);
       // $(`#admin_pass`).prop('disabled', !msg.require_login);
       // $(`#guest_user`).prop('disabled', !msg.require_login);
@@ -1044,16 +1034,15 @@ function start_websocket()
     }
     else if (msg.msg == "login")
     {
+
       //keep the login success stuff on the login page.
       if (msg.message == "Login successful.")
       {
         //once we know our role, we can load our other configs.
         app_role = msg.role;
-        load_admin_configs();
 
-        yarrboard_log(app_role);
-
-        update_role_ui();
+        yarrboard_log(`app_role: ${app_role}`);
+        yarrboard_log(`current_page: ${current_page}`);
 
         //only needed for login page, otherwise its autologin
         if (current_page == "login")
@@ -1064,18 +1053,12 @@ function start_websocket()
             Cookies.set('username', app_username, { expires: 365 });
             Cookies.set('password', app_password, { expires: 365 });
           }
-
-          //need this to show everything
-          load_configs();
-
-          //let them nav
-          $("#navbar").show();
-
-          //this is super fast otherwise.
-          open_page("control");
         }
-        else
-          open_default_page();
+        
+        //prep the site
+        update_role_ui();
+        load_configs();
+        open_page("control");    
       }
       else
         show_alert(msg.message, "success");
@@ -1238,9 +1221,14 @@ function open_page(page)
     Cookies.remove("username");
     Cookies.remove("password");
 
+    app_role = default_app_role;
+
     immediateSend({"cmd": "logout"});
 
-    open_page("login");
+    if (app_role == "nobody")
+      open_page("login");
+    else
+      open_page("control"); 
   }
   else
   {
@@ -1270,30 +1258,34 @@ function on_page_ready()
 
 function get_stats_data()
 {
-  if (socket.readyState == WebSocket.OPEN)
+  if (socket.readyState == WebSocket.OPEN && (app_role == 'guest' || app_role == 'admin'))
   {
+    //yarrboard_log("get_stats");
+
     immediateSend({
       "cmd": "get_stats",
     });
-  }
 
-  //keep loading it while we are here.
-  if (current_page == "stats")
-    setTimeout(get_stats_data, app_update_interval);
+    //keep loading it while we are here.
+    if (current_page == "stats")
+      setTimeout(get_stats_data, app_update_interval);
+  }
 }
 
 function get_update_data()
 {
-  if (socket.readyState == WebSocket.OPEN)
+  if (socket.readyState == WebSocket.OPEN && (app_role == 'guest' || app_role == 'admin'))
   {
+    //yarrboard_log("get_update");
+
     immediateSend({
       "cmd": "get_update",
     });
-  }
 
-  //keep loading it while we are here.
-  if (current_page == "control")
-    setTimeout(get_update_data, app_update_interval);
+    //keep loading it while we are here.
+    if (current_page == "control")
+      setTimeout(get_update_data, app_update_interval);
+  }
 }
 
 //drops messages if sent too fast.
@@ -1662,7 +1654,7 @@ function save_app_settings()
   let admin_pass = $("#admin_pass").val();
   let guest_user = $("#guest_user").val();
   let guest_pass = $("#guest_pass").val();
-  let default_role = $("#default_role option : selected").val()
+  let default_role = $("#default_role option : selected").val();
 //  let require_login = $("#require_login").prop("checked");
   let app_enable_mfd = $("#app_enable_mfd").prop("checked");
   let app_enable_api = $("#app_enable_api").prop("checked");
@@ -1677,19 +1669,21 @@ function save_app_settings()
   update_interval = Math.min(5000, update_interval);
   app_update_interval = update_interval;
 
-  //TODO: look at our default role vs current role
-  // if (require_login)
-  // {
-  //   $('#logoutNav').show();
-  //   Cookies.set('username', admin_user, { expires: 365 });
-  //   Cookies.set('password', admin_pass, { expires: 365 });
-  // }
-  // else
-  // {
-  //   $('#logoutNav').hide();
-  //   Cookies.remove("username");
-  //   Cookies.remove("password");    
-  // }
+  //remember it and update our UI
+  default_app_role = default_role;
+  update_role_ui();
+
+  //helper function to keep admin logged in.
+  if (default_app_role != "admin")
+  {
+    Cookies.set('username', admin_user, { expires: 365 });
+    Cookies.set('password', admin_pass, { expires: 365 });
+  }
+  else
+  {
+    Cookies.remove("username");
+    Cookies.remove("password");    
+  }
 
   //okay, send it off.
   immediateSend({
@@ -1808,16 +1802,23 @@ function update_role_ui()
 {
   //what nav tabs should we be able to see?
   if (app_role == "admin")
+  {
+    $("#navbar").show();
     $(".nav-permission").show();
+  }
   else if (app_role == "guest")
   {
+    $("#navbar").show();
     $(".nav-permission").hide();
     page_permissions[app_role].forEach((page) => {
       $(`#${page}Nav`).show();
     });
   }
   else
-    $(".nav-permission").hide();
+  {
+    $("#navbar").hide();
+    $(".nav-permission").hide();  
+  }
 
   //show login or not?
   $('#loginNav').hide();
@@ -1983,9 +1984,10 @@ function yarrboard_log(message)
   const hours = String(currentDate.getHours()).padStart(2, '0');
   const minutes = String(currentDate.getMinutes()).padStart(2, '0');
   const seconds = String(currentDate.getSeconds()).padStart(2, '0');
+  const milliseconds = String(currentDate.getMilliseconds()).padStart(3, '0');
 
   // Create the formatted timestamp
-  const formattedTimestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}]`;
+  const formattedTimestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}]`;
 
   //put it in our textarea - useful for debugging on non-computer interfaces
   let textarea = document.getElementById("debug_log_text");

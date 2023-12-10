@@ -559,7 +559,8 @@ void handleLogout(JsonVariantConst input, JsonVariant output, YBMode mode, Psych
   if (mode == YBP_MODE_WEBSOCKET)
   {
     removeClientFromAuthList(connection);
-    connection->close();
+    //we don't actually want to close this, bad UI
+    //connection->close();
   }
   else if (mode == YBP_MODE_SERIAL)
   {
