@@ -1,6 +1,10 @@
 Firmware:
     * add secondary user that can view/interact but no config?
         * add a logout command
+        * change require_login to default user level
+            * admin = no login
+            * guest = admin login only
+            * nobody = everyone login
     * change YB_MODE_* in config.h to enum
     * add in a dark mode and corresponding set_lightmode command
     * set max brightness on rgb leds

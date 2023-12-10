@@ -346,31 +346,31 @@ void handleWebSocketMessage(PsychicWebSocketRequest *request, uint8_t *data, siz
   //throw it in our queue
   if (xQueueSend(wsRequests, &wr, 1) != pdTRUE)
   {
-    Serial.println("[socket] work queue full");
+    Serial.println("[socket] queue full");
 
     //free the memory... no worker to do it for us.
     free(wr.buffer);
   }
 
   //send a throttle message if we're full
-  // if (!uxQueueSpacesAvailable(wsRequests))
-  // {
-  //   StaticJsonDocument<128> output;
+  if (!uxQueueSpacesAvailable(wsRequests))
+  {
+    StaticJsonDocument<128> output;
 
-  //   //dynamically allocate our buffer
-  //   size_t jsonSize = measureJson(output);
-  //   char * jsonBuffer = (char *)malloc(jsonSize+1);
-  //   jsonBuffer[jsonSize] = '\0'; // null terminate
+    //dynamically allocate our buffer
+    size_t jsonSize = measureJson(output);
+    char * jsonBuffer = (char *)malloc(jsonSize+1);
+    jsonBuffer[jsonSize] = '\0'; // null terminate
 
-  //   //did we get anything?
-  //   if (jsonBuffer != NULL)
-  //   {
-  //     generateErrorJSON(output, "Queue Full");
-  //     serializeJson(output, jsonBuffer, jsonSize+1);
-  //     request->reply(jsonBuffer);
-  //   }
-  //   free(jsonBuffer);
-  // }
+    //did we get anything?
+    if (jsonBuffer != NULL)
+    {
+      generateErrorJSON(output, "Queue Full");
+      serializeJson(output, jsonBuffer, jsonSize+1);
+      request->reply(jsonBuffer);
+    }
+    free(jsonBuffer);
+  }
 }
 
 void handleWebsocketMessageLoop(WebsocketRequest* request)
@@ -379,7 +379,7 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
   PsychicClient *client = server.getClient(request->socket);
   if (client == NULL || !websocketHandler.hasClient(client))
   {
-    Serial.printf("[socket] client #%d bad, bailing", request->socket);
+    Serial.printf("[socket] client #%d bad, bailing\n", request->socket);
     return;
   }
   PsychicWebSocketClient ws(client);
