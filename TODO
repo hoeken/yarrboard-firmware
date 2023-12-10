@@ -4,7 +4,6 @@ Firmware:
             * admin = no login
             * guest = admin login only
             * nobody = everyone login
-    * change YB_MODE_* in config.h to enum
     * add in a dark mode and corresponding set_lightmode command
     * set max brightness on rgb leds
     * can we use the npm module class for connections?

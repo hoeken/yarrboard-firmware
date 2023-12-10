@@ -141,7 +141,7 @@ void handleSerialJson()
   }
 }
 
-void handleReceivedJSON(JsonVariantConst input, JsonVariant output, byte mode, PsychicWebSocketClient *connection)
+void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode, PsychicWebSocketClient *connection)
 {
   //make sure its correct
   if (!input.containsKey("cmd"))
@@ -456,7 +456,7 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
     ESP.restart();
 }
 
-void handleLogin(JsonVariantConst input, JsonVariant output, byte mode, PsychicWebSocketClient *connection)
+void handleLogin(JsonVariantConst input, JsonVariant output, YBMode mode, PsychicWebSocketClient *connection)
 {
   if (!require_login)
     return generateErrorJSON(output, "Login not required.");
@@ -514,7 +514,7 @@ void handleLogin(JsonVariantConst input, JsonVariant output, byte mode, PsychicW
     return generateErrorJSON(output, "Wrong username/password.");
 }
 
-void handleLogout(JsonVariantConst input, JsonVariant output, byte mode, PsychicWebSocketClient *connection)
+void handleLogout(JsonVariantConst input, JsonVariant output, YBMode mode, PsychicWebSocketClient *connection)
 {
   if (!require_login)
     return generateErrorJSON(output, "Logout not required.");

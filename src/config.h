@@ -11,7 +11,7 @@
 
 #include <ArduinoTrace.h>
 
-#define YB_FIRMWARE_VERSION "1.3.1"
+#define YB_FIRMWARE_VERSION "1.3.0"
 
 #if defined YB_CONFIG_8CH_MOSFET_REV_A
   #include "./configs/config.8ch-mosfet-reva.h"
@@ -32,11 +32,7 @@
 
 //bytes for sending json
 #define YB_LARGE_JSON_SIZE 4096
-#define YB_CLIENT_LIMIT 10
-
-#define YBP_MODE_WEBSOCKET 0
-#define YBP_MODE_HTTP      1
-#define YBP_MODE_SERIAL    2
+#define YB_CLIENT_LIMIT 20
 
 //for handling messages outside of the loop
 #define YB_RECEIVE_BUFFER_COUNT 100
@@ -63,5 +59,11 @@ typedef enum {
   ADMIN,
   GUEST
 } UserRole;
+
+typedef enum  {
+  YBP_MODE_WEBSOCKET,
+  YBP_MODE_HTTP,
+  YBP_MODE_SERIAL
+} YBMode;
 
 #endif // YARR_CONFIG_H
