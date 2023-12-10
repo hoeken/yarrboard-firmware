@@ -178,8 +178,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
 
     UserRole role = getUserRole(input, mode, connection);
 
-    //what is your command?
-    if (role == ADMIN || role == GUEST)
+    //GUEST or ADMIN level commands
+    if (role >= GUEST)
     {
       if (!strcmp(cmd, "get_config"))
         return generateConfigJSON(output);
@@ -1303,7 +1303,7 @@ void sendFastUpdate()
   if (jsonBuffer != NULL)
   {
     serializeJson(output, jsonBuffer, jsonSize+1);
-    sendToAll(jsonBuffer);
+    sendToAll(jsonBuffer, GUEST);
   }
   free(jsonBuffer);
 }
@@ -1322,7 +1322,7 @@ void sendOTAProgressUpdate(float progress)
   if (jsonBuffer != NULL)
   {
     serializeJson(output, jsonBuffer, jsonSize+1);
-    sendToAll(jsonBuffer);
+    sendToAll(jsonBuffer, GUEST);
   }
   free(jsonBuffer);
 }
@@ -1341,16 +1341,16 @@ void sendOTAProgressFinished()
   if (jsonBuffer != NULL)
   {
     serializeJson(output, jsonBuffer, jsonSize+1);
-    sendToAll(jsonBuffer);
+    sendToAll(jsonBuffer, GUEST);
   }
   free(jsonBuffer);
 }
 
-void sendToAll(const char * jsonString)
+void sendToAll(const char * jsonString, UserRole auth_level)
 {
-  sendToAllWebsockets(jsonString);
+  sendToAllWebsockets(jsonString, auth_level);
 
-  if (app_enable_serial)
+  if (app_enable_serial && serial_role >= auth_level)
     Serial.println(jsonString);
 }
 

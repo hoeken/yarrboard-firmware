@@ -240,7 +240,7 @@ void server_loop()
   }
 }
 
-void sendToAllWebsockets(const char * jsonString)
+void sendToAllWebsockets(const char * jsonString, UserRole auth_level)
 {
   //TODO: check that all sendToAllWebsockets commands are benign
   if (require_login)
@@ -254,7 +254,7 @@ void sendToAllWebsockets(const char * jsonString)
         if (client == NULL)
           continue;
 
-        if (authenticatedClients[i].role != NOBODY)
+        if (authenticatedClients[i].role >= auth_level)
           client->sendMessage(jsonString);
       }
     }

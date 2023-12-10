@@ -105,6 +105,6 @@ void generatePongJSON(JsonVariant output);
 void sendFastUpdate();
 void sendOTAProgressUpdate(float progress);
 void sendOTAProgressFinished();
-void sendToAll(const char * jsonString);
+void sendToAll(const char * jsonString, UserRole auth_level);
 
 #endif /* !YARR_PROTOCOL_H */

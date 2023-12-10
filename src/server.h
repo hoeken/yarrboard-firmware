@@ -63,7 +63,7 @@ bool checkLoginCredentials(JsonVariantConst doc, UserRole &role);
 UserRole getUserRole(JsonVariantConst input, byte mode, PsychicWebSocketClient *connection);
 UserRole getWebsocketRole(JsonVariantConst doc, PsychicWebSocketClient *connection);
 
-void sendToAllWebsockets(const char * jsonString);
+void sendToAllWebsockets(const char * jsonString, UserRole auth_level);
 void handleWebsocketMessageLoop(WebsocketRequest* request);
 
 esp_err_t handleWebServerRequest(JsonVariant input, PsychicRequest *request);
