@@ -4,6 +4,11 @@ Firmware:
             * admin = no login
             * guest = admin login only
             * nobody = everyone login
+            * get_config changes
+                * pass in mode and role
+                * add user_role
+                * add default_user_role
+                * remove require_login
     * add in a dark mode and corresponding set_lightmode command
     * set max brightness on rgb leds
     * can we use the npm module class for connections?
