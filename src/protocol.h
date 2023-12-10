@@ -76,6 +76,7 @@ void handleSetBoardName(JsonVariantConst input, JsonVariant output);
 void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output);
 void handleSetAppConfig(JsonVariantConst input, JsonVariant output);
 void handleLogin(JsonVariantConst input, JsonVariant output, byte mode, PsychicWebSocketClient *connection = NULL);
+void handleLogout(JsonVariantConst input, JsonVariant output, byte mode, PsychicWebSocketClient *connection = NULL);
 void handleRestart(JsonVariantConst input, JsonVariant output);
 void handleFactoryReset(JsonVariantConst input, JsonVariant output);
 void handleOTAStart(JsonVariantConst input, JsonVariant output);

@@ -195,8 +195,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, byte mode, P
         return handleFadePWMChannel(input, output);
       else if (!strcmp(cmd, "set_rgb"))
         return handleSetRGB(input, output);
-      // else if (!strcmp(cmd, "logout"))
-      //   return handleLogout(input, output);
+      else if (!strcmp(cmd, "logout"))
+        return handleLogout(input, output, mode, connection);
     }
     
     //admin role only
@@ -512,6 +512,27 @@ void handleLogin(JsonVariantConst input, JsonVariant output, byte mode, PsychicW
 
     //gtfo.
     return generateErrorJSON(output, "Wrong username/password.");
+}
+
+void handleLogout(JsonVariantConst input, JsonVariant output, byte mode, PsychicWebSocketClient *connection)
+{
+  if (!require_login)
+    return generateErrorJSON(output, "Logout not required.");
+
+  if (!isLoggedIn(input, mode, connection))
+    return generateErrorJSON(output, "You are not logged in.");
+
+  //what type of client are you?
+  if (mode == YBP_MODE_WEBSOCKET)
+  {
+    removeClientFromAuthList(connection);
+    connection->close();
+  }
+  else if (mode == YBP_MODE_SERIAL)
+  {
+    is_serial_authenticated = false;
+    serial_role = NOBODY;
+  }
 }
 
 void handleRestart(JsonVariantConst input, JsonVariant output)

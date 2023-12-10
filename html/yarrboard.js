@@ -1234,6 +1234,8 @@ function open_page(page)
     Cookies.remove("username");
     Cookies.remove("password");
 
+    immediateSend({"cmd": "logout"});
+
     open_page("login");
   }
   else

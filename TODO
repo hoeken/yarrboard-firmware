@@ -1,6 +1,5 @@
 Firmware:
     * add secondary user that can view/interact but no config?
-        * add a logout command
         * change require_login to default user level
             * admin = no login
             * guest = admin login only
