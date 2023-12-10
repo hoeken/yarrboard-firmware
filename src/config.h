@@ -32,7 +32,7 @@
 
 //bytes for sending json
 #define YB_LARGE_JSON_SIZE 4096
-#define YB_CLIENT_LIMIT 20
+#define YB_CLIENT_LIMIT 12
 
 //for handling messages outside of the loop
 #define YB_RECEIVE_BUFFER_COUNT 100
@@ -56,8 +56,8 @@
 
 typedef enum {
   NOBODY,
-  ADMIN,
-  GUEST
+  GUEST,
+  ADMIN
 } UserRole;
 
 typedef enum  {

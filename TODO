@@ -9,6 +9,7 @@ Firmware:
                 * add user_role
                 * add default_user_role
                 * remove require_login
+        * change sendAll commands to have a user_role associated with them.
     * add in a dark mode and corresponding set_lightmode command
     * set max brightness on rgb leds
     * can we use the npm module class for connections?
