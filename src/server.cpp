@@ -342,7 +342,7 @@ void handleWebSocketMessage(PsychicWebSocketRequest *request, uint8_t *data, siz
   //throw it in our queue
   if (xQueueSend(wsRequests, &wr, 1) != pdTRUE)
   {
-    request->client()->close();
+    //request->client()->close();
     Serial.printf("[socket] queue full #%d\n", wr.socket);
 
     //free the memory... no worker to do it for us.
@@ -350,24 +350,8 @@ void handleWebSocketMessage(PsychicWebSocketRequest *request, uint8_t *data, siz
   }
 
   //send a throttle message if we're full
-  // if (!uxQueueSpacesAvailable(wsRequests))
-  // {
-  //   StaticJsonDocument<128> output;
-
-  //   //dynamically allocate our buffer
-  //   size_t jsonSize = measureJson(output);
-  //   char * jsonBuffer = (char *)malloc(jsonSize+1);
-  //   jsonBuffer[jsonSize] = '\0'; // null terminate
-
-  //   //did we get anything?
-  //   if (jsonBuffer != NULL)
-  //   {
-  //     generateErrorJSON(output, "Queue Full");
-  //     serializeJson(output, jsonBuffer, jsonSize+1);
-  //     request->reply(jsonBuffer);
-  //   }
-  //   free(jsonBuffer);
-  // }
+  if (!uxQueueSpacesAvailable(wsRequests))
+    request->reply("{\"error\":\"Queue Full\"}");
 }
 
 void handleWebsocketMessageLoop(WebsocketRequest* request)
