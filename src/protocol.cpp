@@ -22,6 +22,7 @@ bool is_serial_authenticated = false;
 UserRole app_default_role = NOBODY;
 UserRole serial_role = NOBODY;
 UserRole api_role = NOBODY;
+String app_theme = "light";
 
 //for tracking our message loop
 unsigned long previousMessageMillis = 0;
@@ -206,6 +207,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleFadePWMChannel(input, output);
     else if (!strcmp(cmd, "set_rgb"))
       return handleSetRGB(input, output);
+    else if (!strcmp(cmd, "set_theme"))
+      return handleSetTheme(input, output);
     else if (!strcmp(cmd, "logout"))
       return handleLogout(input, output, mode, connection);
   }
@@ -259,6 +262,7 @@ void generateHelloJSON(JsonVariant output, UserRole role)
   output["msg"] = "hello";
   output["role"] = getRoleText(role);
   output["default_role"] = getRoleText(app_default_role);
+  output["theme"] = app_theme;
 }
 
 void handleSetBoardName(JsonVariantConst input, JsonVariant output)
@@ -1045,6 +1049,21 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
   #endif
 }
 
+void handleSetTheme(JsonVariantConst input, JsonVariant output)
+{
+  if (!input.containsKey("theme"))
+    return generateErrorJSON(output, "'theme' is a required parameter");
+
+  String temp = input["theme"];
+
+  if (temp != "light" && temp != "dark")
+    return generateErrorJSON(output, "'theme' must either be 'light' or 'dark'");
+
+  app_theme = temp;
+
+  sendThemeUpdate();
+}
+
 void generateConfigJSON(JsonVariant output)
 {
   //our identifying info
@@ -1319,6 +1338,26 @@ void generateLoginRequiredJSON(JsonVariant output)
 void generatePongJSON(JsonVariant output)
 {
   output["pong"] = millis();
+}
+
+void sendThemeUpdate()
+{
+  DynamicJsonDocument output(128);
+  output["msg"] = "set_theme";
+  output["theme"] = app_theme;
+
+  //dynamically allocate our buffer
+  size_t jsonSize = measureJson(output);
+  char * jsonBuffer = (char *)malloc(jsonSize+1);
+  jsonBuffer[jsonSize] = '\0'; // null terminate
+
+  //did we get anything?
+  if (jsonBuffer != NULL)
+  {
+    serializeJson(output, jsonBuffer, jsonSize+1);
+    sendToAll(jsonBuffer, NOBODY);
+  }
+  free(jsonBuffer);
 }
 
 void sendFastUpdate()

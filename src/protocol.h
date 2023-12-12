@@ -87,8 +87,10 @@ void handleConfigSwitch(JsonVariantConst input, JsonVariant output);
 void handleConfigRGB(JsonVariantConst input, JsonVariant output);
 void handleSetRGB(JsonVariantConst input, JsonVariant output);
 void handleConfigADC(JsonVariantConst input, JsonVariant output);
+void handleSetTheme(JsonVariantConst input, JsonVariant output);
 
 void generateHelloJSON(JsonVariant output, UserRole role);
+void generateUpdateJSON(JsonVariant output);
 void generateUpdateJSON(JsonVariant output);
 void generateFastUpdateJSON(JsonVariant output);
 void generateConfigJSON(JsonVariant output);
@@ -103,6 +105,7 @@ void generateLoginRequiredJSON(JsonVariant output);
 void generateInvalidChannelJSON(JsonVariant output, byte cid);
 void generatePongJSON(JsonVariant output);
 
+void sendThemeUpdate();
 void sendFastUpdate();
 void sendOTAProgressUpdate(float progress);
 void sendOTAProgressFinished();

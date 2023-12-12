@@ -344,6 +344,10 @@ function start_websocket()
       app_role = msg.role;
       default_app_role = msg.default_role;
 
+      //light/dark mode
+      if (msg.theme)
+        setTheme(msg.theme);
+
       //auto login?
       if (Cookies.get("username") && Cookies.get("password")){
         yarrboard_log("auto login");
@@ -1059,6 +1063,11 @@ function start_websocket()
       else
         show_alert(msg.message, "success");
     }
+    else if (msg.msg == "set_theme")
+    {
+      //light/dark mode
+      setTheme(msg.theme);
+    }
     else if (msg.pong)
     {
       //we are connected still
@@ -1070,7 +1079,7 @@ function start_websocket()
     else
     {
       yarrboard_log("[socket] Unknown message: ");
-      yarrboard_log(msg);
+      yarrboard_log(JSON.stringify(msg));
     }
   };
   
