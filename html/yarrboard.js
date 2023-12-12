@@ -1,3 +1,5 @@
+const YarrboardClient = window.YarrboardClient;
+
 let socket;
 let current_page = null;
 let current_config;
@@ -311,6 +313,13 @@ function start_websocket()
   //open it.
   socket = new WebSocket(protocol + window.location.host + "/ws");
   
+  const test = new YarrboardClient(window.location.host);
+  test.onopen = function(e)
+  {
+    yarrboard_log("[socket] NPM Connected");
+  }
+  test.start();
+
   yarrboard_log("Opening new websocket");
 
   socket.onopen = function(e)
