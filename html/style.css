@@ -47,3 +47,20 @@ div#firmware_update_available h2 {
 tr.switchRow, tr.rgbRow, tr.adcRow, tr.pwmRow #statsTable tbody tr {
     height: 48px;
 }
+
+[data-theme="dark"] {
+    background-color: #111 !important;
+    color: #eee;
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: #333 !important;
+}
+
+[data-theme="dark"] .bg-white {
+    background-color: #000 !important;
+}
+
+[data-theme="dark"] .bg-black {
+    background-color: #eee !important;
+}

@@ -258,6 +258,15 @@ function start_yarrboard()
 {
   //main data connection
   start_websocket();
+
+  //light/dark theme init.
+  setTheme(getPreferredTheme());
+  $("#darkSwitch").change(function (){
+    if (this.checked)
+      setTheme("dark");
+    else
+      setTheme("light");
+  });
 }
 
 function load_configs()
@@ -2018,4 +2027,37 @@ window.addEventListener("error", function (e) {
 window.addEventListener('unhandledrejection', function (e) {
   yarrboard_log(`Unhandled Rejection: ${e.reason.message}`);
   return false;
+});
+
+function getStoredTheme() { localStorage.getItem('theme'); }
+function setStoredTheme() { localStorage.setItem('theme', theme); }
+
+function getPreferredTheme()
+{
+  const storedTheme = getStoredTheme();
+
+  if (storedTheme)
+    return storedTheme;
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
+function setTheme(theme)
+{
+  if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    document.documentElement.setAttribute('data-bs-theme', 'dark');
+  else
+    document.documentElement.setAttribute('data-bs-theme', theme);
+
+  let currentTheme = document.documentElement.getAttribute('data-bs-theme');
+  if (currentTheme == "light")
+    $("#darkSwitch").prop('checked', false);
+  else
+    $("#darkSwitch").prop('checked', true);
+}
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  const storedTheme = getStoredTheme();
+  if (storedTheme !== 'light' && storedTheme !== 'dark')
+    setTheme(getPreferredTheme());
 });
