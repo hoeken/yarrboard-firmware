@@ -285,6 +285,7 @@ function load_configs()
   {
     client.getNetworkConfig();
     client.getAppConfig();
+    check_for_updates();
   }
 
   client.getConfig();

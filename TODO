@@ -4,7 +4,6 @@ Firmware:
         * actually implement some kind of throttling
         * update signalk-yarrboard-plugin
     * set max brightness on rgb leds
-    * why is checking for new firmware not working?
     * we need a manual OTA upload
     * learn about building components for node-red, maybe make a yarrboard toolkit
     * protocol documentation
