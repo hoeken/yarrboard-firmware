@@ -925,26 +925,13 @@ function start_websocket()
       //save our config.
       app_config = msg;
 
+      //update some ui stuff
       update_role_ui();
+      toggle_role_passwords(msg.default_role);
 
       //what is our update interval?
       if (msg.app_update_interval)
         app_update_interval = msg.app_update_interval;
-
-      //TODO: update this
-      //enabled/disable user/pass fields
-      // if (default_app_role == "admin")
-      // {}
-      // $(`#admin_user`).prop('disabled', !msg.require_login);
-      // $(`#admin_pass`).prop('disabled', !msg.require_login);
-      // $(`#guest_user`).prop('disabled', !msg.require_login);
-      // $(`#guest_pass`).prop('disabled', !msg.require_login);
-      // $(`#require_login`).change(function (){
-      //   $(`#admin_user`).prop('disabled', !$("#require_login").prop("checked"))
-      //   $(`#admin_pass`).prop('disabled', !$("#require_login").prop("checked"))
-      //   $(`#guest_user`).prop('disabled', !$("#require_login").prop("checked"))
-      //   $(`#guest_pass`).prop('disabled', !$("#require_login").prop("checked"))
-      // });
 
       //yarrboard_log(msg);
       $("#admin_user").val(msg.admin_user);
@@ -952,8 +939,8 @@ function start_websocket()
       $("#guest_user").val(msg.guest_user);
       $("#guest_pass").val(msg.guest_pass);
       $("#app_update_interval").val(msg.app_update_interval);
-      $("#default_role select").val(msg.default_role).change();
-      // $("#require_login").prop("checked", msg.require_login);
+      $("#default_role").val(msg.default_role);
+      $("#default_role").change(function () {toggle_role_passwords($(this).val())});
       $("#app_enable_mfd").prop("checked", msg.app_enable_mfd);
       $("#app_enable_api").prop("checked", msg.app_enable_api);
       $("#app_enable_serial").prop("checked", msg.app_enable_serial);
@@ -1222,6 +1209,7 @@ function open_page(page)
     Cookies.remove("password");
 
     app_role = default_app_role;
+    update_role_ui();
 
     immediateSend({"cmd": "logout"});
 
@@ -1654,8 +1642,8 @@ function save_app_settings()
   let admin_pass = $("#admin_pass").val();
   let guest_user = $("#guest_user").val();
   let guest_pass = $("#guest_pass").val();
-  let default_role = $("#default_role option : selected").val();
-//  let require_login = $("#require_login").prop("checked");
+  let default_role = $("#default_role option:selected").val();
+  yarrboard_log(default_role);
   let app_enable_mfd = $("#app_enable_mfd").prop("checked");
   let app_enable_api = $("#app_enable_api").prop("checked");
   let app_enable_serial = $("#app_enable_serial").prop("checked");
@@ -1796,6 +1784,25 @@ function update_firmware()
   });  
 
   ota_started = true;
+}
+
+function toggle_role_passwords(role)
+{
+  if (role == "admin")
+  {
+    $(".admin_credentials").hide();
+    $(".guest_credentials").hide();
+  }
+  else if (role == "guest")
+  {
+    $(".admin_credentials").show();
+    $(".guest_credentials").hide();
+  }
+  else
+  {
+    $(".admin_credentials").show();
+    $(".guest_credentials").show();
+  }  
 }
 
 function update_role_ui()

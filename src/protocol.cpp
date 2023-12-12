@@ -14,7 +14,6 @@ char admin_pass[YB_PASSWORD_LENGTH] = "admin";
 char guest_user[YB_USERNAME_LENGTH] = "guest";
 char guest_pass[YB_PASSWORD_LENGTH] = "guest";
 unsigned int app_update_interval = 500;
-//bool require_login = true;
 bool app_enable_mfd = true;
 bool app_enable_api = true;
 bool app_enable_serial = false;
@@ -56,12 +55,17 @@ void protocol_setup()
     app_update_interval = preferences.getUInt("appUpdateInter");
   if (preferences.isKey("appDefaultRole"))
   {
-    app_default_role = (UserRole)preferences.getUInt("appDefaultRole");
+    String role = preferences.getString("appDefaultRole");
+    if (role == "admin")
+      app_default_role = ADMIN;
+    else if (role == "guest")
+      app_default_role = GUEST;
+    else
+      app_default_role = NOBODY;
+
     serial_role = app_default_role;
-    api_role = app_default_role;  
+    api_role = app_default_role;
   }
-  // if (preferences.isKey("require_login"))
-  //   require_login = preferences.getBool("require_login");
   if (preferences.isKey("appEnableMFD"))
     app_enable_mfd = preferences.getBool("appEnableMFD");
   if (preferences.isKey("appEnableApi"))
@@ -464,8 +468,7 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   preferences.putString("guest_user", guest_user);
   preferences.putString("guest_pass", guest_pass);
   preferences.putUInt("appUpdateInter", app_update_interval);
-  preferences.putUInt("appDefaultRole", app_default_role);
-  //preferences.putBool("require_login", require_login);  
+  preferences.putString("appDefaultRole", getRoleText(app_default_role));
   preferences.putBool("appEnableMFD", app_enable_mfd);
   preferences.putBool("appEnableApi", app_enable_api);
   preferences.putBool("appEnableSerial", app_enable_serial);
@@ -488,9 +491,6 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
 
 void handleLogin(JsonVariantConst input, JsonVariant output, YBMode mode, PsychicWebSocketClient *connection)
 {
-  // if (!require_login)
-  //   return generateErrorJSON(output, "Login not required.");
-
   if (!input.containsKey("user"))
     return generateErrorJSON(output, "'user' is a required parameter");
 
@@ -549,9 +549,6 @@ void handleLogin(JsonVariantConst input, JsonVariant output, YBMode mode, Psychi
 
 void handleLogout(JsonVariantConst input, JsonVariant output, YBMode mode, PsychicWebSocketClient *connection)
 {
-  // if (!require_login)
-  //   return generateErrorJSON(output, "Logout not required.");
-
   if (!isLoggedIn(input, mode, connection))
     return generateErrorJSON(output, "You are not logged in.");
 
@@ -559,7 +556,8 @@ void handleLogout(JsonVariantConst input, JsonVariant output, YBMode mode, Psych
   if (mode == YBP_MODE_WEBSOCKET)
   {
     removeClientFromAuthList(connection);
-    //we don't actually want to close this, bad UI
+
+    //we don't actually want to close the connection, bad UI
     //connection->close();
   }
   else if (mode == YBP_MODE_SERIAL)
@@ -1058,7 +1056,6 @@ void generateConfigJSON(JsonVariant output)
   output["use_ssl"] = app_enable_ssl;
   output["uuid"] = uuid;
   output["default_role"] = getRoleText(app_default_role);
-  // output["require_login"] = require_login;
 
   //some debug info
   output["last_restart_reason"] = getResetReason();
@@ -1275,7 +1272,6 @@ void generateAppConfigJSON(JsonVariant output)
 {
   //our identifying info
   output["msg"] = "app_config";
-  //output["require_login"] = require_login;
   output["default_role"] = getRoleText(app_default_role);
   output["admin_user"] = admin_user;
   output["admin_pass"] = admin_pass;

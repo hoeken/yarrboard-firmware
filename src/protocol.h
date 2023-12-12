@@ -51,13 +51,12 @@ extern char admin_user[YB_USERNAME_LENGTH];
 extern char admin_pass[YB_PASSWORD_LENGTH];
 extern char guest_user[YB_USERNAME_LENGTH];
 extern char guest_pass[YB_PASSWORD_LENGTH];
-//extern bool require_login;
-extern UserRole app_default_role;
 extern bool app_enable_api;
 extern bool app_enable_serial;
 extern bool app_enable_ssl;
 extern bool app_enable_mfd;
 extern bool is_serial_authenticated;
+extern UserRole app_default_role;
 extern UserRole serial_role;
 extern UserRole api_role;
 
