@@ -1,6 +1,7 @@
 const YarrboardClient = window.YarrboardClient;
 
-let socket;
+//let socket;
+let client;
 let current_page = null;
 let current_config;
 let app_username;
@@ -11,10 +12,11 @@ let app_update_interval = 500;
 let network_config;
 let app_config;
 
-let socket_retries = 0;
-let retry_time = 0;
-let last_heartbeat = 0;
-let heartbeat_rate = 5000;
+// let socket_retries = 0;
+// let retry_time = 0;
+// let last_heartbeat = 0;
+// let heartbeat_rate = 5000;
+
 let ota_started = false;
 
 const page_list = ["control", "config", "stats", "network", "settings", "system"];
@@ -226,40 +228,43 @@ let currentPWMSliderID = -1;
 let currentRGBPickerID = -1;
 
 //our heartbeat timer.
-function send_heartbeat()
-{
-  //did we not get a heartbeat?
-  if (Date.now() - last_heartbeat > heartbeat_rate * 2)
-  {
-    yarrboard_log("Missed heartbeat: " + (Date.now() - last_heartbeat))
-    socket.close();
-    retry_connection();
-  }
+// function send_heartbeat()
+// {
+//   //did we not get a heartbeat?
+//   if (Date.now() - last_heartbeat > heartbeat_rate * 2)
+//   {
+//     yarrboard_log("Missed heartbeat: " + (Date.now() - last_heartbeat))
+//     socket.close();
+//     retry_connection();
+//   }
 
-  //only send it if we're already open.
-  if (socket.readyState == WebSocket.OPEN)
-  {
-    immediateSend({"cmd": "ping"});
-    setTimeout(send_heartbeat, heartbeat_rate);
-  }
-  else if (socket.readyState == WebSocket.CLOSING)
-  {
-    yarrboard_log("she closing " + socket.readyState);
-    //socket.close();
-    retry_connection();
-  }
-  else if (socket.readyState == WebSocket.CLOSED)
-  {
-    yarrboard_log("she closed " + socket.readyState);
-    //socket.close();
-    retry_connection();
-  }
-}
+//   //only send it if we're already open.
+//   if (socket.readyState == WebSocket.OPEN)
+//   {
+//     immediateSend({"cmd": "ping"});
+//     setTimeout(send_heartbeat, heartbeat_rate);
+//   }
+//   else if (socket.readyState == WebSocket.CLOSING)
+//   {
+//     yarrboard_log("she closing " + socket.readyState);
+//     //socket.close();
+//     retry_connection();
+//   }
+//   else if (socket.readyState == WebSocket.CLOSED)
+//   {
+//     yarrboard_log("she closed " + socket.readyState);
+//     //socket.close();
+//     retry_connection();
+//   }
+// }
 
 function start_yarrboard()
 {
   //main data connection
   start_websocket();
+
+  //check our connection status.
+  setInterval(check_connection_status, 100);
 
   //light/dark theme init.
   setTheme(getPreferredTheme());
@@ -294,62 +299,61 @@ function load_configs()
   });
 }
 
-function start_websocket()
+function check_connection_status()
 {
-  //close any old connections
-  if (socket)
-    socket.close();
-  
-  //do we want ssl?
-  let protocol = "ws://";
-  if (document.location.protocol == 'https:')
+  if (client)
   {
-    protocol = "wss://";
-
-    //ssl is slow on the esp32, give it time.
-    heartbeat_rate = 20000;
-  }
-
-  //open it.
-  socket = new WebSocket(protocol + window.location.host + "/ws");
-  
-  const test = new YarrboardClient(window.location.host);
-  test.onopen = function(e)
-  {
-    yarrboard_log("[socket] NPM Connected");
-  }
-  test.start();
-
-  yarrboard_log("Opening new websocket");
-
-  socket.onopen = function(e)
-  {
-    yarrboard_log("[socket] Connected");
-
-    //we are connected, reload
-    socket_retries = 0;
-    retry_time = 0;
-    last_heartbeat = Date.now();
-
-    //ticker checker
-    setTimeout(send_heartbeat, heartbeat_rate);
+    let status = client.status();
 
     //our connection status
     $(".connection_status").hide();
-    $("#connection_good").show();
+    
+    if (status == "CONNECTING")
+      $("#connection_startup").show();
+    else if (status == "CONNECTED")
+      $("#connection_good").show();
+    else if (status == "RETRYING")
+      $("#connection_retrying").show();
+    else if (status == "FAILED")
+      $("#connection_failed").show();
+  }  
+}
+
+function start_websocket()
+{
+  //close any old connections
+  // if (socket)
+  //   socket.close();
+  
+  //do we want ssl?
+  let use_ssl = false;
+  if (document.location.protocol == 'https:')
+    use_ssl = true;
+
+  //open it.
+  client = new YarrboardClient(window.location.host, "", "", false, use_ssl);
+
+  client.onopen = function()
+  {
+    yarrboard_log("[socket] Connected");
+
+    // //we are connected, reload
+    // socket_retries = 0;
+    // retry_time = 0;
+    // last_heartbeat = Date.now();
+
+    // //ticker checker
+    // setTimeout(send_heartbeat, heartbeat_rate);
 
     //figure out what our login situation is
     immediateSend({"cmd": "hello"});
   };
 
-  socket.onmessage = function(event)
+  client.onmessage = function(msg)
   {
-    const msg = JSON.parse(event.data);
-
-    if (msg.msg == 'hello')
+      if (msg.msg == 'hello')
     {
       yarrboard_log("hello");
-      yarrboard_log(event.data);
       app_role = msg.role;
       default_app_role = msg.default_role;
 
@@ -375,8 +379,6 @@ function start_websocket()
     {
       // yarrboard_log("config");
       // yarrboard_log(msg);
-      // yarrboard_log(event.data);
-      // yarrboard_log(event.data.length);
 
       current_config = msg;
 
@@ -674,8 +676,6 @@ function start_websocket()
     {
       // yarrboard_log("update");
       // yarrboard_log(msg);
-      // yarrboard_log(event.data);
-      // yarrboard_log(event.data.length);
 
       //we need a config loaded.
       if (!current_config)
@@ -1001,7 +1001,8 @@ function start_websocket()
       //yarrboard_log("ota progress");
 
       //OTA is blocking... so update our heartbeat
-      last_heartbeat = Date.now();
+      //TODO: do we need to update this?
+      //last_heartbeat = Date.now();
 
       let progress = Math.round(msg.progress);
 
@@ -1077,14 +1078,14 @@ function start_websocket()
       //light/dark mode
       setTheme(msg.theme);
     }
-    else if (msg.pong)
-    {
-      //we are connected still
-      //yarrboard_log("pong: " + msg.pong);
+    // else if (msg.pong)
+    // {
+    //   //we are connected still
+    //   //yarrboard_log("pong: " + msg.pong);
 
-      //we got the heartbeat
-      last_heartbeat = Date.now();
-    }
+    //   //we got the heartbeat
+    //   last_heartbeat = Date.now();
+    // }
     else
     {
       yarrboard_log("[socket] Unknown message: ");
@@ -1092,63 +1093,65 @@ function start_websocket()
     }
   };
   
-  socket.onclose = function(event)
+  client.onclose = function(event)
   {
     yarrboard_log(`[socket] Connection closed code=${event.code} reason=${event.reason}`);
   };
   
-  socket.onerror = function()
+  client.onerror = function()
   {
     yarrboard_log(`[socket] error`);
   };
+
+  client.start();
 }
 
-function retry_connection()
-{
-  //bail if its good to go
-  if (socket.readyState == WebSocket.OPEN)
-    return;
+// function retry_connection()
+// {
+//   //bail if its good to go
+//   if (socket.readyState == WebSocket.OPEN)
+//     return;
 
-  //keep watching if we are connecting
-  if (socket.readyState == WebSocket.CONNECTING)
-  {
-    yarrboard_log("Waiting for connection");
+//   //keep watching if we are connecting
+//   if (socket.readyState == WebSocket.CONNECTING)
+//   {
+//     yarrboard_log("Waiting for connection");
     
-    retry_time++;
-    $("#retries_count").html(retry_time);
+//     retry_time++;
+//     $("#retries_count").html(retry_time);
 
-    //tee it up.
-    setTimeout(retry_connection, 1000);
+//     //tee it up.
+//     setTimeout(retry_connection, 1000);
 
-    return;
-  }
+//     return;
+//   }
 
-  //keep track of stuff.
-  retry_time = 0;
-  socket_retries++;
-  yarrboard_log("Reconnecting... " + socket_retries);
+//   //keep track of stuff.
+//   retry_time = 0;
+//   socket_retries++;
+//   yarrboard_log("Reconnecting... " + socket_retries);
 
-  //our connection status
-  $(".connection_status").hide();
-  $("#retries_count").html(retry_time);
-  $("#connection_retrying").show();
+//   //our connection status
+//   $(".connection_status").hide();
+//   $("#retries_count").html(retry_time);
+//   $("#connection_retrying").show();
 
-  //reconnect!
-  start_websocket();
+//   //reconnect!
+//   start_websocket();
 
-  //set some bounds
-  let my_timeout = 500;
-  my_timeout = Math.max(my_timeout, socket_retries * 1000);
-  my_timeout = Math.min(my_timeout, 60000);
+//   //set some bounds
+//   let my_timeout = 500;
+//   my_timeout = Math.max(my_timeout, socket_retries * 1000);
+//   my_timeout = Math.min(my_timeout, 60000);
 
-  //tee it up.
-  setTimeout(retry_connection, my_timeout);
+//   //tee it up.
+//   setTimeout(retry_connection, my_timeout);
 
-  //infinite retees
-  //our connection status
-  //  $(".connection_status").hide();
-  //  $("#connection_failed").show();
-}
+//   //infinite retees
+//   //our connection status
+//   //  $(".connection_status").hide();
+//   //  $("#connection_failed").show();
+// }
 
 function show_alert(message, type = 'danger')
 {
@@ -1273,7 +1276,7 @@ function on_page_ready()
 
 function get_stats_data()
 {
-  if (socket.readyState == WebSocket.OPEN && (app_role == 'guest' || app_role == 'admin'))
+  if (client.isOpen() && (app_role == 'guest' || app_role == 'admin'))
   {
     //yarrboard_log("get_stats");
 
@@ -1289,7 +1292,7 @@ function get_stats_data()
 
 function get_update_data()
 {
-  if (socket.readyState == WebSocket.OPEN && (app_role == 'guest' || app_role == 'admin'))
+  if (client.isOpen() && (app_role == 'guest' || app_role == 'admin'))
   {
     //yarrboard_log("get_update");
 
@@ -1327,7 +1330,7 @@ function immediateSend(jdata)
   if (ota_started)
     return;
 
-  socket.send(JSON.stringify(jdata));
+  client.json(jdata);
 }
 
 function validate_board_name(e)

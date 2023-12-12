@@ -1,5 +1,8 @@
 Firmware:
-    * can we use the npm module class for connections?
+    * yarrboard-client conversion
+        * move all socket calls to YarrboardClient client
+        * move all the buffering / reconnection / queuing logic to YarrboardClient
+        * add a setInterval call to check the status and update the UI
     * set max brightness on rgb leds
     * learn about building components for node-red, maybe make a yarrboard toolkit
     * protocol documentation
