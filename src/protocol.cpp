@@ -37,6 +37,8 @@ unsigned long totalSentMessages = 0;
 unsigned int websocketClientCount = 0;
 unsigned int httpClientCount = 0;
 
+String arduino_version = String(ESP_ARDUINO_VERSION_MAJOR) + "." + String(ESP_ARDUINO_VERSION_MINOR) + "." + String(ESP_ARDUINO_VERSION_PATCH);
+
 void protocol_setup()
 {
   //look up our board name
@@ -1065,11 +1067,13 @@ void handleSetTheme(JsonVariantConst input, JsonVariant output)
 }
 
 void generateConfigJSON(JsonVariant output)
-{
+{  
   //our identifying info
   output["msg"] = "config";
   output["firmware_version"] = YB_FIRMWARE_VERSION;
   output["hardware_version"] = YB_HARDWARE_VERSION;
+  output["esp_idf_version"] = esp_get_idf_version();
+  output["arduino_version"] = arduino_version;
   output["name"] = board_name;
   output["hostname"] = local_hostname;
   output["use_ssl"] = app_enable_ssl;

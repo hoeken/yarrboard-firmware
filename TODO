@@ -1,9 +1,11 @@
 Firmware:
     * yarrboard-client conversion
-        * move all socket calls to YarrboardClient client
-        * move all the buffering / reconnection / queuing logic to YarrboardClient
-        * add a setInterval call to check the status and update the UI
+        * actually implement requireConfirmation
+        * actually implement some kind of throttling
+        * update signalk-yarrboard-plugin
     * set max brightness on rgb leds
+    * why is checking for new firmware not working?
+    * we need a manual OTA upload
     * learn about building components for node-red, maybe make a yarrboard toolkit
     * protocol documentation
     * attempt to migrate to esp32 arduino 3.0: https://docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html

@@ -378,9 +378,12 @@ function start_websocket()
       //update our footer automatically.
       $('#projectName').html("Yarrboard v" + msg.firmware_version);
 
-      //stats info
+      //all our versions
       $("#firmware_version").html(msg.firmware_version);
       $("#hardware_version").html(msg.hardware_version);
+      $("#esp_idf_version").html(msg.esp_idf_version);
+      $("#arduino_version").html(msg.arduino_version);
+      $("#yarrboard_client_version").html(YarrboardClient.version);
 
       //show some info about restarts
       if (msg.last_restart_reason)
