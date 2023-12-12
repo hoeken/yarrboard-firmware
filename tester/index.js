@@ -57,10 +57,16 @@ function twerkIt() {
     }    
     
     if (options.update)
-    {
-        yb.startUpdatePoller(options.update);
+        updatePoller();
+}
+
+function updatePoller() {
+    if (yb.isOpen()) {
+        yb.getUpdate();
+        setTimeout(updatePoller, options.update);
     }
 }
+
 
 async function togglePin(channels, d = 10) {
     while (true)

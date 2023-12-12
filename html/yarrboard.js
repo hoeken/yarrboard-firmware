@@ -241,7 +241,7 @@ let currentRGBPickerID = -1;
 //   //only send it if we're already open.
 //   if (socket.readyState == WebSocket.OPEN)
 //   {
-//     immediateSend({"cmd": "ping"});
+//     client.send({"cmd": "ping"});
 //     setTimeout(send_heartbeat, heartbeat_rate);
 //   }
 //   else if (socket.readyState == WebSocket.CLOSING)
@@ -283,20 +283,11 @@ function load_configs()
 
   if(app_role == "admin")
   {
-    //load our network config
-    immediateSend({
-      "cmd": "get_network_config"
-    });  
-
-    //load our network config
-    immediateSend({
-      "cmd": "get_app_config"
-    });  
+    client.getNetworkConfig();
+    client.getAppConfig();
   }
 
-  immediateSend({
-    "cmd": "get_config"
-  });
+  client.getConfig();
 }
 
 function check_connection_status()
@@ -335,18 +326,8 @@ function start_websocket()
 
   client.onopen = function()
   {
-    yarrboard_log("[socket] Connected");
-
-    // //we are connected, reload
-    // socket_retries = 0;
-    // retry_time = 0;
-    // last_heartbeat = Date.now();
-
-    // //ticker checker
-    // setTimeout(send_heartbeat, heartbeat_rate);
-
     //figure out what our login situation is
-    immediateSend({"cmd": "hello"});
+    client.sayHello();
   };
 
   client.onmessage = function(msg)
@@ -364,11 +345,7 @@ function start_websocket()
       //auto login?
       if (Cookies.get("username") && Cookies.get("password")){
         yarrboard_log("auto login");
-        immediateSend({
-          "cmd": "login",
-          "user": Cookies.get("username"),
-          "pass": Cookies.get("password")
-        });
+        client.login(Cookies.get("username"), Cookies.get("password"));
       } else {
         update_role_ui();
         load_configs();  
@@ -1078,30 +1055,14 @@ function start_websocket()
       //light/dark mode
       setTheme(msg.theme);
     }
-    // else if (msg.pong)
-    // {
-    //   //we are connected still
-    //   //yarrboard_log("pong: " + msg.pong);
-
-    //   //we got the heartbeat
-    //   last_heartbeat = Date.now();
-    // }
     else
     {
-      yarrboard_log("[socket] Unknown message: ");
-      yarrboard_log(JSON.stringify(msg));
+      yarrboard_log("[socket] Unknown message: " + JSON.stringify(msg));
     }
   };
-  
-  client.onclose = function(event)
-  {
-    yarrboard_log(`[socket] Connection closed code=${event.code} reason=${event.reason}`);
-  };
-  
-  client.onerror = function()
-  {
-    yarrboard_log(`[socket] error`);
-  };
+
+  //use custom logger
+  client.log = yarrboard_log;
 
   client.start();
 }
@@ -1173,11 +1134,7 @@ function toggle_state(id)
   if ($("#pwmState" + id).text() == "ON")
     new_state = false;
 
-  throttledSend({
-    "cmd": "set_pwm_channel",
-    "id": id,
-    "state": new_state
-  });
+  client.setPWMChannelState(id, new_state, true);
 }
 
 function toggle_adc_details(id)
@@ -1241,7 +1198,7 @@ function open_page(page)
     app_role = default_app_role;
     update_role_ui();
 
-    immediateSend({"cmd": "logout"});
+    client.logout();
 
     if (app_role == "nobody")
       open_page("login");
@@ -1280,9 +1237,7 @@ function get_stats_data()
   {
     //yarrboard_log("get_stats");
 
-    immediateSend({
-      "cmd": "get_stats",
-    });
+    client.getStats();
 
     //keep loading it while we are here.
     if (current_page == "stats")
@@ -1296,41 +1251,12 @@ function get_update_data()
   {
     //yarrboard_log("get_update");
 
-    immediateSend({
-      "cmd": "get_update",
-    });
+    client.getUpdate();
 
     //keep loading it while we are here.
     if (current_page == "control")
       setTimeout(get_update_data, app_update_interval);
   }
-}
-
-//drops messages if sent too fast.
-var lastSentTime = Date.now();
-function throttledSend(jdata)
-{
-  //ota is blocking... stop sending
-  if (ota_started)
-    return;
-
-  //rate limit
-  if (Date.now() > lastSentTime + 50)
-  {
-    immediateSend(jdata);
-    lastSentTime = Date.now();
-  }
-  else
-    yarrboard_log("message dropped, too fast");
-}
-
-function immediateSend(jdata)
-{
-  //ota is blocking... stop sending
-  if (ota_started)
-    return;
-
-  client.json(jdata);
 }
 
 function validate_board_name(e)
@@ -1349,7 +1275,7 @@ function validate_board_name(e)
     $(ele).addClass("is-valid");
 
     //set our new board name!
-    immediateSend({
+    client.send({
       "cmd": "set_boardname",
       "value": value
     });
@@ -1371,12 +1297,8 @@ function set_duty_cycle(e)
     //we want a duty value from 0 to 1
     value = value / 100;
   
-    //set our new pwm name!
-    throttledSend({
-      "cmd": "set_pwm_channel",
-      "id": id,
-      "duty": value
-    });
+    //update our duty cycle
+    client.setPWMChannelDuty(id, value, false);
   }
 }
 
@@ -1397,7 +1319,7 @@ function validate_pwm_name(e)
     $(ele).addClass("is-valid");
 
     //set our new pwm name!
-    immediateSend({
+    client.send({
       "cmd": "config_pwm_channel",
       "id": id,
       "name": value
@@ -1415,7 +1337,7 @@ function validate_pwm_dimmable(e)
   $(ele).addClass("is-valid");
 
   //save it
-  immediateSend({
+  client.send({
     "cmd": "config_pwm_channel",
     "id": id,
     "isDimmable": value
@@ -1437,7 +1359,7 @@ function validate_pwm_enabled(e)
   $(ele).addClass("is-valid");
 
   //save it
-  immediateSend({
+  client.send({
     "cmd": "config_pwm_channel",
     "id": id,
     "enabled": value
@@ -1462,7 +1384,7 @@ function validate_pwm_soft_fuse(e)
     $(ele).addClass("is-valid");
 
     //save it
-    immediateSend({
+    client.send({
       "cmd": "config_pwm_channel",
       "id": id,
       "softFuse": value
@@ -1487,7 +1409,7 @@ function validate_switch_name(e)
     $(ele).addClass("is-valid");
 
     //set our new pwm name!
-    immediateSend({
+    client.send({
       "cmd": "config_switch",
       "id": id,
       "name": value
@@ -1508,7 +1430,7 @@ function validate_switch_enabled(e)
   $(ele).addClass("is-valid");
 
   //save it
-  immediateSend({
+  client.send({
     "cmd": "config_switch",
     "id": id,
     "enabled": value
@@ -1526,13 +1448,7 @@ function set_rgb_color(e, color)
   let green = rgb.g / 255;
   let blue = rgb.b / 255;
 
-  throttledSend({
-    "cmd": "set_rgb",
-    "id": id,
-    "red": red.toFixed(4),
-    "green": green.toFixed(4),
-    "blue": blue.toFixed(4)
-  });
+  client.setRGB(id, red.toFixed(4), green.toFixed(4), blue.toFixed(4), false);
 }
 
 function validate_rgb_name(e)
@@ -1552,7 +1468,7 @@ function validate_rgb_name(e)
     $(ele).addClass("is-valid");
 
     //set our new pwm name!
-    immediateSend({
+    client.send({
       "cmd": "config_rgb",
       "id": id,
       "name": value
@@ -1573,7 +1489,7 @@ function validate_rgb_enabled(e)
   $(ele).addClass("is-valid");
 
   //save it
-  immediateSend({
+  client.send({
     "cmd": "config_rgb",
     "id": id,
     "enabled": value
@@ -1597,7 +1513,7 @@ function validate_adc_name(e)
     $(ele).addClass("is-valid");
 
     //set our new pwm name!
-    immediateSend({
+    client.send({
       "cmd": "config_adc",
       "id": id,
       "name": value
@@ -1618,7 +1534,7 @@ function validate_adc_enabled(e)
   $(ele).addClass("is-valid");
 
   //save it
-  immediateSend({
+  client.send({
     "cmd": "config_adc",
     "id": id,
     "enabled": value
@@ -1630,11 +1546,7 @@ function do_login(e)
   app_username = $('#username').val();
   app_password = $('#password').val();
 
-  immediateSend({
-    "cmd": "login",
-    "user": app_username,
-    "pass": app_password
-  });
+  client.login(app_username, app_password);
 }
 
 function save_network_settings()
@@ -1651,7 +1563,7 @@ function save_network_settings()
   show_alert("Yarrboard may be unresponsive while changing WiFi settings. Make sure you connect to the right network after updating.", "primary");
 
   //okay, send it off.
-  immediateSend({
+  client.send({
     "cmd": "set_network_config",
     "wifi_mode": wifi_mode,
     "wifi_ssid": wifi_ssid,
@@ -1704,7 +1616,7 @@ function save_app_settings()
   }
 
   //okay, send it off.
-  immediateSend({
+  client.send({
     "cmd": "set_app_config",
     "admin_user": admin_user,
     "admin_pass": admin_pass,
@@ -1728,10 +1640,7 @@ function restart_board()
 {
   if (confirm("Are you sure you want to restart your Yarrboard?"))
   {
-    //okay, send it off.
-    immediateSend({
-      "cmd": "restart",
-    });
+    client.restart();
 
     show_alert("Yarrboard is now restarting, please be patient.", "primary");
     
@@ -1745,10 +1654,7 @@ function reset_to_factory()
 {
   if (confirm("WARNING! Are you sure you want to reset your Yarrboard to factory defaults?  This cannot be undone."))
   {
-    //okay, send it off.
-    immediateSend({
-      "cmd": "factory_reset",
-    });
+    client.factoryReset();
 
     show_alert("Yarrboard is now resetting to factory defaults, please be patient.", "primary");
   }
@@ -1809,9 +1715,7 @@ function update_firmware()
   $("#progress_wrapper").show();
 
   //okay, send it off.
-  immediateSend({
-    "cmd": "ota_start",
-  });  
+  client.startOTA();
 
   ota_started = true;
 }
