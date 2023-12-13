@@ -25,9 +25,28 @@ const yb = new YarrboardClient(options.host, options.user, options.pass, options
 
 function main() {
     yb.start();
+    
     setTimeout(yb.printMessageStats.bind(yb), 1);
     twerkIt();
 }
+
+function waitUntilOpen() {
+    return new Promise(async (resolve) => {
+      // Check if yb.isOpen() is already true
+      if (yb.isOpen()) {
+        resolve();
+      } else {
+        // Set up a loop to periodically check yb.isOpen()
+        const intervalId = setInterval(() => {
+          if (yb.isOpen()) {
+            clearInterval(intervalId);
+            resolve();
+          }
+        }, 100); // You can adjust the interval as needed
+      }
+    });
+}
+
 
 async function testFadeInterrupt() {
     while (true) {
@@ -39,7 +58,9 @@ async function testFadeInterrupt() {
     }
 }
 
-function twerkIt() {
+async function twerkIt() {
+    await waitUntilOpen();
+
     if (options.rgb)
     {
         console.log(`RGB Fade on channel ${options.channels} / delay ${options.delay}ms`)
