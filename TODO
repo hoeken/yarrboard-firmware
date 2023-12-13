@@ -1,7 +1,5 @@
 Firmware:
     * yarrboard-client conversion
-        * actually implement requireConfirmation
-        * actually implement some kind of throttling
         * update signalk-yarrboard-plugin
     * set max brightness on rgb leds
     * we need a manual OTA upload
