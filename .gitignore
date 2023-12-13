@@ -148,3 +148,5 @@ dist
 .pnp.*
 package-lock.json
 html/yarrboard-client.js
+src/index.html.gz.h
+src/logo-navico.png.gz.h
