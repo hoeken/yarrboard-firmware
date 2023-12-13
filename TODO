@@ -1,11 +1,6 @@
 Firmware:
-    * yarrboard-client conversion
-        * update signalk-yarrboard-plugin
     * set max brightness on rgb leds
-    * we need a manual OTA upload
-    * learn about building components for node-red, maybe make a yarrboard toolkit
     * protocol documentation
-    * attempt to migrate to esp32 arduino 3.0: https://docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html
 
 8ch MOSFET:
     * remove CAN port - never going to use it.
@@ -33,3 +28,6 @@ Electronics:
 Long Term Maybe?
     * Relay board - DC or AC?
     * Motor driver / H bridge?
+    * attempt to migrate to esp32 arduino 3.0: https://docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html
+    * manual OTA upload
+    * learn about building components for node-red, maybe make a yarrboard toolkit
