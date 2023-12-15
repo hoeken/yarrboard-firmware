@@ -11,6 +11,7 @@ Firmware:
         * or at least a 9.5mm pitch barrier terminal like C496131 or C430699 or C430687 or C707586
     * move to 4 layer design signal / gnd / gnd / signal
     * bypass current sensing too with fuse + 4 layer board (use bottom layer)
+    * extend the busbar a little bit so the MEGA fuse fits
 
 RGB Input:
     * move to 4 layer design signal / gnd / gnd / signal
