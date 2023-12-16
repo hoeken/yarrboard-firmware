@@ -7,8 +7,6 @@
 */
 
 #include "ntp.h"
-#include "time.h"
-#include "sntp.h"
 
 const char *ntpServer1 = "pool.ntp.org";
 const char *ntpServer2 = "time.nist.gov";

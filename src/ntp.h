@@ -11,7 +11,7 @@
 
 #include <Arduino.h>
 #include "time.h"
-#include "sntp.h"
+#include "esp_sntp.h"
 
 void ntp_setup();
 void ntp_loop();
