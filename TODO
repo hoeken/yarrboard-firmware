@@ -1,8 +1,11 @@
 Firmware:
-    * set max brightness on rgb leds
+    * set max duty on rgb leds
+    * set max duty on PWM channels / total and individual
     * protocol documentation
+    * wifi connection fail should default to AP mode
 
 8ch MOSFET:
+    * switch to esp32-s3 module board (waveshare w/ castellated pins)
     * remove CAN port - never going to use it.
     * change fan2 tach to pin 4
     * combine fan 1 pwm and fan 2 pwm to pin 16
@@ -14,17 +17,22 @@ Firmware:
     * extend the busbar a little bit so the MEGA fuse fits
 
 RGB Input:
+    * switch to esp32-s3 module board (waveshare w/ castellated pins)
     * move to 4 layer design signal / gnd / gnd / signal
     * remove the MISO line completely, doesnt work.
+    * drop the ADC - make a separate board
+    * pin header to connect to rgb button board
 
 RGB Button Board:
     * number buttons/leds like pins on a chip
     * flip the connector pins
+    * pin header to connect to rgb input board
+    * same size / hole spacing as rgb input board
+    * center the button pads
+    * possibly extra 0.5 or 1mm spacing between the 2x2 modules
 
 Electronics:
     * update 3dp case for 8ch mosfet
-    * design case for input board
-    * design case for button board
 
 Long Term Maybe?
     * Relay board - DC or AC?
