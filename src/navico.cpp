@@ -34,7 +34,7 @@ void navico_loop()
         //generate our config JSON
         StaticJsonDocument<512> doc;
 
-        doc["Version"] = YB_FIRMWARE_VERSION;
+        doc["Version"] = "1";
         doc["Source"] = board_name;
         doc["IP"] = WiFi.localIP();
         doc["FeatureName"] = String(board_name) + " Webapp";
