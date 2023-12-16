@@ -34,15 +34,15 @@ void navico_loop()
         //generate our config JSON
         StaticJsonDocument<512> doc;
 
-        doc["Version"] = "1";
-        doc["Source"] = "Yarrboard";
+        doc["Version"] = YB_FIRMWARE_VERSION;
+        doc["Source"] = board_name;
         doc["IP"] = WiFi.localIP();
-        doc["FeatureName"] = "Yarrboard Webapp";
+        doc["FeatureName"] = String(board_name) + " Webapp";
 
         JsonObject Text_0 = doc["Text"].createNestedObject();
         Text_0["Language"] = "en";
         Text_0["Name"] = board_name;
-        Text_0["Description"] = "Yarrboard Webapp";
+        Text_0["Description"] = String(board_name) + " Webapp";
         doc["Icon"] = url + "/logo-navico.png";
         doc["URL"] = url + "/";
         doc["OnlyShowOnClientIP"] = "true";
