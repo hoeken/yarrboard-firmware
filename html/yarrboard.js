@@ -673,13 +673,8 @@ function start_websocket()
       // else
       //   $('#time').hide();
 
-      if (msg.uptime)
-      {
-        $("#uptime_footer").html("Uptime: " + secondsToDhms(Math.round(msg.uptime/1000000)));
-        $("#uptime_footer").show();
-      }
-      else
-        $("#uptime_footer").hide();
+      // if (msg.uptime)
+      //   $("#uptime").html(secondsToDhms(Math.round(msg.uptime/1000000)));
 
       //or maybe voltage
       // if (msg.bus_voltage)
@@ -1842,7 +1837,7 @@ function formatAmpHours(aH)
   else if (aH < 1000)
     return aH.toFixed(1) + "&nbsp;MAh";
   else
-    return Math.roud(aH) + "&nbsp;MAh";
+    return Math.round(aH) + "&nbsp;MAh";
 }
 
 function formatWattHours(wH)
@@ -1873,7 +1868,7 @@ function formatWattHours(wH)
   else if (wH < 1000)
     return wH.toFixed(1) + "&nbsp;MWh";
   else
-    return Math.roud(wH) + "&nbsp;MWh";
+    return Math.round(wH) + "&nbsp;MWh";
 }
 
 function formatBytes(bytes, decimals = 1) {

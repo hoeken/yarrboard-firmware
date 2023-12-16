@@ -192,6 +192,10 @@
                             </tr>
                         </thead>
                         <tbody class="table-group-divider">
+                            <tr class="uptime">
+                                <th scope="row">Uptime</th>
+                                <td id="uptime" class="text-end"></td>
+                            </tr>
                             <tr onclick="$('.other_versions').toggle()">
                                 <th scope="row">Firmware Version</th>
                                 <td id="firmware_version" class="text-end"></td>
@@ -498,8 +502,6 @@
             </div>
         </main>
         <footer class="p-4 text-body-secondary text-center">
-            <div id="uptime_footer" style="display: none"></div>
-            <div id="bus_voltage_footer" style="display: none"></div>
             <div id="websocket_status">
                 WebSocket:
                 <span id="connection_startup" class="connection_status text-primary">CONNECTING</span>
