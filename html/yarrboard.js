@@ -451,10 +451,10 @@ function start_websocket()
 
         $('#pwmStatsTableBody').append(`<tr id="pwmStatsTotal"></tr>`);
         $('#pwmStatsTotal').append(`<th class="pwmName">Total</th>`);
-        $('#pwmStatsTotal').append(`<td id="pwmAmpHoursTotal" class="text-end"></td>`);
-        $('#pwmStatsTotal').append(`<td id="pwmWattHoursTotal" class="text-end"></td>`);
-        $('#pwmStatsTotal').append(`<td id="pwmOnCountTotal" class="text-end"></td>`);
-        $('#pwmStatsTotal').append(`<td id="pwmTripCountTotal" class="text-end"></td>`);
+        $('#pwmStatsTotal').append(`<th id="pwmAmpHoursTotal" class="text-end"></th>`);
+        $('#pwmStatsTotal').append(`<th id="pwmWattHoursTotal" class="text-end"></th>`);
+        $('#pwmStatsTotal').append(`<th id="pwmOnCountTotal" class="text-end"></th>`);
+        $('#pwmStatsTotal').append(`<th id="pwmTripCountTotal" class="text-end"></th>`);
 
         $('#controlDiv').show();
         $('#pwmStatsDiv').show();  
@@ -860,10 +860,11 @@ function start_websocket()
 
       if (msg.pwm)
       {
-        let total_ah = 0;
-        let total_wh = 0;
+        let total_ah = 0.0;
+        let total_wh = 0.0;
         let total_on_count = 0;
         let total_trip_count = 0;
+
         for (ch of msg.pwm)
         {
           if (current_config.pwm[ch.id].enabled)
@@ -873,11 +874,11 @@ function start_websocket()
             $('#pwmOnCount' + ch.id).html(ch.state_change_count.toLocaleString("en-US"));
             $('#pwmTripCount' + ch.id).html(ch.soft_fuse_trip_count.toLocaleString("en-US"));
 
-            total_ah += ch.Ah;
-            total_wh += ch.Wh;
-            total_on_count += ch.state_change_count;
-            total_trip_count += ch.soft_fuse_trip_count;
-          }
+            total_ah += parseFloat(ch.aH);
+            total_wh += parseFloat(ch.wH);
+            total_on_count += parseInt(ch.state_change_count);
+            total_trip_count += parseInt(ch.soft_fuse_trip_count);
+          }  
         }
 
         $('#pwmAmpHoursTotal').html(formatAmpHours(total_ah));
