@@ -207,6 +207,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleTogglePWMChannel(input, output);
     else if (!strcmp(cmd, "fade_pwm_channel"))
       return handleFadePWMChannel(input, output);
+    else if (!strcmp(cmd, "set_switch"))
+      return handleSetSwitch(input, output);
     else if (!strcmp(cmd, "set_rgb"))
       return handleSetRGB(input, output);
     else if (!strcmp(cmd, "set_theme"))
@@ -834,6 +836,29 @@ void handleFadePWMChannel(JsonVariantConst input, JsonVariant output)
   #endif
 }
 
+void handleSetSwitch(JsonVariantConst input, JsonVariant output)
+{
+  #ifdef YB_HAS_INPUT_CHANNELS
+    //id is required
+    if (!input.containsKey("id"))
+      return generateErrorJSON(output, "'id' is a required parameter");
+
+    //is it a valid channel?
+    byte cid = input["id"];
+    if (!isValidInputChannel(cid))
+      return generateErrorJSON(output, "Invalid channel id");
+
+    //state change?
+    if (input.containsKey("state"))
+    {
+      bool state = input["state"];
+      input_channels[cid].setState(state);
+    }
+  #else
+    return generateErrorJSON(output, "Board does not have RGB channels.");
+  #endif
+}
+
 void handleConfigSwitch(JsonVariantConst input, JsonVariant output)
 {
   #ifdef YB_HAS_INPUT_CHANNELS
@@ -1157,6 +1182,7 @@ void generateUpdateJSON(JsonVariant output)
     for (byte i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
       output["pwm"][i]["id"] = i;
       output["pwm"][i]["state"] = pwm_channels[i].state;
+      output["pwm"][i]["soft_fuse_tripped"] = pwm_channels[i].tripped;
       if (pwm_channels[i].isDimmable)
         output["pwm"][i]["duty"] = round2(pwm_channels[i].dutyCycle);
 
@@ -1164,8 +1190,6 @@ void generateUpdateJSON(JsonVariant output)
       output["pwm"][i]["aH"] = round3(pwm_channels[i].ampHours);
       output["pwm"][i]["wH"] = round3(pwm_channels[i].wattHours);
 
-      if (pwm_channels[i].tripped)
-        output["pwm"][i]["soft_fuse_tripped"] = true;
     }
   #endif
 

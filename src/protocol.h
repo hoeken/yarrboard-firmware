@@ -83,6 +83,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output);
 void handleSetPWMChannel(JsonVariantConst input, JsonVariant output);
 void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output);
 void handleFadePWMChannel(JsonVariantConst input, JsonVariant output);
+void handleSetSwitch(JsonVariantConst input, JsonVariant output);
 void handleConfigSwitch(JsonVariantConst input, JsonVariant output);
 void handleConfigRGB(JsonVariantConst input, JsonVariant output);
 void handleSetRGB(JsonVariantConst input, JsonVariant output);

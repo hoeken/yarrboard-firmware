@@ -142,10 +142,15 @@ void InputChannel::update()
   //save our raw statuses
   this->lastRaw = this->raw;
 
-  //did we actually change?
-  if (nextState != this->state)
+  //update our state variable
+  this->setState(nextState);
+}
+
+void InputChannel::setState(bool state)
+{
+  if (this->state != state)
   {
-    this->state = nextState;
+    this->state = state;
     this->stateChangeCount++;
     this->sendFastUpdate = true;
 
@@ -155,6 +160,7 @@ void InputChannel::update()
       rgb_channels[this->id].setRGB(0, 0, 0);
   }
 }
+
 
 String InputChannel::getModeName(SwitchMode mode)
 {
