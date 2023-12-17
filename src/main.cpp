@@ -76,11 +76,6 @@ void setup()
   ota_setup();
   Serial.println("OTA ok");
 
-  #ifdef YB_HAS_INPUT_CHANNELS
-    input_channels_setup();
-    Serial.println("Input channels ok");
-  #endif
-
   #ifdef YB_HAS_ADC_CHANNELS
     adc_channels_setup();
     Serial.println("ADC channels ok");
@@ -89,6 +84,12 @@ void setup()
   #ifdef YB_HAS_RGB_CHANNELS
     rgb_channels_setup();
     Serial.println("RGB channels ok");
+  #endif
+
+  //should be after RGB for default state to show up
+  #ifdef YB_HAS_INPUT_CHANNELS
+    input_channels_setup();
+    Serial.println("Input channels ok");
   #endif
 
   #ifdef YB_HAS_PWM_CHANNELS
@@ -118,6 +119,7 @@ void setup()
 
 void loop()
 {
+  //should be before RGB for fastest response
   #ifdef YB_HAS_INPUT_CHANNELS
     input_channels_loop();
   #endif

@@ -136,13 +136,10 @@ const SwitchEditRow = (id, name) => `
     <div class="form-check form-switch">
       <select id="fSwitchMode${id}" class="form-select" aria-label="Switch Mode">
         <option value="direct">Direct</option>
-        <option value="inverted">Inverted</option>
+        <option value="inverting">Inverting</option>
         <option value="toggle_rising">Toggle Rising</option>
         <option value="toggle_falling">Toggle Falling</option>
       </select>
-      <label class="form-check-label" for="fSwitchMode${id}">
-        Enabled
-      </label>
     </div>
     <div class="valid-feedback">Saved!</div>
   </div>
@@ -608,7 +605,7 @@ function start_websocket()
           {
             $('#switchConfigForm').append(SwitchEditRow(ch.id, ch.name));
             $(`#fSwitchEnabled${ch.id}`).prop("checked", ch.enabled);
-            $(`#fSwitchMode${ch.id}`).val(ch.mode);
+            $(`#fSwitchMode${ch.id}`).val(ch.mode.toLowerCase());
   
             //enable/disable other stuff.
             $(`#fSwitchName${ch.id}`).prop('disabled', !ch.enabled);
@@ -770,17 +767,17 @@ function start_websocket()
         {
           if (current_config.switches[ch.id].enabled)
           {
-            if (ch.isOpen)
+            if (ch.state)
             {
-              $('#switchState' + ch.id).html("OPEN");
-              $('#switchState' + ch.id).removeClass("btn-success");
-              $('#switchState' + ch.id).addClass("btn-secondary");
+              $('#switchState' + ch.id).html("ON");
+              $('#switchState' + ch.id).removeClass("btn-secondary");
+              $('#switchState' + ch.id).addClass("btn-success");
             }
             else
             {
-              $('#switchState' + ch.id).html("CLOSED");
-              $('#switchState' + ch.id).removeClass("btn-secondary");
-              $('#switchState' + ch.id).addClass("btn-success");
+              $('#switchState' + ch.id).html("OFF");
+              $('#switchState' + ch.id).removeClass("btn-success");
+              $('#switchState' + ch.id).addClass("btn-secondary");
             }
           }
         }
@@ -1448,7 +1445,7 @@ function validate_switch_mode(e)
   client.send({
     "cmd": "config_switch",
     "id": id,
-    "mode": value
+    "mode": value.toUpperCase()
   });
 }
 

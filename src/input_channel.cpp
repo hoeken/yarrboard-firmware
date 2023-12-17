@@ -33,7 +33,7 @@ void input_channels_loop()
 
   if (millis() - lastInputCheckMillis >= YB_INPUT_DEBOUNCE_RATE_MS)
   {
-    Serial.printf("%d ", millis() - lastInputCheckMillis);
+    //Serial.printf("%d ", millis() - lastInputCheckMillis);
     
     //maintenance on our channels.
     for (byte id = 0; id < YB_INPUT_CHANNEL_COUNT; id++)
@@ -87,6 +87,21 @@ void InputChannel::setup()
 
   //setup our pin
   pinMode(this->_pins[this->id], INPUT);
+
+  //load up our default state
+  bool nextState = digitalRead(this->_pins[this->id]);
+  if (this->mode == DIRECT)
+    this->state = nextState;
+  else if (this->mode == INVERTING)
+    this->state = !nextState;
+
+  //save our current value
+  this->originalRaw = nextState;
+
+  if (this->state)
+    rgb_channels[this->id].setRGB(0, 1.0, 0);
+  else
+    rgb_channels[this->id].setRGB(0, 0, 0);
 }
 
 void InputChannel::update()
@@ -95,30 +110,37 @@ void InputChannel::update()
   this->raw = digitalRead(this->_pins[this->id]);
   bool nextState = this->state;
 
-  //first test is debounce.  needs steadystate
-  if (this->raw == this->lastRaw)
+  //okay, did we actually change?
+  if (this->raw != this->originalRaw)
   {
-    //okay, did we actually change?
-    if (this->raw != this->originalRaw)
+    if (this->raw)
+      Serial.print(1);
+    else
+      Serial.print(0);
+
+    //and debounce.  needs steadystate
+    if (this->raw == this->lastRaw)
     {
       //direct is easy
       if (this->mode == DIRECT)
-        nextState = this->mode;
+        nextState = this->raw;
       //inverting is easy too
       else if (this->mode == INVERTING)
-        nextState = !this->mode;
+        nextState = !this->raw;
       //just toggle it on rising
       else if (this->raw && this->mode == TOGGLE_RISING)
         nextState = !this->state;
       //just toggle it on falling
       else if (!this->raw && this->mode == TOGGLE_FALLING)
         nextState = !this->state;
+
+      //our new state
+      this->originalRaw = this->raw;
     }
   }
 
   //save our raw statuses
-  this->originalRaw = this->lastRaw;
-  this->lastRaw == this->raw;
+  this->lastRaw = this->raw;
 
   //did we actually change?
   if (nextState != this->state)
@@ -126,6 +148,11 @@ void InputChannel::update()
     this->state = nextState;
     this->stateChangeCount++;
     this->sendFastUpdate = true;
+
+    if (this->state)
+      rgb_channels[this->id].setRGB(0, 1.0, 0);
+    else
+      rgb_channels[this->id].setRGB(0, 0, 0);
   }
 }
 

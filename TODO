@@ -11,16 +11,10 @@ Firmware:
             * small view:
                 * single row for everything (mostly done)
             * possible table or 'full' view same as now?
-    * change switch input from isOpen to "raw" and "state"
-        * setup a configurable enum for switch with following input handling options:
-            * direct
-            * inverted
-            * toggle (rising)
-            * toggle + hold to fade (long term)
-        * tie state to an LED (attempt to use state in node-red first)
-            * switch dropdown on LED config (what state to use)
-            * set on + off colors
-                * hardcode to off / green to start
+    * tie led state to switch state
+        * switch dropdown on LED config (what switch to use)
+        * set on + off colors
+            * hardcode to off / green to start
 
     * set max duty on rgb leds
     * set max duty on PWM channels / total and individual
