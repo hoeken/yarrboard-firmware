@@ -1,4 +1,27 @@
 Firmware:
+    * better UI:
+        * should always show all boxes on every view
+            * wide view = 3x3 boxes, 9th box is the "settings" box
+                * overall brightness
+                * night/dark mode
+                * totals
+                * etc
+            * medium view:
+                * 2 x 4 + wide config box?
+            * small view:
+                * single row for everything (mostly done)
+            * possible table or 'full' view same as now?
+    * change switch input from isOpen to "raw" and "state"
+        * setup a configurable enum for switch with following input handling options:
+            * direct
+            * inverted
+            * toggle (rising)
+            * toggle + hold to fade (long term)
+        * possible: tie state to an LED (attempt to use state in node-red first)
+            * led dropdown
+            * set on + off colors
+                * hardcode to off / green to start
+
     * set max duty on rgb leds
     * set max duty on PWM channels / total and individual
     * protocol documentation

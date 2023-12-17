@@ -33,6 +33,8 @@ void input_channels_loop()
 
   if (millis() - lastInputCheckMillis >= YB_INPUT_DEBOUNCE_RATE_MS)
   {
+    Serial.printf("%d ", millis() - lastInputCheckMillis);
+    
     //maintenance on our channels.
     for (byte id = 0; id < YB_INPUT_CHANNEL_COUNT; id++)
     {
@@ -78,26 +80,46 @@ void InputChannel::setup()
 
   //setup our pin
   pinMode(this->_pins[this->id], INPUT);
-
-  //initial values
-  this->state = digitalRead(this->_pins[this->id]);
-  this->lastState = this->state;
-  this->stateChangeCount = 0;
-  this->sendFastUpdate = false;
 }
 
 void InputChannel::update()
 {
-    bool currentState = digitalRead(this->_pins[this->id]);
+  //load it up!
+  this->raw = digitalRead(this->_pins[this->id]);
+  bool nextState = this->state;
 
-    if (currentState == this->lastState && currentState != this->state)
+  //first test is debounce.  needs steadystate
+  if (this->raw == this->lastRaw)
+  {
+    //okay, did we actually change?
+    if (this->raw != this->originalRaw)
     {
-        this->state = this->lastState;
-        this->stateChangeCount++;
-        this->sendFastUpdate = true;
+      //direct is easy
+      if (this->mode == DIRECT)
+        nextState = this->mode;
+      //inverting is easy too
+      else if (this->mode == INVERTING)
+        nextState = !this->mode;
+      //just toggle it on rising
+      else if (this->raw && this->mode == TOGGLE_RISING)
+        nextState = !this->state;
+      //just toggle it on falling
+      else if (!this->raw && this->mode == TOGGLE_FALLING)
+        nextState = !this->state;
     }
+  }
 
-    this->lastState = currentState;
+  //save our raw statuses
+  this->originalRaw = this->lastRaw;
+  this->lastRaw == this->raw;
+
+  //did we actually change?
+  if (nextState != this->state)
+  {
+    this->state = nextState;
+    this->stateChangeCount++;
+    this->sendFastUpdate = true;
+  }
 }
 
 #endif

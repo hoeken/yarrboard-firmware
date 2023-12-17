@@ -14,21 +14,32 @@
 #include "prefs.h"
 #include "protocol.h"
 
+typedef enum {
+  DIRECT,
+  INVERTING,
+  TOGGLE_RISING,
+  TOGGLE_FALLING,
+  TOGGLE_FADE
+} SwitchMode;
+
 class InputChannel
 {
   byte _pins[YB_INPUT_CHANNEL_COUNT] = YB_INPUT_CHANNEL_PINS;
 
   public:
     byte id = 0;
-    bool state = false;
-    bool isEnabled = true;
-    bool sendFastUpdate = false;
-
     char name[YB_CHANNEL_NAME_LENGTH];
+    SwitchMode mode;
+    bool isEnabled = true;
 
     unsigned int stateChangeCount = 0;
 
-    bool lastState = false;
+    bool raw = false;
+    bool lastRaw = false;
+    bool originalRaw = false;
+    bool state = false;
+
+    bool sendFastUpdate = false;
 
     void setup();
     void update();
