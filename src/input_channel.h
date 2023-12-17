@@ -43,6 +43,9 @@ class InputChannel
 
     void setup();
     void update();
+
+    static String getModeName(SwitchMode mode);
+    static SwitchMode getMode(String mode);
 };
 
 extern InputChannel input_channels[YB_INPUT_CHANNEL_COUNT];

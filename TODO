@@ -17,8 +17,8 @@ Firmware:
             * inverted
             * toggle (rising)
             * toggle + hold to fade (long term)
-        * possible: tie state to an LED (attempt to use state in node-red first)
-            * led dropdown
+        * tie state to an LED (attempt to use state in node-red first)
+            * switch dropdown on LED config (what state to use)
             * set on + off colors
                 * hardcode to off / green to start
 

@@ -133,6 +133,20 @@ const SwitchEditRow = (id, name) => `
     <div class="valid-feedback">Saved!</div>
   </div>
   <div class="col-auto">
+    <div class="form-check form-switch">
+      <select id="fSwitchMode${id}" class="form-select" aria-label="Switch Mode">
+        <option value="direct">Direct</option>
+        <option value="inverted">Inverted</option>
+        <option value="toggle_rising">Toggle Rising</option>
+        <option value="toggle_falling">Toggle Falling</option>
+      </select>
+      <label class="form-check-label" for="fSwitchMode${id}">
+        Enabled
+      </label>
+    </div>
+    <div class="valid-feedback">Saved!</div>
+  </div>
+  <div class="col-auto">
     <input type="text" class="form-control" id="fSwitchName${id}" value="${name}">
     <div class="valid-feedback">Saved!</div>
     <div class="invalid-feedback">Must be 30 characters or less.</div>
@@ -594,13 +608,16 @@ function start_websocket()
           {
             $('#switchConfigForm').append(SwitchEditRow(ch.id, ch.name));
             $(`#fSwitchEnabled${ch.id}`).prop("checked", ch.enabled);
+            $(`#fSwitchMode${ch.id}`).val(ch.mode);
   
             //enable/disable other stuff.
             $(`#fSwitchName${ch.id}`).prop('disabled', !ch.enabled);
-  
+            $(`#fSwitchMode${ch.id}`).prop('disabled', !ch.enabled);
+
             //validate + save
             $(`#fSwitchEnabled${ch.id}`).change(validate_switch_enabled);
             $(`#fSwitchName${ch.id}`).change(validate_switch_name);
+            $(`#fSwitchMode${ch.id}`).change(validate_switch_mode);
           }  
           $('#switchConfig').show();
         }
@@ -1415,6 +1432,24 @@ function validate_switch_name(e)
       "name": value
     });
   }
+}
+
+function validate_switch_mode(e)
+{
+  let ele = e.target;
+  let id = ele.id.match(/\d+/)[0];
+  //let value = ele.value;
+  let value = this.value;
+
+  //$(ele).removeClass("is-invalid");
+  $(ele).addClass("is-valid");
+
+  //set our new pwm name!
+  client.send({
+    "cmd": "config_switch",
+    "id": id,
+    "mode": value
+  });
 }
 
 function validate_switch_enabled(e)

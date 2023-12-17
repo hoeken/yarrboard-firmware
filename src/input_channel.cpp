@@ -78,6 +78,13 @@ void InputChannel::setup()
   else
     this->isEnabled = true;
 
+  //input mode handling
+  sprintf(prefIndex, "iptMode%d", this->id);
+  if (preferences.isKey(prefIndex))
+    this->mode = (SwitchMode)preferences.getUChar(prefIndex);
+  else
+    this->mode = DIRECT;
+
   //setup our pin
   pinMode(this->_pins[this->id], INPUT);
 }
@@ -120,6 +127,38 @@ void InputChannel::update()
     this->stateChangeCount++;
     this->sendFastUpdate = true;
   }
+}
+
+String InputChannel::getModeName(SwitchMode mode)
+{
+  if (mode == DIRECT)
+    return "DIRECT";
+  else if (mode == INVERTING)
+    return "INVERTING";
+  else if (mode == TOGGLE_RISING)
+    return "TOGGLE_RISING";
+  else if (mode == TOGGLE_FALLING)
+    return "TOGGLE_FALLING";
+  else if (mode == TOGGLE_FADE)
+    return "TOGGLE_FADE";
+  else
+    return "";
+}
+
+SwitchMode InputChannel::getMode(String mode)
+{
+  if (mode.equals("DIRECT"))
+    return DIRECT;
+  else if (mode.equals("INVERTING"))
+    return INVERTING;
+  else if (mode.equals("TOGGLE_RISING"))
+    return TOGGLE_RISING;
+  else if (mode.equals("TOGGLE_FALLING"))
+    return TOGGLE_FALLING;
+  else if (mode.equals("TOGGLE_FADE"))
+    return TOGGLE_FADE;
+  else
+    return DIRECT;
 }
 
 #endif

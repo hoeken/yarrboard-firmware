@@ -859,13 +859,23 @@ void handleConfigSwitch(JsonVariantConst input, JsonVariant output)
         return generateErrorJSON(output, error);
       }
 
-      //save to our storage
+      //save the name
       strlcpy(input_channels[cid].name, input["name"] | "Input ?", sizeof(input_channels[cid].name));
       sprintf(prefIndex, "iptName%d", cid);
       preferences.putString(prefIndex, input_channels[cid].name);
 
+
       //give them the updated config
       return generateConfigJSON(output);
+    }
+
+    //switch mode
+    if (input.containsKey("mode"))
+    {
+      String tempMode = input["mode"] | "DIRECT";
+      input_channels[cid].mode = InputChannel::getMode(tempMode);
+      sprintf(prefIndex, "iptMode%d", cid);
+      preferences.putUChar(prefIndex, input_channels[cid].mode);
     }
 
     //enabled
@@ -1111,6 +1121,7 @@ void generateConfigJSON(JsonVariant output)
       output["switches"][i]["id"] = i;
       output["switches"][i]["name"] = input_channels[i].name;
       output["switches"][i]["enabled"] = input_channels[i].isEnabled;
+      output["switches"][i]["mode"] = InputChannel::getModeName(input_channels[i].mode);
     }
   #endif
 
@@ -1161,7 +1172,8 @@ void generateUpdateJSON(JsonVariant output)
   #ifdef YB_HAS_INPUT_CHANNELS
     for (byte i = 0; i < YB_INPUT_CHANNEL_COUNT; i++) {
       output["switches"][i]["id"] = i;
-      output["switches"][i]["isOpen"] = input_channels[i].state;
+      output["switches"][i]["raw"] = input_channels[i].raw;
+      output["switches"][i]["state"] = input_channels[i].state;
     }
   #endif
 
@@ -1218,7 +1230,7 @@ void generateFastUpdateJSON(JsonVariant output)
       if (input_channels[i].sendFastUpdate)
       {
         output["switches"][j]["id"] = i;
-        output["switches"][j]["isOpen"] = input_channels[i].state;
+        output["switches"][j]["state"] = input_channels[i].state;
         input_channels[i].sendFastUpdate = false;
         j++;
       }
