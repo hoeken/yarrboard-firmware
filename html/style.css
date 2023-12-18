@@ -48,6 +48,13 @@ tr.switchRow, tr.rgbRow, tr.adcRow, tr.pwmRow #statsTable tbody tr {
     height: 48px;
 }
 
+.pwmButton {
+    width: 100%;
+    height: 100px;
+    font-weight: bold;
+    font-size: 1.5rem !important;
+}
+
 [data-theme="dark"] {
     background-color: #111 !important;
     color: #eee;

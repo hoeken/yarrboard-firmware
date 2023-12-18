@@ -1,5 +1,4 @@
 Firmware:
-    * soft fuse setting not working?
     * better UI:
         * should always show all boxes on every view
             * wide view = 3x3 boxes, 9th box is the "settings" box
@@ -12,6 +11,7 @@ Firmware:
             * small view:
                 * single row for everything (mostly done)
             * possible table or 'full' view same as now?
+            * always show duty cycle?
     * tie led state to switch state
         * switch dropdown on LED config (what switch to use)
         * set on + off colors
@@ -33,6 +33,7 @@ Firmware:
     * move to 4 layer design signal / gnd / gnd / signal
     * bypass current sensing too with fuse + 4 layer board (use bottom layer)
     * extend the busbar a little bit so the MEGA fuse fits
+    * pwm channel 5 is used for boot / uploading
 
 RGB Input:
     * switch to esp32-s3 module board (waveshare w/ castellated pins)

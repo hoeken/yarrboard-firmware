@@ -61,18 +61,18 @@ const BoardNameEdit = (name) => `
 </div>
 `;
 
-const PWMControlRow = (id, name) => `
-<tr id="pwm${id}" class="pwmRow">
-  <td class="text-center"><button id="pwmState${id}" type="button" class="btn btn-sm" onclick="toggle_state(${id})" style="width: 60px"></button></td>
-  <td class="pwmName">${name}</td>
-  <td class="text-end"><button id="pwmDutyCycle${id}" type="button" class="btn btn-sm btn-light" onclick="toggle_duty_cycle(${id})" style="width: 60px">???</button></td>
-  <td id="pwmCurrent${id}" class="text-end"></td>
-</tr>
-<tr id="pwmDutySliderRow${id}" style="display:none">
-  <td colspan="4">
+const PWMControlCard = (id, name) => `
+<div id="pwm${id}" class="col-sm-12 col-md-6 col-lg-4 p-2 text-center">
+  <button id="pwmState${id}" type="button" class="btn btn-sm pwmButton" onclick="toggle_state(${id})">${name}</button>
+  <div class="row mt-1 font-weight-bold">
+    <div id="pwmCurrent${id}" class="col"></div>
+    <div id="pwmWattage${id}" class="col"></div>
+    <div id="pwmDutyCycle${id}" class="col" onclick="toggle_duty_cycle(${id})">???</div>
+  </div>
+  <div id="pwmDutySliderRow${id}" style="display:none">
     <input type="range" class="form-range" min="0" max="100" id="pwmDutySlider${id}">
-  </td>
-</tr>
+  </div>
+</div>
 `;
 
 const PWMEditRow = (id, name, soft_fuse) => `
@@ -409,12 +409,12 @@ function start_websocket()
 
       if (msg.pwm)
       {
-        $('#pwmTableBody').html("");
+        $('#pwmCards').html("");
         for (ch of msg.pwm)
         {
           if (ch.enabled)
           {
-            $('#pwmTableBody').append(PWMControlRow(ch.id, ch.name));
+            $('#pwmCards').append(PWMControlCard(ch.id, ch.name));
             $('#pwmDutySlider' + ch.id).change(set_duty_cycle);
 
             //update our duty when we move
@@ -708,21 +708,21 @@ function start_websocket()
           {
             if (ch.state)
             {
-              $('#pwmState' + ch.id).html("ON");
+              //$('#pwmState' + ch.id).html("ON");
               $('#pwmState' + ch.id).addClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-danger");
               $('#pwmState' + ch.id).removeClass("btn-secondary");
             }
             else if(ch.tripped)
             {
-              $('#pwmState' + ch.id).html("TRIP");
+              //$('#pwmState' + ch.id).html("TRIP");
               $('#pwmState' + ch.id).addClass("btn-danger");
               $('#pwmState' + ch.id).removeClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-secondary");
             }
             else
             {
-              $('#pwmState' + ch.id).html("OFF");
+              //$('#pwmState' + ch.id).html("OFF");
               $('#pwmState' + ch.id).addClass("btn-secondary");
               $('#pwmState' + ch.id).removeClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-danger");
@@ -746,16 +746,17 @@ function start_websocket()
       
             let current = ch.current.toFixed(1);
             let currentHTML = `${current}&nbsp;A`;
+            $('#pwmCurrent' + ch.id).html(currentHTML);
 
             if (msg.bus_voltage)
             {
               let wattage = ch.current * msg.bus_voltage;
               wattage = wattage.toFixed(0);
-              
-              currentHTML += `&nbsp;/&nbsp${wattage}&nbsp;W`;
+              let wattageHTML = `${wattage}&nbsp;W`;
+              $('#pwmWattage' + ch.id).html(wattageHTML);
             }
-
-            $('#pwmCurrent' + ch.id).html(currentHTML);
+            else
+              $('#pwmWattage' + ch.id).hide();
           }
         }
       }
@@ -1143,12 +1144,7 @@ function show_alert(message, type = 'danger')
 
 function toggle_state(id)
 {
-  //OFF or TRIP both switch it to off.
-  let new_state = false;
-  if ($("#pwmState" + id).text() == "OFF")
-    new_state = true;
-
-  client.setPWMChannelState(id, new_state, true);
+  client.togglePWMChannel(id, true);
 }
 
 function toggle_adc_details(id)

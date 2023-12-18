@@ -755,7 +755,10 @@ void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output)
       return generateErrorJSON(output, "Invalid channel id");
 
     //toggle it
-    pwm_channels[cid].setState(!pwm_channels[cid].state);
+    if (pwm_channels[cid].tripped)
+      pwm_channels[cid].setState(false);
+    else
+      pwm_channels[cid].setState(!pwm_channels[cid].state);
   #else
     return generateErrorJSON(output, "Board does not have output channels.");
   #endif
