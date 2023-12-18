@@ -1,4 +1,5 @@
 Firmware:
+    * soft fuse setting not working?
     * better UI:
         * should always show all boxes on every view
             * wide view = 3x3 boxes, 9th box is the "settings" box
@@ -47,6 +48,7 @@ RGB Button Board:
     * same size / hole spacing as rgb input board
     * center the button pads
     * possibly extra 0.5 or 1mm spacing between the 2x2 modules
+    * remove entire ring of soldermask
 
 Electronics:
     * update 3dp case for 8ch mosfet

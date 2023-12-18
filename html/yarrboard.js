@@ -709,23 +709,23 @@ function start_websocket()
             if (ch.state)
             {
               $('#pwmState' + ch.id).html("ON");
+              $('#pwmState' + ch.id).addClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-danger");
               $('#pwmState' + ch.id).removeClass("btn-secondary");
-              $('#pwmState' + ch.id).addClass("btn-success");
             }
-            else if(ch.soft_fuse_tripped)
+            else if(ch.tripped)
             {
               $('#pwmState' + ch.id).html("TRIP");
+              $('#pwmState' + ch.id).addClass("btn-danger");
               $('#pwmState' + ch.id).removeClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-secondary");
-              $('#pwmState' + ch.id).addClass("btn-danger");
             }
             else
             {
               $('#pwmState' + ch.id).html("OFF");
+              $('#pwmState' + ch.id).addClass("btn-secondary");
               $('#pwmState' + ch.id).removeClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-danger");
-              $('#pwmState' + ch.id).addClass("btn-secondary");
             }
       
             //duty is a bit of a special case.
@@ -1069,7 +1069,7 @@ function start_websocket()
       //light/dark mode
       setTheme(msg.theme);
     }
-    else
+    else if (msg.msg)
     {
       yarrboard_log("[socket] Unknown message: " + JSON.stringify(msg));
     }
@@ -1143,10 +1143,10 @@ function show_alert(message, type = 'danger')
 
 function toggle_state(id)
 {
-  //OFF or TRIP both switch it to on.
-  let new_state = true;
-  if ($("#pwmState" + id).text() == "ON")
-    new_state = false;
+  //OFF or TRIP both switch it to off.
+  let new_state = false;
+  if ($("#pwmState" + id).text() == "OFF")
+    new_state = true;
 
   client.setPWMChannelState(id, new_state, true);
 }

@@ -26,6 +26,7 @@ class PWMChannel
     bool state = false;
     bool tripped = false;
     char name[YB_CHANNEL_NAME_LENGTH];
+    bool sendFastUpdate = false;
 
     unsigned int stateChangeCount = 0;
     unsigned int softFuseTripCount = 0;
@@ -60,6 +61,7 @@ class PWMChannel
     void checkAmperage();
     void checkSoftFuse();
     void checkIfFadeOver();
+    void setState(bool state);
     void setFade(float duty, int max_fade_time_ms);
     void setDuty(float duty);
     void calculateAverages(unsigned int delta);

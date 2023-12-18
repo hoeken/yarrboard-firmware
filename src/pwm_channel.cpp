@@ -71,12 +71,26 @@ void pwm_channels_setup()
 
 void pwm_channels_loop()
 {
+  //do we need to send an update?
+  bool doSendFastUpdate = false;
+
   //maintenance on our channels.
   for (byte id = 0; id < YB_PWM_CHANNEL_COUNT; id++)
   {
     pwm_channels[id].checkAmperage();
     pwm_channels[id].saveThrottledDutyCycle();
     pwm_channels[id].checkIfFadeOver();
+
+    //flag for update?
+    if (pwm_channels[id].sendFastUpdate)
+      doSendFastUpdate = true;
+  }
+
+  //let the client know immediately.
+  if (doSendFastUpdate)
+  {
+    TRACE();
+    sendFastUpdate();
   }
 }
 
@@ -221,6 +235,9 @@ void PWMChannel::checkSoftFuse()
     //Check our soft fuse, and our max limit for the board.
     if (abs(this->amperage) >= this->softFuseAmperage || abs(this->amperage) >= YB_PWM_CHANNEL_MAX_AMPS)
     {
+      //we will want to notify
+      this->sendFastUpdate = true;
+
       //TODO: maybe double check the amperage again here?
 
       //record some variables
@@ -357,6 +374,32 @@ void PWMChannel::calculateAverages(unsigned int delta)
   {
     this->ampHours += this->amperage * ((float)delta / 3600000.0);
     this->wattHours += this->amperage * busVoltage * ((float)delta / 3600000.0);
+  }
+}
+
+void PWMChannel::setState(bool state)
+{
+  //only if we're changing
+  if (this->state != state || this->tripped)
+  {
+    //this can crash after long fading sessions, reset it with a manual toggle
+    //isChannelFading[this->id] = false;
+
+    //keep track of how many toggles
+    this->stateChangeCount++;
+
+    //record our new state
+    this->state = state;
+
+    //reset soft fuse when we turn off
+    if (!state)
+      this->tripped = false;
+
+    //flag for update to clients
+    this->sendFastUpdate = true;
+
+    //change our output pin to reflect
+    this->updateOutput();
   }
 }
 

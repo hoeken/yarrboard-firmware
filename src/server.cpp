@@ -93,7 +93,6 @@ void server_setup()
         // And set the last-modified datetime so we can check if we need to send it again next time or not
         response.addHeader("Last-Modified", last_modified);
         response.addHeader("ETag", index_html_gz_sha);
-        //response.addHeader("Cache-Control", "max-age=604800"); // cache for 1 week
 
         //add our actual content
         response.setContent(index_html_gz, index_html_gz_len);
