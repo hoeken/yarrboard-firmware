@@ -12,6 +12,7 @@
 #include <Arduino.h>
 #include "config.h"
 #include "prefs.h"
+#include "protocol.h"
 
 #ifdef YB_RGB_DRIVER_TLC5947
   #include <TLC5947_SPI.h>
@@ -31,6 +32,7 @@ class RGBChannel
 
     void setup();
     void setRGB(float red, float green, float blue);
+    void updateOutput();
 };
 
 extern RGBChannel rgb_channels[YB_RGB_CHANNEL_COUNT];

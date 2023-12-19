@@ -19,6 +19,10 @@ Firmware:
 
     * set max duty on rgb leds
     * set max duty on PWM channels / total and individual
+    * add output type to mosfets
+        * light, motor, pump, fan, solenoid, electronics, other
+        * add icons for each type to display on UI
+    * need to have a darkmode logo
     * protocol documentation
     * wifi connection fail should default to AP mode
 

@@ -112,11 +112,20 @@ void RGBChannel::setRGB(float r, float g, float b)
   this->green = g;
   this->blue = b;
 
+  float _r = min(r, globalBrightness);
+  float _g = min(g, globalBrightness);
+  float _b = min(b, globalBrightness);
+
   #ifdef YB_RGB_DRIVER_TLC5947
-    tlc.setLED(this->id, this->red*MAX_RGB_RESOLUTION, this->green*MAX_RGB_RESOLUTION, this->blue*MAX_RGB_RESOLUTION);
+    tlc.setLED(this->id, _r * MAX_RGB_RESOLUTION, _g * MAX_RGB_RESOLUTION, _b * MAX_RGB_RESOLUTION);
   #endif
 
   rgb_is_dirty = true;
+}
+
+void RGBChannel::updateOutput()
+{
+  this->setRGB(this->red, this->green, this->blue);
 }
 
 #endif

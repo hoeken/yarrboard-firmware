@@ -75,14 +75,9 @@ const PWMControlCard = (id, name) => `
 </div>
 `;
 
-const PWMLegendCard = () => `
+const LegendCard = () => `
 <div id="legendCard" class="controlCard legendCard col-sm-12 col-md-6 col-lg-4 py-2">
   <h5 class="text-center">Legend / Controls</h5>
-  <div class="row">
-    <button class="col btn btn-success mx-1">ON</button>
-    <button class="col btn btn-secondary mx-1">OFF</button>
-    <button class="col btn btn-danger mx-1">TRIP</button>
-  </div>
   <div class="row">
     <table class="table table-sm table-borderless">
       <tr>
@@ -306,12 +301,6 @@ function start_yarrboard()
 
   //light/dark theme init.
   setTheme(getPreferredTheme());
-  $("#darkSwitch").change(function (){
-    if (this.checked)
-      setTheme("dark");
-    else
-      setTheme("light");
-  });
 }
 
 function load_configs()
@@ -371,7 +360,7 @@ function start_websocket()
 
   client.onmessage = function(msg)
   {
-      if (msg.msg == 'hello')
+    if (msg.msg == 'hello')
     {
       yarrboard_log("hello");
       app_role = msg.role;
@@ -413,7 +402,7 @@ function start_websocket()
       //let the people choose their own names!
       $('#boardName').html(msg.name);
       document.title = msg.name;
-  
+
       //update our footer automatically.
       $('#projectName').html("Yarrboard v" + msg.firmware_version);
 
@@ -429,7 +418,7 @@ function start_websocket()
         $("#last_reboot_reason").html(msg.last_restart_reason);
       else
         $("#last_reboot_reason").parent().hide();
-  
+
       //populate our pwm control table
       $('#controlDiv').hide();
       $('#pwmStatsDiv').hide();
@@ -474,7 +463,16 @@ function start_websocket()
             });
           }
         }
-        $('#pwmCards').append(PWMLegendCard());
+
+        $('#pwmCards').append(LegendCard());
+
+        //our custom stuff
+        $("#legendCard").append(`<div class="row">
+            <button class="col btn btn-success mx-1">ON</button>
+            <button class="col btn btn-secondary mx-1">OFF</button>
+            <button class="col btn btn-danger mx-1">TRIP</button>
+          </div>
+        `);
 
         $('#pwmStatsTableBody').html("");
         for (ch of msg.pwm)
@@ -591,7 +589,7 @@ function start_websocket()
 
         $('#adcControlDiv').show();
       }
-      
+
       //only do it as needed
       if (!page_ready.config || current_page != "config")
       {
@@ -691,6 +689,15 @@ function start_websocket()
         }
       }
 
+      //callbacks for legend controls
+      $("#brightnessSlider").change(set_brightness);
+      $("#brightnessSlider").on("input", set_brightness);
+      $("#darkSwitch").change(update_theme_switch);
+
+      //did we get brightness?
+      if (msg.brightness)
+        $('#brightnessSlider').val(Math.round(msg.brightness * 100)); 
+      
       //ready!
       page_ready.config = true;
 
@@ -1097,6 +1104,12 @@ function start_websocket()
       //light/dark mode
       setTheme(msg.theme);
     }
+    else if (msg.msg == "set_brightness")
+    {
+      //did we get brightness?
+      if (msg.brightness)
+        $('#brightnessSlider').val(Math.round(msg.brightness * 100)); 
+    }
     else if (msg.msg)
     {
       yarrboard_log("[socket] Unknown message: " + JSON.stringify(msg));
@@ -1337,6 +1350,30 @@ function set_duty_cycle(e)
     //update our duty cycle
     client.setPWMChannelDuty(id, value, false);
   }
+}
+
+function set_brightness(e)
+{
+  let ele = e.target;
+  let value = ele.value;
+
+  //must be realistic.
+  if (value >= 0 && value <= 100)
+  {
+    //we want a duty value from 0 to 1
+    value = value / 100;
+  
+    //update our duty cycle
+    client.setBrightness(value, false);
+  }
+}
+
+function update_theme_switch()
+{
+  if (this.checked)
+    setTheme("dark");
+  else
+    setTheme("light");
 }
 
 function validate_pwm_name(e)

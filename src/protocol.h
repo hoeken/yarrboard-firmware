@@ -59,6 +59,7 @@ extern bool is_serial_authenticated;
 extern UserRole app_default_role;
 extern UserRole serial_role;
 extern UserRole api_role;
+extern float globalBrightness;
 
 extern unsigned int sentMessages;
 extern unsigned long totalSentMessages;
@@ -89,6 +90,7 @@ void handleConfigRGB(JsonVariantConst input, JsonVariant output);
 void handleSetRGB(JsonVariantConst input, JsonVariant output);
 void handleConfigADC(JsonVariantConst input, JsonVariant output);
 void handleSetTheme(JsonVariantConst input, JsonVariant output);
+void handleSetBrightness(JsonVariantConst input, JsonVariant output);
 
 void generateHelloJSON(JsonVariant output, UserRole role);
 void generateUpdateJSON(JsonVariant output);
@@ -106,6 +108,7 @@ void generateLoginRequiredJSON(JsonVariant output);
 void generateInvalidChannelJSON(JsonVariant output, byte cid);
 void generatePongJSON(JsonVariant output);
 
+void sendBrightnessUpdate();
 void sendThemeUpdate();
 void sendFastUpdate();
 void sendOTAProgressUpdate(float progress);

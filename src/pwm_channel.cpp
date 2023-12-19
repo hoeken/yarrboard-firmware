@@ -88,10 +88,7 @@ void pwm_channels_loop()
 
   //let the client know immediately.
   if (doSendFastUpdate)
-  {
-    TRACE();
     sendFastUpdate();
-  }
 }
 
 bool isValidPWMChannel(byte cid)
@@ -189,7 +186,15 @@ void PWMChannel::updateOutput()
   //what PWM do we want?
   int pwm = 0;
   if (this->isDimmable)
-    pwm = this->dutyCycle * MAX_DUTY_CYCLE;
+  {
+    //also adjust for global brightness
+    //TODO: we should add an "output_type" and check if its an LED here?
+    //if (this->type == "light")
+    float duty = min(this->dutyCycle, globalBrightness);
+
+    //okay now get our actual duty
+    pwm = duty * MAX_DUTY_CYCLE;
+  }
   else
     pwm = MAX_DUTY_CYCLE;
 

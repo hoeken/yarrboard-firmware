@@ -23,6 +23,7 @@ UserRole app_default_role = NOBODY;
 UserRole serial_role = NOBODY;
 UserRole api_role = NOBODY;
 String app_theme = "light";
+float globalBrightness = 1.0;
 
 //for tracking our message loop
 unsigned long previousMessageMillis = 0;
@@ -75,6 +76,9 @@ void protocol_setup()
     app_enable_api = preferences.getBool("appEnableApi");
   if (preferences.isKey("appEnableSerial"))
     app_enable_serial = preferences.getBool("appEnableSerial");
+
+  // if (preferences.isKey("brightness"))
+  //   globalBrightness = preferences.getFloat("brightness");
 
   //send serial a config off the bat    
   if (app_enable_serial)
@@ -213,6 +217,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleSetRGB(input, output);
     else if (!strcmp(cmd, "set_theme"))
       return handleSetTheme(input, output);
+    else if (!strcmp(cmd, "set_brightness"))
+      return handleSetBrightness(input, output);
     else if (!strcmp(cmd, "logout"))
       return handleLogout(input, output, mode, connection);
   }
@@ -730,7 +736,6 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
       pwm_channels[cid].softFuseAmperage = softFuse;
 
       //save to our storage
-      DUMP(softFuse);
       sprintf(prefIndex, "pwmSoftFuse%d", cid);
       preferences.putFloat(prefIndex, softFuse);
 
@@ -1081,6 +1086,40 @@ void handleSetTheme(JsonVariantConst input, JsonVariant output)
   sendThemeUpdate();
 }
 
+void handleSetBrightness(JsonVariantConst input, JsonVariant output)
+{
+  if (input.containsKey("brightness"))
+  {
+    float brightness = input["brightness"];
+
+    //what do we hate?  va-li-date!
+    if (brightness < 0)
+      return generateErrorJSON(output, "Brightness must be >= 0");
+    else if (brightness > 1)
+      return generateErrorJSON(output, "Brightness must be <= 1");
+
+    globalBrightness = brightness;
+
+    //TODO: need to put this on a time delay
+    //preferences.putFloat("brightness", globalBrightness);
+
+    //loop through all our light stuff and update outputs
+    #ifdef YB_HAS_PWM_CHANNELS
+      for (byte i = 0; i < YB_PWM_CHANNEL_COUNT; i++)
+        pwm_channels[i].updateOutput();
+    #endif
+
+    #ifdef YB_HAS_RGB_CHANNELS
+      for (byte i = 0; i < YB_RGB_CHANNEL_COUNT; i++)
+        rgb_channels[i].updateOutput();
+    #endif
+
+    sendBrightnessUpdate();
+  }
+  else
+    return generateErrorJSON(output, "'brightness' is a required parameter.");
+}
+
 void generateConfigJSON(JsonVariant output)
 {  
   //our identifying info
@@ -1094,6 +1133,7 @@ void generateConfigJSON(JsonVariant output)
   output["use_ssl"] = app_enable_ssl;
   output["uuid"] = uuid;
   output["default_role"] = getRoleText(app_default_role);
+  output["brightness"] = globalBrightness;
 
   //some debug info
   output["last_restart_reason"] = getResetReason();
@@ -1370,6 +1410,26 @@ void sendThemeUpdate()
   DynamicJsonDocument output(128);
   output["msg"] = "set_theme";
   output["theme"] = app_theme;
+
+  //dynamically allocate our buffer
+  size_t jsonSize = measureJson(output);
+  char * jsonBuffer = (char *)malloc(jsonSize+1);
+  jsonBuffer[jsonSize] = '\0'; // null terminate
+
+  //did we get anything?
+  if (jsonBuffer != NULL)
+  {
+    serializeJson(output, jsonBuffer, jsonSize+1);
+    sendToAll(jsonBuffer, NOBODY);
+  }
+  free(jsonBuffer);
+}
+
+void sendBrightnessUpdate()
+{
+  DynamicJsonDocument output(128);
+  output["msg"] = "set_brightness";
+  output["brightness"] = globalBrightness;
 
   //dynamically allocate our buffer
   size_t jsonSize = measureJson(output);
