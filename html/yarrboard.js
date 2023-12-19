@@ -62,37 +62,51 @@ const BoardNameEdit = (name) => `
 `;
 
 const PWMControlCard = (id, name) => `
-<div id="pwm${id}" class="controlCard pwmCard col-xs-12 col-sm-6 col-md-6 col-lg-4 p-2 text-center">
-  <button id="pwmState${id}" type="button" class="btn pwmButton" onclick="toggle_state(${id})">${name}</button>
-  <div class="row mt-1 d-none d-md-flex">
-    <div id="pwmCurrent${id}" class="col"></div>
-    <div id="pwmWattage${id}" class="col"></div>
-    <div id="pwmDutyCycle${id}" class="col" onclick="toggle_duty_cycle(${id})">???</div>
-  </div>
-  <div id="pwmDutySliderRow${id}" style="display:none">
-    <input type="range" class="form-range" min="0" max="100" id="pwmDutySlider${id}">
+<div id="pwm${id}" class="controlCard pwmCard col-xs-12 col-sm-6 col-md-6 col-lg-4 p-2">
+  <div class="row g-2">
+    <table>
+      <tr>
+        <td class="align-middle" style="width: 70px">
+          <div class="text-end mx-2">
+            <div id="pwmCurrent${id}"></div>
+            <div id="pwmWattage${id}"></div>
+            <div id="pwmDutyCycle${id}" onclick="toggle_duty_cycle(${id})">???</div>
+          </div>
+        </td>
+        <td>
+          <button id="pwmState${id}" type="button" class="btn pwmButton text-center" onclick="toggle_state(${id})">${name}</button>
+        </td>
+      </tr>
+      <tr id="pwmDutySliderRow${id}" style="display:none">
+        <td class="align-top text-end">
+          <div class="mx-2 my-2">Duty:</div>
+        </td>
+        <td>
+          <div class="align-top my-2">
+            <input type="range" class="form-range" min="0" max="100" id="pwmDutySlider${id}">
+          </div>
+        <td>
+      </tr>
+    </table>
   </div>
 </div>
 `;
 
-const LegendCard = () => `
-<div id="legendCard" class="controlCard legendCard col-sm-12 col-md-6 col-lg-4 py-2">
-  <h5 class="text-center">Legend / Controls</h5>
-  <div class="row">
-    <table class="table table-sm table-borderless">
-      <tr>
-        <td><label for="darkSwitch">Dark&nbsp;Mode</label></td>
-        <td>
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="darkSwitch">
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <td><label for="brightnessSlider">Brightness</label></td>
-        <td width="99%"><input type="range" class="form-range" min="0" max="100" id="brightnessSlider"></td>
-      </tr>
-    </table>
+const PWMLegendCard = (id, name) => `
+<div id="pwmLegend" class="controlCard legendCard col-xs-12 col-sm-6 col-md-6 col-lg-4 p-2">
+  <div class="row g-2 text-center">
+    <div class="col">
+      <button type="button" class="btn btn-small btn-success pwmButton" disabled>ON</button>
+    <div>
+    <div class="col">
+      <button type="button" class="btn btn-small btn-secondary pwmButton" disabled>OFF</button>
+    </div>
+    <div class="col">
+      <button type="button" class="btn btn-small btn-danger pwmButton" disabled>TRIP</button>
+    </div>
+  </div>
+  <div id="pwmDutySliderRow${id}" style="display:none">
+    <input type="range" class="form-range" min="0" max="100" id="pwmDutySlider${id}">
   </div>
 </div>
 `;
@@ -259,6 +273,7 @@ const AlertBox = (message, type) => `
 
 let currentPWMSliderID = -1;
 let currentRGBPickerID = -1;
+let currentlyPickingBrightness = false;
 
 //our heartbeat timer.
 // function send_heartbeat()
@@ -293,6 +308,10 @@ let currentRGBPickerID = -1;
 
 function start_yarrboard()
 {
+  yarrboard_log("Window Width: " + window.innerWidth);
+  yarrboard_log("Window Height: " + window.innerHeight);
+  yarrboard_log("User Agent: " + navigator.userAgent);
+
   //main data connection
   start_websocket();
 
@@ -301,6 +320,31 @@ function start_yarrboard()
 
   //light/dark theme init.
   setTheme(getPreferredTheme());
+  $("#darkSwitch").change(update_theme_switch);
+
+  //brightness slider callbacks
+  $("#brightnessSlider").change(set_brightness);
+  $("#brightnessSlider").on("input", set_brightness);
+
+  //stop updating the UI when we are choosing
+  $("#brightnessSlider").on('focus', function(e) {
+    currentlyPickingBrightness = true;
+  });
+
+  //stop updating the UI when we are choosing
+  $("#brightnessSlider").on('touchstart', function(e) {
+    currentlyPickingBrightness = true;
+  });
+  
+  //restart the UI updates when slider is closed
+  $("#brightnessSlider").on("blur", function (e) {
+    currentlyPickingBrightness = false;
+  });
+
+  //restart the UI updates when slider is closed
+  $("#brightnessSlider").on("touchend", function (e) {
+    currentlyPickingBrightness = false;
+  });
 }
 
 function load_configs()
@@ -464,15 +508,7 @@ function start_websocket()
           }
         }
 
-        $('#pwmCards').append(LegendCard());
-
-        //our custom stuff
-        $("#legendCard").append(`<div class="row">
-            <button class="col btn btn-success mx-1">ON</button>
-            <button class="col btn btn-secondary mx-1">OFF</button>
-            <button class="col btn btn-danger mx-1">TRIP</button>
-          </div>
-        `);
+        //$('#pwmCards').append(PWMLegendCard());
 
         $('#pwmStatsTableBody').html("");
         for (ch of msg.pwm)
@@ -689,13 +725,8 @@ function start_websocket()
         }
       }
 
-      //callbacks for legend controls
-      $("#brightnessSlider").change(set_brightness);
-      $("#brightnessSlider").on("input", set_brightness);
-      $("#darkSwitch").change(update_theme_switch);
-
       //did we get brightness?
-      if (msg.brightness)
+      if (msg.brightness && !currentlyPickingBrightness)
         $('#brightnessSlider').val(Math.round(msg.brightness * 100)); 
       
       //ready!
@@ -779,14 +810,14 @@ function start_websocket()
             }
       
             let current = ch.current.toFixed(1);
-            let currentHTML = `${current}&nbsp;A`;
+            let currentHTML = `${current}A`;
             $('#pwmCurrent' + ch.id).html(currentHTML);
 
             if (msg.bus_voltage)
             {
               let wattage = ch.current * msg.bus_voltage;
               wattage = wattage.toFixed(0);
-              let wattageHTML = `${wattage}&nbsp;W`;
+              let wattageHTML = `${wattage}W`;
               $('#pwmWattage' + ch.id).html(wattageHTML);
             }
             else
@@ -1107,7 +1138,7 @@ function start_websocket()
     else if (msg.msg == "set_brightness")
     {
       //did we get brightness?
-      if (msg.brightness)
+      if (msg.brightness && !currentlyPickingBrightness)
         $('#brightnessSlider').val(Math.round(msg.brightness * 100)); 
     }
     else if (msg.msg)

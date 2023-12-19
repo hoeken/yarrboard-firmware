@@ -81,7 +81,7 @@
             </div>
             <div id="controlPage" style="display:none" class="pageContainer row mt-3 mx-2">
                 <div id="controlDiv" style="display:none" class="col-md-12">
-                    <div class="d-grid gap-3"><div id="pwmCards" class="row"></div></div>
+                    <div class="d-flex gap-3"><div id="pwmCards" class="row"></div></div>
                 </div>
                 <div id="switchControlDiv" style="display:none" class="col-md-4">
                     <h4 class="text-center">I/O Switches</h4>
@@ -491,15 +491,35 @@
             </div>
         </main>
         <footer class="p-4 text-body-secondary text-center">
-            <div id="websocket_status">
-                WebSocket:
-                <span id="connection_startup" class="connection_status text-primary">CONNECTING</span>
-                <span id="connection_good" class="connection_status text-success" style="display: none">CONNECTED</span>
-                <span id="connection_retrying" class="connection_status text-warning" style="display: none">RETRYING (<span id="retries_count"></span>s)</span>
-                <span id="connection_failed" class="connection_status text-danger" style="display: none">FAILED</span>
+            <div class="row">
+                <div class="col-xs-12 col-sm-6">
+                    <div id="websocket_status">
+                        WebSocket:
+                        <span id="connection_startup" class="connection_status text-primary">CONNECTING</span>
+                        <span id="connection_good" class="connection_status text-success" style="display: none">CONNECTED</span>
+                        <span id="connection_retrying" class="connection_status text-warning" style="display: none">RETRYING (<span id="retries_count"></span>s)</span>
+                        <span id="connection_failed" class="connection_status text-danger" style="display: none">FAILED</span>
+                    </div>
+                    <a id="projectName" href="https://github.com/hoeken/yarrboard">Yarrboard</a> &copy; <span onclick="$('#debug_log').toggle()">2023</span><br>
+                    <a href="https://www.oshwa.org/"><img src="oshw-logo-antipixel.webp"></a>        
+                </div>
+                <div class="col-xs-12 col-sm-6">
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                          <td><label for="darkSwitch">Dark&nbsp;Mode</label></td>
+                          <td>
+                            <div class="form-check form-switch">
+                              <input class="form-check-input" type="checkbox" id="darkSwitch">
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td><label for="brightnessSlider">Brightness</label></td>
+                          <td width="99%"><input type="range" class="form-range" min="0" max="100" id="brightnessSlider"></td>
+                        </tr>
+                    </table>
+                </div>
             </div>
-            <a id="projectName" href="https://github.com/hoeken/yarrboard">Yarrboard</a> &copy; <span onclick="$('#debug_log').toggle()">2023</span><br>
-            <a href="https://www.oshwa.org/"><img src="oshw-logo-antipixel.webp"></a>
             <div id="debug_log" style="display: none">
                 <h3>Debug Log</h3>
                 <textarea id="debug_log_text" style="width: 100%; height: 200px"></textarea>
