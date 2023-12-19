@@ -44,8 +44,17 @@ div#firmware_update_available h2 {
     font-size: 1.0rem;
 }
 
+.table-borderless td,
+.table-borderless th {
+    border: 0;
+}
+
 tr.switchRow, tr.rgbRow, tr.adcRow, tr.pwmRow #statsTable tbody tr {
     height: 48px;
+}
+
+.controlCard {
+    height: 160px;
 }
 
 .pwmButton {
@@ -54,6 +63,25 @@ tr.switchRow, tr.rgbRow, tr.adcRow, tr.pwmRow #statsTable tbody tr {
     font-weight: bold;
     font-size: 1.5rem !important;
 }
+
+/* // Extra small devices (portrait phones, less than 576px)
+@media (max-width: 575.98px) { ... } */
+
+/* Small devices (landscape phones, less than 768px) */
+@media (max-width: 767.98px) {
+    .controlCard { height: unset; }
+    .legendCard { height: 120px; }
+    .pwmButton {
+        height: 50px;
+        font-size: 1.0rem !important;
+    }
+}
+
+/* // Medium devices (tablets, less than 992px)
+@media (max-width: 991.98px) { ... } */
+
+/* // Large devices (desktops, less than 1200px)
+@media (max-width: 1199.98px) { ... } */
 
 [data-theme="dark"] {
     background-color: #111 !important;

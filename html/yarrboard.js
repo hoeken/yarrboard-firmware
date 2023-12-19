@@ -62,15 +62,42 @@ const BoardNameEdit = (name) => `
 `;
 
 const PWMControlCard = (id, name) => `
-<div id="pwm${id}" class="col-sm-12 col-md-6 col-lg-4 p-2 text-center">
-  <button id="pwmState${id}" type="button" class="btn btn-sm pwmButton" onclick="toggle_state(${id})">${name}</button>
-  <div class="row mt-1 font-weight-bold">
+<div id="pwm${id}" class="controlCard pwmCard col-xs-12 col-sm-6 col-md-6 col-lg-4 p-2 text-center">
+  <button id="pwmState${id}" type="button" class="btn pwmButton" onclick="toggle_state(${id})">${name}</button>
+  <div class="row mt-1 d-none d-md-flex">
     <div id="pwmCurrent${id}" class="col"></div>
     <div id="pwmWattage${id}" class="col"></div>
     <div id="pwmDutyCycle${id}" class="col" onclick="toggle_duty_cycle(${id})">???</div>
   </div>
   <div id="pwmDutySliderRow${id}" style="display:none">
     <input type="range" class="form-range" min="0" max="100" id="pwmDutySlider${id}">
+  </div>
+</div>
+`;
+
+const PWMLegendCard = () => `
+<div id="legendCard" class="controlCard legendCard col-sm-12 col-md-6 col-lg-4 py-2">
+  <h5 class="text-center">Legend / Controls</h5>
+  <div class="row">
+    <button class="col btn btn-success mx-1">ON</button>
+    <button class="col btn btn-secondary mx-1">OFF</button>
+    <button class="col btn btn-danger mx-1">TRIP</button>
+  </div>
+  <div class="row">
+    <table class="table table-sm table-borderless">
+      <tr>
+        <td><label for="darkSwitch">Dark&nbsp;Mode</label></td>
+        <td>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="darkSwitch">
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td><label for="brightnessSlider">Brightness</label></td>
+        <td width="99%"><input type="range" class="form-range" min="0" max="100" id="brightnessSlider"></td>
+      </tr>
+    </table>
   </div>
 </div>
 `;
@@ -407,8 +434,10 @@ function start_websocket()
       $('#controlDiv').hide();
       $('#pwmStatsDiv').hide();
 
+      //do we have pwm channels?
       if (msg.pwm)
       {
+        //fresh slate
         $('#pwmCards').html("");
         for (ch of msg.pwm)
         {
@@ -445,6 +474,7 @@ function start_websocket()
             });
           }
         }
+        $('#pwmCards').append(PWMLegendCard());
 
         $('#pwmStatsTableBody').html("");
         for (ch of msg.pwm)
@@ -708,21 +738,18 @@ function start_websocket()
           {
             if (ch.state)
             {
-              //$('#pwmState' + ch.id).html("ON");
               $('#pwmState' + ch.id).addClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-danger");
               $('#pwmState' + ch.id).removeClass("btn-secondary");
             }
             else if(ch.tripped)
             {
-              //$('#pwmState' + ch.id).html("TRIP");
               $('#pwmState' + ch.id).addClass("btn-danger");
               $('#pwmState' + ch.id).removeClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-secondary");
             }
             else
             {
-              //$('#pwmState' + ch.id).html("OFF");
               $('#pwmState' + ch.id).addClass("btn-secondary");
               $('#pwmState' + ch.id).removeClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-danger");
