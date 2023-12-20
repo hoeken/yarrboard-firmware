@@ -1,11 +1,9 @@
 Firmware:
     * fixing the race conditions
-        * add "source" to input and pwm
-            * source is a required parameter for set_pwm and set_input now
-            * need to set source when updating internally too, use local_hostname
-        * add source to update json
-        * change input and pwm state output to be enum style: "ON", "OFF", "TRIPPED" or "ON", "OFF"
         * change web UI to handle new state stuff
+            * set_pwm
+            * toggle_pwm
+            * set_switch
 
     * tie led state to switch state
         * switch dropdown on LED config (what switch to use)

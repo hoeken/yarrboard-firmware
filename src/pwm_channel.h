@@ -66,6 +66,7 @@ class PWMChannel
     void setFade(float duty, int max_fade_time_ms);
     void setDuty(float duty);
     void calculateAverages(unsigned int delta);
+    const char * getState();
 };
 
 extern PWMChannel pwm_channels[YB_PWM_CHANNEL_COUNT];

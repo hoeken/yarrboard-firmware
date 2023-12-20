@@ -142,6 +142,9 @@ void InputChannel::update()
   //save our raw statuses
   this->lastRaw = this->raw;
 
+  //this is an internally originating change
+  strlcpy(this->source, local_hostname, sizeof(this->source));
+
   //update our state variable
   this->setState(nextState);
 }

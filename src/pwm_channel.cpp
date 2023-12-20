@@ -250,6 +250,9 @@ void PWMChannel::checkSoftFuse()
       this->state = false;
       this->softFuseTripCount++;
 
+      //this is an internally originating change
+      strlcpy(this->source, local_hostname, sizeof(this->source));
+
       //actually shut it down!
       this->updateOutput();
 
@@ -406,6 +409,16 @@ void PWMChannel::setState(bool state)
     //change our output pin to reflect
     this->updateOutput();
   }
+}
+
+const char * PWMChannel::getState()
+{
+  if (this->tripped)
+    return "TRIP";
+  else if (this->state)
+    return "ON";
+  else
+    return "OFF";
 }
 
 #endif
