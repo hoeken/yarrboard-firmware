@@ -1,25 +1,22 @@
 Firmware:
+    * switch from zero indexing to 1 indexing.  Ugh.
     * tie led state to switch state
-        * switch dropdown on LED config (what switch to use)
+        * LED dropdown on Switch config (what LED to control)
         * set on, off, trip colors
     * add output type to mosfets
-        * light, motor, pump, fan, solenoid, electronics, other
-        * add icons for each type to display on UI
+        * light, motor, water pump, fuel pump, fan, solenoid, fridge, charger, electronics, other
+        * add icons for each type to display on UI: https://icons.getbootstrap.com
     * protocol documentation
     * wifi connection fail should default to AP mode
 
 8ch MOSFET:
     * switch to esp32-s3 module board (waveshare w/ castellated pins)
-    * remove CAN port - never going to use it.
-    * change fan2 tach to pin 4
-    * combine fan 1 pwm and fan 2 pwm to pin 16
-    * add voltage detector to each channel for bypass/run detection - another mcp3208 + bus voltage divider circuit
+    * add voltage detector to each channel for bypass detection - another mcp3208 + bus voltage divider circuit
     * maybe switch to "pcb welding terminal" connection like 74650073R or C5370858 or C3029538
         * or at least a 9.5mm pitch barrier terminal like C496131 or C430699 or C430687 or C707586
     * move to 4 layer design signal / gnd / gnd / signal
     * completely bypass current sensing with fuse + 4 layer board (use bottom layer)
     * extend the busbar a little bit so the MEGA fuse and on-terminal fuses fit too.
-    * pwm channel 5 is used for boot / uploading - change pin
     * better ADC for current sense: MCP3914 or MCP3564
 
 RGB Input:
@@ -41,7 +38,10 @@ RGB Button Board:
 Electronics:
     * update 3dp case for 8ch mosfet
 
-Long Term Maybe?
+Long Term Ideas:
+    * ADC board
+        * best ADC chip available
+        * figure out how to support the widest variety of inputs
     * Relay board - DC or AC?
     * Motor driver / H bridge?
     * attempt to migrate to esp32 arduino 3.0: https://docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html
