@@ -385,6 +385,14 @@ void PWMChannel::calculateAverages(unsigned int delta)
   }
 }
 
+void PWMChannel::setState(const char * state)
+{
+  if (!strcmp(state, "ON"))
+    this->setState(true);
+  else
+    this->setState(false);
+}
+
 void PWMChannel::setState(bool state)
 {
   //only if we're changing

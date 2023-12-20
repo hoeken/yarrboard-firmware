@@ -26,6 +26,9 @@ class InputChannel
 {
   byte _pins[YB_INPUT_CHANNEL_COUNT] = YB_INPUT_CHANNEL_PINS;
 
+  protected:
+    void setState(bool state);
+
   public:
     byte id = 0;
     char name[YB_CHANNEL_NAME_LENGTH];
@@ -44,7 +47,8 @@ class InputChannel
 
     void setup();
     void update();
-    void setState(bool state);
+
+    void setState(const char * state);
     const char * getState();
 
     static String getModeName(SwitchMode mode);

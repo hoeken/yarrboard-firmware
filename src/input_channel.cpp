@@ -89,19 +89,19 @@ void InputChannel::setup()
   pinMode(this->_pins[this->id], INPUT);
 
   //load up our default state
-  bool nextState = digitalRead(this->_pins[this->id]);
-  if (this->mode == DIRECT)
-    this->state = nextState;
-  else if (this->mode == INVERTING)
-    this->state = !nextState;
+  // bool nextState = digitalRead(this->_pins[this->id]);
+  // if (this->mode == DIRECT)
+  //   this->state = nextState;
+  // else if (this->mode == INVERTING)
+  //   this->state = !nextState;
 
-  //save our current value
-  this->originalRaw = nextState;
+  // //save our current value
+  // this->originalRaw = nextState;
 
-  if (this->state)
-    rgb_channels[this->id].setRGB(0, 1.0, 0);
-  else
-    rgb_channels[this->id].setRGB(0, 0, 0);
+  // if (this->state)
+  //   rgb_channels[this->id].setRGB(0, 1.0, 0);
+  // else
+  //   rgb_channels[this->id].setRGB(0, 0, 0);
 }
 
 void InputChannel::update()
@@ -113,11 +113,6 @@ void InputChannel::update()
   //okay, did we actually change?
   if (this->raw != this->originalRaw)
   {
-    if (this->raw)
-      Serial.print(1);
-    else
-      Serial.print(0);
-
     //and debounce.  needs steadystate
     if (this->raw == this->lastRaw)
     {
@@ -146,7 +141,33 @@ void InputChannel::update()
   strlcpy(this->source, local_hostname, sizeof(this->source));
 
   //update our state variable
-  this->setState(nextState);
+  if (nextState != this->state)
+  {
+    if (nextState)
+      this->setState("ON");
+    else
+      this->setState("OFF");
+  }
+}
+
+void InputChannel::setState(const char * state)
+{
+  if (!strcmp(state, "ON"))
+  {
+    rgb_channels[this->id].setRGB(0, 1.0, 0);
+    this->setState(true);
+  }
+  else if (!strcmp(state, "TRIP"))
+  {
+    rgb_channels[this->id].setRGB(1.0, 0, 0);
+    // keep state on, we need to toggle it to off to reset the soft breaker
+    this->setState(true); 
+  }
+  else // default case for OFF or errors
+  {
+    rgb_channels[this->id].setRGB(0, 0, 0);
+    this->setState(false);
+  }
 }
 
 void InputChannel::setState(bool state)
@@ -156,11 +177,6 @@ void InputChannel::setState(bool state)
     this->state = state;
     this->stateChangeCount++;
     this->sendFastUpdate = true;
-
-    if (this->state)
-      rgb_channels[this->id].setRGB(0, 1.0, 0);
-    else
-      rgb_channels[this->id].setRGB(0, 0, 0);
   }
 }
 

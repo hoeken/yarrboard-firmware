@@ -666,10 +666,11 @@ void handleSetPWMChannel(JsonVariantConst input, JsonVariant output)
       //get our data
       strlcpy(pwm_channels[cid].source, input["source"] | local_hostname, sizeof(pwm_channels[cid].source));
 
-      //what is our new state?
-      bool state = input["state"];
-
       //okay, set our state
+      char state[10];
+      strlcpy(state, input["state"] | "OFF", sizeof(state));
+
+      //update our pwm channel
       pwm_channels[cid].setState(state);
 
       //get that update out ASAP... if its our own update
@@ -793,11 +794,13 @@ void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output)
     //save our source
     strlcpy(pwm_channels[cid].source, input["source"] | local_hostname, sizeof(pwm_channels[cid].source));
 
-    //toggle it
+    //update our state
     if (pwm_channels[cid].tripped)
-      pwm_channels[cid].setState(false);
+      pwm_channels[cid].setState("OFF");
+    else if (!pwm_channels[cid].state)
+      pwm_channels[cid].setState("ON");
     else
-      pwm_channels[cid].setState(!pwm_channels[cid].state);
+      pwm_channels[cid].setState("OFF");
   #else
     return generateErrorJSON(output, "Board does not have output channels.");
   #endif
@@ -886,8 +889,11 @@ void handleSetSwitch(JsonVariantConst input, JsonVariant output)
     //get our data
     strlcpy(input_channels[cid].source, input["source"] | local_hostname, sizeof(local_hostname));
 
-    //state change?
-    bool state = input["state"];
+    //okay, set our state
+    char state[10];
+    strlcpy(state, input["state"] | "OFF", sizeof(state));
+
+    //update our pwm channel
     input_channels[cid].setState(state);
   #else
     return generateErrorJSON(output, "Board does not have RGB channels.");

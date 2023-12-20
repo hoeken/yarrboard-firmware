@@ -19,7 +19,9 @@
 
 class PWMChannel
 {
-  byte _pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_PINS;
+  protected:
+    byte _pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_PINS;
+    void setState(bool state);
 
   public:
     byte id = 0;
@@ -62,7 +64,7 @@ class PWMChannel
     void checkAmperage();
     void checkSoftFuse();
     void checkIfFadeOver();
-    void setState(bool state);
+    void setState(const char * state);
     void setFade(float duty, int max_fade_time_ms);
     void setDuty(float duty);
     void calculateAverages(unsigned int delta);
