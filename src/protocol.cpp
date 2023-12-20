@@ -672,8 +672,9 @@ void handleSetPWMChannel(JsonVariantConst input, JsonVariant output)
       //okay, set our state
       pwm_channels[cid].setState(state);
 
-      //get that update out ASAP.
-      sendFastUpdate();
+      //get that update out ASAP... if its our own update
+      if (!strcmp(pwm_channels[cid].source, local_hostname))
+        sendFastUpdate();
     }
   #else
     return generateErrorJSON(output, "Board does not have output channels.");
@@ -888,9 +889,6 @@ void handleSetSwitch(JsonVariantConst input, JsonVariant output)
     //state change?
     bool state = input["state"];
     input_channels[cid].setState(state);
-
-    //get that update out ASAP.
-    sendFastUpdate();
   #else
     return generateErrorJSON(output, "Board does not have RGB channels.");
   #endif
@@ -1268,7 +1266,7 @@ void generateUpdateJSON(JsonVariant output)
       output["switches"][i]["id"] = i;
       output["switches"][i]["raw"] = input_channels[i].raw;
       output["switches"][i]["state"] = input_channels[i].getState();
-      output["pwm"][i]["source"] = input_channels[i].source;
+      output["switches"][i]["source"] = input_channels[i].source;
     }
   #endif
 

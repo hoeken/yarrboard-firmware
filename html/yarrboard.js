@@ -1135,7 +1135,7 @@ function show_alert(message, type = 'danger')
 
 function toggle_state(id)
 {
-  client.togglePWMChannel(id, config.hostname, true);
+  client.togglePWMChannel(id, current_config.hostname, true);
 }
 
 function toggle_adc_details(id)

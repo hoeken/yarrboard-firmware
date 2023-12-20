@@ -31,6 +31,16 @@ void network_setup()
   if (preferences.isKey("local_hostname"))
     strlcpy(local_hostname, preferences.getString("local_hostname").c_str(), sizeof(local_hostname));
 
+  #ifdef YB_HAS_PWM_CHANNELS
+    for (byte i=0; i<YB_PWM_CHANNEL_COUNT; i++)
+      strlcpy(pwm_channels[i].source, local_hostname, sizeof(local_hostname));
+  #endif
+
+  #ifdef YB_HAS_INPUT_CHANNELS
+    for (byte i=0; i<YB_INPUT_CHANNEL_COUNT; i++)
+      strlcpy(input_channels[i].source, local_hostname, sizeof(local_hostname));
+  #endif
+
   //wifi login info.
   if (preferences.isKey("wifi_mode"))
   {
