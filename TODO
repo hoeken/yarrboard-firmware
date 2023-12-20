@@ -1,9 +1,6 @@
 Firmware:
     * fixing the race conditions
-        * change web UI to handle new state stuff
-            * set_pwm
-            * toggle_pwm
-            * set_switch
+        * update our node-red stuff to check source
 
     * tie led state to switch state
         * switch dropdown on LED config (what switch to use)

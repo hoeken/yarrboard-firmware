@@ -1182,7 +1182,7 @@ function show_alert(message, type = 'danger')
 
 function toggle_state(id)
 {
-  client.togglePWMChannel(id, true);
+  client.togglePWMChannel(id, config.hostname, true);
 }
 
 function toggle_adc_details(id)
