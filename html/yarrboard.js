@@ -741,24 +741,24 @@ function start_websocket()
         {
           if (current_config.pwm[ch.id].enabled)
           {
-            if (ch.state)
+            if (ch.state == "ON")
             {
               $('#pwmState' + ch.id).addClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-danger");
               $('#pwmState' + ch.id).removeClass("btn-secondary");
             }
-            else if(ch.tripped)
+            else if(ch.state == "TRIP")
             {
               $('#pwmState' + ch.id).addClass("btn-danger");
               $('#pwmState' + ch.id).removeClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-secondary");
             }
-            else
+            else if (ch.state == "OFF")
             {
               $('#pwmState' + ch.id).addClass("btn-secondary");
               $('#pwmState' + ch.id).removeClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-danger");
-            }
+            }            
       
             //duty is a bit of a special case.
             let duty = Math.round(ch.duty * 100);
@@ -1119,53 +1119,6 @@ function start_websocket()
 
   client.start();
 }
-
-// function retry_connection()
-// {
-//   //bail if its good to go
-//   if (socket.readyState == WebSocket.OPEN)
-//     return;
-
-//   //keep watching if we are connecting
-//   if (socket.readyState == WebSocket.CONNECTING)
-//   {
-//     yarrboard_log("Waiting for connection");
-    
-//     retry_time++;
-//     $("#retries_count").html(retry_time);
-
-//     //tee it up.
-//     setTimeout(retry_connection, 1000);
-
-//     return;
-//   }
-
-//   //keep track of stuff.
-//   retry_time = 0;
-//   socket_retries++;
-//   yarrboard_log("Reconnecting... " + socket_retries);
-
-//   //our connection status
-//   $(".connection_status").hide();
-//   $("#retries_count").html(retry_time);
-//   $("#connection_retrying").show();
-
-//   //reconnect!
-//   start_websocket();
-
-//   //set some bounds
-//   let my_timeout = 500;
-//   my_timeout = Math.max(my_timeout, socket_retries * 1000);
-//   my_timeout = Math.min(my_timeout, 60000);
-
-//   //tee it up.
-//   setTimeout(retry_connection, my_timeout);
-
-//   //infinite retees
-//   //our connection status
-//   //  $(".connection_status").hide();
-//   //  $("#connection_failed").show();
-// }
 
 function show_alert(message, type = 'danger')
 {
