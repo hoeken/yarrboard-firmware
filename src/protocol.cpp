@@ -1267,7 +1267,7 @@ void generateUpdateJSON(JsonVariant output)
     for (byte i = 0; i < YB_INPUT_CHANNEL_COUNT; i++) {
       output["switches"][i]["id"] = i;
       output["switches"][i]["raw"] = input_channels[i].raw;
-      output["switches"][i]["state"] = input_channels[i].state;
+      output["switches"][i]["state"] = input_channels[i].getState();
       output["pwm"][i]["source"] = input_channels[i].source;
     }
   #endif
@@ -1333,7 +1333,7 @@ void generateFastUpdateJSON(JsonVariant output)
       if (input_channels[i].sendFastUpdate)
       {
         output["switches"][j]["id"] = i;
-        output["switches"][j]["state"] = input_channels[i].state;
+        output["switches"][j]["state"] = input_channels[i].getState();
         output["switches"][j]["source"] = input_channels[i].source;
         input_channels[i].sendFastUpdate = false;
         j++;

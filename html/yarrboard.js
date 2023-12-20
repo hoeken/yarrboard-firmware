@@ -800,13 +800,13 @@ function start_websocket()
         {
           if (current_config.switches[ch.id].enabled)
           {
-            if (ch.state)
+            if (ch.state == "ON")
             {
               $('#switchState' + ch.id).html("ON");
               $('#switchState' + ch.id).removeClass("btn-secondary");
               $('#switchState' + ch.id).addClass("btn-success");
             }
-            else
+            else if (ch.state == "OFF")
             {
               $('#switchState' + ch.id).html("OFF");
               $('#switchState' + ch.id).removeClass("btn-success");

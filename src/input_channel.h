@@ -45,6 +45,7 @@ class InputChannel
     void setup();
     void update();
     void setState(bool state);
+    const char * getState();
 
     static String getModeName(SwitchMode mode);
     static SwitchMode getMode(String mode);

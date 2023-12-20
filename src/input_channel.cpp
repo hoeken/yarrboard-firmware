@@ -164,6 +164,13 @@ void InputChannel::setState(bool state)
   }
 }
 
+const char * InputChannel::getState()
+{
+  if (this->state)
+    return "ON";
+  else
+    return "OFF";
+}
 
 String InputChannel::getModeName(SwitchMode mode)
 {
