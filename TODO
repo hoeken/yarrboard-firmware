@@ -2,11 +2,9 @@ Firmware:
     * tie led state to switch state
         * switch dropdown on LED config (what switch to use)
         * set on, off, trip colors
-            * hardcode to off / green / red to start
     * add output type to mosfets
         * light, motor, pump, fan, solenoid, electronics, other
         * add icons for each type to display on UI
-    * need to have a darkmode logo
     * protocol documentation
     * wifi connection fail should default to AP mode
 
