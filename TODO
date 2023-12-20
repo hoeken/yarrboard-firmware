@@ -4,7 +4,7 @@ Firmware:
 
     * tie led state to switch state
         * switch dropdown on LED config (what switch to use)
-        * set on + off colors
+        * set on, off, trip colors
             * hardcode to off / green to start
 
     * add output type to mosfets
@@ -19,18 +19,19 @@ Firmware:
     * remove CAN port - never going to use it.
     * change fan2 tach to pin 4
     * combine fan 1 pwm and fan 2 pwm to pin 16
-    * add voltage detector to each channel for run detection - another mcp3208 + bus voltage divider circuit
+    * add voltage detector to each channel for bypass/run detection - another mcp3208 + bus voltage divider circuit
     * maybe switch to "pcb welding terminal" connection like 74650073R or C5370858 or C3029538
         * or at least a 9.5mm pitch barrier terminal like C496131 or C430699 or C430687 or C707586
     * move to 4 layer design signal / gnd / gnd / signal
-    * bypass current sensing too with fuse + 4 layer board (use bottom layer)
-    * extend the busbar a little bit so the MEGA fuse fits
-    * pwm channel 5 is used for boot / uploading
+    * completely bypass current sensing with fuse + 4 layer board (use bottom layer)
+    * extend the busbar a little bit so the MEGA fuse and on-terminal fuses fit too.
+    * pwm channel 5 is used for boot / uploading - change pin
+    * better ADC for current sense: MCP3914 or MCP3564
 
 RGB Input:
     * switch to esp32-s3 module board (waveshare w/ castellated pins)
     * move to 4 layer design signal / gnd / gnd / signal
-    * remove the MISO line completely, doesnt work.
+    * remove the MISO line from rgb chip completely, doesnt work.
     * drop the ADC - make a separate board
     * pin header to connect to rgb button board
 
