@@ -224,7 +224,7 @@ void server_loop()
 {
   //process our websockets outside the callback.
   WebsocketRequest request;
-  if (xQueueReceive(wsRequests, &request, 0) == pdTRUE)
+  while (xQueueReceive(wsRequests, &request, 0) == pdTRUE)
   {
     handleWebsocketMessageLoop(&request);
 

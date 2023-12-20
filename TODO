@@ -1,24 +1,17 @@
 Firmware:
-    * better UI:
-        * should always show all boxes on every view
-            * wide view = 3x3 boxes, 9th box is the "settings" box
-                * overall brightness
-                * night/dark mode
-                * totals
-                * etc
-            * medium view:
-                * 2 x 4 + wide config box?
-            * small view:
-                * single row for everything (mostly done)
-            * possible table or 'full' view same as now?
-            * always show duty cycle?
+    * fixing the race conditions
+        * add "source" to input and pwm
+            * source is a required parameter for set_pwm and set_input now
+            * need to set source when updating internally too, use local_hostname
+        * add source to update json
+        * change input and pwm state output to be enum style: "ON", "OFF", "TRIPPED" or "ON", "OFF"
+        * change web UI to handle new state stuff
+
     * tie led state to switch state
         * switch dropdown on LED config (what switch to use)
         * set on + off colors
             * hardcode to off / green to start
 
-    * set max duty on rgb leds
-    * set max duty on PWM channels / total and individual
     * add output type to mosfets
         * light, motor, pump, fan, solenoid, electronics, other
         * add icons for each type to display on UI

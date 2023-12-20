@@ -275,42 +275,11 @@ let currentPWMSliderID = -1;
 let currentRGBPickerID = -1;
 let currentlyPickingBrightness = false;
 
-//our heartbeat timer.
-// function send_heartbeat()
-// {
-//   //did we not get a heartbeat?
-//   if (Date.now() - last_heartbeat > heartbeat_rate * 2)
-//   {
-//     yarrboard_log("Missed heartbeat: " + (Date.now() - last_heartbeat))
-//     socket.close();
-//     retry_connection();
-//   }
-
-//   //only send it if we're already open.
-//   if (socket.readyState == WebSocket.OPEN)
-//   {
-//     client.send({"cmd": "ping"});
-//     setTimeout(send_heartbeat, heartbeat_rate);
-//   }
-//   else if (socket.readyState == WebSocket.CLOSING)
-//   {
-//     yarrboard_log("she closing " + socket.readyState);
-//     //socket.close();
-//     retry_connection();
-//   }
-//   else if (socket.readyState == WebSocket.CLOSED)
-//   {
-//     yarrboard_log("she closed " + socket.readyState);
-//     //socket.close();
-//     retry_connection();
-//   }
-// }
-
 function start_yarrboard()
 {
+  yarrboard_log("User Agent: " + navigator.userAgent);
   yarrboard_log("Window Width: " + window.innerWidth);
   yarrboard_log("Window Height: " + window.innerHeight);
-  yarrboard_log("User Agent: " + navigator.userAgent);
 
   //main data connection
   start_websocket();
@@ -406,7 +375,6 @@ function start_websocket()
   {
     if (msg.msg == 'hello')
     {
-      yarrboard_log("hello");
       app_role = msg.role;
       default_app_role = msg.default_role;
 
@@ -416,7 +384,6 @@ function start_websocket()
 
       //auto login?
       if (Cookies.get("username") && Cookies.get("password")){
-        yarrboard_log("auto login");
         client.login(Cookies.get("username"), Cookies.get("password"));
       } else {
         update_role_ui();
@@ -1108,8 +1075,8 @@ function start_websocket()
         //once we know our role, we can load our other configs.
         app_role = msg.role;
 
-        yarrboard_log(`app_role: ${app_role}`);
-        yarrboard_log(`current_page: ${current_page}`);
+        // yarrboard_log(`app_role: ${app_role}`);
+        // yarrboard_log(`current_page: ${current_page}`);
 
         //only needed for login page, otherwise its autologin
         if (current_page == "login")
@@ -1230,7 +1197,7 @@ function toggle_duty_cycle(id)
 
 function open_page(page)
 {
-  yarrboard_log(`opening ${page}`);
+  // yarrboard_log(`opening ${page}`);
 
   if (!page_permissions[app_role].includes(page))
   {
@@ -1240,7 +1207,7 @@ function open_page(page)
 
   if (page == current_page)
   {
-    yarrboard_log(`already on ${page}.`);
+    // yarrboard_log(`already on ${page}.`);
     //return;
   }
 
@@ -1708,7 +1675,6 @@ function save_app_settings()
   let guest_user = $("#guest_user").val();
   let guest_pass = $("#guest_pass").val();
   let default_role = $("#default_role option:selected").val();
-  yarrboard_log(default_role);
   let app_enable_mfd = $("#app_enable_mfd").prop("checked");
   let app_enable_api = $("#app_enable_api").prop("checked");
   let app_enable_serial = $("#app_enable_serial").prop("checked");

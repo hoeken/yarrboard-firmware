@@ -27,6 +27,7 @@ class PWMChannel
     bool tripped = false;
     char name[YB_CHANNEL_NAME_LENGTH];
     bool sendFastUpdate = false;
+    char source[YB_HOSTNAME_LENGTH];
 
     unsigned int stateChangeCount = 0;
     unsigned int softFuseTripCount = 0;

@@ -38,6 +38,7 @@ class InputChannel
     bool lastRaw = false;
     bool originalRaw = false;
     bool state = false;
+    char source[YB_HOSTNAME_LENGTH];
 
     bool sendFastUpdate = false;
 

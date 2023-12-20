@@ -622,20 +622,6 @@ void handleSetPWMChannel(JsonVariantConst input, JsonVariant output)
     if (!isValidPWMChannel(cid))
       return generateErrorJSON(output, "Invalid channel id");
 
-    //change state
-    if (input.containsKey("state"))
-    {
-      //is it enabled?
-      if (!pwm_channels[cid].isEnabled)
-        return generateErrorJSON(output, "Channel is not enabled.");
-
-      //what is our new state?
-      bool state = input["state"];
-
-      //okay, set our state
-      pwm_channels[cid].setState(state);
-    }
-
     //our duty cycle
     if (input.containsKey("duty"))
     {
@@ -656,6 +642,23 @@ void handleSetPWMChannel(JsonVariantConst input, JsonVariant output)
 
       //change our output pin to reflect
       pwm_channels[cid].updateOutput();
+    }
+
+    //change state
+    if (input.containsKey("state"))
+    {
+      //is it enabled?
+      if (!pwm_channels[cid].isEnabled)
+        return generateErrorJSON(output, "Channel is not enabled.");
+
+      //what is our new state?
+      bool state = input["state"];
+
+      //okay, set our state
+      pwm_channels[cid].setState(state);
+
+      //get that update out ASAP.
+      sendFastUpdate();
     }
   #else
     return generateErrorJSON(output, "Board does not have output channels.");
@@ -838,6 +841,9 @@ void handleSetSwitch(JsonVariantConst input, JsonVariant output)
     {
       bool state = input["state"];
       input_channels[cid].setState(state);
+
+      //get that update out ASAP.
+      sendFastUpdate();
     }
   #else
     return generateErrorJSON(output, "Board does not have RGB channels.");
@@ -1244,7 +1250,7 @@ void generateUpdateJSON(JsonVariant output)
 void generateFastUpdateJSON(JsonVariant output)
 {
   output["msg"] = "update";
-  output["foo"] = "bar";
+  output["fast"] = 1;
   output["uptime"] = esp_timer_get_time();
 
   #ifdef YB_HAS_BUS_VOLTAGE
