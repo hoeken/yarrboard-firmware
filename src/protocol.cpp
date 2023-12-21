@@ -273,6 +273,7 @@ void generateHelloJSON(JsonVariant output, UserRole role)
   output["role"] = getRoleText(role);
   output["default_role"] = getRoleText(app_default_role);
   output["theme"] = app_theme;
+  output["firmware_version"] = YB_FIRMWARE_VERSION;
 }
 
 void handleSetBoardName(JsonVariantConst input, JsonVariant output)

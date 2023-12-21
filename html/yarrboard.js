@@ -61,38 +61,51 @@ const BoardNameEdit = (name) => `
 </div>
 `;
 
-const PWMControlCard = (id, name) => `
-<div id="pwm${id}" class="controlCard pwmCard col-xs-12 col-sm-6 col-md-6 col-lg-4 p-2">
+const PWMControlCard = (ch) => `
+<div id="pwm${ch.id}" class="controlCard pwmCard col-xs-12 col-sm-6 p-2">
   <div class="row g-2">
     <table>
       <tr>
-        <td class="align-middle" style="width: 70px">
-          <div class="text-end mx-2">
-            <div id="pwmCurrent${id}"></div>
-            <div id="pwmWattage${id}"></div>
-            <div id="pwmDutyCycle${id}" onclick="toggle_duty_cycle(${id})">???</div>
-          </div>
+        <td id="pwmDutySliderButton${ch.id}" onclick="toggle_duty_cycle(${ch.id})" class="pwmDutySliderButton text-center" style="display: none">
+          <svg class="bi bi-brightness-high" xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"></path>
+          </svg>
+          <div class="mt-1 pwmDutyCycle" id="pwmDutyCycle${ch.id}">???</div>
         </td>
         <td>
-          <button id="pwmState${id}" type="button" class="btn pwmButton text-center" onclick="toggle_state(${id})">${name}</button>
+          <button id="pwmState${ch.id}" type="button" class="btn pwmButton text-center" onclick="toggle_state(${ch.id})">
+            <table style="width: 100%">
+              <tbody>
+                <tr>
+                  <td class="text-center align-middle">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="me-2" viewBox="0 0 16 16" width="32" height="32">
+                      <path d="M3 2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-.5.5h-5a.5.5 0 0 1-.5-.5z"></path>
+                      <path d="M1 2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v8a2 2 0 0 1 2 2v.5a.5.5 0 0 0 1 0V8h-.5a.5.5 0 0 1-.5-.5V4.375a.5.5 0 0 1 .5-.5h1.495c-.011-.476-.053-.894-.201-1.222a.97.97 0 0 0-.394-.458c-.184-.11-.464-.195-.9-.195a.5.5 0 0 1 0-1c.564 0 1.034.11 1.412.336.383.228.634.551.794.907.295.655.294 1.465.294 2.081v3.175a.5.5 0 0 1-.5.501H15v4.5a1.5 1.5 0 0 1-3 0V12a1 1 0 0 0-1-1v4h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1zm9 0a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v13h8z"></path>
+                    </svg>
+                  </td>
+                  <td class="text-center" style="width: 99%">${ch.name}</td>
+                  <td>
+                    <div class="text-end pwmData">
+                      <div id="pwmCurrent${ch.id}"></div>
+                      <div id="pwmWattage${ch.id}"></div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </button>
         </td>
-      </tr>
-      <tr id="pwmDutySliderRow${id}" style="display:none">
-        <td class="align-top text-end">
-          <div class="mx-2 my-2">Duty:</div>
-        </td>
-        <td>
-          <div class="align-top my-2">
-            <input type="range" class="form-range" min="0" max="100" id="pwmDutySlider${id}">
-          </div>
-        <td>
       </tr>
     </table>
-  </div>
+    <div id="pwmDutySliderRow${ch.id}" class="align-top" style="display:none">
+      <input type="range" class="form-range" min="0" max="100" id="pwmDutySlider${ch.id}">
+    </div>
+  </tr>
+    </div>
 </div>
 `;
 
-const PWMLegendCard = (id, name) => `
+const PWMLegendCard = (ch) => `
 <div id="pwmLegend" class="controlCard legendCard col-xs-12 col-sm-6 col-md-6 col-lg-4 p-2">
   <div class="row g-2 text-center">
     <div class="col">
@@ -105,8 +118,8 @@ const PWMLegendCard = (id, name) => `
       <button type="button" class="btn btn-small btn-danger pwmButton" disabled>TRIP</button>
     </div>
   </div>
-  <div id="pwmDutySliderRow${id}" style="display:none">
-    <input type="range" class="form-range" min="0" max="100" id="pwmDutySlider${id}">
+  <div id="pwmDutySliderRow${ch.id}" style="display:none">
+    <input type="range" class="form-range" min="0" max="100" id="pwmDutySlider${ch.id}">
   </div>
 </div>
 `;
@@ -443,35 +456,41 @@ function start_websocket()
         {
           if (ch.enabled)
           {
-            $('#pwmCards').append(PWMControlCard(ch.id, ch.name));
-            $('#pwmDutySlider' + ch.id).change(set_duty_cycle);
+            $('#pwmCards').append(PWMControlCard(ch));
 
-            //update our duty when we move
-            $('#pwmDutySlider' + ch.id).on("input", set_duty_cycle);
+            if (ch.isDimmable)
+            {
+              $(`#pwmDutySliderButton${ch.id}`).show();
 
-            //stop updating the UI when we are choosing a duty
-            $('#pwmDutySlider' + ch.id).on('focus', function(e) {
-              let ele = e.target;
-              let id = ele.id.match(/\d+/)[0];
-              currentPWMSliderID = id;
-            });
+              $('#pwmDutySlider' + ch.id).change(set_duty_cycle);
 
-            //stop updating the UI when we are choosing a duty
-            $('#pwmDutySlider' + ch.id).on('touchstart', function(e) {
-              let ele = e.target;
-              let id = ele.id.match(/\d+/)[0];
-              currentPWMSliderID = id;
-            });
-            
-            //restart the UI updates when slider is closed
-            $('#pwmDutySlider' + ch.id).on("blur", function (e) {
-              currentPWMSliderID = -1;
-            });
+              //update our duty when we move
+              $('#pwmDutySlider' + ch.id).on("input", set_duty_cycle);
 
-            //restart the UI updates when slider is closed
-            $('#pwmDutySlider' + ch.id).on("touchend", function (e) {
-              currentPWMSliderID = -1;
-            });
+              //stop updating the UI when we are choosing a duty
+              $('#pwmDutySlider' + ch.id).on('focus', function(e) {
+                let ele = e.target;
+                let id = ele.id.match(/\d+/)[0];
+                currentPWMSliderID = id;
+              });
+
+              //stop updating the UI when we are choosing a duty
+              $('#pwmDutySlider' + ch.id).on('touchstart', function(e) {
+                let ele = e.target;
+                let id = ele.id.match(/\d+/)[0];
+                currentPWMSliderID = id;
+              });
+              
+              //restart the UI updates when slider is closed
+              $('#pwmDutySlider' + ch.id).on("blur", function (e) {
+                currentPWMSliderID = -1;
+              });
+
+              //restart the UI updates when slider is closed
+              $('#pwmDutySlider' + ch.id).on("touchend", function (e) {
+                currentPWMSliderID = -1;
+              });
+            }
           }
         }
 
@@ -2028,3 +2047,36 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
   if (storedTheme !== 'light' && storedTheme !== 'dark')
     setTheme(getPreferredTheme());
 });
+
+function getViewport () {
+  // https://stackoverflow.com/a/8876069
+  const width = Math.max(
+    document.documentElement.clientWidth,
+    window.innerWidth || 0
+  )
+  if (width <= 576) return 'xs'
+  if (width <= 768) return 'sm'
+  if (width <= 992) return 'md'
+  if (width <= 1200) return 'lg'
+  if (width <= 1400) return 'xl'
+  return 'xxl'
+}
+
+// $(document).ready(function () {
+//   let viewport = getViewport()
+//   let debounce
+//   $(window).resize(() => {
+//     debounce = setTimeout(() => {
+//       const currentViewport = getViewport()
+//       if (currentViewport !== viewport) {
+//         viewport = currentViewport
+//         $(window).trigger('newViewport', viewport)
+//       }
+//     }, 500)
+//   })
+//   $(window).on('newViewport', (viewport) => {
+//     // do something with viewport
+//   })
+//   // run when page loads
+//   $(window).trigger('newViewport', viewport)
+// }
