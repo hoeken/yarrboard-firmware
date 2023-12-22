@@ -123,42 +123,60 @@ const PWMLegendCard = (ch) => `
 </div>
 `;
 
-const PWMEditRow = (id, name, soft_fuse) => `
-<div class="row mt-2 align-items-center">
-  <div class="col-auto">
-    <div class="form-check form-switch">
-      <input class="form-check-input" type="checkbox" id="fPWMEnabled${id}">
-      <label class="form-check-label" for="fPWMEnabled${id}">
+const PWMEditCard = (ch) => `
+<div id="pwmEditCard${ch.id}" class="controlCard pwmCard col-xs-12 col-sm-6">
+  <h5>Output Channel #${ch.id}</h5>
+    <div class="form-floating mb-3">
+      <input type="text" class="form-control" id="fPWMName${ch.id}" value="${ch.name}">
+      <label for="fPWMName${ch.id}">Name</label>
+    </div>
+    <div class="valid-feedback">Saved!</div>
+    <div class="invalid-feedback">Must be 30 characters or less.</div>
+    <div class="form-check form-switch mb-3">
+      <input class="form-check-input" type="checkbox" id="fPWMEnabled${ch.id}">
+      <label class="form-check-label" for="fPWMEnabled${ch.id}">
         Enabled
       </label>
     </div>
     <div class="valid-feedback">Saved!</div>
-  </div>
-  <div class="col-auto">
-    <div class="form-floating mb-3">
-      <input type="text" class="form-control" id="fPWMName${id}" value="${name}">
-      <label for="fPWMName${id}">Name</label>
-    </div>
-    <div class="valid-feedback">Saved!</div>
-    <div class="invalid-feedback">Must be 30 characters or less.</div>
-  </div>
-  <div class="col-auto">
-    <div class="form-check form-switch">
-      <input class="form-check-input" type="checkbox" id="fPWMDimmable${id}">
-      <label class="form-check-label" for="fPWMDimmable${id}">
+    <div class="form-check form-switch mb-3">
+      <input class="form-check-input" type="checkbox" id="fPWMDimmable${ch.id}">
+      <label class="form-check-label" for="fPWMDimmable${ch.id}">
         Dimmable?
       </label>
     </div>
     <div class="valid-feedback">Saved!</div>
-  </div>
-  <div class="col-auto">
     <div class="form-floating mb-3">
-      <input type="text" class="form-control" id="fPWMSoftFuse${id}" value="${soft_fuse}">
-      <label for="fPWMSoftFuse${id}">Soft Fuse (Amps)</label>
+      <input type="text" class="form-control" id="fPWMSoftFuse${ch.id}" value="${ch.softFuse}">
+      <label for="fPWMSoftFuse${ch.id}">Soft Fuse (Amps)</label>
     </div>
     <div class="valid-feedback">Saved!</div>
     <div class="invalid-feedback">Must be a number between 0 and 20</div>
-  </div>
+    <div class="form-floating mb-3">
+      <select id="fPWMDefaultState${ch.id}" class="form-select" aria-label="Default State">
+        <option value="ON">ON</option>
+        <option value="OFF">OFF</option>
+      </select>
+      <label for="fPWMDefaultState${ch.id}">Default State</label>
+    </div>
+    <div class="valid-feedback">Saved!</div>
+    <div class="form-floating mb-3">
+      <select id="fPWMType${ch.id}" class="form-select" aria-label="Output Type">
+      <option value="light">Light</option>
+      <option value="motor">Motor</option>
+      <option value="water_pump">Water Pump</option>
+      <option value="fuel_pump">Fuel Pump</option>
+      <option value="fan">Fan</option>
+      <option value="solenoid">Solenoid</option>
+      <option value="fridge">Refridgerator</option>
+      <option value="freezer">Freezer</option>
+      <option value="charger">Charger</option>
+      <option value="electronics">Electronics</option>
+      <option value="other">Other</option>
+    </select>
+      <label for="fPWMType${ch.id}">Output Type</label>
+    </div>
+    <div class="valid-feedback">Saved!</div>
 </div>
 `;
 
@@ -627,7 +645,7 @@ function start_websocket()
           $('#pwmConfigForm').html("");
           for (ch of msg.pwm)
           {
-            $('#pwmConfigForm').append(PWMEditRow(ch.id, ch.name, ch.softFuse));
+            $('#pwmConfigForm').append(PWMEditCard(ch));
             $(`#fPWMDimmable${ch.id}`).prop("checked", ch.isDimmable);
             $(`#fPWMEnabled${ch.id}`).prop("checked", ch.enabled);
   

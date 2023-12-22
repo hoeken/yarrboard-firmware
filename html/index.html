@@ -73,13 +73,13 @@
             });
         </script>
         <main>
-            <div id="liveAlertPlaceholder"></div>
             <div id="loading">
                 <div class="d-flex justify-content-center align-items-center" style="height: 300px">
                     <div class="spinner-border" role="status" style="width: 7rem; height: 7rem;"></div>
                 </div>
             </div>
             <div class="row mx-3 my-3">
+                <div id="liveAlertPlaceholder"></div>
                 <div id="controlPage" class="pageContainer" style="display:none">
                     <div id="controlDiv" style="display:none" class="col-md-12">
                         <div id="pwmCards" class="row g-3"></div>
@@ -125,8 +125,7 @@
                     <form class="row g-3" id="ConfigForm">
                         <div id="boardConfigForm"></div>
                         <div id="pwmConfig" style="display:none" class="col-md-12">
-                            <h4 class="text-center">MOSFET Outputs</h4>
-                            <div id="pwmConfigForm"></div>
+                            <div id="pwmConfigForm" class="row g-3"></div>
                         </div>
                         <div id="switchConfig" style="display:none" class="col-md-12">
                             <h4 class="text-center">I/O Switches</h4>
