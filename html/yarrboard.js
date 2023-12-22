@@ -12,11 +12,6 @@ let app_update_interval = 500;
 let network_config;
 let app_config;
 
-// let socket_retries = 0;
-// let retry_time = 0;
-// let last_heartbeat = 0;
-// let heartbeat_rate = 5000;
-
 let ota_started = false;
 
 const page_list = ["control", "config", "stats", "network", "settings", "system"];

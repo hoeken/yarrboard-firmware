@@ -1,11 +1,12 @@
 Firmware:
-    * go through and re-adjust the various page sizes for our different viewports
     * change config page to use the 'cards' style
         * add default state to inputs
         * tie led state to switch state
             * LED dropdown on Switch config (what LED to control)
             * set on, off, trip colors
     * switch from zero indexing to 1 indexing.  Ugh.
+    * update forms to be consistent style (float labels)
+    * go through and re-adjust the various page sizes for our different viewports
     * protocol documentation
     * wifi improvements:
         * wifi connection fail should default to AP mode
