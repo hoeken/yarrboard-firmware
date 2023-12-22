@@ -68,6 +68,12 @@ tr.switchRow, tr.rgbRow, tr.adcRow, tr.pwmRow #statsTable tbody tr {
     font-size: 0.8rem;
 }
 
+.pwmIcon svg {
+    width: 32px;
+    height: 32px;
+    fill: currentColor;
+}
+
 /* // Extra small devices (portrait phones, less than 576px)
 @media (max-width: 575.98px) { ... } */
 

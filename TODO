@@ -1,13 +1,10 @@
 Firmware:
     * go through and re-adjust the various page sizes for our different viewports
     * change config page to use the 'cards' style
-        * add default state to inputs and pwm channels
+        * add default state to inputs
         * tie led state to switch state
             * LED dropdown on Switch config (what LED to control)
             * set on, off, trip colors
-    * add output type to mosfets
-        * light, motor, water pump, fuel pump, fan, solenoid, fridge, charger, electronics, other
-        * add icons for each type to display on UI: https://icons.getbootstrap.com
     * switch from zero indexing to 1 indexing.  Ugh.
     * protocol documentation
     * wifi improvements:

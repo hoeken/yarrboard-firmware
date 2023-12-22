@@ -718,6 +718,46 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
       return generateConfigJSON(output);
     }
 
+    //channel type
+    if (input.containsKey("type"))
+    {
+      //is it too long?
+      if (strlen(input["type"]) > YB_TYPE_LENGTH-1)
+      {
+        char error[50];
+        sprintf(error, "Maximum channel type length is %s characters.", YB_CHANNEL_NAME_LENGTH-1);
+        return generateErrorJSON(output, error);
+      }
+
+      //save to our storage
+      strlcpy(pwm_channels[cid].type, input["type"] | "other", sizeof(pwm_channels[cid].type));
+      sprintf(prefIndex, "pwmType%d", cid);
+      preferences.putString(prefIndex, pwm_channels[cid].type);
+
+      //give them the updated config
+      return generateConfigJSON(output);
+    }
+
+    //default state
+    if (input.containsKey("defaultState"))
+    {
+      //is it too long?
+      if (strlen(input["defaultState"]) > sizeof(pwm_channels[cid].defaultState)-1)
+      {
+        char error[50];
+        sprintf(error, "Maximum default state length is %s characters.", sizeof(pwm_channels[cid].defaultState)-1);
+        return generateErrorJSON(output, error);
+      }
+
+      //save to our storage
+      strlcpy(pwm_channels[cid].defaultState, input["defaultState"] | "OFF", sizeof(pwm_channels[cid].defaultState));
+      sprintf(prefIndex, "pwmDefault%d", cid);
+      preferences.putString(prefIndex, pwm_channels[cid].defaultState);
+
+      //give them the updated config
+      return generateConfigJSON(output);
+    }
+
     //dimmability
     if (input.containsKey("isDimmable"))
     {
@@ -1210,10 +1250,12 @@ void generateConfigJSON(JsonVariant output)
     for (byte i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
       output["pwm"][i]["id"] = i;
       output["pwm"][i]["name"] = pwm_channels[i].name;
+      output["pwm"][i]["type"] = pwm_channels[i].type;
       output["pwm"][i]["enabled"] = pwm_channels[i].isEnabled;
       output["pwm"][i]["hasCurrent"] = true;
       output["pwm"][i]["softFuse"] = round2(pwm_channels[i].softFuseAmperage);
       output["pwm"][i]["isDimmable"] = pwm_channels[i].isDimmable;
+      output["pwm"][i]["defaultState"] = pwm_channels[i].defaultState;
     }
   #endif
 

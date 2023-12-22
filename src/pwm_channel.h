@@ -28,6 +28,8 @@ class PWMChannel
     bool state = false;
     bool tripped = false;
     char name[YB_CHANNEL_NAME_LENGTH];
+    char type[30];
+    char defaultState[10];
     bool sendFastUpdate = false;
     char source[YB_HOSTNAME_LENGTH];
 

@@ -64,9 +64,12 @@ void pwm_channels_setup()
   ledc_fade_func_uninstall();
   ledc_fade_func_install(0);
 
-  //intitialize our interrupts afterwards
+  
   for (short i = 0; i < YB_PWM_CHANNEL_COUNT; i++)
-    pwm_channels[i].setupInterrupt();
+  {
+    pwm_channels[i].setupInterrupt(); //intitialize our interrupts for fading
+    pwm_channels[i].updateOutput(); //initialize our output with our defaults
+  }
 }
 
 void pwm_channels_loop()
@@ -146,7 +149,27 @@ void PWMChannel::setup()
   else
     this->softFuseTripCount = 0;
 
-  this->adcHelper = new MCP3208Helper(3.3, this->id, &_adcCurrentMCP3208);  
+  //type
+  sprintf(prefIndex, "pwmType%d", this->id);
+  if (preferences.isKey(prefIndex))
+    strlcpy(this->type, preferences.getString(prefIndex).c_str(), sizeof(this->type));
+  else
+    sprintf(this->type, "other", this->id);
+
+  //default state
+  sprintf(prefIndex, "pwmDefault%d", this->id);
+  if (preferences.isKey(prefIndex))
+    strlcpy(this->defaultState, preferences.getString(prefIndex).c_str(), sizeof(this->defaultState));
+  else
+    sprintf(this->defaultState, "OFF", this->id);
+
+  this->adcHelper = new MCP3208Helper(3.3, this->id, &_adcCurrentMCP3208);
+
+  //setup our default state
+  if (!strcmp(this->defaultState, "ON"))
+    this->state = true;
+  else
+    this->state = false;
 }
 
 void PWMChannel::setupLedc()
