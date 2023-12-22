@@ -103,7 +103,7 @@ const PWMControlCard = (ch) => `
 
 const PWMEditCard = (ch) => `
 <div id="pwmEditCard${ch.id}" class="col-xs-12 col-sm-6">
-  <div class="p-2 border border-secondary rounded">
+  <div class="p-3 border border-secondary rounded">
     <h5>Output Channel #${ch.id}</h5>
     <div class="form-floating mb-3">
       <input type="text" class="form-control" id="fPWMName${ch.id}" value="${ch.name}">
