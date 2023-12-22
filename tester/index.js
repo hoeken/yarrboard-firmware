@@ -90,7 +90,7 @@ async function togglePin(channels, d = 10) {
 
             yb.setPWMChannelDuty(channel, 1);
             while (true) {
-                yb.togglePWMChannel(channel);
+                yb.togglePWMChannel(channel, options.host.split(".")[0]);
                 await delay(d)
             }        
         }
