@@ -32,6 +32,7 @@ class InputChannel
   public:
     byte id = 0;
     char name[YB_CHANNEL_NAME_LENGTH];
+    char defaultState[10];
     SwitchMode mode;
     bool isEnabled = true;
 

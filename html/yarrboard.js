@@ -104,7 +104,6 @@ const PWMEditCard = (ch) => `
       <input type="text" class="form-control" id="fPWMName${ch.id}" value="${ch.name}">
       <label for="fPWMName${ch.id}">Name</label>
     </div>
-    <div class="valid-feedback">Saved!</div>
     <div class="invalid-feedback">Must be 30 characters or less.</div>
     <div class="form-check form-switch mb-3">
       <input class="form-check-input" type="checkbox" id="fPWMEnabled${ch.id}">
@@ -112,46 +111,41 @@ const PWMEditCard = (ch) => `
         Enabled
       </label>
     </div>
-    <div class="valid-feedback">Saved!</div>
     <div class="form-check form-switch mb-3">
       <input class="form-check-input" type="checkbox" id="fPWMDimmable${ch.id}">
       <label class="form-check-label" for="fPWMDimmable${ch.id}">
         Dimmable?
       </label>
     </div>
-    <div class="valid-feedback">Saved!</div>
     <div class="form-floating mb-3">
       <input type="text" class="form-control" id="fPWMSoftFuse${ch.id}" value="${ch.softFuse}">
       <label for="fPWMSoftFuse${ch.id}">Soft Fuse (Amps)</label>
     </div>
-    <div class="valid-feedback">Saved!</div>
     <div class="invalid-feedback">Must be a number between 0 and 20</div>
     <div class="form-floating mb-3">
-      <select id="fPWMDefaultState${ch.id}" class="form-select" aria-label="Default State">
+      <select id="fPWMDefaultState${ch.id}" class="form-select" aria-label="Default State (on boot)">
         <option value="ON">ON</option>
         <option value="OFF">OFF</option>
       </select>
-      <label for="fPWMDefaultState${ch.id}">Default State</label>
+      <label for="fPWMDefaultState${ch.id}">Default State (on boot)</label>
     </div>
-    <div class="valid-feedback">Saved!</div>
     <div class="form-floating">
       <select id="fPWMType${ch.id}" class="form-select" aria-label="Output Type">
-      <option value="light">Light</option>
-      <option value="motor">Motor</option>
-      <option value="water_pump">Water Pump</option>
-      <option value="bilge_pump">Bilge Pump</option>
-      <option value="fuel_pump">Fuel Pump</option>
-      <option value="fan">Fan</option>
-      <option value="solenoid">Solenoid</option>
-      <option value="fridge">Refrigerator</option>
-      <option value="freezer">Freezer</option>
-      <option value="charger">Charger</option>
-      <option value="electronics">Electronics</option>
-      <option value="other">Other</option>
-    </select>
+        <option value="light">Light</option>
+        <option value="motor">Motor</option>
+        <option value="water_pump">Water Pump</option>
+        <option value="bilge_pump">Bilge Pump</option>
+        <option value="fuel_pump">Fuel Pump</option>
+        <option value="fan">Fan</option>
+        <option value="solenoid">Solenoid</option>
+        <option value="fridge">Refrigerator</option>
+        <option value="freezer">Freezer</option>
+        <option value="charger">Charger</option>
+        <option value="electronics">Electronics</option>
+        <option value="other">Other</option>
+      </select>
       <label for="fPWMType${ch.id}">Output Type</label>
     </div>
-    <div class="valid-feedback">Saved!</div>
   </div>
 </div>
 `;
@@ -163,32 +157,39 @@ const SwitchControlRow = (id, name) => `
 </tr>
 `;
 
-const SwitchEditRow = (id, name) => `
-<div class="row mt-2 align-items-center">
-  <div class="col-auto">
-    <div class="form-check form-switch">
-      <input class="form-check-input" type="checkbox" id="fSwitchEnabled${id}">
-      <label class="form-check-label" for="fSwitchEnabled${id}">
-        Enabled
-      </label>
+const SwitchEditCard = (ch) => `
+<div id="switchEditCard${ch.id}" class="col-xs-12 col-sm-6">
+  <div class="p-3 border border-secondary rounded">
+    <h5>Switch Input #${ch.id}</h5>
+    <div class="form-floating mb-3">
+      <input type="text" class="form-control" id="fSwitchName${ch.id}" value="${ch.name}">
+      <label for="fSwitchName${ch.id}">Name</label>
+      <div class="invalid-feedback">Must be 30 characters or less.</div>
     </div>
-    <div class="valid-feedback">Saved!</div>
-  </div>
-  <div class="col-auto">
-    <div class="form-check form-switch">
-      <select id="fSwitchMode${id}" class="form-select" aria-label="Switch Mode">
-        <option value="direct">Direct</option>
-        <option value="inverting">Inverting</option>
-        <option value="toggle_rising">Toggle Rising</option>
-        <option value="toggle_falling">Toggle Falling</option>
+    <div class="mb-3">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="fSwitchEnabled${ch.id}">
+        <label class="form-check-label" for="fSwitchEnabled${ch.id}">Enabled</label>
+      </div>
+    </div>
+    <div class="mb-3">
+      <div class="form-floating">
+        <select id="fSwitchMode${ch.id}" class="form-select" aria-label="Switch Mode">
+          <option value="direct">Direct</option>
+          <option value="inverting">Inverting</option>
+          <option value="toggle_rising">Toggle Rising</option>
+          <option value="toggle_falling">Toggle Falling</option>
+        </select>
+        <label for="fSwitchMode${ch.id}">Switch Mode</label>
+      </div>
+    </div>
+    <div class="form-floating">
+      <select id="fSwitchDefaultState${ch.id}" class="form-select" aria-label="Default State">
+        <option value="ON">ON</option>
+        <option value="OFF">OFF</option>
       </select>
+      <label for="fSwitchDefaultState${ch.id}">Default State (on boot)</label>
     </div>
-    <div class="valid-feedback">Saved!</div>
-  </div>
-  <div class="col-auto">
-    <input type="text" class="form-control" id="fSwitchName${id}" value="${name}">
-    <div class="valid-feedback">Saved!</div>
-    <div class="invalid-feedback">Must be 30 characters or less.</div>
   </div>
 </div>
 `;
@@ -200,21 +201,19 @@ const RGBControlRow = (id, name) => `
 </tr>
 `;
 
-const RGBEditRow = (id, name) => `
-<div class="row mt-2 align-items-center">
-  <div class="col-auto">
-    <div class="form-check form-switch">
-      <input class="form-check-input" type="checkbox" id="fRGBEnabled${id}">
-      <label class="form-check-label" for="fRGBEnabled${id}">
-        Enabled
-      </label>
+const RGBEditCard = (ch) => `
+<div id="rgbEditCard${ch.id}" class="col-xs-12 col-sm-6">
+  <div class="p-3 border border-secondary rounded">
+    <h5>RGB #${ch.id}</h5>
+    <div class="form-floating mb-3">
+      <input type="text" class="form-control" id="fRGBName${ch.id}" value="${ch.name}">
+      <label for="fRGBName${ch.id}">Name</label>
+      <div class="invalid-feedback">Must be 30 characters or less.</div>
     </div>
-    <div class="valid-feedback">Saved!</div>
-  </div>
-  <div class="col-auto">
-    <input type="text" class="form-control" id="fRGBName${id}" value="${name}">
-    <div class="valid-feedback">Saved!</div>
-    <div class="invalid-feedback">Must be 30 characters or less.</div>
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" id="fRGBEnabled${ch.id}">
+      <label class="form-check-label" for="fRGBEnabled${ch.id}">Enabled</label>
+    </div>
   </div>
 </div>
 `;
@@ -250,22 +249,19 @@ const ADCControlRow = (id, name) => `
 </tr>
 `;
 
-const ADCEditRow = (id, name) => `
-<div class="row mt-2 align-items-center">
-  <div class="col-auto">
-    <div class="form-check form-switch">
-      <input class="form-check-input" type="checkbox" id="fADCEnabled${id}">
-      <label class="form-check-label" for="fADCEnabled${id}">
-        Enabled
-      </label>
+const ADCEditCard = (id) => `
+<div id="adcEditCard${ch.id}" class="col-xs-12 col-sm-6">
+  <div class="p-3 border border-secondary rounded">
+    <h5>ADC #${ch.id}</h5>
+    <div class="form-floating mb-3">
+      <input type="text" class="form-control" id="fADCName${ch.id}" value="${ch.name}">
+      <label for="fRGBName${ch.id}">Name</label>
+      <div class="invalid-feedback">Must be 30 characters or less.</div>
     </div>
-    <div class="valid-feedback">Saved!</div>
-  </div>
-  <div class="col-auto">
-    <input type="text" class="form-control" id="fADCName${id}" value="${name}">
-    <div class="valid-feedback">Saved!</div>
-    <div class="invalid-feedback">Must be 30 characters or less.</div>
-  </div>
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" id="fADCEnabled${ch.id}">
+      <label class="form-check-label" for="fADCEnabled${ch.id}">Enabled</label>
+    </div>
 </div>
 `;
 
@@ -652,18 +648,21 @@ function start_websocket()
           $('#switchConfigForm').html("");
           for (ch of msg.switches)
           {
-            $('#switchConfigForm').append(SwitchEditRow(ch.id, ch.name));
+            $('#switchConfigForm').append(SwitchEditCard(ch));
             $(`#fSwitchEnabled${ch.id}`).prop("checked", ch.enabled);
             $(`#fSwitchMode${ch.id}`).val(ch.mode.toLowerCase());
+            $(`#fSwitchDefaultState${ch.id}`).val(ch.defaultState);
   
             //enable/disable other stuff.
             $(`#fSwitchName${ch.id}`).prop('disabled', !ch.enabled);
             $(`#fSwitchMode${ch.id}`).prop('disabled', !ch.enabled);
+            $(`#fSwitchDefaultState${ch.id}`).prop('disabled', !ch.enabled);
 
             //validate + save
             $(`#fSwitchEnabled${ch.id}`).change(validate_switch_enabled);
             $(`#fSwitchName${ch.id}`).change(validate_switch_name);
             $(`#fSwitchMode${ch.id}`).change(validate_switch_mode);
+            $(`#fSwitchDefaultState${ch.id}`).change(validate_switch_default_state);
           }  
           $('#switchConfig').show();
         }
@@ -675,7 +674,7 @@ function start_websocket()
           $('#rgbConfigForm').html("");
           for (ch of msg.rgb)
           {
-            $('#rgbConfigForm').append(RGBEditRow(ch.id, ch.name));
+            $('#rgbConfigForm').append(RGBEditCard(ch));
             $(`#fRGBEnabled${ch.id}`).prop("checked", ch.enabled);
   
             //enable/disable other stuff.
@@ -695,7 +694,7 @@ function start_websocket()
           $('#adcConfigForm').html("");
           for (ch of msg.adc)
           {
-            $('#adcConfigForm').append(ADCEditRow(ch.id, ch.name));
+            $('#adcConfigForm').append(ADCEditCard(ch));
             $(`#fADCEnabled${ch.id}`).prop("checked", ch.enabled);
   
             //enable/disable other stuff.
@@ -1530,6 +1529,31 @@ function validate_switch_mode(e)
   });
 }
 
+function validate_switch_default_state(e)
+{
+  let ele = e.target;
+  let id = ele.id.match(/\d+/)[0];
+  let value = ele.value;
+
+  if (value.length <= 0 || value.length > 10)
+  {
+    $(ele).removeClass("is-valid");
+    $(ele).addClass("is-invalid");
+  }
+  else
+  {
+    $(ele).removeClass("is-invalid");
+    $(ele).addClass("is-valid");
+
+    //set our new pwm name!
+    client.send({
+      "cmd": "config_switch",
+      "id": id,
+      "defaultState": value
+    });
+  }
+}
+
 function validate_switch_enabled(e)
 {
   let ele = e.target;
@@ -1538,6 +1562,8 @@ function validate_switch_enabled(e)
 
   //enable/disable other stuff.
   $(`#fSwitchName${id}`).prop('disabled', !value);
+  $(`#fSwitchMode${id}`).prop('disabled', !value);
+  $(`#fSwitchDefaultState${id}`).prop('disabled', !value);
 
   //nothing really to validate here.
   $(ele).addClass("is-valid");

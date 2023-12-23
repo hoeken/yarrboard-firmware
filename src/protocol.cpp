@@ -971,9 +971,6 @@ void handleConfigSwitch(JsonVariantConst input, JsonVariant output)
       strlcpy(input_channels[cid].name, input["name"] | "Input ?", sizeof(input_channels[cid].name));
       sprintf(prefIndex, "iptName%d", cid);
       preferences.putString(prefIndex, input_channels[cid].name);
-
-      //give them the updated config
-      return generateConfigJSON(output);
     }
 
     //switch mode
@@ -995,10 +992,27 @@ void handleConfigSwitch(JsonVariantConst input, JsonVariant output)
       //save to our storage
       sprintf(prefIndex, "iptEnabled%d", cid);
       preferences.putBool(prefIndex, enabled);
-
-      //give them the updated config
-      return generateConfigJSON(output);
     }
+
+    //default state
+    if (input.containsKey("defaultState"))
+    {
+      //is it too long?
+      if (strlen(input["defaultState"]) > sizeof(input_channels[cid].defaultState)-1)
+      {
+        char error[50];
+        sprintf(error, "Maximum default state length is %s characters.", sizeof(input_channels[cid].defaultState)-1);
+        return generateErrorJSON(output, error);
+      }
+
+      //save to our storage
+      strlcpy(input_channels[cid].defaultState, input["defaultState"] | "OFF", sizeof(input_channels[cid].defaultState));
+      sprintf(prefIndex, "iptDefault%d", cid);
+      preferences.putString(prefIndex, input_channels[cid].defaultState);
+    }
+
+    //give them the updated config
+    return generateConfigJSON(output);
   #else
     return generateErrorJSON(output, "Board does not have input channels.");
   #endif
@@ -1266,6 +1280,7 @@ void generateConfigJSON(JsonVariant output)
       output["switches"][i]["name"] = input_channels[i].name;
       output["switches"][i]["enabled"] = input_channels[i].isEnabled;
       output["switches"][i]["mode"] = InputChannel::getModeName(input_channels[i].mode);
+      output["switches"][i]["defaultState"] = input_channels[i].defaultState;
     }
   #endif
 

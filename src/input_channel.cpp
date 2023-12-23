@@ -88,20 +88,24 @@ void InputChannel::setup()
   //setup our pin
   pinMode(this->_pins[this->id], INPUT);
 
-  //load up our default state
-  // bool nextState = digitalRead(this->_pins[this->id]);
-  // if (this->mode == DIRECT)
-  //   this->state = nextState;
-  // else if (this->mode == INVERTING)
-  //   this->state = !nextState;
+  //default state
+  sprintf(prefIndex, "iptDefault%d", this->id);
+  if (preferences.isKey(prefIndex))
+    strlcpy(this->defaultState, preferences.getString(prefIndex).c_str(), sizeof(this->defaultState));
+  else
+    sprintf(this->defaultState, "OFF", this->id);
 
-  // //save our current value
-  // this->originalRaw = nextState;
+  //setup our default state
+  if (!strcmp(this->defaultState, "ON"))
+    this->state = true;
+  else
+    this->state = false;
 
-  // if (this->state)
-  //   rgb_channels[this->id].setRGB(0, 1.0, 0);
-  // else
-  //   rgb_channels[this->id].setRGB(0, 0, 0);
+  //set our rgb
+  if (this->state)
+    rgb_channels[this->id].setRGB(0, 1.0, 0);
+  else
+    rgb_channels[this->id].setRGB(0, 0, 0);
 }
 
 void InputChannel::update()
