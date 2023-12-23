@@ -1,9 +1,12 @@
 Firmware:
+    * switch from zero indexing to 1 indexing.  Ugh.
+        * all channel arrays shoudl be private: rgb_channels, etc
+        * make static getChannel() method for each type
+        * use that for verification and array access
     * tie led state to switch state
         * Switch dropdown on LED config (what LED to follow)
         * set on, off, trip colors
     * update forms to be consistent style (float labels)
-    * switch from zero indexing to 1 indexing.  Ugh.
     * go through and re-adjust the various page sizes for our different viewports
     * protocol documentation
     * wifi improvements:
@@ -19,6 +22,7 @@ Firmware:
     * completely bypass current sensing with fuse + 4 layer board (use bottom layer)
     * extend the busbar a little bit so the MEGA fuse and on-terminal fuses fit too.
     * better ADC for current sense: MCP3914 or MCP3564
+    * rename channels, should start with 1
 
 RGB Input:
     * switch to esp32-s3 module board (waveshare w/ castellated pins)
@@ -26,6 +30,7 @@ RGB Input:
     * remove the MISO line from rgb chip completely, doesnt work.
     * drop the ADC - make a separate board
     * pin header to connect to rgb button board
+    * rename channels, should start with 1
 
 RGB Button Board:
     * number buttons/leds like pins on a chip
@@ -35,6 +40,7 @@ RGB Button Board:
     * center the button pads
     * possibly extra 0.5 or 1mm spacing between the 2x2 modules
     * remove entire ring of soldermask
+    * rename channels, should start with 1
 
 Electronics:
     * update 3dp case for 8ch mosfet
