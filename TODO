@@ -2,8 +2,8 @@ Firmware:
     * tie led state to switch state
         * Switch dropdown on LED config (what LED to follow)
         * set on, off, trip colors
-    * switch from zero indexing to 1 indexing.  Ugh.
     * update forms to be consistent style (float labels)
+    * switch from zero indexing to 1 indexing.  Ugh.
     * go through and re-adjust the various page sizes for our different viewports
     * protocol documentation
     * wifi improvements:

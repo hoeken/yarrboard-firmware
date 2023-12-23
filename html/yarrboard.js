@@ -49,7 +49,7 @@ const page_permissions = {
 
 const BoardNameEdit = (name) => `
 <div class="col-12">
-  <h5>Board Name</h5>
+  <h4>Board Name</h4>
   <input type="text" class="form-control" id="fBoardName" value="${name}">
   <div class="valid-feedback">Saved!</div>
   <div class="invalid-feedback">Must be 30 characters or less.</div>
