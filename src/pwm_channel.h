@@ -71,12 +71,14 @@ class PWMChannel
     void setDuty(float duty);
     void calculateAverages(unsigned int delta);
     const char * getState();
+
+    static bool isValidChannel(byte id);
+    static PWMChannel * getChannel(byte id);
 };
 
-extern PWMChannel pwm_channels[YB_PWM_CHANNEL_COUNT];
+//extern PWMChannel pwm_channels[YB_PWM_CHANNEL_COUNT];
 
 void pwm_channels_setup();
 void pwm_channels_loop();
-bool isValidPWMChannel(byte cid);
 
 #endif /* !YARR_PWM_CHANNEL_H */

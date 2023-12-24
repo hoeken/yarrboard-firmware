@@ -16,7 +16,7 @@
 PWMChannel pwm_channels[YB_PWM_CHANNEL_COUNT];
 
 //flag for hardware fade status
-static volatile bool isChannelFading[YB_FAN_COUNT];
+static volatile bool isChannelFading[YB_PWM_CHANNEL_COUNT];
 
 /* Setting PWM Properties */
 // ledc library range is a little bit quirky: https://github.com/espressif/arduino-esp32/issues/5089
@@ -37,7 +37,7 @@ static bool cb_ledc_fade_end_event(const ledc_cb_param_t *param, void *user_arg)
     portBASE_TYPE taskAwoken = pdFALSE;
 
     if (param->event == LEDC_FADE_END_EVT) {
-        isChannelFading[(int)user_arg] = false;
+        isChannelFading[(int)user_arg-1] = false;
     }
 
     return (taskAwoken == pdTRUE);
@@ -53,11 +53,12 @@ void pwm_channels_setup()
   //based on this issue: https://github.com/espressif/esp-idf/issues/5167
 
   //intitialize our channel
-  for (short i = 0; i < YB_PWM_CHANNEL_COUNT; i++)
+  for (byte i = 1; i <= YB_PWM_CHANNEL_COUNT; i++)
   {
-    pwm_channels[i].id = i;
-    pwm_channels[i].setup();
-    pwm_channels[i].setupLedc();
+    PWMChannel *ch = PWMChannel::getChannel(i);
+    ch->id = i;
+    ch->setup();
+    ch->setupLedc();
   }
 
   //fade function
@@ -65,10 +66,11 @@ void pwm_channels_setup()
   ledc_fade_func_install(0);
 
   
-  for (short i = 0; i < YB_PWM_CHANNEL_COUNT; i++)
+  for (byte i = 1; i <= YB_PWM_CHANNEL_COUNT; i++)
   {
-    pwm_channels[i].setupInterrupt(); //intitialize our interrupts for fading
-    pwm_channels[i].updateOutput(); //initialize our output with our defaults
+    PWMChannel *ch = PWMChannel::getChannel(i);
+    ch->setupInterrupt(); //intitialize our interrupts for fading
+    ch->updateOutput(); //initialize our output with our defaults
   }
 }
 
@@ -78,28 +80,21 @@ void pwm_channels_loop()
   bool doSendFastUpdate = false;
 
   //maintenance on our channels.
-  for (byte id = 0; id < YB_PWM_CHANNEL_COUNT; id++)
+  for (byte i = 1; i <= YB_PWM_CHANNEL_COUNT; i++)
   {
-    pwm_channels[id].checkAmperage();
-    pwm_channels[id].saveThrottledDutyCycle();
-    pwm_channels[id].checkIfFadeOver();
+    PWMChannel *ch = PWMChannel::getChannel(i);
+    ch->checkAmperage();
+    ch->saveThrottledDutyCycle();
+    ch->checkIfFadeOver();
 
     //flag for update?
-    if (pwm_channels[id].sendFastUpdate)
+    if (ch->sendFastUpdate)
       doSendFastUpdate = true;
   }
 
   //let the client know immediately.
   if (doSendFastUpdate)
     sendFastUpdate();
-}
-
-bool isValidPWMChannel(byte cid)
-{
-  if (cid < 0 || cid >= YB_PWM_CHANNEL_COUNT)
-    return false;
-  else
-    return true;
 }
 
 void PWMChannel::setup()
@@ -176,18 +171,18 @@ void PWMChannel::setupLedc()
 {
   //deinitialize our pin.
   //ledc_fade_func_uninstall();
-  ledcDetachPin(this->_pins[this->id]);
+  ledcDetachPin(this->_pins[this->id-1]);
 
   //initialize our PWM channels
-  ledcSetup(this->id, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION);
-  ledcAttachPin(this->_pins[this->id], this->id);
-  ledcWrite(this->id, 0);
+  ledcSetup(this->id-1, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION);
+  ledcAttachPin(this->_pins[this->id-1], this->id-1);
+  ledcWrite(this->id-1, 0);
 }
 
 void PWMChannel::setupInterrupt()
 {
-  int channel = this->id;
-  isChannelFading[this->id] = false;
+  int channel = this->id-1;
+  isChannelFading[channel] = false;
 
   ledc_cbs_t callbacks = {
       .fade_cb = cb_ledc_fade_end_event
@@ -230,8 +225,8 @@ void PWMChannel::updateOutput()
     pwm = 0;
 
   //okay, set our pin state.
-  if (!isChannelFading[this->id])
-    ledcWrite(this->id, pwm);
+  if (!isChannelFading[this->id-1])
+    ledcWrite(this->id-1, pwm);
 }
 
 float PWMChannel::toAmperage(float voltage)
@@ -290,7 +285,7 @@ void PWMChannel::checkSoftFuse()
 void PWMChannel::setFade(float duty, int max_fade_time_ms)
 {
   // is our earlier hardware fade over yet?
-  if (!isChannelFading[this->id])
+  if (!isChannelFading[this->id-1])
   {
     //dutyCycle is a default - will be non-zero when state is off
     if (this->state)
@@ -302,7 +297,7 @@ void PWMChannel::setFade(float duty, int max_fade_time_ms)
     this->state = true;
 
     //some vars for tracking.
-    isChannelFading[this->id] = true;
+    isChannelFading[this->id-1] = true;
     this->fadeRequested = true;
 
     this->fadeDutyCycleEnd = duty;
@@ -311,7 +306,7 @@ void PWMChannel::setFade(float duty, int max_fade_time_ms)
 
     //call our hardware fader
     int target_duty = duty * MAX_DUTY_CYCLE;
-    ledc_set_fade_time_and_start(LEDC_HIGH_SPEED_MODE, (ledc_channel_t)this->id, target_duty, max_fade_time_ms, LEDC_FADE_NO_WAIT);
+    ledc_set_fade_time_and_start(LEDC_HIGH_SPEED_MODE, (ledc_channel_t)(this->id-1), target_duty, max_fade_time_ms, LEDC_FADE_NO_WAIT);
   }
 }
 
@@ -325,9 +320,9 @@ void PWMChannel::checkIfFadeOver()
     {
       //this is a potential bug fix.. had the board "lock" into a fade.
       //it was responsive but wouldnt toggle some pins.  I think it was this flag not getting cleared
-      if (isChannelFading[this->id])
+      if (isChannelFading[this->id-1])
       {
-        isChannelFading[this->id];
+        isChannelFading[this->id-1];
         Serial.println("error fading");
       }
 
@@ -422,7 +417,7 @@ void PWMChannel::setState(bool state)
   if (this->state != state || this->tripped)
   {
     //this can crash after long fading sessions, reset it with a manual toggle
-    //isChannelFading[this->id] = false;
+    //isChannelFading[this->id-1] = false;
 
     //keep track of how many toggles
     this->stateChangeCount++;
@@ -450,6 +445,22 @@ const char * PWMChannel::getState()
     return "ON";
   else
     return "OFF";
+}
+
+bool PWMChannel::isValidChannel(byte id)
+{
+  if (id < 1 || id > YB_PWM_CHANNEL_COUNT)
+    return false;
+  else
+    return true;
+}
+
+PWMChannel * PWMChannel::getChannel(byte id)
+{
+  if (PWMChannel::isValidChannel(id))
+    return &pwm_channels[id-1];
+  else
+    return NULL;
 }
 
 #endif

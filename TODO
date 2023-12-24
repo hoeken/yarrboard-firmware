@@ -1,5 +1,6 @@
 Firmware:
     * switch from zero indexing to 1 indexing.  Ugh.
+        * isChannelFading
         * all channel arrays shoudl be private: rgb_channels, etc
         * make static getChannel() method for each type
         * use that for verification and array access

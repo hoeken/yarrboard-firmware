@@ -74,13 +74,16 @@ void fans_loop()
         float amps_avg = 0;
         float amps_max = 0;
         byte enabled_count = 0;
-        for (byte id=0; id<YB_PWM_CHANNEL_COUNT; id++)
+
+        for (byte i = 1; i <= YB_PWM_CHANNEL_COUNT; i++)
         {
-            //only count enabled channels
-            if (pwm_channels[id].isEnabled)
+            PWMChannel *ch = PWMChannel::getChannel(i);
+
+           //only count enabled channels
+            if (ch->isEnabled)
             {
-                amps_avg += pwm_channels[id].amperage;
-                amps_max = max(amps_max, pwm_channels[id].amperage);
+                amps_avg += ch->amperage;
+                amps_max = max(amps_max, ch->amperage);
                 enabled_count++;
             }
         }

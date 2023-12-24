@@ -32,8 +32,11 @@ void network_setup()
     strlcpy(local_hostname, preferences.getString("local_hostname").c_str(), sizeof(local_hostname));
 
   #ifdef YB_HAS_PWM_CHANNELS
-    for (byte i=0; i<YB_PWM_CHANNEL_COUNT; i++)
-      strlcpy(pwm_channels[i].source, local_hostname, sizeof(local_hostname));
+    for (byte i = 1; i <= YB_PWM_CHANNEL_COUNT; i++)
+    {
+      PWMChannel *ch = PWMChannel::getChannel(i);
+      strlcpy(ch->source, local_hostname, sizeof(ch->source));
+    }
   #endif
 
   #ifdef YB_HAS_INPUT_CHANNELS
