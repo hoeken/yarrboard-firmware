@@ -1,8 +1,4 @@
 Firmware:
-    * switch from zero indexing to 1 indexing.  Ugh.
-        * all channel arrays shoudl be private: rgb_channels, etc
-        * make static getChannel() method for each type
-        * use that for verification and array access
     * tie led state to switch state
         * Switch dropdown on LED config (what LED to follow)
         * set on, off, trip colors
@@ -14,15 +10,13 @@ Firmware:
         * wifi should reconnect on failure
 
 8ch MOSFET:
-    * switch to esp32-s3 module board (waveshare w/ castellated pins)
-    * add voltage detector to each channel for bypass detection - another mcp3208 + bus voltage divider circuit
-    * maybe switch to "pcb welding terminal" connection like 74650073R or C5370858 or C3029538
-        * or at least a 9.5mm pitch barrier terminal like C496131 or C430699 or C430687 or C707586
     * move to 4 layer design signal / gnd / gnd / signal
+    * switch to ESP32-S3-DEV-KIT-N8R8 module board (waveshare w/ castellated pins)
+    * better ADC for current sense: MCP3564R
+    * switch to "pcb welding terminal" connection: T44001
+    * switch to M4 on busbar
     * completely bypass current sensing with fuse + 4 layer board (use bottom layer)
     * extend the busbar a little bit so the MEGA fuse and on-terminal fuses fit too.
-    * better ADC for current sense: MCP3914 or MCP3564
-    * rename channels, should start with 1
 
 RGB Input:
     * switch to esp32-s3 module board (waveshare w/ castellated pins)
@@ -30,16 +24,6 @@ RGB Input:
     * remove the MISO line from rgb chip completely, doesnt work.
     * drop the ADC - make a separate board
     * pin header to connect to rgb button board
-    * rename channels, should start with 1
-
-RGB Button Board:
-    * number buttons/leds like pins on a chip
-    * flip the connector pins
-    * pin header to connect to rgb input board
-    * same size / hole spacing as rgb input board
-    * center the button pads
-    * possibly extra 0.5 or 1mm spacing between the 2x2 modules
-    * remove entire ring of soldermask
     * rename channels, should start with 1
 
 Electronics:
