@@ -32,7 +32,7 @@ void navico_loop()
             url = "http://" + WiFi.localIP().toString() + ":80";
 
         //generate our config JSON
-        StaticJsonDocument<512> doc;
+        JsonDocument doc;
 
         doc["Version"] = "1";
         doc["Source"] = board_name;
