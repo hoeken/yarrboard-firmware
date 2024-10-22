@@ -157,14 +157,14 @@ void handleSerialJson() {
 void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
                         PsychicWebSocketClient *connection) {
   // make sure its correct
-  if (!input.containsKey("cmd"))
+  if (!input["cmd"].is<JsonVariant>())
     return generateErrorJSON(output, "'cmd' is a required parameter.");
 
   // what is your command?
   const char *cmd = input["cmd"];
 
   // let the client keep track of messages
-  if (input.containsKey("msgid")) {
+  if (input["msgid"].is<JsonVariant>()) {
     unsigned int msgid = input["msgid"];
     output["status"] = "ok";
     output["msgid"] = msgid;
@@ -268,7 +268,7 @@ void generateHelloJSON(JsonVariant output, UserRole role) {
 }
 
 void handleSetBoardName(JsonVariantConst input, JsonVariant output) {
-  if (!input.containsKey("value"))
+  if (!input["value"].is<JsonVariant>())
     return generateErrorJSON(output, "'value' is a required parameter");
 
   // is it too long?
@@ -296,13 +296,13 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output) {
   char error[50];
 
   // error checking
-  if (!input.containsKey("wifi_mode"))
+  if (!input["wifi_mode"].is<JsonVariant>())
     return generateErrorJSON(output, "'wifi_mode' is a required parameter");
-  if (!input.containsKey("wifi_ssid"))
+  if (!input["wifi_ssid"].is<JsonVariant>())
     return generateErrorJSON(output, "'wifi_ssid' is a required parameter");
-  if (!input.containsKey("wifi_pass"))
+  if (!input["wifi_pass"].is<JsonVariant>())
     return generateErrorJSON(output, "'wifi_pass' is a required parameter");
-  if (!input.containsKey("local_hostname"))
+  if (!input["local_hostname"].is<JsonVariant>())
     return generateErrorJSON(output,
                              "'local_hostname' is a required parameter");
 
@@ -395,15 +395,15 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output) {
 void handleSetAppConfig(JsonVariantConst input, JsonVariant output) {
   bool old_app_enable_ssl = app_enable_ssl;
 
-  if (!input.containsKey("admin_user"))
+  if (!input["admin_user"].is<JsonVariant>())
     return generateErrorJSON(output, "'admin_user' is a required parameter");
-  if (!input.containsKey("admin_pass"))
+  if (!input["admin_pass"].is<JsonVariant>())
     return generateErrorJSON(output, "'admin_pass' is a required parameter");
-  if (!input.containsKey("guest_user"))
+  if (!input["guest_user"].is<JsonVariant>())
     return generateErrorJSON(output, "'guest_user' is a required parameter");
-  if (!input.containsKey("guest_pass"))
+  if (!input["guest_pass"].is<JsonVariant>())
     return generateErrorJSON(output, "'guest_pass' is a required parameter");
-  if (!input.containsKey("default_role"))
+  if (!input["default_role"].is<JsonVariant>())
     return generateErrorJSON(output, "'default_role' is a required parameter");
 
   // username length checker
@@ -456,7 +456,7 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output) {
   app_enable_serial = input["app_enable_serial"];
   app_enable_ssl = input["app_enable_ssl"];
 
-  if (input.containsKey("app_update_interval")) {
+  if (input["app_update_interval"].is<JsonVariant>()) {
     app_update_interval = input["app_update_interval"] | 500;
     app_update_interval = max(100, (int)app_update_interval);
     app_update_interval = min(5000, (int)app_update_interval);
@@ -491,10 +491,10 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output) {
 
 void handleLogin(JsonVariantConst input, JsonVariant output, YBMode mode,
                  PsychicWebSocketClient *connection) {
-  if (!input.containsKey("user"))
+  if (!input["user"].is<JsonVariant>())
     return generateErrorJSON(output, "'user' is a required parameter");
 
-  if (!input.containsKey("pass"))
+  if (!input["pass"].is<JsonVariant>())
     return generateErrorJSON(output, "'pass' is a required parameter");
 
   // init
@@ -587,7 +587,7 @@ void handleSetPWMChannel(JsonVariantConst input, JsonVariant output) {
   char prefIndex[YB_PREF_KEY_LENGTH];
 
   // id is required
-  if (!input.containsKey("id"))
+  if (!input["id"].is<JsonVariant>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
   // is it a valid channel?
@@ -600,7 +600,7 @@ void handleSetPWMChannel(JsonVariantConst input, JsonVariant output) {
     return generateErrorJSON(output, "Channel is not enabled.");
 
   // our duty cycle
-  if (input.containsKey("duty")) {
+  if (input["duty"].is<JsonVariant>()) {
     // is it enabled?
     if (!pwm_channels[cid].isEnabled)
       return generateErrorJSON(output, "Channel is not enabled.");
@@ -621,9 +621,9 @@ void handleSetPWMChannel(JsonVariantConst input, JsonVariant output) {
   }
 
   // change state
-  if (input.containsKey("state")) {
+  if (input["state"].is<JsonVariant>()) {
     // source is required
-    if (!input.containsKey("source"))
+    if (!input["source"].is<JsonVariant>())
       return generateErrorJSON(output, "'source' is a required parameter");
 
     // check the length
@@ -659,7 +659,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output) {
   char prefIndex[YB_PREF_KEY_LENGTH];
 
   // id is required
-  if (!input.containsKey("id"))
+  if (!input["id"].is<JsonVariant>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
   // is it a valid channel?
@@ -668,7 +668,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output) {
     return generateErrorJSON(output, "Invalid channel id");
 
   // channel name
-  if (input.containsKey("name")) {
+  if (input["name"].is<JsonVariant>()) {
     // is it too long?
     if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
       char error[50];
@@ -688,7 +688,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output) {
   }
 
   // channel type
-  if (input.containsKey("type")) {
+  if (input["type"].is<JsonVariant>()) {
     // is it too long?
     if (strlen(input["type"]) > YB_TYPE_LENGTH - 1) {
       char error[50];
@@ -708,7 +708,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output) {
   }
 
   // default state
-  if (input.containsKey("defaultState")) {
+  if (input["defaultState"].is<JsonVariant>()) {
     // is it too long?
     if (strlen(input["defaultState"]) >
         sizeof(pwm_channels[cid].defaultState) - 1) {
@@ -729,7 +729,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output) {
   }
 
   // dimmability
-  if (input.containsKey("isDimmable")) {
+  if (input["isDimmable"].is<JsonVariant>()) {
     bool isDimmable = input["isDimmable"];
     pwm_channels[cid].isDimmable = isDimmable;
 
@@ -742,7 +742,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output) {
   }
 
   // enabled
-  if (input.containsKey("enabled")) {
+  if (input["enabled"].is<JsonVariant>()) {
     // save right nwo.
     bool enabled = input["enabled"];
     pwm_channels[cid].isEnabled = enabled;
@@ -756,7 +756,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output) {
   }
 
   // soft fuse
-  if (input.containsKey("softFuse")) {
+  if (input["softFuse"].is<JsonVariant>()) {
     // i crave validation!
     float softFuse = input["softFuse"];
     softFuse = constrain(softFuse, 0.01, 20.0);
@@ -779,7 +779,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output) {
 void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output) {
 #ifdef YB_HAS_PWM_CHANNELS
   // id is required
-  if (!input.containsKey("id"))
+  if (!input["id"].is<JsonVariant>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
   // is it a valid channel?
@@ -788,7 +788,7 @@ void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output) {
     return generateErrorJSON(output, "Invalid channel id");
 
   // source is required
-  if (!input.containsKey("source"))
+  if (!input["source"].is<JsonVariant>())
     return generateErrorJSON(output, "'source' is a required parameter");
 
   // check the length
@@ -821,11 +821,11 @@ void handleFadePWMChannel(JsonVariantConst input, JsonVariant output) {
   unsigned long t1, t2, t3, t4 = 0;
 
   // id is required
-  if (!input.containsKey("id"))
+  if (!input["id"].is<JsonVariant>())
     return generateErrorJSON(output, "'id' is a required parameter");
-  if (!input.containsKey("duty"))
+  if (!input["duty"].is<JsonVariant>())
     return generateErrorJSON(output, "'duty' is a required parameter");
-  if (!input.containsKey("millis"))
+  if (!input["millis"].is<JsonVariant>())
     return generateErrorJSON(output, "'millis' is a required parameter");
 
   // is it a valid channel?
@@ -868,7 +868,7 @@ void handleFadePWMChannel(JsonVariantConst input, JsonVariant output) {
 void handleSetSwitch(JsonVariantConst input, JsonVariant output) {
 #ifdef YB_HAS_INPUT_CHANNELS
   // id is required
-  if (!input.containsKey("id"))
+  if (!input["id"].is<JsonVariant>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
   // is it a valid channel?
@@ -877,11 +877,11 @@ void handleSetSwitch(JsonVariantConst input, JsonVariant output) {
     return generateErrorJSON(output, "Invalid channel id");
 
   // state is required
-  if (!input.containsKey("state"))
+  if (!input["state"].is<JsonVariant>())
     return generateErrorJSON(output, "'state' is a required parameter");
 
   // source is required
-  if (!input.containsKey("source"))
+  if (!input["source"].is<JsonVariant>())
     return generateErrorJSON(output, "'source' is a required parameter");
 
   // check the length
@@ -912,7 +912,7 @@ void handleConfigSwitch(JsonVariantConst input, JsonVariant output) {
   char prefIndex[YB_PREF_KEY_LENGTH];
 
   // id is required
-  if (!input.containsKey("id"))
+  if (!input["id"].is<JsonVariant>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
   // is it a valid channel?
@@ -921,7 +921,7 @@ void handleConfigSwitch(JsonVariantConst input, JsonVariant output) {
     return generateErrorJSON(output, "Invalid channel id");
 
   // channel name
-  if (input.containsKey("name")) {
+  if (input["name"].is<JsonVariant>()) {
     // is it too long?
     if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
       char error[50];
@@ -938,7 +938,7 @@ void handleConfigSwitch(JsonVariantConst input, JsonVariant output) {
   }
 
   // switch mode
-  if (input.containsKey("mode")) {
+  if (input["mode"].is<JsonVariant>()) {
     String tempMode = input["mode"] | "DIRECT";
     input_channels[cid].mode = InputChannel::getMode(tempMode);
     sprintf(prefIndex, "iptMode%d", cid);
@@ -946,7 +946,7 @@ void handleConfigSwitch(JsonVariantConst input, JsonVariant output) {
   }
 
   // enabled
-  if (input.containsKey("enabled")) {
+  if (input["enabled"].is<JsonVariant>()) {
     // save right nwo.
     bool enabled = input["enabled"];
     input_channels[cid].isEnabled = enabled;
@@ -957,7 +957,7 @@ void handleConfigSwitch(JsonVariantConst input, JsonVariant output) {
   }
 
   // default state
-  if (input.containsKey("defaultState")) {
+  if (input["defaultState"].is<JsonVariant>()) {
     // is it too long?
     if (strlen(input["defaultState"]) >
         sizeof(input_channels[cid].defaultState) - 1) {
@@ -986,7 +986,7 @@ void handleConfigRGB(JsonVariantConst input, JsonVariant output) {
   char prefIndex[YB_PREF_KEY_LENGTH];
 
   // id is required
-  if (!input.containsKey("id"))
+  if (!input["id"].is<JsonVariant>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
   // is it a valid channel?
@@ -995,7 +995,7 @@ void handleConfigRGB(JsonVariantConst input, JsonVariant output) {
     return generateErrorJSON(output, "Invalid channel id");
 
   // channel name
-  if (input.containsKey("name")) {
+  if (input["name"].is<JsonVariant>()) {
     // is it too long?
     if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
       char error[50];
@@ -1015,7 +1015,7 @@ void handleConfigRGB(JsonVariantConst input, JsonVariant output) {
   }
 
   // enabled
-  if (input.containsKey("enabled")) {
+  if (input["enabled"].is<JsonVariant>()) {
     // save right nwo.
     bool enabled = input["enabled"];
     rgb_channels[cid].isEnabled = enabled;
@@ -1037,7 +1037,7 @@ void handleSetRGB(JsonVariantConst input, JsonVariant output) {
   char prefIndex[YB_PREF_KEY_LENGTH];
 
   // id is required
-  if (!input.containsKey("id"))
+  if (!input["id"].is<JsonVariant>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
   // is it a valid channel?
@@ -1046,14 +1046,14 @@ void handleSetRGB(JsonVariantConst input, JsonVariant output) {
     return generateErrorJSON(output, "Invalid channel id");
 
   // new color?
-  if (input.containsKey("red") || input.containsKey("green") ||
-      input.containsKey("blue")) {
+  if (input["red"].is<JsonVariant>() || input["green"].is<JsonVariant>() ||
+      input["blue"].is<JsonVariant>()) {
     float red = rgb_channels[cid].red;
     float green = rgb_channels[cid].green;
     float blue = rgb_channels[cid].blue;
 
     // what do we hate?  va-li-date!
-    if (input.containsKey("red")) {
+    if (input["red"].is<JsonVariant>()) {
       red = input["red"];
       if (red < 0)
         return generateErrorJSON(output, "Red must be >= 0");
@@ -1062,7 +1062,7 @@ void handleSetRGB(JsonVariantConst input, JsonVariant output) {
     }
 
     // what do we hate?  va-li-date!
-    if (input.containsKey("green")) {
+    if (input["green"].is<JsonVariant>()) {
       green = input["green"];
       if (green < 0)
         return generateErrorJSON(output, "Green must be >= 0");
@@ -1071,7 +1071,7 @@ void handleSetRGB(JsonVariantConst input, JsonVariant output) {
     }
 
     // what do we hate?  va-li-date!
-    if (input.containsKey("blue")) {
+    if (input["blue"].is<JsonVariant>()) {
       blue = input["blue"];
       if (blue < 0)
         return generateErrorJSON(output, "Blue must be >= 0");
@@ -1091,7 +1091,7 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output) {
   char prefIndex[YB_PREF_KEY_LENGTH];
 
   // id is required
-  if (!input.containsKey("id"))
+  if (!input["id"].is<JsonVariant>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
   // is it a valid channel?
@@ -1100,7 +1100,7 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output) {
     return generateErrorJSON(output, "Invalid channel id");
 
   // channel name
-  if (input.containsKey("name")) {
+  if (input["name"].is<JsonVariant>()) {
     // is it too long?
     if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
       char error[50];
@@ -1120,7 +1120,7 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output) {
   }
 
   // enabled
-  if (input.containsKey("enabled")) {
+  if (input["enabled"].is<JsonVariant>()) {
     // save right nwo.
     bool enabled = input["enabled"];
     adc_channels[cid].isEnabled = enabled;
@@ -1138,7 +1138,7 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output) {
 }
 
 void handleSetTheme(JsonVariantConst input, JsonVariant output) {
-  if (!input.containsKey("theme"))
+  if (!input["theme"].is<JsonVariant>())
     return generateErrorJSON(output, "'theme' is a required parameter");
 
   String temp = input["theme"];
@@ -1153,7 +1153,7 @@ void handleSetTheme(JsonVariantConst input, JsonVariant output) {
 }
 
 void handleSetBrightness(JsonVariantConst input, JsonVariant output) {
-  if (input.containsKey("brightness")) {
+  if (input["brightness"].is<JsonVariant>()) {
     float brightness = input["brightness"];
 
     // what do we hate?  va-li-date!
