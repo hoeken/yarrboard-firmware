@@ -10,7 +10,6 @@
 #define YARR_FANS_H
 
 extern int fans_last_rpm[YB_FAN_COUNT];
-byte fan_pwm_pins[YB_FAN_COUNT] = YB_FAN_PWM_PINS;
 
 void fans_setup();
 void fans_loop();

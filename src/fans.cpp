@@ -16,9 +16,10 @@
 
 // Lots of code borrowed from: https://github.com/KlausMu/esp32-fan-controller
 
-byte fan_tach_pins[YB_FAN_COUNT] = YB_FAN_TACH_PINS;
 // use the pwm channel directly after our PWM channels
 byte fan_pwm_channel = YB_PWM_CHANNEL_COUNT;
+byte fan_pwm_pins[YB_FAN_COUNT] = YB_FAN_PWM_PINS;
+byte fan_tach_pins[YB_FAN_COUNT] = YB_FAN_TACH_PINS;
 
 static volatile int counter_rpm[YB_FAN_COUNT];
 unsigned long last_tacho_measurement[YB_FAN_COUNT];
