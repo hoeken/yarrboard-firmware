@@ -8,33 +8,3 @@ Firmware:
     * wifi improvements:
         * wifi connection fail should default to AP mode
         * wifi should reconnect on failure
-
-8ch MOSFET:
-    * move to 4 layer design signal / gnd / gnd / signal
-    * switch to ESP32-S3-DEV-KIT-N8R8 module board (waveshare w/ castellated pins)
-    * better ADC for current sense: MCP3564R
-    * switch to "pcb welding terminal" connection: T44001
-    * switch to M4 on busbar
-    * completely bypass current sensing with fuse + 4 layer board (use bottom layer)
-    * extend the busbar a little bit so the MEGA fuse and on-terminal fuses fit too.
-
-RGB Input:
-    * switch to esp32-s3 module board (waveshare w/ castellated pins)
-    * move to 4 layer design signal / gnd / gnd / signal
-    * remove the MISO line from rgb chip completely, doesnt work.
-    * drop the ADC - make a separate board
-    * pin header to connect to rgb button board
-    * rename channels, should start with 1
-
-Electronics:
-    * update 3dp case for 8ch mosfet
-
-Long Term Ideas:
-    * ADC board
-        * best ADC chip available
-        * figure out how to support the widest variety of inputs
-    * Relay board - DC or AC?
-    * Motor driver / H bridge?
-    * attempt to migrate to esp32 arduino 3.0: https://docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html
-    * manual OTA upload
-    * learn about building components for node-red, maybe make a yarrboard toolkit
