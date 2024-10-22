@@ -12,8 +12,8 @@
 #include <Arduino.h>
 #include <MCP3208.h>
 #include <MCP342x.h>
+#include <MCP3x6x.h>
 #include <Wire.h>
-#include <lib/MCP3x6x/MCP3x6x.h>
 
 #include "config.h"
 
