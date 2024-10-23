@@ -1,6 +1,6 @@
 /*
   Yarrboard
-  
+
   Author: Zach Hoeken <hoeken@gmail.com>
   Website: https://github.com/hoeken/yarrboard
   License: GPLv3
@@ -9,10 +9,10 @@
 #ifndef YARR_NETWORK_H
 #define YARR_NETWORK_H
 
-#include <WiFi.h>
+#include "config.h"
 #include <DNSServer.h>
 #include <ESPmDNS.h>
-#include "config.h"
+#include <WiFi.h>
 
 extern IPAddress apIP;
 extern char wifi_ssid[YB_WIFI_SSID_LENGTH];

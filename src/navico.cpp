@@ -21,7 +21,8 @@ WiFiUDP Udp;
 
 // This code borrowed from the SignalK project:
 // https://github.com/SignalK/signalk-server/blob/master/src/interfaces/mfd_webapp.ts
-void navico_loop() {
+void navico_loop()
+{
   if (millis() - lastNavicoPublishMillis > 10000) {
     // which protocol to use?
     if (app_enable_ssl)
@@ -50,13 +51,13 @@ void navico_loop() {
     BrowserPanel["ProgressBarEnable"] = true;
 
     JsonObject BrowserPanel_MenuText_0 =
-        BrowserPanel["MenuText"].add<JsonObject>();
+      BrowserPanel["MenuText"].add<JsonObject>();
     BrowserPanel_MenuText_0["Language"] = "en";
     BrowserPanel_MenuText_0["Name"] = "Home";
 
     // make our dynamic buffer for the output
     size_t jsonSize = measureJson(doc);
-    char *jsonBuffer = (char *)malloc(jsonSize + 1);
+    char* jsonBuffer = (char*)malloc(jsonSize + 1);
     jsonBuffer[jsonSize] = '\0'; // null terminate
 
     // did we get anything?

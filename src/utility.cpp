@@ -1,6 +1,6 @@
 /*
   Yarrboard
-  
+
   Author: Zach Hoeken <hoeken@gmail.com>
   Website: https://github.com/hoeken/yarrboard
   License: GPLv3
@@ -8,19 +8,22 @@
 
 #include "utility.h"
 
-double round2(double value) {
+double round2(double value)
+{
   return (long)(value * 100 + 0.5) / 100.0;
 }
 
-double round3(double value) {
+double round3(double value)
+{
   return (long)(value * 1000 + 0.5) / 1000.0;
 }
 
-double round4(double value) {
+double round4(double value)
+{
   return (long)(value * 10000 + 0.5) / 10000.0;
 }
 
-//variables for our framerate
+// variables for our framerate
 int tickindex = 0;
 int ticklist[YB_FPS_SAMPLES];
 unsigned long ticksum = 0;
@@ -32,11 +35,11 @@ unsigned int framerate = 0;
 // from: https://stackoverflow.com/questions/87304/calculating-frames-per-second-in-a-game
 double calculateFramerate(int newtick)
 {
-  ticksum -= ticklist[tickindex];  /* subtract value falling off */
-  ticksum += newtick;              /* add new value */
-  ticklist[tickindex] = newtick;   /* save new value so it can be subtracted later */
+  ticksum -= ticklist[tickindex];               /* subtract value falling off */
+  ticksum += newtick;                           /* add new value */
+  ticklist[tickindex] = newtick;                /* save new value so it can be subtracted later */
   tickindex = (tickindex + 1) % YB_FPS_SAMPLES; /* inc buffer index */
 
   /* return average */
-  return((ticksum * 1000)/YB_FPS_SAMPLES);
+  return ((ticksum * 1000) / YB_FPS_SAMPLES);
 }

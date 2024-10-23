@@ -18,27 +18,27 @@
 #include <LittleFS.h>
 
 #ifdef YB_HAS_PWM_CHANNELS
-#include "pwm_channel.h"
+  #include "pwm_channel.h"
 #endif
 
 #ifdef YB_HAS_INPUT_CHANNELS
-#include "input_channel.h"
+  #include "input_channel.h"
 #endif
 
 #ifdef YB_HAS_ADC_CHANNELS
-#include "adc_channel.h"
+  #include "adc_channel.h"
 #endif
 
 #ifdef YB_HAS_RGB_CHANNELS
-#include "rgb_channel.h"
+  #include "rgb_channel.h"
 #endif
 
 #ifdef YB_HAS_FANS
-#include "fans.h"
+  #include "fans.h"
 #endif
 
 #ifdef YB_HAS_BUS_VOLTAGE
-#include "bus_voltage.h"
+  #include "bus_voltage.h"
 #endif
 
 unsigned long lastFrameMillis = 0;
@@ -46,7 +46,8 @@ unsigned long lastFrameMillis = 0;
 // 16kb stack size.
 // SET_LOOP_TASK_STACK_SIZE(16*1024);
 
-void setup() {
+void setup()
+{
   // startup our serial
   Serial.begin(115200);
   Serial.setTimeout(50);
@@ -116,7 +117,8 @@ void setup() {
   Serial.println("Protocol ok");
 }
 
-void loop() {
+void loop()
+{
 // should be before RGB for fastest response
 #ifdef YB_HAS_INPUT_CHANNELS
   input_channels_loop();

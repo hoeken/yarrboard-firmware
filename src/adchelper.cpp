@@ -75,7 +75,7 @@ float esp32Helper::toVoltage(unsigned int reading)
 }
 
 MCP3208Helper::MCP3208Helper() : ADCHelper::ADCHelper() {}
-MCP3208Helper::MCP3208Helper(float vref, uint8_t channel, MCP3208 *adc)
+MCP3208Helper::MCP3208Helper(float vref, uint8_t channel, MCP3208* adc)
     : ADCHelper::ADCHelper(vref, 12)
 {
   this->channel = channel;
@@ -91,7 +91,7 @@ unsigned int MCP3208Helper::getReading()
 }
 
 MCP3564Helper::MCP3564Helper() : ADCHelper::ADCHelper() {}
-MCP3564Helper::MCP3564Helper(float vref, uint8_t channel, MCP3564 *adc)
+MCP3564Helper::MCP3564Helper(float vref, uint8_t channel, MCP3564* adc)
     : ADCHelper::ADCHelper(vref, 12)
 {
   this->channel = channel;
@@ -100,23 +100,21 @@ MCP3564Helper::MCP3564Helper(float vref, uint8_t channel, MCP3564 *adc)
 
 unsigned int MCP3564Helper::getReading()
 {
-  // unsigned int reading =
-  //     this->adc->analogRead(_channelAddresses[this->channel]);
-  unsigned int reading = 0;
+  unsigned int reading = this->adc->analogRead(_channelAddresses[this->channel]);
   this->addReading(reading);
 
   return reading;
 }
 
 MCP3425Helper::MCP3425Helper() : ADCHelper::ADCHelper() {}
-MCP3425Helper::MCP3425Helper(float vref, MCP342x *adc)
+MCP3425Helper::MCP3425Helper(float vref, MCP342x* adc)
     : ADCHelper::ADCHelper(vref, 15)
 {
   this->adc = adc;
 }
 
 MCP342x::Config MCP3425_config(MCP342x::channel1, MCP342x::oneShot,
-                               MCP342x::resolution16, MCP342x::gain1);
+  MCP342x::resolution16, MCP342x::gain1);
 
 void MCP3425Helper::setup()
 {
@@ -136,11 +134,9 @@ unsigned int MCP3425Helper::getReading()
   uint8_t err;
 
   // do we need to trigger a conversion?
-  if (this->start_conversion)
-  {
+  if (this->start_conversion) {
     err = this->adc->convert(MCP3425_config);
-    if (err)
-    {
+    if (err) {
       Serial.print("MCP3425 convert error: ");
       Serial.println(err);
     }
@@ -149,8 +145,7 @@ unsigned int MCP3425Helper::getReading()
 
   // okay, is it ready?
   err = this->adc->read(value, status);
-  if (!err && status.isReady())
-  {
+  if (!err && status.isReady()) {
     // For debugging purposes print the return value.
     // Serial.print("Value: ");
     // Serial.println(value);
@@ -158,9 +153,7 @@ unsigned int MCP3425Helper::getReading()
     this->addReading(value);
 
     this->start_conversion = true;
-  }
-  else
-  {
+  } else {
     // Serial.print("ADC error: ");
     // Serial.println(err);
 

@@ -1,6 +1,6 @@
 /*
   Yarrboard
-  
+
   Author: Zach Hoeken <hoeken@gmail.com>
   Website: https://github.com/hoeken/yarrboard
   License: GPLv3
@@ -12,5 +12,5 @@ Preferences preferences;
 
 void prefs_setup()
 {
-    preferences.begin("yarrboard", false);
+  preferences.begin("yarrboard", false);
 }

@@ -10,7 +10,7 @@
 
 #ifdef YB_HAS_PWM_CHANNELS
 
-#include "pwm_channel.h"
+  #include "pwm_channel.h"
 
 // the main star of the event
 PWMChannel pwm_channels[YB_PWM_CHANNEL_COUNT];
@@ -25,19 +25,20 @@ static volatile bool isChannelFading[YB_FAN_COUNT];
 // 1);
 const unsigned int MAX_DUTY_CYCLE = (int)(pow(2, YB_PWM_CHANNEL_RESOLUTION));
 
-#ifdef YB_PWM_CHANNEL_ADC_DRIVER_MCP3564
+  #ifdef YB_PWM_CHANNEL_ADC_DRIVER_MCP3564
 MCP3564 _adcCurrentMCP3564(YB_PWM_CHANNEL_ADC_CS);
-#elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
+  #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
 MCP3208 _adcCurrentMCP3208;
-#endif
+  #endif
 
 /*
  * This callback function will be called when fade operation has ended
  * Use callback only if you are aware it is being called inside an ISR
  * Otherwise, you can use a semaphore to unblock tasks
  */
-static bool cb_ledc_fade_end_event(const ledc_cb_param_t *param,
-                                   void *user_arg) {
+static bool cb_ledc_fade_end_event(const ledc_cb_param_t* param,
+  void* user_arg)
+{
   portBASE_TYPE taskAwoken = pdFALSE;
 
   if (param->event == LEDC_FADE_END_EVT) {
@@ -47,12 +48,13 @@ static bool cb_ledc_fade_end_event(const ledc_cb_param_t *param,
   return (taskAwoken == pdTRUE);
 }
 
-void pwm_channels_setup() {
-#ifdef YB_PWM_CHANNEL_ADC_DRIVER_MCP3564
+void pwm_channels_setup()
+{
+  #ifdef YB_PWM_CHANNEL_ADC_DRIVER_MCP3564
   _adcCurrentMCP3564.begin();
-#elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
+  #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
   _adcCurrentMCP3208.begin(YB_PWM_CHANNEL_ADC_CS);
-#endif
+  #endif
 
   // the init here needs to be done in a specific way, otherwise it will hang or
   // get caught in a crash loop if the board finished a fade during the last
@@ -75,7 +77,8 @@ void pwm_channels_setup() {
   }
 }
 
-void pwm_channels_loop() {
+void pwm_channels_loop()
+{
   // do we need to send an update?
   bool doSendFastUpdate = false;
 
@@ -95,21 +98,22 @@ void pwm_channels_loop() {
     sendFastUpdate();
 }
 
-bool isValidPWMChannel(byte cid) {
+bool isValidPWMChannel(byte cid)
+{
   if (cid < 0 || cid >= YB_PWM_CHANNEL_COUNT)
     return false;
   else
     return true;
 }
 
-void PWMChannel::setup() {
+void PWMChannel::setup()
+{
   char prefIndex[YB_PREF_KEY_LENGTH];
 
   // lookup our name
   sprintf(prefIndex, "pwmName%d", this->id);
   if (preferences.isKey(prefIndex))
-    strlcpy(this->name, preferences.getString(prefIndex).c_str(),
-            sizeof(this->name));
+    strlcpy(this->name, preferences.getString(prefIndex).c_str(), sizeof(this->name));
   else
     sprintf(this->name, "PWM #%d", this->id);
 
@@ -152,24 +156,22 @@ void PWMChannel::setup() {
   // type
   sprintf(prefIndex, "pwmType%d", this->id);
   if (preferences.isKey(prefIndex))
-    strlcpy(this->type, preferences.getString(prefIndex).c_str(),
-            sizeof(this->type));
+    strlcpy(this->type, preferences.getString(prefIndex).c_str(), sizeof(this->type));
   else
     sprintf(this->type, "other", this->id);
 
   // default state
   sprintf(prefIndex, "pwmDefault%d", this->id);
   if (preferences.isKey(prefIndex))
-    strlcpy(this->defaultState, preferences.getString(prefIndex).c_str(),
-            sizeof(this->defaultState));
+    strlcpy(this->defaultState, preferences.getString(prefIndex).c_str(), sizeof(this->defaultState));
   else
     sprintf(this->defaultState, "OFF", this->id);
 
-#ifdef YB_PWM_CHANNEL_ADC_DRIVER_MCP3564
+  #ifdef YB_PWM_CHANNEL_ADC_DRIVER_MCP3564
   this->adcHelper = new MCP3564Helper(3.3, this->id, &_adcCurrentMCP3564);
-#elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
+  #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
   this->adcHelper = new MCP3208Helper(3.3, this->id, &_adcCurrentMCP3208);
-#endif
+  #endif
 
   // setup our default state
   if (!strcmp(this->defaultState, "ON"))
@@ -178,7 +180,8 @@ void PWMChannel::setup() {
     this->state = false;
 }
 
-void PWMChannel::setupLedc() {
+void PWMChannel::setupLedc()
+{
   // deinitialize our pin.
   // ledc_fade_func_uninstall();
   ledcDetachPin(this->_pins[this->id]);
@@ -189,25 +192,27 @@ void PWMChannel::setupLedc() {
   ledcWrite(this->id, 0);
 }
 
-void PWMChannel::setupInterrupt() {
+void PWMChannel::setupInterrupt()
+{
   int channel = this->id;
   isChannelFading[this->id] = false;
 
   ledc_cbs_t callbacks = {.fade_cb = cb_ledc_fade_end_event};
 
   // this is our callback handler for fade end.
-  ledc_cb_register(LEDC_LOW_SPEED_MODE, (ledc_channel_t)channel, &callbacks,
-                   (void *)channel);
+  ledc_cb_register(LEDC_LOW_SPEED_MODE, (ledc_channel_t)channel, &callbacks, (void*)channel);
 }
 
-void PWMChannel::saveThrottledDutyCycle() {
+void PWMChannel::saveThrottledDutyCycle()
+{
   // after 5 secs of no activity, we can save it.
   if (this->dutyCycleIsThrottled &&
       millis() - this->lastDutyCycleUpdate > YB_DUTY_SAVE_TIMEOUT)
     this->setDuty(this->dutyCycle);
 }
 
-void PWMChannel::updateOutput() {
+void PWMChannel::updateOutput()
+{
   // what PWM do we want?
   int pwm = 0;
   if (this->isDimmable) {
@@ -234,7 +239,8 @@ void PWMChannel::updateOutput() {
     ledcWrite(this->id, pwm);
 }
 
-float PWMChannel::toAmperage(float voltage) {
+float PWMChannel::toAmperage(float voltage)
+{
   float amps = (voltage - (3.3 * 0.1)) / (0.132); // ACS725LLCTR-20AU
 
   // our floor is zero amps
@@ -243,17 +249,20 @@ float PWMChannel::toAmperage(float voltage) {
   return amps;
 }
 
-float PWMChannel::getAmperage() {
+float PWMChannel::getAmperage()
+{
   return this->toAmperage(
-      this->adcHelper->toVoltage(this->adcHelper->getReading()));
+    this->adcHelper->toVoltage(this->adcHelper->getReading()));
 }
 
-void PWMChannel::checkAmperage() {
+void PWMChannel::checkAmperage()
+{
   this->amperage = this->getAmperage();
   this->checkSoftFuse();
 }
 
-void PWMChannel::checkSoftFuse() {
+void PWMChannel::checkSoftFuse()
+{
   // only trip once....
   if (!this->tripped) {
     // Check our soft fuse, and our max limit for the board.
@@ -283,7 +292,8 @@ void PWMChannel::checkSoftFuse() {
   }
 }
 
-void PWMChannel::setFade(float duty, int max_fade_time_ms) {
+void PWMChannel::setFade(float duty, int max_fade_time_ms)
+{
   // is our earlier hardware fade over yet?
   if (!isChannelFading[this->id]) {
     // dutyCycle is a default - will be non-zero when state is off
@@ -305,13 +315,12 @@ void PWMChannel::setFade(float duty, int max_fade_time_ms) {
 
     // call our hardware fader
     int target_duty = duty * MAX_DUTY_CYCLE;
-    ledc_set_fade_time_and_start(LEDC_LOW_SPEED_MODE, (ledc_channel_t)this->id,
-                                 target_duty, max_fade_time_ms,
-                                 LEDC_FADE_NO_WAIT);
+    ledc_set_fade_time_and_start(LEDC_LOW_SPEED_MODE, (ledc_channel_t)this->id, target_duty, max_fade_time_ms, LEDC_FADE_NO_WAIT);
   }
 }
 
-void PWMChannel::checkIfFadeOver() {
+void PWMChannel::checkIfFadeOver()
+{
   // we're looking to see if the fade is over yet
   if (this->fadeRequested) {
     // has our fade ended?
@@ -344,8 +353,8 @@ void PWMChannel::checkIfFadeOver() {
 
       if (this->fadeDuration > 0) {
         float currentDuty =
-            this->fadeDutyCycleStart +
-            ((float)nowDelta / (float)this->fadeDuration) * dutyDelta;
+          this->fadeDutyCycleStart +
+          ((float)nowDelta / (float)this->fadeDuration) * dutyDelta;
         this->dutyCycle = currentDuty;
       }
 
@@ -357,7 +366,8 @@ void PWMChannel::checkIfFadeOver() {
   }
 }
 
-void PWMChannel::setDuty(float duty) {
+void PWMChannel::setDuty(float duty)
+{
   this->dutyCycle = duty;
 
   // it only makes sense to change it to non-zero.
@@ -384,7 +394,8 @@ void PWMChannel::setDuty(float duty) {
   this->lastDutyCycleUpdate = millis();
 }
 
-void PWMChannel::calculateAverages(unsigned int delta) {
+void PWMChannel::calculateAverages(unsigned int delta)
+{
   this->amperage = this->toAmperage(this->adcHelper->getAverageVoltage());
   this->adcHelper->resetAverage();
 
@@ -395,14 +406,16 @@ void PWMChannel::calculateAverages(unsigned int delta) {
   }
 }
 
-void PWMChannel::setState(const char *state) {
+void PWMChannel::setState(const char* state)
+{
   if (!strcmp(state, "ON"))
     this->setState(true);
   else
     this->setState(false);
 }
 
-void PWMChannel::setState(bool state) {
+void PWMChannel::setState(bool state)
+{
   // only if we're changing
   if (this->state != state || this->tripped) {
     // this can crash after long fading sessions, reset it with a manual toggle
@@ -426,7 +439,8 @@ void PWMChannel::setState(bool state) {
   }
 }
 
-const char *PWMChannel::getState() {
+const char* PWMChannel::getState()
+{
   if (this->tripped)
     return "TRIP";
   else if (this->state)

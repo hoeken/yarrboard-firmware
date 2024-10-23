@@ -1,6 +1,6 @@
 /*
   Yarrboard
-  
+
   Author: Zach Hoeken <hoeken@gmail.com>
   Website: https://github.com/hoeken/yarrboard
   License: GPLv3
@@ -10,7 +10,7 @@
 
 esp32FOTA FOTA(YB_HARDWARE_VERSION, YB_FIRMWARE_VERSION, YB_VALIDATE_FIRMWARE_SIGNATURE);
 
-//for github https
+// for github https
 const char* root_ca = R"ROOT_CA(
 -----BEGIN CERTIFICATE-----
 MIIEvjCCA6agAwIBAgIQBtjZBNVYQ0b2ii+nVCJ+xDANBgkqhkiG9w0BAQsFADBh
@@ -42,7 +42,7 @@ A7sKPPcw7+uvTPyLNhBzPvOk
 -----END CERTIFICATE-----
 )ROOT_CA";
 
-//my key for future firmware signing
+// my key for future firmware signing
 const char* public_key = R"PUBLIC_KEY(
 -----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAjsPaBVvAoSlNEdxLnKl5
@@ -60,8 +60,8 @@ rgu4zp1Wfh2Q5QMX6bTrDCTn52KdyJ6z2WTnafaA08zeKOP+uVAPT0HLShF/ITEX
 -----END PUBLIC KEY-----
 )PUBLIC_KEY";
 
-CryptoMemAsset *MyRootCA = new CryptoMemAsset("Root CA", root_ca, strlen(root_ca)+1);
-CryptoMemAsset *MyPubKey = new CryptoMemAsset("RSA Key", public_key, strlen(public_key)+1);
+CryptoMemAsset* MyRootCA = new CryptoMemAsset("Root CA", root_ca, strlen(root_ca) + 1);
+CryptoMemAsset* MyPubKey = new CryptoMemAsset("RSA Key", public_key, strlen(public_key) + 1);
 
 bool doOTAUpdate = false;
 unsigned long ota_last_message = 0;
@@ -72,33 +72,31 @@ void ota_setup()
   FOTA.setRootCA(MyRootCA);
   FOTA.setPubKey(MyPubKey);
 
-  FOTA.setUpdateBeginFailCb( [](int partition) {
-    Serial.printf("[ota] Update could not begin with %s partition\n", partition==U_SPIFFS ? "spiffs" : "firmware" );
+  FOTA.setUpdateBeginFailCb([](int partition) {
+    Serial.printf("[ota] Update could not begin with %s partition\n", partition == U_SPIFFS ? "spiffs" : "firmware");
   });
 
   // usage with lambda function:
-  FOTA.setProgressCb( [](size_t progress, size_t size)
-  {
-      if( progress == size || progress == 0 )
-        Serial.println();
-      Serial.print(".");
+  FOTA.setProgressCb([](size_t progress, size_t size) {
+    if (progress == size || progress == 0)
+      Serial.println();
+    Serial.print(".");
 
-      //let the clients know every second and at the end
-      if (millis() - ota_last_message > 1000 || progress == size)
-      {
-        float percent = (float)progress / (float)size * 100.0;
-        sendOTAProgressUpdate(percent);
-        ota_last_message = millis();
-      }
+    // let the clients know every second and at the end
+    if (millis() - ota_last_message > 1000 || progress == size) {
+      float percent = (float)progress / (float)size * 100.0;
+      sendOTAProgressUpdate(percent);
+      ota_last_message = millis();
+    }
   });
 
-  FOTA.setUpdateEndCb( [](int partition) {
-    Serial.printf("[ota] Update ended with %s partition\n", partition==U_SPIFFS ? "spiffs" : "firmware" );
-      sendOTAProgressFinished();
+  FOTA.setUpdateEndCb([](int partition) {
+    Serial.printf("[ota] Update ended with %s partition\n", partition == U_SPIFFS ? "spiffs" : "firmware");
+    sendOTAProgressFinished();
   });
 
-  FOTA.setUpdateCheckFailCb( [](int partition, int error_code) {
-    Serial.printf("[ota] Update could not validate %s partition (error %d)\n", partition==U_SPIFFS ? "spiffs" : "firmware", error_code );
+  FOTA.setUpdateCheckFailCb([](int partition, int error_code) {
+    Serial.printf("[ota] Update could not validate %s partition (error %d)\n", partition == U_SPIFFS ? "spiffs" : "firmware", error_code);
     // error codes:
     //  -1 : partition not found
     //  -2 : validation (signature check) failed
@@ -109,9 +107,8 @@ void ota_setup()
 
 void ota_loop()
 {
-  if (doOTAUpdate)
-  {
+  if (doOTAUpdate) {
     FOTA.handle();
-	doOTAUpdate = false;
+    doOTAUpdate = false;
   }
 }
