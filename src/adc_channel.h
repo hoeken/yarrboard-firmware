@@ -16,19 +16,20 @@
 
 #ifdef YB_HAS_ADC_CHANNELS
 
-class ADCChannel {
-public:
-  byte id = 0;
-  bool isEnabled = true;
-  char name[YB_CHANNEL_NAME_LENGTH];
+class ADCChannel
+{
+  public:
+    byte id = 0;
+    bool isEnabled = true;
+    char name[YB_CHANNEL_NAME_LENGTH];
 
-  MCP3208Helper *adcHelper;
+    MCP3208Helper* adcHelper;
 
-  void setup();
-  void update();
-  unsigned int getReading();
-  float getVoltage();
-  void resetAverage();
+    void setup();
+    void update();
+    unsigned int getReading();
+    float getVoltage();
+    void resetAverage();
 };
 
 extern ADCChannel adc_channels[YB_ADC_CHANNEL_COUNT];

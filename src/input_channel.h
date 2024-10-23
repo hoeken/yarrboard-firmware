@@ -1,6 +1,6 @@
 /*
   Yarrboard
-  
+
   Author: Zach Hoeken <hoeken@gmail.com>
   Website: https://github.com/hoeken/yarrboard
   License: GPLv3
@@ -9,10 +9,10 @@
 #ifndef YARR_INPUT_CHANNEL_H
 #define YARR_INPUT_CHANNEL_H
 
-#include <Arduino.h>
 #include "config.h"
 #include "prefs.h"
 #include "protocol.h"
+#include <Arduino.h>
 
 typedef enum {
   DIRECT,
@@ -24,7 +24,7 @@ typedef enum {
 
 class InputChannel
 {
-  byte _pins[YB_INPUT_CHANNEL_COUNT] = YB_INPUT_CHANNEL_PINS;
+    byte _pins[YB_INPUT_CHANNEL_COUNT] = YB_INPUT_CHANNEL_PINS;
 
   protected:
     void setState(bool state);
@@ -49,8 +49,8 @@ class InputChannel
     void setup();
     void update();
 
-    void setState(const char * state);
-    const char * getState();
+    void setState(const char* state);
+    const char* getState();
 
     static String getModeName(SwitchMode mode);
     static SwitchMode getMode(String mode);

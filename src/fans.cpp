@@ -10,9 +10,9 @@
 
 #ifdef YB_HAS_FANS
 
-#include "fans.h"
-#include "pwm_channel.h"
-#include <Arduino.h>
+  #include "fans.h"
+  #include "pwm_channel.h"
+  #include <Arduino.h>
 
 // Lots of code borrowed from: https://github.com/KlausMu/esp32-fan-controller
 
@@ -36,7 +36,8 @@ unsigned long lastFanCheckMillis = 0;
 void IRAM_ATTR rpm_fan_0_low() { counter_rpm[0]++; }
 void IRAM_ATTR rpm_fan_1_low() { counter_rpm[1]++; }
 
-void fans_setup() {
+void fans_setup()
+{
   for (byte i = 0; i < YB_FAN_COUNT; i++) {
     // use the pwm channel directly after our PWM channels
     ledcSetup(fan_pwm_channel + i, 25000, 8);
@@ -51,15 +52,14 @@ void fans_setup() {
     // digitalWrite(fan_tach_pins[i], HIGH);
 
     if (i == 0)
-      attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_0_low,
-                      FALLING);
+      attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_0_low, FALLING);
     if (i == 1)
-      attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_1_low,
-                      FALLING);
+      attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_1_low, FALLING);
   }
 }
 
-void fans_loop() {
+void fans_loop()
+{
   // get our rpm numbers
   for (byte i = 0; i < YB_FAN_COUNT; i++)
     measure_fan_rpm(i);
@@ -91,13 +91,11 @@ void fans_loop() {
     // high average amps?
     else if (amps_avg > YB_FAN_AVERAGE_CHANNEL_THRESHOLD_START ||
              amps_max > YB_FAN_SINGLE_CHANNEL_THRESHOLD_START) {
-      int avgpwm = map_float(amps_avg, YB_FAN_AVERAGE_CHANNEL_THRESHOLD_START,
-                             YB_FAN_AVERAGE_CHANNEL_THRESHOLD_END, 0, 255);
+      int avgpwm = map_float(amps_avg, YB_FAN_AVERAGE_CHANNEL_THRESHOLD_START, YB_FAN_AVERAGE_CHANNEL_THRESHOLD_END, 0, 255);
       // Serial.print("Average pwm: ");
       // Serial.println(avgpwm);
 
-      int singlepwm = map_float(amps_max, YB_FAN_SINGLE_CHANNEL_THRESHOLD_START,
-                                YB_FAN_SINGLE_CHANNEL_THRESHOLD_END, 0, 255);
+      int singlepwm = map_float(amps_max, YB_FAN_SINGLE_CHANNEL_THRESHOLD_START, YB_FAN_SINGLE_CHANNEL_THRESHOLD_END, 0, 255);
       // Serial.print("Single pwm: ");
       // Serial.println(singlepwm);
 
@@ -117,11 +115,13 @@ void fans_loop() {
 }
 
 float map_float(float x, float in_min, float in_max, float out_min,
-                float out_max) {
+  float out_max)
+{
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
-void measure_fan_rpm(byte i) {
+void measure_fan_rpm(byte i)
+{
   if (millis() - last_tacho_measurement[i] >= 1000) {
     // detach interrupt while calculating rpm
     detachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]));
@@ -137,15 +137,14 @@ void measure_fan_rpm(byte i) {
 
     // attach interrupt again
     if (i == 0)
-      attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_0_low,
-                      FALLING);
+      attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_0_low, FALLING);
     if (i == 1)
-      attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_1_low,
-                      FALLING);
+      attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_1_low, FALLING);
   }
 }
 
-void set_fan_pwm(byte pwm) {
+void set_fan_pwm(byte pwm)
+{
   ledcWrite(fan_pwm_pins[0], pwm);
   ledcWrite(fan_pwm_pins[1], pwm);
 }

@@ -1,6 +1,6 @@
 /*
   Yarrboard
-  
+
   Author: Zach Hoeken <hoeken@gmail.com>
   Website: https://github.com/hoeken/yarrboard
   License: GPLv3
@@ -11,7 +11,7 @@
 
 #include <Preferences.h>
 
-//storage for more permanent stuff.
+// storage for more permanent stuff.
 extern Preferences preferences;
 
 void prefs_setup();

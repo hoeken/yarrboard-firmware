@@ -42,25 +42,21 @@ String arduino_version = String(ESP_ARDUINO_VERSION_MAJOR) + "." +
                          String(ESP_ARDUINO_VERSION_MINOR) + "." +
                          String(ESP_ARDUINO_VERSION_PATCH);
 
-void protocol_setup() {
+void protocol_setup()
+{
   // look up our board name
   if (preferences.isKey("boardName"))
-    strlcpy(board_name, preferences.getString("boardName").c_str(),
-            sizeof(board_name));
+    strlcpy(board_name, preferences.getString("boardName").c_str(), sizeof(board_name));
 
   // look up our username/password
   if (preferences.isKey("admin_user"))
-    strlcpy(admin_user, preferences.getString("admin_user").c_str(),
-            sizeof(admin_user));
+    strlcpy(admin_user, preferences.getString("admin_user").c_str(), sizeof(admin_user));
   if (preferences.isKey("admin_pass"))
-    strlcpy(admin_pass, preferences.getString("admin_pass").c_str(),
-            sizeof(admin_pass));
+    strlcpy(admin_pass, preferences.getString("admin_pass").c_str(), sizeof(admin_pass));
   if (preferences.isKey("guest_user"))
-    strlcpy(guest_user, preferences.getString("guest_user").c_str(),
-            sizeof(guest_user));
+    strlcpy(guest_user, preferences.getString("guest_user").c_str(), sizeof(guest_user));
   if (preferences.isKey("guest_pass"))
-    strlcpy(guest_pass, preferences.getString("guest_pass").c_str(),
-            sizeof(guest_pass));
+    strlcpy(guest_pass, preferences.getString("guest_pass").c_str(), sizeof(guest_pass));
   if (preferences.isKey("appUpdateInter"))
     app_update_interval = preferences.getUInt("appUpdateInter");
   if (preferences.isKey("appDefaultRole")) {
@@ -94,7 +90,8 @@ void protocol_setup() {
   }
 }
 
-void protocol_loop() {
+void protocol_loop()
+{
   // lookup our info periodically
   unsigned int messageDelta = millis() - previousMessageMillis;
   if (messageDelta >= 1000) {
@@ -126,7 +123,8 @@ void protocol_loop() {
   }
 }
 
-void handleSerialJson() {
+void handleSerialJson()
+{
   JsonDocument input;
   DeserializationError err = deserializeJson(input, Serial);
 
@@ -155,13 +153,14 @@ void handleSerialJson() {
 }
 
 void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
-                        PsychicWebSocketClient *connection) {
+  PsychicWebSocketClient* connection)
+{
   // make sure its correct
   if (!input["cmd"].is<String>())
     return generateErrorJSON(output, "'cmd' is a required parameter.");
 
   // what is your command?
-  const char *cmd = input["cmd"];
+  const char* cmd = input["cmd"];
 
   // let the client keep track of messages
   if (input["msgid"].is<unsigned int>()) {
@@ -249,7 +248,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
   return generateErrorJSON(output, error.c_str());
 }
 
-const char *getRoleText(UserRole role) {
+const char* getRoleText(UserRole role)
+{
   if (role == ADMIN)
     return "admin";
   else if (role == GUEST)
@@ -258,7 +258,8 @@ const char *getRoleText(UserRole role) {
     return "nobody";
 }
 
-void generateHelloJSON(JsonVariant output, UserRole role) {
+void generateHelloJSON(JsonVariant output, UserRole role)
+{
   output["msg"] = "hello";
   output["role"] = getRoleText(role);
   output["default_role"] = getRoleText(app_default_role);
@@ -267,15 +268,15 @@ void generateHelloJSON(JsonVariant output, UserRole role) {
   output["firmware_version"] = YB_FIRMWARE_VERSION;
 }
 
-void handleSetBoardName(JsonVariantConst input, JsonVariant output) {
+void handleSetBoardName(JsonVariantConst input, JsonVariant output)
+{
   if (!input["value"].is<String>())
     return generateErrorJSON(output, "'value' is a required parameter");
 
   // is it too long?
   if (strlen(input["value"]) > YB_BOARD_NAME_LENGTH - 1) {
     char error[50];
-    sprintf(error, "Maximum board name length is %s characters.",
-            YB_BOARD_NAME_LENGTH - 1);
+    sprintf(error, "Maximum board name length is %s characters.", YB_BOARD_NAME_LENGTH - 1);
     return generateErrorJSON(output, error);
   }
 
@@ -289,7 +290,8 @@ void handleSetBoardName(JsonVariantConst input, JsonVariant output) {
   return generateConfigJSON(output);
 }
 
-void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output) {
+void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output)
+{
   // clear our first boot flag since they submitted the network page.
   is_first_boot = false;
 
@@ -304,24 +306,21 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output) {
     return generateErrorJSON(output, "'wifi_pass' is a required parameter");
   if (!input["local_hostname"].is<String>())
     return generateErrorJSON(output,
-                             "'local_hostname' is a required parameter");
+      "'local_hostname' is a required parameter");
 
   // is it too long?
   if (strlen(input["wifi_ssid"]) > YB_WIFI_SSID_LENGTH - 1) {
-    sprintf(error, "Maximum wifi ssid length is %s characters.",
-            YB_WIFI_SSID_LENGTH - 1);
+    sprintf(error, "Maximum wifi ssid length is %s characters.", YB_WIFI_SSID_LENGTH - 1);
     return generateErrorJSON(output, error);
   }
 
   if (strlen(input["wifi_pass"]) > YB_WIFI_PASSWORD_LENGTH - 1) {
-    sprintf(error, "Maximum wifi password length is %s characters.",
-            YB_WIFI_PASSWORD_LENGTH - 1);
+    sprintf(error, "Maximum wifi password length is %s characters.", YB_WIFI_PASSWORD_LENGTH - 1);
     return generateErrorJSON(output, error);
   }
 
   if (strlen(input["local_hostname"]) > YB_HOSTNAME_LENGTH - 1) {
-    sprintf(error, "Maximum hostname length is %s characters.",
-            YB_HOSTNAME_LENGTH - 1);
+    sprintf(error, "Maximum hostname length is %s characters.", YB_HOSTNAME_LENGTH - 1);
     return generateErrorJSON(output, error);
   }
 
@@ -333,8 +332,7 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output) {
   strlcpy(new_wifi_mode, input["wifi_mode"] | "ap", sizeof(new_wifi_mode));
   strlcpy(new_wifi_ssid, input["wifi_ssid"] | "SSID", sizeof(new_wifi_ssid));
   strlcpy(new_wifi_pass, input["wifi_pass"] | "PASS", sizeof(new_wifi_pass));
-  strlcpy(local_hostname, input["local_hostname"] | "yarrboard",
-          sizeof(local_hostname));
+  strlcpy(local_hostname, input["local_hostname"] | "yarrboard", sizeof(local_hostname));
 
   // no special cases here.
   preferences.putString("local_hostname", local_hostname);
@@ -388,11 +386,13 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output) {
     setupWifi();
 
     return generateSuccessJSON(
-        output, "AP mode successful, please connect to new network.");
+      output,
+      "AP mode successful, please connect to new network.");
   }
 }
 
-void handleSetAppConfig(JsonVariantConst input, JsonVariant output) {
+void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
+{
   bool old_app_enable_ssl = app_enable_ssl;
 
   if (!input["admin_user"].is<String>())
@@ -409,32 +409,28 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output) {
   // username length checker
   if (strlen(input["admin_user"]) > YB_USERNAME_LENGTH - 1) {
     char error[60];
-    sprintf(error, "Maximum admin username length is %s characters.",
-            YB_USERNAME_LENGTH - 1);
+    sprintf(error, "Maximum admin username length is %s characters.", YB_USERNAME_LENGTH - 1);
     return generateErrorJSON(output, error);
   }
 
   // password length checker
   if (strlen(input["admin_pass"]) > YB_PASSWORD_LENGTH - 1) {
     char error[60];
-    sprintf(error, "Maximum admin password length is %s characters.",
-            YB_PASSWORD_LENGTH - 1);
+    sprintf(error, "Maximum admin password length is %s characters.", YB_PASSWORD_LENGTH - 1);
     return generateErrorJSON(output, error);
   }
 
   // username length checker
   if (strlen(input["guest_user"]) > YB_USERNAME_LENGTH - 1) {
     char error[60];
-    sprintf(error, "Maximum guest username length is %s characters.",
-            YB_USERNAME_LENGTH - 1);
+    sprintf(error, "Maximum guest username length is %s characters.", YB_USERNAME_LENGTH - 1);
     return generateErrorJSON(output, error);
   }
 
   // password length checker
   if (strlen(input["guest_pass"]) > YB_PASSWORD_LENGTH - 1) {
     char error[60];
-    sprintf(error, "Maximum guest password length is %s characters.",
-            YB_PASSWORD_LENGTH - 1);
+    sprintf(error, "Maximum guest password length is %s characters.", YB_PASSWORD_LENGTH - 1);
     return generateErrorJSON(output, error);
   }
 
@@ -490,7 +486,8 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output) {
 }
 
 void handleLogin(JsonVariantConst input, JsonVariant output, YBMode mode,
-                 PsychicWebSocketClient *connection) {
+  PsychicWebSocketClient* connection)
+{
   if (!input["user"].is<String>())
     return generateErrorJSON(output, "'user' is a required parameter");
 
@@ -542,7 +539,8 @@ void handleLogin(JsonVariantConst input, JsonVariant output, YBMode mode,
 }
 
 void handleLogout(JsonVariantConst input, JsonVariant output, YBMode mode,
-                  PsychicWebSocketClient *connection) {
+  PsychicWebSocketClient* connection)
+{
   if (!isLoggedIn(input, mode, connection))
     return generateErrorJSON(output, "You are not logged in.");
 
@@ -558,13 +556,15 @@ void handleLogout(JsonVariantConst input, JsonVariant output, YBMode mode,
   }
 }
 
-void handleRestart(JsonVariantConst input, JsonVariant output) {
+void handleRestart(JsonVariantConst input, JsonVariant output)
+{
   Serial.println("Restarting board.");
 
   ESP.restart();
 }
 
-void handleFactoryReset(JsonVariantConst input, JsonVariant output) {
+void handleFactoryReset(JsonVariantConst input, JsonVariant output)
+{
   // delete all our prefs
   preferences.clear();
   preferences.end();
@@ -573,7 +573,8 @@ void handleFactoryReset(JsonVariantConst input, JsonVariant output) {
   ESP.restart();
 }
 
-void handleOTAStart(JsonVariantConst input, JsonVariant output) {
+void handleOTAStart(JsonVariantConst input, JsonVariant output)
+{
   // look for new firmware
   bool updatedNeeded = FOTA.execHTTPcheck();
   if (updatedNeeded)
@@ -582,7 +583,8 @@ void handleOTAStart(JsonVariantConst input, JsonVariant output) {
     return generateErrorJSON(output, "Firmware already up to date.");
 }
 
-void handleSetPWMChannel(JsonVariantConst input, JsonVariant output) {
+void handleSetPWMChannel(JsonVariantConst input, JsonVariant output)
+{
 #ifdef YB_HAS_PWM_CHANNELS
   char prefIndex[YB_PREF_KEY_LENGTH];
 
@@ -629,14 +631,12 @@ void handleSetPWMChannel(JsonVariantConst input, JsonVariant output) {
     // check the length
     char error[50];
     if (strlen(input["source"]) > YB_HOSTNAME_LENGTH - 1) {
-      sprintf(error, "Maximum source length is %s characters.",
-              YB_HOSTNAME_LENGTH - 1);
+      sprintf(error, "Maximum source length is %s characters.", YB_HOSTNAME_LENGTH - 1);
       return generateErrorJSON(output, error);
     }
 
     // get our data
-    strlcpy(pwm_channels[cid].source, input["source"] | local_hostname,
-            sizeof(pwm_channels[cid].source));
+    strlcpy(pwm_channels[cid].source, input["source"] | local_hostname, sizeof(pwm_channels[cid].source));
 
     // okay, set our state
     char state[10];
@@ -654,7 +654,8 @@ void handleSetPWMChannel(JsonVariantConst input, JsonVariant output) {
 #endif
 }
 
-void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output) {
+void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
+{
 #ifdef YB_HAS_PWM_CHANNELS
   char prefIndex[YB_PREF_KEY_LENGTH];
 
@@ -672,14 +673,12 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output) {
     // is it too long?
     if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
       char error[50];
-      sprintf(error, "Maximum channel name length is %s characters.",
-              YB_CHANNEL_NAME_LENGTH - 1);
+      sprintf(error, "Maximum channel name length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
       return generateErrorJSON(output, error);
     }
 
     // save to our storage
-    strlcpy(pwm_channels[cid].name, input["name"] | "Channel ?",
-            sizeof(pwm_channels[cid].name));
+    strlcpy(pwm_channels[cid].name, input["name"] | "Channel ?", sizeof(pwm_channels[cid].name));
     sprintf(prefIndex, "pwmName%d", cid);
     preferences.putString(prefIndex, pwm_channels[cid].name);
 
@@ -692,14 +691,12 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output) {
     // is it too long?
     if (strlen(input["type"]) > YB_TYPE_LENGTH - 1) {
       char error[50];
-      sprintf(error, "Maximum channel type length is %s characters.",
-              YB_CHANNEL_NAME_LENGTH - 1);
+      sprintf(error, "Maximum channel type length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
       return generateErrorJSON(output, error);
     }
 
     // save to our storage
-    strlcpy(pwm_channels[cid].type, input["type"] | "other",
-            sizeof(pwm_channels[cid].type));
+    strlcpy(pwm_channels[cid].type, input["type"] | "other", sizeof(pwm_channels[cid].type));
     sprintf(prefIndex, "pwmType%d", cid);
     preferences.putString(prefIndex, pwm_channels[cid].type);
 
@@ -713,14 +710,12 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output) {
     if (strlen(input["defaultState"]) >
         sizeof(pwm_channels[cid].defaultState) - 1) {
       char error[50];
-      sprintf(error, "Maximum default state length is %s characters.",
-              sizeof(pwm_channels[cid].defaultState) - 1);
+      sprintf(error, "Maximum default state length is %s characters.", sizeof(pwm_channels[cid].defaultState) - 1);
       return generateErrorJSON(output, error);
     }
 
     // save to our storage
-    strlcpy(pwm_channels[cid].defaultState, input["defaultState"] | "OFF",
-            sizeof(pwm_channels[cid].defaultState));
+    strlcpy(pwm_channels[cid].defaultState, input["defaultState"] | "OFF", sizeof(pwm_channels[cid].defaultState));
     sprintf(prefIndex, "pwmDefault%d", cid);
     preferences.putString(prefIndex, pwm_channels[cid].defaultState);
 
@@ -776,7 +771,8 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output) {
 #endif
 }
 
-void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output) {
+void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output)
+{
 #ifdef YB_HAS_PWM_CHANNELS
   // id is required
   if (!input["id"].is<int>())
@@ -794,14 +790,12 @@ void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output) {
   // check the length
   char error[50];
   if (strlen(input["source"]) > YB_HOSTNAME_LENGTH - 1) {
-    sprintf(error, "Maximum source length is %s characters.",
-            YB_HOSTNAME_LENGTH - 1);
+    sprintf(error, "Maximum source length is %s characters.", YB_HOSTNAME_LENGTH - 1);
     return generateErrorJSON(output, error);
   }
 
   // save our source
-  strlcpy(pwm_channels[cid].source, input["source"] | local_hostname,
-          sizeof(pwm_channels[cid].source));
+  strlcpy(pwm_channels[cid].source, input["source"] | local_hostname, sizeof(pwm_channels[cid].source));
 
   // update our state
   if (pwm_channels[cid].tripped)
@@ -815,7 +809,8 @@ void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output) {
 #endif
 }
 
-void handleFadePWMChannel(JsonVariantConst input, JsonVariant output) {
+void handleFadePWMChannel(JsonVariantConst input, JsonVariant output)
+{
 #ifdef YB_HAS_PWM_CHANNELS
   unsigned long start = micros();
   unsigned long t1, t2, t3, t4 = 0;
@@ -865,7 +860,8 @@ void handleFadePWMChannel(JsonVariantConst input, JsonVariant output) {
 #endif
 }
 
-void handleSetSwitch(JsonVariantConst input, JsonVariant output) {
+void handleSetSwitch(JsonVariantConst input, JsonVariant output)
+{
 #ifdef YB_HAS_INPUT_CHANNELS
   // id is required
   if (!input["id"].is<int>())
@@ -887,14 +883,12 @@ void handleSetSwitch(JsonVariantConst input, JsonVariant output) {
   // check the length
   char error[50];
   if (strlen(input["source"]) > YB_HOSTNAME_LENGTH - 1) {
-    sprintf(error, "Maximum source length is %s characters.",
-            YB_HOSTNAME_LENGTH - 1);
+    sprintf(error, "Maximum source length is %s characters.", YB_HOSTNAME_LENGTH - 1);
     return generateErrorJSON(output, error);
   }
 
   // get our data
-  strlcpy(input_channels[cid].source, input["source"] | local_hostname,
-          sizeof(local_hostname));
+  strlcpy(input_channels[cid].source, input["source"] | local_hostname, sizeof(local_hostname));
 
   // okay, set our state
   char state[10];
@@ -907,7 +901,8 @@ void handleSetSwitch(JsonVariantConst input, JsonVariant output) {
 #endif
 }
 
-void handleConfigSwitch(JsonVariantConst input, JsonVariant output) {
+void handleConfigSwitch(JsonVariantConst input, JsonVariant output)
+{
 #ifdef YB_HAS_INPUT_CHANNELS
   char prefIndex[YB_PREF_KEY_LENGTH];
 
@@ -925,14 +920,12 @@ void handleConfigSwitch(JsonVariantConst input, JsonVariant output) {
     // is it too long?
     if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
       char error[50];
-      sprintf(error, "Maximum channel name length is %s characters.",
-              YB_CHANNEL_NAME_LENGTH - 1);
+      sprintf(error, "Maximum channel name length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
       return generateErrorJSON(output, error);
     }
 
     // save the name
-    strlcpy(input_channels[cid].name, input["name"] | "Input ?",
-            sizeof(input_channels[cid].name));
+    strlcpy(input_channels[cid].name, input["name"] | "Input ?", sizeof(input_channels[cid].name));
     sprintf(prefIndex, "iptName%d", cid);
     preferences.putString(prefIndex, input_channels[cid].name);
   }
@@ -962,14 +955,12 @@ void handleConfigSwitch(JsonVariantConst input, JsonVariant output) {
     if (strlen(input["defaultState"]) >
         sizeof(input_channels[cid].defaultState) - 1) {
       char error[50];
-      sprintf(error, "Maximum default state length is %s characters.",
-              sizeof(input_channels[cid].defaultState) - 1);
+      sprintf(error, "Maximum default state length is %s characters.", sizeof(input_channels[cid].defaultState) - 1);
       return generateErrorJSON(output, error);
     }
 
     // save to our storage
-    strlcpy(input_channels[cid].defaultState, input["defaultState"] | "OFF",
-            sizeof(input_channels[cid].defaultState));
+    strlcpy(input_channels[cid].defaultState, input["defaultState"] | "OFF", sizeof(input_channels[cid].defaultState));
     sprintf(prefIndex, "iptDefault%d", cid);
     preferences.putString(prefIndex, input_channels[cid].defaultState);
   }
@@ -981,7 +972,8 @@ void handleConfigSwitch(JsonVariantConst input, JsonVariant output) {
 #endif
 }
 
-void handleConfigRGB(JsonVariantConst input, JsonVariant output) {
+void handleConfigRGB(JsonVariantConst input, JsonVariant output)
+{
 #ifdef YB_HAS_RGB_CHANNELS
   char prefIndex[YB_PREF_KEY_LENGTH];
 
@@ -999,14 +991,12 @@ void handleConfigRGB(JsonVariantConst input, JsonVariant output) {
     // is it too long?
     if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
       char error[50];
-      sprintf(error, "Maximum channel name length is %s characters.",
-              YB_CHANNEL_NAME_LENGTH - 1);
+      sprintf(error, "Maximum channel name length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
       return generateErrorJSON(output, error);
     }
 
     // save to our storage
-    strlcpy(rgb_channels[cid].name, input["name"] | "RGB ?",
-            sizeof(rgb_channels[cid].name));
+    strlcpy(rgb_channels[cid].name, input["name"] | "RGB ?", sizeof(rgb_channels[cid].name));
     sprintf(prefIndex, "rgbName%d", cid);
     preferences.putString(prefIndex, rgb_channels[cid].name);
 
@@ -1032,7 +1022,8 @@ void handleConfigRGB(JsonVariantConst input, JsonVariant output) {
 #endif
 }
 
-void handleSetRGB(JsonVariantConst input, JsonVariant output) {
+void handleSetRGB(JsonVariantConst input, JsonVariant output)
+{
 #ifdef YB_HAS_RGB_CHANNELS
   char prefIndex[YB_PREF_KEY_LENGTH];
 
@@ -1086,7 +1077,8 @@ void handleSetRGB(JsonVariantConst input, JsonVariant output) {
 #endif
 }
 
-void handleConfigADC(JsonVariantConst input, JsonVariant output) {
+void handleConfigADC(JsonVariantConst input, JsonVariant output)
+{
 #ifdef YB_HAS_ADC_CHANNELS
   char prefIndex[YB_PREF_KEY_LENGTH];
 
@@ -1104,14 +1096,12 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output) {
     // is it too long?
     if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
       char error[50];
-      sprintf(error, "Maximum channel name length is %s characters.",
-              YB_CHANNEL_NAME_LENGTH - 1);
+      sprintf(error, "Maximum channel name length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
       return generateErrorJSON(output, error);
     }
 
     // save to our storage
-    strlcpy(adc_channels[cid].name, input["name"] | "ADC ?",
-            sizeof(adc_channels[cid].name));
+    strlcpy(adc_channels[cid].name, input["name"] | "ADC ?", sizeof(adc_channels[cid].name));
     sprintf(prefIndex, "adcName%d", cid);
     preferences.putString(prefIndex, adc_channels[cid].name);
 
@@ -1137,7 +1127,8 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output) {
 #endif
 }
 
-void handleSetTheme(JsonVariantConst input, JsonVariant output) {
+void handleSetTheme(JsonVariantConst input, JsonVariant output)
+{
   if (!input["theme"].is<String>())
     return generateErrorJSON(output, "'theme' is a required parameter");
 
@@ -1145,14 +1136,15 @@ void handleSetTheme(JsonVariantConst input, JsonVariant output) {
 
   if (temp != "light" && temp != "dark")
     return generateErrorJSON(output,
-                             "'theme' must either be 'light' or 'dark'");
+      "'theme' must either be 'light' or 'dark'");
 
   app_theme = temp;
 
   sendThemeUpdate();
 }
 
-void handleSetBrightness(JsonVariantConst input, JsonVariant output) {
+void handleSetBrightness(JsonVariantConst input, JsonVariant output)
+{
   if (input["brightness"].is<float>()) {
     float brightness = input["brightness"];
 
@@ -1183,7 +1175,8 @@ void handleSetBrightness(JsonVariantConst input, JsonVariant output) {
     return generateErrorJSON(output, "'brightness' is a required parameter.");
 }
 
-void generateConfigJSON(JsonVariant output) {
+void generateConfigJSON(JsonVariant output)
+{
   // our identifying info
   output["msg"] = "config";
   output["firmware_version"] = YB_FIRMWARE_VERSION;
@@ -1231,7 +1224,7 @@ void generateConfigJSON(JsonVariant output) {
     output["switches"][i]["name"] = input_channels[i].name;
     output["switches"][i]["enabled"] = input_channels[i].isEnabled;
     output["switches"][i]["mode"] =
-        InputChannel::getModeName(input_channels[i].mode);
+      InputChannel::getModeName(input_channels[i].mode);
     output["switches"][i]["defaultState"] = input_channels[i].defaultState;
   }
 #endif
@@ -1255,7 +1248,8 @@ void generateConfigJSON(JsonVariant output) {
 #endif
 }
 
-void generateUpdateJSON(JsonVariant output) {
+void generateUpdateJSON(JsonVariant output)
+{
   output["msg"] = "update";
   output["uptime"] = esp_timer_get_time();
 
@@ -1310,7 +1304,8 @@ void generateUpdateJSON(JsonVariant output) {
 #endif
 }
 
-void generateFastUpdateJSON(JsonVariant output) {
+void generateFastUpdateJSON(JsonVariant output)
+{
   output["msg"] = "update";
   output["fast"] = 1;
   output["uptime"] = esp_timer_get_time();
@@ -1356,7 +1351,8 @@ void generateFastUpdateJSON(JsonVariant output) {
 #endif
 }
 
-void generateStatsJSON(JsonVariant output) {
+void generateStatsJSON(JsonVariant output)
+{
   // some basic statistics and info
   output["msg"] = "stats";
   output["uuid"] = uuid;
@@ -1388,7 +1384,7 @@ void generateStatsJSON(JsonVariant output) {
   for (byte i = 0; i < YB_INPUT_CHANNEL_COUNT; i++) {
     output["switches"][i]["id"] = i;
     output["switches"][i]["state_change_count"] =
-        input_channels[i].stateChangeCount;
+      input_channels[i].stateChangeCount;
   }
 #endif
 
@@ -1401,7 +1397,7 @@ void generateStatsJSON(JsonVariant output) {
     output["pwm"][i]["wH"] = pwm_channels[i].wattHours;
     output["pwm"][i]["state_change_count"] = pwm_channels[i].stateChangeCount;
     output["pwm"][i]["soft_fuse_trip_count"] =
-        pwm_channels[i].softFuseTripCount;
+      pwm_channels[i].softFuseTripCount;
   }
 #endif
 
@@ -1412,7 +1408,8 @@ void generateStatsJSON(JsonVariant output) {
 #endif
 }
 
-void generateNetworkConfigJSON(JsonVariant output) {
+void generateNetworkConfigJSON(JsonVariant output)
+{
   // our identifying info
   output["msg"] = "network_config";
   output["wifi_mode"] = wifi_mode;
@@ -1421,7 +1418,8 @@ void generateNetworkConfigJSON(JsonVariant output) {
   output["local_hostname"] = local_hostname;
 }
 
-void generateAppConfigJSON(JsonVariant output) {
+void generateAppConfigJSON(JsonVariant output)
+{
   // our identifying info
   output["msg"] = "app_config";
   output["default_role"] = getRoleText(app_default_role);
@@ -1438,41 +1436,47 @@ void generateAppConfigJSON(JsonVariant output) {
   output["server_key"] = server_key;
 }
 
-void generateOTAProgressUpdateJSON(JsonVariant output, float progress) {
+void generateOTAProgressUpdateJSON(JsonVariant output, float progress)
+{
   output["msg"] = "ota_progress";
   output["progress"] = round2(progress);
 }
 
-void generateOTAProgressFinishedJSON(JsonVariant output) {
+void generateOTAProgressFinishedJSON(JsonVariant output)
+{
   output["msg"] = "ota_finished";
 }
 
-void generateErrorJSON(JsonVariant output, const char *error) {
+void generateErrorJSON(JsonVariant output, const char* error)
+{
   output["msg"] = "status";
   output["status"] = "error";
   output["message"] = error;
 }
 
-void generateSuccessJSON(JsonVariant output, const char *success) {
+void generateSuccessJSON(JsonVariant output, const char* success)
+{
   output["msg"] = "status";
   output["status"] = "success";
   output["message"] = success;
 }
 
-void generateLoginRequiredJSON(JsonVariant output) {
+void generateLoginRequiredJSON(JsonVariant output)
+{
   generateErrorJSON(output, "You must be logged in.");
 }
 
 void generatePongJSON(JsonVariant output) { output["pong"] = millis(); }
 
-void sendThemeUpdate() {
+void sendThemeUpdate()
+{
   JsonDocument output;
   output["msg"] = "set_theme";
   output["theme"] = app_theme;
 
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(output);
-  char *jsonBuffer = (char *)malloc(jsonSize + 1);
+  char* jsonBuffer = (char*)malloc(jsonSize + 1);
   jsonBuffer[jsonSize] = '\0'; // null terminate
 
   // did we get anything?
@@ -1483,14 +1487,15 @@ void sendThemeUpdate() {
   free(jsonBuffer);
 }
 
-void sendBrightnessUpdate() {
+void sendBrightnessUpdate()
+{
   JsonDocument output;
   output["msg"] = "set_brightness";
   output["brightness"] = globalBrightness;
 
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(output);
-  char *jsonBuffer = (char *)malloc(jsonSize + 1);
+  char* jsonBuffer = (char*)malloc(jsonSize + 1);
   jsonBuffer[jsonSize] = '\0'; // null terminate
 
   // did we get anything?
@@ -1501,13 +1506,14 @@ void sendBrightnessUpdate() {
   free(jsonBuffer);
 }
 
-void sendFastUpdate() {
+void sendFastUpdate()
+{
   JsonDocument output;
   generateFastUpdateJSON(output);
 
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(output);
-  char *jsonBuffer = (char *)malloc(jsonSize + 1);
+  char* jsonBuffer = (char*)malloc(jsonSize + 1);
   jsonBuffer[jsonSize] = '\0'; // null terminate
 
   // did we get anything?
@@ -1518,13 +1524,14 @@ void sendFastUpdate() {
   free(jsonBuffer);
 }
 
-void sendOTAProgressUpdate(float progress) {
+void sendOTAProgressUpdate(float progress)
+{
   JsonDocument output;
   generateOTAProgressUpdateJSON(output, progress);
 
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(output);
-  char *jsonBuffer = (char *)malloc(jsonSize + 1);
+  char* jsonBuffer = (char*)malloc(jsonSize + 1);
   jsonBuffer[jsonSize] = '\0'; // null terminate
 
   // did we get anything?
@@ -1535,13 +1542,14 @@ void sendOTAProgressUpdate(float progress) {
   free(jsonBuffer);
 }
 
-void sendOTAProgressFinished() {
+void sendOTAProgressFinished()
+{
   JsonDocument output;
   generateOTAProgressFinishedJSON(output);
 
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(output);
-  char *jsonBuffer = (char *)malloc(jsonSize + 1);
+  char* jsonBuffer = (char*)malloc(jsonSize + 1);
   jsonBuffer[jsonSize] = '\0'; // null terminate
 
   // did we get anything?
@@ -1552,7 +1560,8 @@ void sendOTAProgressFinished() {
   free(jsonBuffer);
 }
 
-void sendToAll(const char *jsonString, UserRole auth_level) {
+void sendToAll(const char* jsonString, UserRole auth_level)
+{
   sendToAllWebsockets(jsonString, auth_level);
 
   if (app_enable_serial && serial_role >= auth_level)

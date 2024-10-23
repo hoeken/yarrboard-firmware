@@ -16,24 +16,25 @@
 
 #ifdef YB_HAS_RGB_CHANNELS
 
-#ifdef YB_RGB_DRIVER_TLC5947
-#include <TLC5947_SPI.h>
-#endif
+  #ifdef YB_RGB_DRIVER_TLC5947
+    #include <TLC5947_SPI.h>
+  #endif
 
-class RGBChannel {
-public:
-  byte id = 0;
+class RGBChannel
+{
+  public:
+    byte id = 0;
 
-  float red = 0.0;
-  float green = 0.0;
-  float blue = 0.0;
+    float red = 0.0;
+    float green = 0.0;
+    float blue = 0.0;
 
-  bool isEnabled = true;
-  char name[YB_CHANNEL_NAME_LENGTH];
+    bool isEnabled = true;
+    char name[YB_CHANNEL_NAME_LENGTH];
 
-  void setup();
-  void setRGB(float red, float green, float blue);
-  void updateOutput();
+    void setup();
+    void setRGB(float red, float green, float blue);
+    void updateOutput();
 };
 
 extern RGBChannel rgb_channels[YB_RGB_CHANNEL_COUNT];
