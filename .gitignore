@@ -147,6 +147,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 package-lock.json
-html/yarrboard-client.js
+#html/yarrboard-client.js
 src/index.html.gz.h
 src/logo-navico.png.gz.h
