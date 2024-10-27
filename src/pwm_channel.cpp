@@ -278,6 +278,15 @@ void PWMChannel::setup()
     this->state = true;
   else
     this->state = false;
+
+  // get our initial readings.
+  this->checkVoltage();
+  this->checkAmperage();
+
+  this->voltageOffset = this->voltage;
+  this->amperageOffset = this->amperage;
+
+  Serial.printf("CH%d Voltage Offset: %0.3f / Amperage Offset: %0.3f\n", this->id, this->voltageOffset, this->amperageOffset);
 }
 
 void PWMChannel::setupLedc()
@@ -343,6 +352,8 @@ float PWMChannel::toAmperage(float voltage)
 {
   float amps = (voltage - (3.3 * 0.1)) / (0.132); // ACS725LLCTR-20AU
 
+  amps = amps - this->amperageOffset;
+
   // our floor is zero amps
   amps = max((float)0.0, amps);
 
@@ -363,7 +374,13 @@ void PWMChannel::checkAmperage()
 
 float PWMChannel::toVoltage(float adcVoltage)
 {
-  return adcVoltage / (YB_CHANNEL_VOLTAGE_R2 / (YB_CHANNEL_VOLTAGE_R2 + YB_CHANNEL_VOLTAGE_R1));
+  float v = adcVoltage / (YB_CHANNEL_VOLTAGE_R2 / (YB_CHANNEL_VOLTAGE_R2 + YB_CHANNEL_VOLTAGE_R1));
+  v = v - this->voltageOffset;
+
+  // our floor is zero volts
+  v = max((float)0.0, v);
+
+  return v;
 }
 
 float PWMChannel::getVoltage()

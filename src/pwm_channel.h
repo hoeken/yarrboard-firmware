@@ -71,6 +71,9 @@ class PWMChannel
   #endif
 #endif
 
+    float voltageOffset = 0;
+    float amperageOffset = 0;
+
     float voltage = 0.0;
     float amperage = 0.0;
     float softFuseAmperage = 0.0;

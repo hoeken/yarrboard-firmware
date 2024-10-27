@@ -182,8 +182,13 @@ ADS1115Helper::ADS1115Helper(float vref, uint8_t channel, ADS1115* adc)
 
 unsigned int ADS1115Helper::getReading()
 {
-  unsigned int reading;
+  int16_t reading;
   reading = this->adc->readADC(this->channel);
+
+  // no negatives please.
+  if (reading < 0)
+    reading = 0;
+
   this->addReading(reading);
 
   return reading;
