@@ -16,6 +16,7 @@
 #include "prefs.h"
 #include "protocol.h"
 #include <Arduino.h>
+#include <SPI.h>
 
 class PWMChannel
 {

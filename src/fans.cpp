@@ -33,15 +33,15 @@ unsigned long lastFanCheckMillis = 0;
 // This is really janky because of this ESP32 bug:
 // ESP32 Errata 3.14. Within the same group of GPIO pins, edge interrupts cannot
 // be used together with other interrupts.
-void IRAM_ATTR rpm_fan_0_low() { counter_rpm[0]++; }
-void IRAM_ATTR rpm_fan_1_low() { counter_rpm[1]++; }
+// void IRAM_ATTR rpm_fan_0_low() { counter_rpm[0]++; }
+// void IRAM_ATTR rpm_fan_1_low() { counter_rpm[1]++; }
 
 void fans_setup()
 {
   for (byte i = 0; i < YB_FAN_COUNT; i++) {
     // use the pwm channel directly after our PWM channels
-    ledcSetup(fan_pwm_channel + i, 25000, 8);
-    ledcAttachPin(fan_pwm_pins[i], fan_pwm_channel + i);
+    // ledcSetup(fan_pwm_channel + i, 25000, 8);
+    // ledcAttachPin(fan_pwm_pins[i], fan_pwm_channel + i);
     set_fan_pwm(0);
 
     counter_rpm[i] = 0;
@@ -51,10 +51,10 @@ void fans_setup()
     pinMode(fan_tach_pins[i], INPUT);
     // digitalWrite(fan_tach_pins[i], HIGH);
 
-    if (i == 0)
-      attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_0_low, FALLING);
-    if (i == 1)
-      attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_1_low, FALLING);
+    // if (i == 0)
+    //   attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_0_low, FALLING);
+    // if (i == 1)
+    //   attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_1_low, FALLING);
   }
 }
 
@@ -124,7 +124,7 @@ void measure_fan_rpm(byte i)
 {
   if (millis() - last_tacho_measurement[i] >= 1000) {
     // detach interrupt while calculating rpm
-    detachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]));
+    // detachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]));
 
     // calculate rpm
     fans_last_rpm[i] = counter_rpm[i] * 30;
@@ -136,17 +136,17 @@ void measure_fan_rpm(byte i)
     last_tacho_measurement[i] = millis();
 
     // attach interrupt again
-    if (i == 0)
-      attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_0_low, FALLING);
-    if (i == 1)
-      attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_1_low, FALLING);
+    // if (i == 0)
+    //   attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_0_low, FALLING);
+    // if (i == 1)
+    //   attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_1_low, FALLING);
   }
 }
 
 void set_fan_pwm(byte pwm)
 {
-  ledcWrite(fan_pwm_pins[0], pwm);
-  ledcWrite(fan_pwm_pins[1], pwm);
+  // ledcWrite(fan_pwm_pins[0], pwm);
+  // ledcWrite(fan_pwm_pins[1], pwm);
 }
 
 #endif

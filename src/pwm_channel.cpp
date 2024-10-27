@@ -26,7 +26,7 @@ static volatile bool isChannelFading[YB_FAN_COUNT];
 const unsigned int MAX_DUTY_CYCLE = (int)(pow(2, YB_PWM_CHANNEL_RESOLUTION));
 
   #ifdef YB_PWM_CHANNEL_ADC_DRIVER_MCP3564
-MCP3564 _adcCurrentMCP3564(YB_PWM_CHANNEL_ADC_CS);
+MCP3564 _adcCurrentMCP3564(YB_PWM_CHANNEL_ADC_CS, &SPI, YB_PWM_CHANNEL_ADC_MOSI, YB_PWM_CHANNEL_ADC_MISO, YB_PWM_CHANNEL_ADC_SCK);
   #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
 MCP3208 _adcCurrentMCP3208;
   #endif
@@ -48,10 +48,71 @@ static bool cb_ledc_fade_end_event(const ledc_cb_param_t* param,
   return (taskAwoken == pdTRUE);
 }
 
+void mcp_wrapper()
+{
+  Serial.print(".");
+  _adcCurrentMCP3564.IRQ_handler();
+}
+
 void pwm_channels_setup()
 {
   #ifdef YB_PWM_CHANNEL_ADC_DRIVER_MCP3564
-  _adcCurrentMCP3564.begin();
+
+  // turn on our pullup on the IRQ pin.
+  pinMode(YB_PWM_CHANNEL_ADC_IRQ, INPUT_PULLUP);
+
+  // start up our SPI and ADC objects
+  SPI.begin(YB_PWM_CHANNEL_ADC_SCK, YB_PWM_CHANNEL_ADC_MISO, YB_PWM_CHANNEL_ADC_MOSI, YB_PWM_CHANNEL_ADC_CS);
+  if (!_adcCurrentMCP3564.begin(0, 3.3)) {
+    Serial.println("failed to initialize MCP3564");
+  } else {
+    Serial.println("MCP3564 ok.");
+  }
+
+  _adcCurrentMCP3564.singleEndedMode();
+  _adcCurrentMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
+  _adcCurrentMCP3564.setAveraging(MCP3x6x::osr::OSR_8192);
+
+    // // required since REV D board does not have IRQ connected!!!
+    // _adcCurrentMCP3564.settings.irq.irq_mode = 1;
+    // _adcCurrentMCP3564.write(mcp.settings.irq);
+
+    // _adcCurrentMCP3564.enableScanChannel(MCP_CH0);
+    // _adcCurrentMCP3564.enableScanChannel(MCP_CH1);
+    // _adcCurrentMCP3564.enableScanChannel(MCP_CH2);
+    // _adcCurrentMCP3564.enableScanChannel(MCP_CH3);
+    // _adcCurrentMCP3564.enableScanChannel(MCP_CH4);
+    // _adcCurrentMCP3564.enableScanChannel(MCP_CH5);
+    // _adcCurrentMCP3564.enableScanChannel(MCP_CH6);
+    // _adcCurrentMCP3564.startContinuous();
+
+    // Serial.println("config0");
+    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.config0);
+    // Serial.println("config1");
+    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.config1);
+    // Serial.println("config2");
+    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.config2);
+    // Serial.println("config3");
+    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.config3);
+    // Serial.println("irq");
+    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.irq);
+    // Serial.println("mux");
+    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.mux);
+    // Serial.println("scan");
+    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.scan);
+    // Serial.println("timer");
+    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.timer);
+    // Serial.println("offsetcal");
+    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.offsetcal);
+    // Serial.println("gaincal");
+    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.gaincal);
+
+    // Serial.print("Reference: ");
+    // Serial.println(_adcCurrentMCP3564.getReference());
+
+    // Serial.print("Max Value: ");
+    // Serial.print(_adcCurrentMCP3564.getMaxValue());
+
   #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
   _adcCurrentMCP3208.begin(YB_PWM_CHANNEL_ADC_CS);
   #endif
