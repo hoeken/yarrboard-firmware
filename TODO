@@ -4,7 +4,6 @@ Firmware:
             * channel is OFF, but voltage is within 10% of bus voltage
         * add new state BLOWN when:
             * channel is ON, but voltage is < 1V
-        * 
         * figure out how to handle voltage and wattage during PWM.
             * maybe use bus voltage?
     * fix the issues with the upgrade to ArduinoJSON 7
