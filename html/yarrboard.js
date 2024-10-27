@@ -17,12 +17,12 @@ let ota_started = false;
 const page_list = ["control", "config", "stats", "network", "settings", "system"];
 const page_ready = {
   "control": false,
-  "config":  false,
-  "stats":   false,
+  "config": false,
+  "stats": false,
   "network": false,
   "settings": false,
-  "system":  true,
-  "login":  true
+  "system": true,
+  "login": true
 };
 
 const page_permissions = {
@@ -277,8 +277,7 @@ let currentPWMSliderID = -1;
 let currentRGBPickerID = -1;
 let currentlyPickingBrightness = false;
 
-function start_yarrboard()
-{
+function start_yarrboard() {
   yarrboard_log("User Agent: " + navigator.userAgent);
   yarrboard_log("Window Width: " + window.innerWidth);
   yarrboard_log("Window Height: " + window.innerHeight);
@@ -298,15 +297,15 @@ function start_yarrboard()
   $("#brightnessSlider").on("input", set_brightness);
 
   //stop updating the UI when we are choosing
-  $("#brightnessSlider").on('focus', function(e) {
+  $("#brightnessSlider").on('focus', function (e) {
     currentlyPickingBrightness = true;
   });
 
   //stop updating the UI when we are choosing
-  $("#brightnessSlider").on('touchstart', function(e) {
+  $("#brightnessSlider").on('touchstart', function (e) {
     currentlyPickingBrightness = true;
   });
-  
+
   //restart the UI updates when slider is closed
   $("#brightnessSlider").on("blur", function (e) {
     currentlyPickingBrightness = false;
@@ -318,13 +317,11 @@ function start_yarrboard()
   });
 }
 
-function load_configs()
-{
+function load_configs() {
   if (app_role == "nobody")
     return;
 
-  if(app_role == "admin")
-  {
+  if (app_role == "admin") {
     client.getNetworkConfig();
     client.getAppConfig();
     check_for_updates();
@@ -333,15 +330,13 @@ function load_configs()
   client.getConfig();
 }
 
-function check_connection_status()
-{
-  if (client)
-  {
+function check_connection_status() {
+  if (client) {
     let status = client.status();
 
     //our connection status
     $(".connection_status").hide();
-    
+
     if (status == "CONNECTING")
       $("#connection_startup").show();
     else if (status == "CONNECTED")
@@ -350,15 +345,14 @@ function check_connection_status()
       $("#connection_retrying").show();
     else if (status == "FAILED")
       $("#connection_failed").show();
-  }  
+  }
 }
 
-function start_websocket()
-{
+function start_websocket() {
   //close any old connections
   // if (socket)
   //   socket.close();
-  
+
   //do we want ssl?
   let use_ssl = false;
   if (document.location.protocol == 'https:')
@@ -367,16 +361,13 @@ function start_websocket()
   //open it.
   client = new YarrboardClient(window.location.host, "", "", false, use_ssl);
 
-  client.onopen = function()
-  {
+  client.onopen = function () {
     //figure out what our login situation is
     client.sayHello();
   };
 
-  client.onmessage = function(msg)
-  {
-    if (msg.msg == 'hello')
-    {
+  client.onmessage = function (msg) {
+    if (msg.msg == 'hello') {
       app_role = msg.role;
       default_app_role = msg.default_role;
 
@@ -385,16 +376,15 @@ function start_websocket()
         setTheme(msg.theme);
 
       //auto login?
-      if (Cookies.get("username") && Cookies.get("password")){
+      if (Cookies.get("username") && Cookies.get("password")) {
         client.login(Cookies.get("username"), Cookies.get("password"));
       } else {
         update_role_ui();
-        load_configs();  
-        open_default_page();  
+        load_configs();
+        open_default_page();
       }
     }
-    else if (msg.msg == 'config')
-    {
+    else if (msg.msg == 'config') {
       // yarrboard_log("config");
       // yarrboard_log(msg);
 
@@ -437,18 +427,14 @@ function start_websocket()
       $('#pwmStatsDiv').hide();
 
       //do we have pwm channels?
-      if (msg.pwm)
-      {
+      if (msg.pwm) {
         //fresh slate
         $('#pwmCards').html("");
-        for (ch of msg.pwm)
-        {
-          if (ch.enabled)
-          {
+        for (ch of msg.pwm) {
+          if (ch.enabled) {
             $('#pwmCards').append(PWMControlCard(ch));
 
-            if (ch.isDimmable)
-            {
+            if (ch.isDimmable) {
               $(`#pwmDutySliderButton${ch.id}`).show();
 
               $('#pwmDutySlider' + ch.id).change(set_duty_cycle);
@@ -457,19 +443,19 @@ function start_websocket()
               $('#pwmDutySlider' + ch.id).on("input", set_duty_cycle);
 
               //stop updating the UI when we are choosing a duty
-              $('#pwmDutySlider' + ch.id).on('focus', function(e) {
+              $('#pwmDutySlider' + ch.id).on('focus', function (e) {
                 let ele = e.target;
                 let id = ele.id.match(/\d+/)[0];
                 currentPWMSliderID = id;
               });
 
               //stop updating the UI when we are choosing a duty
-              $('#pwmDutySlider' + ch.id).on('touchstart', function(e) {
+              $('#pwmDutySlider' + ch.id).on('touchstart', function (e) {
                 let ele = e.target;
                 let id = ele.id.match(/\d+/)[0];
                 currentPWMSliderID = id;
               });
-              
+
               //restart the UI updates when slider is closed
               $('#pwmDutySlider' + ch.id).on("blur", function (e) {
                 currentPWMSliderID = -1;
@@ -486,10 +472,8 @@ function start_websocket()
         //$('#pwmCards').append(PWMLegendCard());
 
         $('#pwmStatsTableBody').html("");
-        for (ch of msg.pwm)
-        {
-          if (ch.enabled)
-          {
+        for (ch of msg.pwm) {
+          if (ch.enabled) {
             $('#pwmStatsTableBody').append(`<tr id="pwmStats${ch.id}"></tr>`);
             $('#pwmStats' + ch.id).append(`<td class="pwmName">${ch.name}</td>`);
             $('#pwmStats' + ch.id).append(`<td id="pwmAmpHours${ch.id}" class="text-end"></td>`);
@@ -507,45 +491,38 @@ function start_websocket()
         $('#pwmStatsTotal').append(`<th id="pwmTripCountTotal" class="text-end"></th>`);
 
         $('#controlDiv').show();
-        $('#pwmStatsDiv').show();  
+        $('#pwmStatsDiv').show();
       }
 
       //populate our switch control table
       $('#switchControlDiv').hide();
       $('#switchStatsDiv').hide();
-      if (msg.switches)
-      {
+      if (msg.switches) {
         $('#switchTableBody').html("");
-        for (ch of msg.switches)
-        {
+        for (ch of msg.switches) {
           if (ch.enabled)
             $('#switchTableBody').append(SwitchControlRow(ch.id, ch.name));
         }
 
         $('#switchStatsTableBody').html("");
-        for (ch of msg.switches)
-        {
-          if (ch.enabled)
-          {
+        for (ch of msg.switches) {
+          if (ch.enabled) {
             $('#switchStatsTableBody').append(`<tr id="switchStats${ch.id}"></tr>`);
             $('#switchStats' + ch.id).append(`<td class="switchName">${ch.name}</td>`);
             $('#switchStats' + ch.id).append(`<td id="switchOnCount${ch.id}" class="text-end"></td>`);
           }
         }
-  
+
         $('#switchControlDiv').show();
         $('#switchStatsDiv').show();
       }
 
       //populate our rgb control table
       $('#rgbControlDiv').hide();
-      if (msg.rgb)
-      {
+      if (msg.rgb) {
         $('#rgbTableBody').html("");
-        for (ch of msg.rgb)
-        {
-          if (ch.enabled)
-          {
+        for (ch of msg.rgb) {
+          if (ch.enabled) {
             $('#rgbTableBody').append(RGBControlRow(ch.id, ch.name));
 
             //init our color picker
@@ -553,15 +530,15 @@ function start_websocket()
               color: "#000",
               showPalette: true,
               palette: [
-                ["#000","#444","#666","#999","#ccc","#eee","#f3f3f3","#fff"],
-                ["#f00","#f90","#ff0","#0f0","#0ff","#00f","#90f","#f0f"],
-                ["#f4cccc","#fce5cd","#fff2cc","#d9ead3","#d0e0e3","#cfe2f3","#d9d2e9","#ead1dc"],
-                ["#ea9999","#f9cb9c","#ffe599","#b6d7a8","#a2c4c9","#9fc5e8","#b4a7d6","#d5a6bd"],
-                ["#e06666","#f6b26b","#ffd966","#93c47d","#76a5af","#6fa8dc","#8e7cc3","#c27ba0"],
-                ["#c00","#e69138","#f1c232","#6aa84f","#45818e","#3d85c6","#674ea7","#a64d79"],
-                ["#900","#b45f06","#bf9000","#38761d","#134f5c","#0b5394","#351c75","#741b47"],
-                ["#600","#783f04","#7f6000","#274e13","#0c343d","#073763","#20124d","#4c1130"]
-            ]
+                ["#000", "#444", "#666", "#999", "#ccc", "#eee", "#f3f3f3", "#fff"],
+                ["#f00", "#f90", "#ff0", "#0f0", "#0ff", "#00f", "#90f", "#f0f"],
+                ["#f4cccc", "#fce5cd", "#fff2cc", "#d9ead3", "#d0e0e3", "#cfe2f3", "#d9d2e9", "#ead1dc"],
+                ["#ea9999", "#f9cb9c", "#ffe599", "#b6d7a8", "#a2c4c9", "#9fc5e8", "#b4a7d6", "#d5a6bd"],
+                ["#e06666", "#f6b26b", "#ffd966", "#93c47d", "#76a5af", "#6fa8dc", "#8e7cc3", "#c27ba0"],
+                ["#c00", "#e69138", "#f1c232", "#6aa84f", "#45818e", "#3d85c6", "#674ea7", "#a64d79"],
+                ["#900", "#b45f06", "#bf9000", "#38761d", "#134f5c", "#0b5394", "#351c75", "#741b47"],
+                ["#600", "#783f04", "#7f6000", "#274e13", "#0c343d", "#073763", "#20124d", "#4c1130"]
+              ]
             });
 
             //update our color on change
@@ -571,7 +548,7 @@ function start_websocket()
             $('#rgbPicker' + ch.id).on("move.spectrum", set_rgb_color);
 
             //stop updating the UI when we are choosing a color
-            $('#rgbPicker' + ch.id).on('show.spectrum', function(e) {
+            $('#rgbPicker' + ch.id).on('show.spectrum', function (e) {
               let ele = e.target;
               let id = ele.id.match(/\d+/)[0];
               currentRGBPickerID = id;
@@ -589,11 +566,9 @@ function start_websocket()
 
       //populate our adc control table
       $('#adcControlDiv').hide();
-      if (msg.adc)
-      {
+      if (msg.adc) {
         $('#adcTableBody').html("");
-        for (ch of msg.adc)
-        {
+        for (ch of msg.adc) {
           if (ch.enabled)
             $('#adcTableBody').append(ADCControlRow(ch.id, ch.name));
         }
@@ -602,8 +577,7 @@ function start_websocket()
       }
 
       //only do it as needed
-      if (!page_ready.config || current_page != "config")
-      {
+      if (!page_ready.config || current_page != "config") {
         //populate our pwm edit table
         $('#boardConfigForm').html(BoardNameEdit(msg.name));
 
@@ -612,24 +586,22 @@ function start_websocket()
 
         //edit controls for each pwm
         $('#pwmConfig').hide();
-        if (msg.pwm)
-        {
+        if (msg.pwm) {
           $('#pwmConfigForm').html("");
-          for (ch of msg.pwm)
-          {
+          for (ch of msg.pwm) {
             $('#pwmConfigForm').append(PWMEditCard(ch));
             $(`#fPWMDimmable${ch.id}`).prop("checked", ch.isDimmable);
             $(`#fPWMEnabled${ch.id}`).prop("checked", ch.enabled);
             $(`#fPWMType${ch.id}`).val(ch.type);
             $(`#fPWMDefaultState${ch.id}`).val(ch.defaultState);
-  
+
             //enable/disable other stuff.
             $(`#fPWMName${ch.id}`).prop('disabled', !ch.enabled);
             $(`#fPWMDimmable${ch.id}`).prop('disabled', !ch.enabled);
             $(`#fPWMSoftFuse${ch.id}`).prop('disabled', !ch.enabled);
             $(`#fPWMType${ch.id}`).prop('disabled', !ch.enabled);
             $(`#fPWMDefaultState${ch.id}`).prop('disabled', !ch.enabled);
-  
+
             //validate + save
             $(`#fPWMEnabled${ch.id}`).change(validate_pwm_enabled);
             $(`#fPWMName${ch.id}`).change(validate_pwm_name);
@@ -637,22 +609,20 @@ function start_websocket()
             $(`#fPWMSoftFuse${ch.id}`).change(validate_pwm_soft_fuse);
             $(`#fPWMType${ch.id}`).change(validate_pwm_type);
             $(`#fPWMDefaultState${ch.id}`).change(validate_pwm_default_state);
-          }  
+          }
           $('#pwmConfig').show();
         }
 
         //edit controls for each switch
         $('#switchConfig').hide();
-        if (msg.switches)
-        {
+        if (msg.switches) {
           $('#switchConfigForm').html("");
-          for (ch of msg.switches)
-          {
+          for (ch of msg.switches) {
             $('#switchConfigForm').append(SwitchEditCard(ch));
             $(`#fSwitchEnabled${ch.id}`).prop("checked", ch.enabled);
             $(`#fSwitchMode${ch.id}`).val(ch.mode.toLowerCase());
             $(`#fSwitchDefaultState${ch.id}`).val(ch.defaultState);
-  
+
             //enable/disable other stuff.
             $(`#fSwitchName${ch.id}`).prop('disabled', !ch.enabled);
             $(`#fSwitchMode${ch.id}`).prop('disabled', !ch.enabled);
@@ -663,23 +633,21 @@ function start_websocket()
             $(`#fSwitchName${ch.id}`).change(validate_switch_name);
             $(`#fSwitchMode${ch.id}`).change(validate_switch_mode);
             $(`#fSwitchDefaultState${ch.id}`).change(validate_switch_default_state);
-          }  
+          }
           $('#switchConfig').show();
         }
 
         //edit controls for each rgb
         $('#rgbConfig').hide();
-        if (msg.rgb)
-        {
+        if (msg.rgb) {
           $('#rgbConfigForm').html("");
-          for (ch of msg.rgb)
-          {
+          for (ch of msg.rgb) {
             $('#rgbConfigForm').append(RGBEditCard(ch));
             $(`#fRGBEnabled${ch.id}`).prop("checked", ch.enabled);
-  
+
             //enable/disable other stuff.
             $(`#fRGBName${ch.id}`).prop('disabled', !ch.enabled);
-  
+
             //validate + save
             $(`#fRGBEnabled${ch.id}`).change(validate_rgb_enabled);
             $(`#fRGBName${ch.id}`).change(validate_rgb_name);
@@ -689,17 +657,15 @@ function start_websocket()
 
         //edit controls for each rgb
         $('#adcConfig').hide();
-        if (msg.adc)
-        {
+        if (msg.adc) {
           $('#adcConfigForm').html("");
-          for (ch of msg.adc)
-          {
+          for (ch of msg.adc) {
             $('#adcConfigForm').append(ADCEditCard(ch));
             $(`#fADCEnabled${ch.id}`).prop("checked", ch.enabled);
-  
+
             //enable/disable other stuff.
             $(`#fADCName${ch.id}`).prop('disabled', !ch.enabled);
-  
+
             //validate + save
             $(`#fADCEnabled${ch.id}`).change(validate_adc_enabled);
             $(`#fADCName${ch.id}`).change(validate_adc_name);
@@ -711,16 +677,15 @@ function start_websocket()
 
       //did we get brightness?
       if (msg.brightness && !currentlyPickingBrightness)
-        $('#brightnessSlider').val(Math.round(msg.brightness * 100)); 
-      
+        $('#brightnessSlider').val(Math.round(msg.brightness * 100));
+
       //ready!
       page_ready.config = true;
 
       if (!current_page)
         open_page('control');
     }
-    else if (msg.msg == 'update')
-    {
+    else if (msg.msg == 'update') {
       // yarrboard_log("update");
       // yarrboard_log(msg);
 
@@ -752,53 +717,43 @@ function start_websocket()
       //   $('#bus_voltage_main').hide();
 
       //our pwm info
-      if (msg.pwm)
-      {
-        for (ch of msg.pwm)
-        {
-          if (current_config.pwm[ch.id].enabled)
-          {
-            if (ch.state == "ON")
-            {
+      if (msg.pwm) {
+        for (ch of msg.pwm) {
+          if (current_config.pwm[ch.id].enabled) {
+            if (ch.state == "ON") {
               $('#pwmState' + ch.id).addClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-danger");
               $('#pwmState' + ch.id).removeClass("btn-secondary");
             }
-            else if(ch.state == "TRIP")
-            {
+            else if (ch.state == "TRIP") {
               $('#pwmState' + ch.id).addClass("btn-danger");
               $('#pwmState' + ch.id).removeClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-secondary");
             }
-            else if (ch.state == "OFF")
-            {
+            else if (ch.state == "OFF") {
               $('#pwmState' + ch.id).addClass("btn-secondary");
               $('#pwmState' + ch.id).removeClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-danger");
-            }            
-      
+            }
+
             //duty is a bit of a special case.
             let duty = Math.round(ch.duty * 100);
-            if (current_config.pwm[ch.id].isDimmable)
-            {
-              if (currentPWMSliderID != ch.id)
-              {
-                $('#pwmDutySlider' + ch.id).val(duty); 
+            if (current_config.pwm[ch.id].isDimmable) {
+              if (currentPWMSliderID != ch.id) {
+                $('#pwmDutySlider' + ch.id).val(duty);
                 $('#pwmDutyCycle' + ch.id).html(`${duty}%`);
                 $('#pwmDutyCycle' + ch.id).show();
               }
             }
-            else
-            {
+            else {
               $('#pwmDutyCycle' + ch.id).hide();
             }
-      
-            let current = ch.current.toFixed(1);
+
+            let current = ch.current.toFixed(2);
             let currentHTML = `${current}A`;
             $('#pwmCurrent' + ch.id).html(currentHTML);
 
-            if (msg.bus_voltage)
-            {
+            if (msg.bus_voltage) {
               let wattage = ch.current * msg.bus_voltage;
               wattage = wattage.toFixed(0);
               let wattageHTML = `${wattage}W`;
@@ -811,20 +766,15 @@ function start_websocket()
       }
 
       //our switch info
-      if (msg.switches)
-      {
-        for (ch of msg.switches)
-        {
-          if (current_config.switches[ch.id].enabled)
-          {
-            if (ch.state == "ON")
-            {
+      if (msg.switches) {
+        for (ch of msg.switches) {
+          if (current_config.switches[ch.id].enabled) {
+            if (ch.state == "ON") {
               $('#switchState' + ch.id).html("ON");
               $('#switchState' + ch.id).removeClass("btn-secondary");
               $('#switchState' + ch.id).addClass("btn-success");
             }
-            else if (ch.state == "OFF")
-            {
+            else if (ch.state == "OFF") {
               $('#switchState' + ch.id).html("OFF");
               $('#switchState' + ch.id).removeClass("btn-success");
               $('#switchState' + ch.id).addClass("btn-secondary");
@@ -834,12 +784,9 @@ function start_websocket()
       }
 
       //our rgb info
-      if (msg.rgb)
-      {
-        for (ch of msg.rgb)
-        {
-          if (current_config.rgb[ch.id].enabled && currentRGBPickerID != ch.id)
-          {
+      if (msg.rgb) {
+        for (ch of msg.rgb) {
+          if (current_config.rgb[ch.id].enabled && currentRGBPickerID != ch.id) {
             let _red = Math.round(255 * ch.red);
             let _green = Math.round(255 * ch.green);
             let _blue = Math.round(255 * ch.blue);
@@ -850,37 +797,33 @@ function start_websocket()
       }
 
       //our adc info
-      if (msg.adc)
-      {
-        for (ch of msg.adc)
-        {
-          if (current_config.adc[ch.id].enabled)
-          {
+      if (msg.adc) {
+        for (ch of msg.adc) {
+          if (current_config.adc[ch.id].enabled) {
             let reading = Math.round(ch.reading);
             let voltage = ch.voltage.toFixed(2);
             let percentage = ch.percentage.toFixed(1);
-            
+
             $("#adcReading" + ch.id).html(reading);
             $("#adcVoltage" + ch.id).html(voltage + "V")
             $("#adcPercentage" + ch.id).html(percentage + "%")
 
             $(`#adcBar${ch.id} div`).css("width", percentage + "%");
-            $(`#adcBar${ch.id}`).attr("aria-valuenow", percentage); 
+            $(`#adcBar${ch.id}`).attr("aria-valuenow", percentage);
           }
         }
       }
-      
+
       page_ready.control = true;
     }
-    else if (msg.msg == "stats")
-    {
+    else if (msg.msg == "stats") {
       //yarrboard_log("stats");
 
       //we need this
       if (!current_config)
         return;
 
-      $("#uptime").html(secondsToDhms(Math.round(msg.uptime/1000000)));
+      $("#uptime").html(secondsToDhms(Math.round(msg.uptime / 1000000)));
       if (msg.fps)
         $("#fps").html(msg.fps.toLocaleString("en-US") + " lps");
 
@@ -906,7 +849,7 @@ function start_websocket()
       let memory_used = Math.round((msg.heap_size / (msg.heap_size + msg.free_heap)) * 100);
       $(`#memory_usage div`).css("width", memory_used + "%");
       $(`#memory_usage div`).html(formatBytes(msg.heap_size, 0));
-      $(`#memory_usage`).attr("aria-valuenow", memory_used); 
+      $(`#memory_usage`).attr("aria-valuenow", memory_used);
 
       $("#rssi").html(msg.rssi + "dBm");
       $("#uuid").html(msg.uuid);
@@ -922,17 +865,14 @@ function start_websocket()
       else
         $("#fan_rpm_row").remove();
 
-      if (msg.pwm)
-      {
+      if (msg.pwm) {
         let total_ah = 0.0;
         let total_wh = 0.0;
         let total_on_count = 0;
         let total_trip_count = 0;
 
-        for (ch of msg.pwm)
-        {
-          if (current_config.pwm[ch.id].enabled)
-          {
+        for (ch of msg.pwm) {
+          if (current_config.pwm[ch.id].enabled) {
             $('#pwmAmpHours' + ch.id).html(formatAmpHours(ch.aH));
             $('#pwmWattHours' + ch.id).html(formatWattHours(ch.wH));
             $('#pwmOnCount' + ch.id).html(ch.state_change_count.toLocaleString("en-US"));
@@ -942,7 +882,7 @@ function start_websocket()
             total_wh += parseFloat(ch.wH);
             total_on_count += parseInt(ch.state_change_count);
             total_trip_count += parseInt(ch.soft_fuse_trip_count);
-          }  
+          }
         }
 
         $('#pwmAmpHoursTotal').html(formatAmpHours(total_ah));
@@ -951,22 +891,18 @@ function start_websocket()
         $('#pwmTripCountTotal').html(total_trip_count.toLocaleString("en-US"));
       }
 
-      if (msg.switches)
-      {
-        for (ch of msg.switches)
-        {
-          if (current_config.switches[ch.id].enabled)
-          {
+      if (msg.switches) {
+        for (ch of msg.switches) {
+          if (current_config.switches[ch.id].enabled) {
             $('#switchOnCount' + ch.id).html(ch.state_change_count.toLocaleString("en-US"));
           }
         }
-      }    
+      }
 
       page_ready.stats = true;
     }
     //load up our network config.
-    else if (msg.msg == "network_config")
-    {
+    else if (msg.msg == "network_config") {
       //yarrboard_log("network config");
 
       //save our config.
@@ -978,11 +914,10 @@ function start_websocket()
       $("#wifi_pass").val(msg.wifi_pass);
       $("#local_hostname").val(msg.local_hostname);
 
-      page_ready.network = true;    
+      page_ready.network = true;
     }
     //load up our network config.
-    else if (msg.msg == "app_config")
-    {
+    else if (msg.msg == "app_config") {
       //yarrboard_log("network config");
 
       //save our config.
@@ -1003,7 +938,7 @@ function start_websocket()
       $("#guest_pass").val(msg.guest_pass);
       $("#app_update_interval").val(msg.app_update_interval);
       $("#default_role").val(msg.default_role);
-      $("#default_role").change(function () {toggle_role_passwords($(this).val())});
+      $("#default_role").change(function () { toggle_role_passwords($(this).val()) });
       $("#app_enable_mfd").prop("checked", msg.app_enable_mfd);
       $("#app_enable_api").prop("checked", msg.app_enable_api);
       $("#app_enable_serial").prop("checked", msg.app_enable_serial);
@@ -1014,31 +949,27 @@ function start_websocket()
       $("#server_key").val(msg.server_key);
 
       //hide/show these guys
-      if (msg.app_enable_ssl)
-      {
+      if (msg.app_enable_ssl) {
         $("#server_cert_container").show();
         $("#server_key_container").show();
       }
 
       //make it dynamic too
-      $("#app_enable_ssl").change(function (){
-        if ($("#app_enable_ssl").prop("checked"))
-        {
+      $("#app_enable_ssl").change(function () {
+        if ($("#app_enable_ssl").prop("checked")) {
           $("#server_cert_container").show();
-          $("#server_key_container").show();  
+          $("#server_key_container").show();
         }
-        else
-        {
+        else {
           $("#server_cert_container").hide();
-          $("#server_key_container").hide();  
+          $("#server_key_container").hide();
         }
       });
 
-      page_ready.settings = true;    
+      page_ready.settings = true;
     }
     //load up our network config.
-    else if (msg.msg == "ota_progress")
-    {
+    else if (msg.msg == "ota_progress") {
       //yarrboard_log("ota progress");
 
       //OTA is blocking... so update our heartbeat
@@ -1049,32 +980,28 @@ function start_websocket()
 
       let prog_id = `#firmware_progress`;
       $(prog_id).css("width", progress + "%").text(progress + "%");
-      if (progress == 100)
-      {
+      if (progress == 100) {
         $(prog_id).removeClass("progress-bar-animated");
         $(prog_id).removeClass("progress-bar-striped");
       }
 
       //was that the last?
-      if (progress == 100)
-      {
+      if (progress == 100) {
         show_alert("Firmware update successful.", "success");
 
         //reload our page
-        setTimeout(function (){
+        setTimeout(function () {
           location.reload(true);
-        }, 2500); 
+        }, 2500);
       }
     }
-    else if (msg.status == "error")
-    {
+    else if (msg.status == "error") {
       yarrboard_log(msg.message);
 
       //did we turn login off?
-      if (msg.message == "Login not required.")
-      {
+      if (msg.message == "Login not required.") {
         Cookies.remove("username");
-        Cookies.remove("password");    
+        Cookies.remove("password");
       }
 
       //keep the u gotta login to the login page.
@@ -1083,12 +1010,10 @@ function start_websocket()
       else
         show_alert(msg.message);
     }
-    else if (msg.msg == "login")
-    {
+    else if (msg.msg == "login") {
 
       //keep the login success stuff on the login page.
-      if (msg.message == "Login successful.")
-      {
+      if (msg.message == "Login successful.") {
         //once we know our role, we can load our other configs.
         app_role = msg.role;
 
@@ -1096,37 +1021,32 @@ function start_websocket()
         // yarrboard_log(`current_page: ${current_page}`);
 
         //only needed for login page, otherwise its autologin
-        if (current_page == "login")
-        {
+        if (current_page == "login") {
           //save user/pass to cookies.
-          if (app_username && app_password)
-          {
+          if (app_username && app_password) {
             Cookies.set('username', app_username, { expires: 365 });
             Cookies.set('password', app_password, { expires: 365 });
           }
         }
-        
+
         //prep the site
         update_role_ui();
         load_configs();
-        open_default_page();    
+        open_default_page();
       }
       else
         show_alert(msg.message, "success");
     }
-    else if (msg.msg == "set_theme")
-    {
+    else if (msg.msg == "set_theme") {
       //light/dark mode
       setTheme(msg.theme);
     }
-    else if (msg.msg == "set_brightness")
-    {
+    else if (msg.msg == "set_brightness") {
       //did we get brightness?
       if (msg.brightness && !currentlyPickingBrightness)
-        $('#brightnessSlider').val(Math.round(msg.brightness * 100)); 
+        $('#brightnessSlider').val(Math.round(msg.brightness * 100));
     }
-    else if (msg.msg)
-    {
+    else if (msg.msg) {
       yarrboard_log("[socket] Unknown message: " + JSON.stringify(msg));
     }
   };
@@ -1137,46 +1057,39 @@ function start_websocket()
   client.start();
 }
 
-function show_alert(message, type = 'danger')
-{
+function show_alert(message, type = 'danger') {
   //we only need one alert at a time.
   $('#liveAlertPlaceholder').html(AlertBox(message, type))
 
   //make sure we can see it.
   $('html').animate({
-      scrollTop: 0
-    },
+    scrollTop: 0
+  },
     750 //speed
   );
 }
 
-function toggle_state(id)
-{
+function toggle_state(id) {
   client.togglePWMChannel(id, current_config.hostname, true);
 }
 
-function toggle_adc_details(id)
-{
+function toggle_adc_details(id) {
   $(`#adc${id}Details`).toggle();
 }
 
-function toggle_duty_cycle(id)
-{
+function toggle_duty_cycle(id) {
   $(`#pwmDutySliderRow${id}`).toggle();
 }
 
-function open_page(page)
-{
+function open_page(page) {
   // yarrboard_log(`opening ${page}`);
 
-  if (!page_permissions[app_role].includes(page))
-  {
+  if (!page_permissions[app_role].includes(page)) {
     yarrboard_log(`${page} not allowed for ${app_role}`);
     return;
   }
 
-  if (page == current_page)
-  {
+  if (page == current_page) {
     // yarrboard_log(`already on ${page}.`);
     //return;
   }
@@ -1195,21 +1108,19 @@ function open_page(page)
   $("div.pageContainer").hide();
 
   //special stuff
-  if (page == "login")
-  {
+  if (page == "login") {
     //hide our nav bar
     $("#navbar").hide();
 
     //enter triggers login
-      $(document).on('keypress',function(e) {
-        if(e.which == 13)
-            do_login();
+    $(document).on('keypress', function (e) {
+      if (e.which == 13)
+        do_login();
     });
   }
 
   //sad to see you go.
-  if (page == "logout")
-  {
+  if (page == "logout") {
     Cookies.remove("username");
     Cookies.remove("password");
 
@@ -1221,10 +1132,9 @@ function open_page(page)
     if (app_role == "nobody")
       open_page("login");
     else
-      open_page("control"); 
+      open_page("control");
   }
-  else
-  {
+  else {
     //update our nav
     $('.nav-link').removeClass("active");
     $(`#${page}Nav a`).addClass("active");
@@ -1234,25 +1144,20 @@ function open_page(page)
   }
 }
 
-function on_page_ready()
-{
+function on_page_ready() {
   //is our page ready yet?
-  if (page_ready[current_page])
-  {
+  if (page_ready[current_page]) {
     $("#loading").hide();
     $(`#${current_page}Page`).show();
   }
-  else
-  {
+  else {
     $("#loading").show();
     setTimeout(on_page_ready, 100);
   }
 }
 
-function get_stats_data()
-{
-  if (client.isOpen() && (app_role == 'guest' || app_role == 'admin'))
-  {
+function get_stats_data() {
+  if (client.isOpen() && (app_role == 'guest' || app_role == 'admin')) {
     //yarrboard_log("get_stats");
 
     client.getStats();
@@ -1263,10 +1168,8 @@ function get_stats_data()
   }
 }
 
-function get_update_data()
-{
-  if (client.isOpen() && (app_role == 'guest' || app_role == 'admin'))
-  {
+function get_update_data() {
+  if (client.isOpen() && (app_role == 'guest' || app_role == 'admin')) {
     //yarrboard_log("get_update");
 
     client.getUpdate();
@@ -1277,18 +1180,15 @@ function get_update_data()
   }
 }
 
-function validate_board_name(e)
-{
+function validate_board_name(e) {
   let ele = e.target;
   let value = ele.value;
 
-  if (value.length <= 0 || value.length > 30)
-  {
+  if (value.length <= 0 || value.length > 30) {
     $(ele).removeClass("is-valid");
     $(ele).addClass("is-invalid");
   }
-  else
-  {
+  else {
     $(ele).removeClass("is-invalid");
     $(ele).addClass("is-valid");
 
@@ -1300,63 +1200,55 @@ function validate_board_name(e)
   }
 }
 
-function set_duty_cycle(e)
-{
+function set_duty_cycle(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
   let value = ele.value;
 
   //must be realistic.
-  if (value >= 0 && value <= 100)
-  {
+  if (value >= 0 && value <= 100) {
     //update our button
     $(`#pwmDutyCycle${id}`).html(Math.round(value) + '%');
 
     //we want a duty value from 0 to 1
     value = value / 100;
-  
+
     //update our duty cycle
     client.setPWMChannelDuty(id, value, false);
   }
 }
 
-function set_brightness(e)
-{
+function set_brightness(e) {
   let ele = e.target;
   let value = ele.value;
 
   //must be realistic.
-  if (value >= 0 && value <= 100)
-  {
+  if (value >= 0 && value <= 100) {
     //we want a duty value from 0 to 1
     value = value / 100;
-  
+
     //update our duty cycle
     client.setBrightness(value, false);
   }
 }
 
-function update_theme_switch()
-{
+function update_theme_switch() {
   if (this.checked)
     setTheme("dark");
   else
     setTheme("light");
 }
 
-function validate_pwm_name(e)
-{
+function validate_pwm_name(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
   let value = ele.value;
 
-  if (value.length <= 0 || value.length > 30)
-  {
+  if (value.length <= 0 || value.length > 30) {
     $(ele).removeClass("is-valid");
     $(ele).addClass("is-invalid");
   }
-  else
-  {
+  else {
     $(ele).removeClass("is-invalid");
     $(ele).addClass("is-valid");
 
@@ -1369,8 +1261,7 @@ function validate_pwm_name(e)
   }
 }
 
-function validate_pwm_dimmable(e)
-{
+function validate_pwm_dimmable(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
   let value = ele.checked;
@@ -1386,8 +1277,7 @@ function validate_pwm_dimmable(e)
   });
 }
 
-function validate_pwm_enabled(e)
-{
+function validate_pwm_enabled(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
   let value = ele.checked;
@@ -1410,20 +1300,17 @@ function validate_pwm_enabled(e)
   });
 }
 
-function validate_pwm_soft_fuse(e)
-{
+function validate_pwm_soft_fuse(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
   let value = parseFloat(ele.value);
 
   //real numbers only, pal.
-  if (isNaN(value) || value <= 0 || value > 20)
-  {
+  if (isNaN(value) || value <= 0 || value > 20) {
     $(ele).removeClass("is-valid");
     $(ele).addClass("is-invalid");
   }
-  else
-  {
+  else {
     $(ele).removeClass("is-invalid");
     $(ele).addClass("is-valid");
 
@@ -1436,19 +1323,16 @@ function validate_pwm_soft_fuse(e)
   }
 }
 
-function validate_pwm_type(e)
-{
+function validate_pwm_type(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
   let value = ele.value;
 
-  if (value.length <= 0 || value.length > 30)
-  {
+  if (value.length <= 0 || value.length > 30) {
     $(ele).removeClass("is-valid");
     $(ele).addClass("is-invalid");
   }
-  else
-  {
+  else {
     $(ele).removeClass("is-invalid");
     $(ele).addClass("is-valid");
 
@@ -1461,19 +1345,16 @@ function validate_pwm_type(e)
   }
 }
 
-function validate_pwm_default_state(e)
-{
+function validate_pwm_default_state(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
   let value = ele.value;
 
-  if (value.length <= 0 || value.length > 10)
-  {
+  if (value.length <= 0 || value.length > 10) {
     $(ele).removeClass("is-valid");
     $(ele).addClass("is-invalid");
   }
-  else
-  {
+  else {
     $(ele).removeClass("is-invalid");
     $(ele).addClass("is-valid");
 
@@ -1486,19 +1367,16 @@ function validate_pwm_default_state(e)
   }
 }
 
-function validate_switch_name(e)
-{
+function validate_switch_name(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
   let value = ele.value;
 
-  if (value.length <= 0 || value.length > 30)
-  {
+  if (value.length <= 0 || value.length > 30) {
     $(ele).removeClass("is-valid");
     $(ele).addClass("is-invalid");
   }
-  else
-  {
+  else {
     $(ele).removeClass("is-invalid");
     $(ele).addClass("is-valid");
 
@@ -1511,8 +1389,7 @@ function validate_switch_name(e)
   }
 }
 
-function validate_switch_mode(e)
-{
+function validate_switch_mode(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
   //let value = ele.value;
@@ -1529,19 +1406,16 @@ function validate_switch_mode(e)
   });
 }
 
-function validate_switch_default_state(e)
-{
+function validate_switch_default_state(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
   let value = ele.value;
 
-  if (value.length <= 0 || value.length > 10)
-  {
+  if (value.length <= 0 || value.length > 10) {
     $(ele).removeClass("is-valid");
     $(ele).addClass("is-invalid");
   }
-  else
-  {
+  else {
     $(ele).removeClass("is-invalid");
     $(ele).addClass("is-valid");
 
@@ -1554,8 +1428,7 @@ function validate_switch_default_state(e)
   }
 }
 
-function validate_switch_enabled(e)
-{
+function validate_switch_enabled(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
   let value = ele.checked;
@@ -1576,8 +1449,7 @@ function validate_switch_enabled(e)
   });
 }
 
-function set_rgb_color(e, color)
-{
+function set_rgb_color(e, color) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
 
@@ -1590,19 +1462,16 @@ function set_rgb_color(e, color)
   client.setRGB(id, red.toFixed(4), green.toFixed(4), blue.toFixed(4), false);
 }
 
-function validate_rgb_name(e)
-{
+function validate_rgb_name(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
   let value = ele.value;
 
-  if (value.length <= 0 || value.length > 30)
-  {
+  if (value.length <= 0 || value.length > 30) {
     $(ele).removeClass("is-valid");
     $(ele).addClass("is-invalid");
   }
-  else
-  {
+  else {
     $(ele).removeClass("is-invalid");
     $(ele).addClass("is-valid");
 
@@ -1615,8 +1484,7 @@ function validate_rgb_name(e)
   }
 }
 
-function validate_rgb_enabled(e)
-{
+function validate_rgb_enabled(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
   let value = ele.checked;
@@ -1635,19 +1503,16 @@ function validate_rgb_enabled(e)
   });
 }
 
-function validate_adc_name(e)
-{
+function validate_adc_name(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
   let value = ele.value;
 
-  if (value.length <= 0 || value.length > 30)
-  {
+  if (value.length <= 0 || value.length > 30) {
     $(ele).removeClass("is-valid");
     $(ele).addClass("is-invalid");
   }
-  else
-  {
+  else {
     $(ele).removeClass("is-invalid");
     $(ele).addClass("is-valid");
 
@@ -1660,8 +1525,7 @@ function validate_adc_name(e)
   }
 }
 
-function validate_adc_enabled(e)
-{
+function validate_adc_enabled(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
   let value = ele.checked;
@@ -1680,16 +1544,14 @@ function validate_adc_enabled(e)
   });
 }
 
-function do_login(e)
-{
+function do_login(e) {
   app_username = $('#username').val();
   app_password = $('#password').val();
 
   client.login(app_username, app_password);
 }
 
-function save_network_settings()
-{
+function save_network_settings() {
   //get our data
   let wifi_mode = $("#wifi_mode").val();
   let wifi_ssid = $("#wifi_ssid").val();
@@ -1711,13 +1573,12 @@ function save_network_settings()
   });
 
   //reload our page
-  setTimeout(function (){
+  setTimeout(function () {
     location.reload();
-  }, 2500);  
+  }, 2500);
 }
 
-function save_app_settings()
-{
+function save_app_settings() {
   //get our data
   let admin_user = $("#admin_user").val();
   let admin_pass = $("#admin_pass").val();
@@ -1742,15 +1603,13 @@ function save_app_settings()
   update_role_ui();
 
   //helper function to keep admin logged in.
-  if (default_app_role != "admin")
-  {
+  if (default_app_role != "admin") {
     Cookies.set('username', admin_user, { expires: 365 });
     Cookies.set('password', admin_pass, { expires: 365 });
   }
-  else
-  {
+  else {
     Cookies.remove("username");
-    Cookies.remove("password");    
+    Cookies.remove("password");
   }
 
   //okay, send it off.
@@ -1774,48 +1633,41 @@ function save_app_settings()
   show_alert("App settings have been updated.", "success");
 }
 
-function restart_board()
-{
-  if (confirm("Are you sure you want to restart your Yarrboard?"))
-  {
+function restart_board() {
+  if (confirm("Are you sure you want to restart your Yarrboard?")) {
     client.restart();
 
     show_alert("Yarrboard is now restarting, please be patient.", "primary");
-    
-    setTimeout(function (){
+
+    setTimeout(function () {
       location.reload();
     }, 5000);
   }
 }
 
-function reset_to_factory()
-{
-  if (confirm("WARNING! Are you sure you want to reset your Yarrboard to factory defaults?  This cannot be undone."))
-  {
+function reset_to_factory() {
+  if (confirm("WARNING! Are you sure you want to reset your Yarrboard to factory defaults?  This cannot be undone.")) {
     client.factoryReset();
 
     show_alert("Yarrboard is now resetting to factory defaults, please be patient.", "primary");
   }
 }
 
-function check_for_updates()
-{
+function check_for_updates() {
   //did we get a config yet?
-  if (current_config)
-  {
+  if (current_config) {
     $.ajax({
       url: "https://raw.githubusercontent.com/hoeken/yarrboard-firmware/main/firmware.json",
       cache: false,
       dataType: "json",
-      success: function(jdata) {
+      success: function (jdata) {
         //did we get anything?
         let data;
         for (firmware of jdata)
           if (firmware.type == current_config.hardware_version)
             data = firmware;
 
-        if (!data)
-        {
+        if (!data) {
           show_alert(`Could not find a firmware for this hardware.`, "danger");
           return;
         }
@@ -1823,10 +1675,8 @@ function check_for_updates()
         $("#firmware_checking").hide();
 
         //do we have a new version?
-        if (compareVersions(data.version, current_config.firmware_version))
-        {
-          if (data.changelog)
-          {
+        if (compareVersions(data.version, current_config.firmware_version)) {
+          if (data.changelog) {
             $("#firmware_changelog").append(marked.parse(data.changelog));
             $("#firmware_changelog").show();
           }
@@ -1847,8 +1697,7 @@ function check_for_updates()
     setTimeout(check_for_updates, 1000);
 }
 
-function update_firmware()
-{
+function update_firmware() {
   $("#btn_update_firmware").prop("disabled", true);
   $("#progress_wrapper").show();
 
@@ -1858,45 +1707,37 @@ function update_firmware()
   ota_started = true;
 }
 
-function toggle_role_passwords(role)
-{
-  if (role == "admin")
-  {
+function toggle_role_passwords(role) {
+  if (role == "admin") {
     $(".admin_credentials").hide();
     $(".guest_credentials").hide();
   }
-  else if (role == "guest")
-  {
+  else if (role == "guest") {
     $(".admin_credentials").show();
     $(".guest_credentials").hide();
   }
-  else
-  {
+  else {
     $(".admin_credentials").show();
     $(".guest_credentials").show();
-  }  
+  }
 }
 
-function update_role_ui()
-{
+function update_role_ui() {
   //what nav tabs should we be able to see?
-  if (app_role == "admin")
-  {
+  if (app_role == "admin") {
     $("#navbar").show();
     $(".nav-permission").show();
   }
-  else if (app_role == "guest")
-  {
+  else if (app_role == "guest") {
     $("#navbar").show();
     $(".nav-permission").hide();
     page_permissions[app_role].forEach((page) => {
       $(`#${page}Nav`).show();
     });
   }
-  else
-  {
+  else {
     $("#navbar").hide();
-    $(".nav-permission").hide();  
+    $(".nav-permission").hide();
   }
 
   //show login or not?
@@ -1911,16 +1752,13 @@ function update_role_ui()
   if (default_app_role == 'nobody' && app_role != 'nobody')
     $('#logoutNav').show();
   if (default_app_role == 'guest' && app_role == 'admin')
-    $('#logoutNav').show();  
+    $('#logoutNav').show();
 }
 
-function open_default_page()
-{
-  if (app_role != 'nobody')
-  {
+function open_default_page() {
+  if (app_role != 'nobody') {
     //check to see if we want a certain page
-    if (window.location.hash)
-    {
+    if (window.location.hash) {
       let page = window.location.hash.substring(1);
       if (page_list.includes(page))
         open_page(page);
@@ -1932,14 +1770,13 @@ function open_default_page()
     open_page('login');
 }
 
-function secondsToDhms(seconds)
-{
+function secondsToDhms(seconds) {
   seconds = Number(seconds);
-  var d = Math.floor(seconds / (3600*24));
-  var h = Math.floor(seconds % (3600*24) / 3600);
+  var d = Math.floor(seconds / (3600 * 24));
+  var h = Math.floor(seconds % (3600 * 24) / 3600);
   var m = Math.floor(seconds % 3600 / 60);
   var s = Math.floor(seconds % 60);
-  
+
   var dDisplay = d > 0 ? d + (d == 1 ? " day, " : " days, ") : "";
   var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
   var mDisplay = (m > 0 && d == 0) ? m + (m == 1 ? " minute, " : " minutes, ") : "";
@@ -1948,8 +1785,7 @@ function secondsToDhms(seconds)
   return (dDisplay + hDisplay + mDisplay + sDisplay).replace(/,\s*$/, "");
 }
 
-function formatAmpHours(aH)
-{
+function formatAmpHours(aH) {
   //low amp hours?
   if (aH < 10)
     return aH.toFixed(3) + "&nbsp;Ah";
@@ -1979,8 +1815,7 @@ function formatAmpHours(aH)
     return Math.round(aH) + "&nbsp;MAh";
 }
 
-function formatWattHours(wH)
-{
+function formatWattHours(wH) {
   //low watt hours?
   if (wH < 10)
     return wH.toFixed(3) + "&nbsp;Wh";
@@ -2023,36 +1858,34 @@ function formatBytes(bytes, decimals = 1) {
 }
 
 // return true if 'first' is greater than or equal to 'second'
-function compareVersions(first, second)
-{
+function compareVersions(first, second) {
 
-    var a = first.split('.');
-    var b = second.split('.');
+  var a = first.split('.');
+  var b = second.split('.');
 
-    for (var i = 0; i < a.length; ++i) {
-        a[i] = Number(a[i]);
-    }
-    for (var i = 0; i < b.length; ++i) {
-        b[i] = Number(b[i]);
-    }
-    if (a.length == 2) {
-        a[2] = 0;
-    }
+  for (var i = 0; i < a.length; ++i) {
+    a[i] = Number(a[i]);
+  }
+  for (var i = 0; i < b.length; ++i) {
+    b[i] = Number(b[i]);
+  }
+  if (a.length == 2) {
+    a[2] = 0;
+  }
 
-    if (a[0] > b[0]) return true;
-    if (a[0] < b[0]) return false;
+  if (a[0] > b[0]) return true;
+  if (a[0] < b[0]) return false;
 
-    if (a[1] > b[1]) return true;
-    if (a[1] < b[1]) return false;
+  if (a[1] > b[1]) return true;
+  if (a[1] < b[1]) return false;
 
-    if (a[2] > b[2]) return true;
-    if (a[2] < b[2]) return false;
+  if (a[2] > b[2]) return true;
+  if (a[2] < b[2]) return false;
 
-    return true;
+  return true;
 }
 
-function yarrboard_log(message)
-{
+function yarrboard_log(message) {
   // Create a new Date object
   const currentDate = new Date();
 
@@ -2095,8 +1928,7 @@ window.addEventListener('unhandledrejection', function (e) {
 function getStoredTheme() { localStorage.getItem('theme'); }
 function setStoredTheme() { localStorage.setItem('theme', theme); }
 
-function getPreferredTheme()
-{
+function getPreferredTheme() {
   const storedTheme = getStoredTheme();
 
   if (storedTheme)
@@ -2105,8 +1937,7 @@ function getPreferredTheme()
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
-function setTheme(theme)
-{
+function setTheme(theme) {
   if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
     document.documentElement.setAttribute('data-bs-theme', 'dark');
   else
@@ -2125,7 +1956,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
     setTheme(getPreferredTheme());
 });
 
-function getViewport () {
+function getViewport() {
   // https://stackoverflow.com/a/8876069
   const width = Math.max(
     document.documentElement.clientWidth,
@@ -2175,7 +2006,7 @@ const pwm_type_images = {
     `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-lightbulb" viewBox="0 0 16 16">
       <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6m6-5a5 5 0 0 0-3.479 8.592c.263.254.514.564.676.941L5.83 12h4.342l.632-1.467c.162-.377.413-.687.676-.941A5 5 0 0 0 8 1"/>
     </svg>`,
-  "motor": 
+  "motor":
     `<svg xmlns="http://www.w3.org/2000/svg" height="32" width="32" version="1.1" fill="currentColor"
 	 viewBox="0 0 452.263 452.263" xml:space="preserve">
       <path d="M405.02,161.533c-4.971,0-9,4.029-9,9v53.407h-18.298v-45.114c0-4.971-4.029-9-9-9h-41.756l-7.778-25.93
@@ -2195,46 +2026,45 @@ const pwm_type_images = {
       <path fill-rule="evenodd" d="M7.21.8C7.69.295 8 0 8 0c.109.363.234.708.371 1.038.812 1.946 2.073 3.35 3.197 4.6C12.878 7.096 14 8.345 14 10a6 6 0 0 1-12 0C2 6.668 5.58 2.517 7.21.8zm.413 1.021A31.25 31.25 0 0 0 5.794 3.99c-.726.95-1.436 2.008-1.96 3.07C3.304 8.133 3 9.138 3 10a5 5 0 0 0 10 0c0-1.201-.796-2.157-2.181-3.7l-.03-.032C9.75 5.11 8.5 3.72 7.623 1.82z"/>
       <path fill-rule="evenodd" d="M4.553 7.776c.82-1.641 1.717-2.753 2.093-3.13l.708.708c-.29.29-1.128 1.311-1.907 2.87z"/>
     </svg>`,
-  "bilge_pump": 
+  "bilge_pump":
     `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" fill="currentColor" version="1.1" x="0px" y="0px" viewBox="0 0 88.897 67.50625000000001" xml:space="preserve"><path d="M76.259,5.14l0.55-1.123c0.453-0.92,1.572-1.305,2.471-0.779l2.429,1.404  c0.854,0.494,1.154,1.609,0.718,2.486l-3.249,6.596l-5.552-3.207c-5.162-2.629-11.203-4.502-16.978-4.502H27.557  c-6.152,0-12.794,2.166-18.219,5.158l11.368,23.074h41.212l6.2-12.586l5.459,3.436L65.867,40.75  c-0.057,0.109-0.123,0.217-0.199,0.316l-0.608,1.227l-0.064,0.08c-0.271,0.338-0.745,0.566-1.163,0.656  c-0.972,0.215-2.003-0.121-2.861-0.566c-0.555-0.285-1.477-0.324-2.085-0.295c-1.333,0.061-2.698,0.426-3.935,0.906  c-4.462,1.727-8.49,5.334-11.597,8.885l-0.021,0.021l-2.022,2.025l-2.026-2.025l-0.021-0.021c-3.11-3.551-7.142-7.158-11.611-8.885  c-1.238-0.48-2.605-0.846-3.936-0.906c-0.613-0.029-1.535,0.01-2.093,0.295c-0.857,0.445-1.891,0.781-2.86,0.566  c-0.422-0.09-0.895-0.318-1.167-0.656l-0.063-0.078l-0.697-1.406c-0.045-0.064-0.026-0.035-0.074-0.139l-1.034-2.094l-1.562-3.15  l0.01-0.004L0.198,7.128c-0.435-0.881-0.136-1.992,0.72-2.486l2.429-1.404c0.897-0.525,2.014-0.141,2.47,0.779l0.873,1.777  C12.947,2.404,20.476,0,27.557,0h29.091C63.337,0,70.279,2.117,76.259,5.14L76.259,5.14z"/><polygon fill-rule="evenodd" clip-rule="evenodd" points="41.886,19.367 82.375,19.367 82.375,21.25 82.375,22.857   82.375,24.466 88.897,18.031 82.375,11.601 82.375,14.816 82.375,16.699 41.886,16.699 39.257,16.699 39.223,16.699 39.223,29.947   41.886,29.947 41.886,19.367 "/>`,
-  "fuel_pump": 
+  "fuel_pump":
     `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-fuel-pump" viewBox="0 0 16 16">
       <path d="M3 2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-.5.5h-5a.5.5 0 0 1-.5-.5z"/>
       <path d="M1 2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v8a2 2 0 0 1 2 2v.5a.5.5 0 0 0 1 0V8h-.5a.5.5 0 0 1-.5-.5V4.375a.5.5 0 0 1 .5-.5h1.495c-.011-.476-.053-.894-.201-1.222a.97.97 0 0 0-.394-.458c-.184-.11-.464-.195-.9-.195a.5.5 0 0 1 0-1c.564 0 1.034.11 1.412.336.383.228.634.551.794.907.295.655.294 1.465.294 2.081v3.175a.5.5 0 0 1-.5.501H15v4.5a1.5 1.5 0 0 1-3 0V12a1 1 0 0 0-1-1v4h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1zm9 0a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v13h8z"/>
     </svg>`,
-  "fan": 
+  "fan":
     `<svg width="32" height="32" fill="currentColor" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 122.88 122.07"><defs><style>.cls-1{fill-rule:evenodd;}</style></defs><title>fan-blades</title><path class="cls-1" d="M67.29,82.9c-.11,1.3-.26,2.6-.47,3.9-1.43,9-5.79,14.34-8.08,22.17C56,118.45,65.32,122.53,73.27,122A37.63,37.63,0,0,0,85,119a45,45,0,0,0,9.32-5.36c20.11-14.8,16-34.9-6.11-46.36a15,15,0,0,0-4.14-1.4,22,22,0,0,1-6,11.07l0,0A22.09,22.09,0,0,1,67.29,82.9ZM62.4,44.22a17.1,17.1,0,1,1-17.1,17.1,17.1,17.1,0,0,1,17.1-17.1ZM84.06,56.83c1.26.05,2.53.14,3.79.29,9.06,1,14.58,5.16,22.5,7.1,9.6,2.35,13.27-7.17,12.41-15.09a37.37,37.37,0,0,0-3.55-11.57,45.35,45.35,0,0,0-5.76-9.08C97.77,9,77.88,14,67.4,36.63a14.14,14.14,0,0,0-1,2.94A22,22,0,0,1,78,45.68l0,0a22.07,22.07,0,0,1,6,11.13Zm-26.9-17c0-1.6.13-3.21.31-4.81,1-9.07,5.12-14.6,7-22.52C66.86,2.89,57.32-.75,49.41.13A37.4,37.4,0,0,0,37.84,3.7a44.58,44.58,0,0,0-9.06,5.78C9.37,25.2,14.39,45.08,37,55.51a14.63,14.63,0,0,0,3.76,1.14A22.12,22.12,0,0,1,57.16,39.83ZM40.66,65.42a52.11,52.11,0,0,1-5.72-.24c-9.08-.88-14.67-4.92-22.62-6.73C2.68,56.25-.83,65.84.16,73.74A37.45,37.45,0,0,0,3.9,85.25a45.06,45.06,0,0,0,5.91,9c16,19.17,35.8,13.87,45.91-8.91a15.93,15.93,0,0,0,.88-2.66A22.15,22.15,0,0,1,40.66,65.42Z"/></svg>`,
-  "solenoid": 
+  "solenoid":
     `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-magnet" viewBox="0 0 16 16">
     <path d="M8 1a7 7 0 0 0-7 7v3h4V8a3 3 0 0 1 6 0v3h4V8a7 7 0 0 0-7-7m7 11h-4v3h4zM5 12H1v3h4zM0 8a8 8 0 1 1 16 0v8h-6V8a2 2 0 1 0-4 0v8H0z"/>
   </svg>`,
-  "fridge": 
+  "fridge":
     `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-thermometer-low" viewBox="0 0 16 16">
     <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V9.5a.5.5 0 0 1 1 0v1.585a1.5 1.5 0 0 1 1 1.415"/>
     <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1"/>
   </svg>`,
-  "freezer": 
+  "freezer":
     `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-snow" viewBox="0 0 16 16">
       <path d="M8 16a.5.5 0 0 1-.5-.5v-1.293l-.646.647a.5.5 0 0 1-.707-.708L7.5 12.793V8.866l-3.4 1.963-.496 1.85a.5.5 0 1 1-.966-.26l.237-.882-1.12.646a.5.5 0 0 1-.5-.866l1.12-.646-.884-.237a.5.5 0 1 1 .26-.966l1.848.495L7 8 3.6 6.037l-1.85.495a.5.5 0 0 1-.258-.966l.883-.237-1.12-.646a.5.5 0 1 1 .5-.866l1.12.646-.237-.883a.5.5 0 1 1 .966-.258l.495 1.849L7.5 7.134V3.207L6.147 1.854a.5.5 0 1 1 .707-.708l.646.647V.5a.5.5 0 1 1 1 0v1.293l.647-.647a.5.5 0 1 1 .707.708L8.5 3.207v3.927l3.4-1.963.496-1.85a.5.5 0 1 1 .966.26l-.236.882 1.12-.646a.5.5 0 0 1 .5.866l-1.12.646.883.237a.5.5 0 1 1-.26.966l-1.848-.495L9 8l3.4 1.963 1.849-.495a.5.5 0 0 1 .259.966l-.883.237 1.12.646a.5.5 0 0 1-.5.866l-1.12-.646.236.883a.5.5 0 1 1-.966.258l-.495-1.849-3.4-1.963v3.927l1.353 1.353a.5.5 0 0 1-.707.708l-.647-.647V15.5a.5.5 0 0 1-.5.5z"/>
     </svg>`,
-  "charger": 
+  "charger":
     `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning-charge" viewBox="0 0 16 16">
     <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09zM4.157 8.5H7a.5.5 0 0 1 .478.647L6.11 13.59l5.732-6.09H9a.5.5 0 0 1-.478-.647L9.89 2.41z"/>
   </svg>`,
-  "electronics": 
+  "electronics":
     `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-motherboard" viewBox="0 0 16 16">
     <path d="M11.5 2a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5m2 0a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5m-10 8a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1zM5 3a1 1 0 0 0-1 1h-.5a.5.5 0 0 0 0 1H4v1h-.5a.5.5 0 0 0 0 1H4a1 1 0 0 0 1 1v.5a.5.5 0 0 0 1 0V8h1v.5a.5.5 0 0 0 1 0V8a1 1 0 0 0 1-1h.5a.5.5 0 0 0 0-1H9V5h.5a.5.5 0 0 0 0-1H9a1 1 0 0 0-1-1v-.5a.5.5 0 0 0-1 0V3H6v-.5a.5.5 0 0 0-1 0zm0 1h3v3H5zm6.5 7a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"/>
     <path d="M1 2a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-2H.5a.5.5 0 0 1-.5-.5v-1A.5.5 0 0 1 .5 9H1V8H.5a.5.5 0 0 1-.5-.5v-1A.5.5 0 0 1 .5 6H1V5H.5a.5.5 0 0 1-.5-.5v-2A.5.5 0 0 1 .5 2zm1 11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1z"/>
   </svg>`,
-  "other": 
+  "other":
     `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
       <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
       <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
     </svg>`
 };
 
-function pwm_get_type_image(ch)
-{
+function pwm_get_type_image(ch) {
   if (ch.type == "")
-    return ;
+    return;
 }

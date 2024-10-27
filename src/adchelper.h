@@ -82,6 +82,7 @@ class MCP3564Helper : public ADCHelper
     MCP3564Helper();
     MCP3564Helper(float vref, uint8_t channel, MCP3564* adc);
     unsigned int getReading();
+    float toVoltage(unsigned int reading);
 
   private:
     unsigned int _channelAddresses[8] = {MCP_CH0, MCP_CH1, MCP_CH2, MCP_CH3, MCP_CH4, MCP_CH5, MCP_CH6, MCP_CH7};

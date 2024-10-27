@@ -32,6 +32,9 @@ float ADCHelper::getVoltage() { return this->toVoltage(this->getReading()); }
 
 unsigned int ADCHelper::getAverageReading()
 {
+  // Serial.printf("Reading Count: %d\n", this->readingCount);
+  // Serial.printf("Cumulative Readings: %d\n", this->cumulativeReadings);
+
   if (this->readingCount > 0)
     return round((float)this->cumulativeReadings / (float)this->readingCount);
   else
@@ -92,7 +95,7 @@ unsigned int MCP3208Helper::getReading()
 
 MCP3564Helper::MCP3564Helper() : ADCHelper::ADCHelper() {}
 MCP3564Helper::MCP3564Helper(float vref, uint8_t channel, MCP3564* adc)
-    : ADCHelper::ADCHelper(vref, 12)
+    : ADCHelper::ADCHelper(vref, 24)
 {
   this->channel = channel;
   this->adc = adc;
@@ -100,10 +103,16 @@ MCP3564Helper::MCP3564Helper(float vref, uint8_t channel, MCP3564* adc)
 
 unsigned int MCP3564Helper::getReading()
 {
-  unsigned int reading = this->adc->analogRead(_channelAddresses[this->channel]);
+  unsigned int reading;
+  reading = this->adc->analogRead(_channelAddresses[this->channel]);
   this->addReading(reading);
 
   return reading;
+}
+
+float MCP3564Helper::toVoltage(unsigned int reading)
+{
+  return reading * this->adc->getReference() / (this->adc->getMaxValue() / 2);
 }
 
 MCP3425Helper::MCP3425Helper() : ADCHelper::ADCHelper() {}
