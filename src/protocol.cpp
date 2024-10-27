@@ -1265,6 +1265,7 @@ void generateUpdateJSON(JsonVariant output)
     // output["pwm"][i]["tripped"] = pwm_channels[i].tripped;
     if (pwm_channels[i].isDimmable)
       output["pwm"][i]["duty"] = round2(pwm_channels[i].dutyCycle);
+    output["pwm"][i]["voltage"] = round2(pwm_channels[i].voltage);
     output["pwm"][i]["current"] = round2(pwm_channels[i].amperage);
     output["pwm"][i]["aH"] = round3(pwm_channels[i].ampHours);
     output["pwm"][i]["wH"] = round3(pwm_channels[i].wattHours);

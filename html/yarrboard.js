@@ -77,6 +77,7 @@ const PWMControlCard = (ch) => `
                 <td class="text-center" style="width: 99%">${ch.name}</td>
                 <td>
                   <div class="text-end pwmData">
+                    <div id="pwmVoltage${ch.id}"></div>
                     <div id="pwmCurrent${ch.id}"></div>
                     <div id="pwmWattage${ch.id}"></div>
                   </div>
@@ -748,6 +749,10 @@ function start_websocket() {
             else {
               $('#pwmDutyCycle' + ch.id).hide();
             }
+
+            let voltage = ch.voltage.toFixed(1);
+            let voltageHTML = `${voltage}V`;
+            $('#pwmVoltage' + ch.id).html(voltageHTML);
 
             let current = ch.current.toFixed(2);
             let currentHTML = `${current}A`;
