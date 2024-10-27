@@ -758,11 +758,15 @@ function start_websocket() {
             let currentHTML = `${current}A`;
             $('#pwmCurrent' + ch.id).html(currentHTML);
 
-            if (msg.bus_voltage) {
-              let wattage = ch.current * msg.bus_voltage;
+            let wattage = 0;
+            if (ch.voltage) {
+              wattage = ch.voltage * ch.current;
               wattage = wattage.toFixed(0);
-              let wattageHTML = `${wattage}W`;
-              $('#pwmWattage' + ch.id).html(wattageHTML);
+              $('#pwmWattage' + ch.id).html(`${wattage}W`);
+            } else if (msg.bus_voltage) {
+              wattage = ch.current * msg.bus_voltage;
+              wattage = wattage.toFixed(0);
+              $('#pwmWattage' + ch.id).html(`${wattage}W`);
             }
             else
               $('#pwmWattage' + ch.id).hide();
