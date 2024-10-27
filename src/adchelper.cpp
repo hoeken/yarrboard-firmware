@@ -171,3 +171,27 @@ unsigned int MCP3425Helper::getReading()
 
   return value;
 }
+
+ADS1115Helper::ADS1115Helper() : ADCHelper::ADCHelper() {}
+ADS1115Helper::ADS1115Helper(float vref, uint8_t channel, ADS1115* adc)
+    : ADCHelper::ADCHelper(vref, 24)
+{
+  this->channel = channel;
+  this->adc = adc;
+}
+
+unsigned int ADS1115Helper::getReading()
+{
+  unsigned int reading;
+  reading = this->adc->readADC(this->channel);
+  Serial.printf("CH%d: %d\n", this->channel, reading);
+  this->addReading(reading);
+
+  return reading;
+}
+
+float ADS1115Helper::toVoltage(unsigned int reading)
+{
+  float factor = this->adc->toVoltage(1);
+  float voltage = factor * reading;
+}

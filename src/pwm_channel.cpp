@@ -31,6 +31,13 @@ MCP3564 _adcCurrentMCP3564(YB_PWM_CHANNEL_ADC_CS, &SPI, YB_PWM_CHANNEL_ADC_MOSI,
 MCP3208 _adcCurrentMCP3208;
   #endif
 
+  #ifdef YB_HAS_CHANNEL_VOLTAGE
+    #ifdef YB_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
+ADS1115 _adcVoltageADS1115_1(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_1);
+ADS1115 _adcVoltageADS1115_2(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_2);
+    #endif
+  #endif
+
 /*
  * This callback function will be called when fade operation has ended
  * Use callback only if you are aware it is being called inside an ISR
@@ -114,7 +121,29 @@ void pwm_channels_setup()
     // Serial.print(_adcCurrentMCP3564.getMaxValue());
 
   #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
+
   _adcCurrentMCP3208.begin(YB_PWM_CHANNEL_ADC_CS);
+  #endif
+
+  #ifdef YB_HAS_CHANNEL_VOLTAGE
+    #ifdef YB_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
+
+  Wire.begin();
+  _adcVoltageADS1115_1.begin();
+  if (_adcVoltageADS1115_1.isConnected())
+    Serial.println("Voltage ADS115 #1 OK");
+  else
+    Serial.println("Voltage ADS115 #1 Not Found");
+  _adcVoltageADS1115_1.setGain(2); // 2 = ±2.048V
+
+  _adcVoltageADS1115_2.begin();
+  if (_adcVoltageADS1115_2.isConnected())
+    Serial.println("Voltage ADS115 #2 OK");
+  else
+    Serial.println("Voltage ADS115 #2 Not Found");
+  _adcVoltageADS1115_2.setGain(2); // 2 = ±2.048V
+
+    #endif
   #endif
 
   // the init here needs to be done in a specific way, otherwise it will hang or
@@ -145,6 +174,7 @@ void pwm_channels_loop()
 
   // maintenance on our channels.
   for (byte id = 0; id < YB_PWM_CHANNEL_COUNT; id++) {
+    pwm_channels[id].checkVoltage();
     pwm_channels[id].checkAmperage();
     pwm_channels[id].saveThrottledDutyCycle();
     pwm_channels[id].checkIfFadeOver();
@@ -229,9 +259,18 @@ void PWMChannel::setup()
     sprintf(this->defaultState, "OFF", this->id);
 
   #ifdef YB_PWM_CHANNEL_ADC_DRIVER_MCP3564
-  this->adcHelper = new MCP3564Helper(3.3, this->id, &_adcCurrentMCP3564);
+  this->amperageHelper = new MCP3564Helper(3.3, this->id, &_adcCurrentMCP3564);
   #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
-  this->adcHelper = new MCP3208Helper(3.3, this->id, &_adcCurrentMCP3208);
+  this->amperageHelper = new MCP3208Helper(3.3, this->id, &_adcCurrentMCP3208);
+  #endif
+
+  #ifdef YB_HAS_CHANNEL_VOLTAGE
+    #ifdef YB_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
+  if (this->id < 4)
+    this->voltageHelper = new ADS1115Helper(3.3, this->id, &_adcVoltageADS1115_1);
+  else
+    this->voltageHelper = new ADS1115Helper(3.3, this->id - 4, &_adcVoltageADS1115_2);
+    #endif
   #endif
 
   // setup our default state
@@ -313,13 +352,33 @@ float PWMChannel::toAmperage(float voltage)
 float PWMChannel::getAmperage()
 {
   return this->toAmperage(
-    this->adcHelper->toVoltage(this->adcHelper->getReading()));
+    this->amperageHelper->toVoltage(this->amperageHelper->getReading()));
 }
 
 void PWMChannel::checkAmperage()
 {
   this->amperage = this->getAmperage();
   this->checkSoftFuse();
+}
+
+float PWMChannel::toVoltage(float adcVoltage)
+{
+  return adcVoltage / (YB_CHANNEL_VOLTAGE_R2 / (YB_CHANNEL_VOLTAGE_R2 + YB_CHANNEL_VOLTAGE_R1));
+}
+
+float PWMChannel::getVoltage()
+{
+  float voltage = this->toVoltage(this->voltageHelper->toVoltage(this->voltageHelper->getReading()));
+
+  Serial.printf("CH%d Voltage: %0.3f\n", this->id, voltage);
+  return voltage;
+}
+
+void PWMChannel::checkVoltage()
+{
+  this->voltage = this->getVoltage();
+
+  // todo: check if we are bypassed or fuse blown?
 }
 
 void PWMChannel::checkSoftFuse()
@@ -457,13 +516,19 @@ void PWMChannel::setDuty(float duty)
 
 void PWMChannel::calculateAverages(unsigned int delta)
 {
-  this->amperage = this->toAmperage(this->adcHelper->getAverageVoltage());
-  this->adcHelper->resetAverage();
+  this->voltage = this->toVoltage(this->voltageHelper->getAverageVoltage());
+  this->voltageHelper->resetAverage();
+  this->amperage = this->toAmperage(this->amperageHelper->getAverageVoltage());
+  this->amperageHelper->resetAverage();
 
   // record our total consumption
   if (this->amperage > 0) {
     this->ampHours += this->amperage * ((float)delta / 3600000.0);
-    this->wattHours += this->amperage * busVoltage * ((float)delta / 3600000.0);
+
+    if (this->voltage)
+      this->wattHours += this->amperage * this->voltage * ((float)delta / 3600000.0);
+    else
+      this->wattHours += this->amperage * busVoltage * ((float)delta / 3600000.0);
   }
 }
 

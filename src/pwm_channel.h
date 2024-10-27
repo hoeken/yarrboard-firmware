@@ -49,10 +49,18 @@ class PWMChannel
     float fadeDutyCycleEnd = 0;
 
 #ifdef YB_PWM_CHANNEL_ADC_DRIVER_MCP3564
-    MCP3564Helper* adcHelper;
+    MCP3564Helper* amperageHelper;
 #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
-    MCP3208Helper* adcHelper;
+    MCP3208Helper* amperageHelper;
 #endif
+
+#ifdef YB_HAS_CHANNEL_VOLTAGE
+  #ifdef YB_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
+    ADS1115Helper* voltageHelper;
+  #endif
+#endif
+
+    float voltage = 0.0;
     float amperage = 0.0;
     float softFuseAmperage = 0.0;
     float ampHours = 0.0;
@@ -66,9 +74,15 @@ class PWMChannel
     void setupInterrupt();
     void saveThrottledDutyCycle();
     void updateOutput();
+
+    float getVoltage();
+    float toVoltage(float adcVoltage);
+    void checkVoltage();
+
     float getAmperage();
     float toAmperage(float voltage);
     void checkAmperage();
+
     void checkSoftFuse();
     void checkIfFadeOver();
     void setState(const char* state);

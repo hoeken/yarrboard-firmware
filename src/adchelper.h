@@ -9,6 +9,7 @@
 #ifndef YARR_ADC_H
 #define YARR_ADC_H
 
+#include <ADS1X15.h>
 #include <Arduino.h>
 #include <MCP3208.h>
 #include <MCP342x.h>
@@ -87,6 +88,19 @@ class MCP3564Helper : public ADCHelper
   private:
     unsigned int _channelAddresses[8] = {MCP_CH0, MCP_CH1, MCP_CH2, MCP_CH3, MCP_CH4, MCP_CH5, MCP_CH6, MCP_CH7};
     MCP3564* adc;
+    uint8_t channel;
+};
+
+class ADS1115Helper : public ADCHelper
+{
+  public:
+    ADS1115Helper();
+    ADS1115Helper(float vref, uint8_t channel, ADS1115* adc);
+    unsigned int getReading();
+    float toVoltage(unsigned int reading);
+
+  private:
+    ADS1115* adc;
     uint8_t channel;
 };
 
