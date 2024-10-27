@@ -369,8 +369,6 @@ float PWMChannel::toVoltage(float adcVoltage)
 float PWMChannel::getVoltage()
 {
   float voltage = this->toVoltage(this->voltageHelper->toVoltage(this->voltageHelper->getReading()));
-
-  Serial.printf("CH%d Voltage: %0.3f\n", this->id, voltage);
   return voltage;
 }
 

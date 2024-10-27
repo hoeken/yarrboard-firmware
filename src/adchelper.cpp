@@ -184,7 +184,6 @@ unsigned int ADS1115Helper::getReading()
 {
   unsigned int reading;
   reading = this->adc->readADC(this->channel);
-  Serial.printf("CH%d: %d\n", this->channel, reading);
   this->addReading(reading);
 
   return reading;
@@ -194,4 +193,6 @@ float ADS1115Helper::toVoltage(unsigned int reading)
 {
   float factor = this->adc->toVoltage(1);
   float voltage = factor * reading;
+
+  return voltage;
 }

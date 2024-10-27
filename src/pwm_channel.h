@@ -25,6 +25,17 @@ class PWMChannel
     void setState(bool state);
 
   public:
+    /**
+     * @brief Potential states that channel might be in.
+     */
+    enum class ChannelState {
+      ON,
+      OFF,
+      TRIPPED,
+      BYPASSED,
+      BLOWN
+    };
+
     byte id = 0;
     bool state = false;
     bool tripped = false;

@@ -1,4 +1,16 @@
 Firmware:
+    * FROTHFET REV D
+        * add new state BYPASSED when:
+            * channel is OFF, but voltage is within 10% of bus voltage
+        * add new state BLOWN when:
+            * channel is ON, but voltage is < 1V
+        * add zero calibration to voltage and current at startup.
+        * figure out how to handle voltage and wattage during PWM.
+            * maybe use bus voltage?
+    * fix the issues with the upgrade to ArduinoJSON 7
+    * upgrade to esp-idf 5.1.x and fix any issues
+    * upgrade to PsychicHttp 2.0
+
     * tie led state to switch state
         * Switch dropdown on LED config (what LED to follow)
         * set on, off, trip colors
