@@ -2,7 +2,7 @@
     {
         "type": "FROTHFET_REV_D",
         "version": "1.2.0",
-        "url": "https://raw.githubusercontent.com/hoeken/yarrboard/main/firmware/releases/8CH_MOSFET_REV_C-1.2.0.bin",
+        "url": "https://raw.githubusercontent.com/hoeken/yarrboard/main/firmware/releases/FROTHFET_REV_D-1.2.0.bin",
         "changelog": "## Version 1.1.1\n\n* Minor ui improvements for debugging\n\n## Version 1.1.0\n\n* New crash handler and coredump recording.\n\n## Version 1.0.1\n\n* Better release automation.\n\n## Version 1.0.0\n\n* First 'official' release into the wild."
     },
     {

@@ -134,14 +134,14 @@ void pwm_channels_setup()
     Serial.println("Voltage ADS115 #1 OK");
   else
     Serial.println("Voltage ADS115 #1 Not Found");
-  _adcVoltageADS1115_1.setGain(2); // 2 = ±2.048V
+  _adcVoltageADS1115_1.setGain(1);
 
   _adcVoltageADS1115_2.begin();
   if (_adcVoltageADS1115_2.isConnected())
     Serial.println("Voltage ADS115 #2 OK");
   else
     Serial.println("Voltage ADS115 #2 Not Found");
-  _adcVoltageADS1115_2.setGain(2); // 2 = ±2.048V
+  _adcVoltageADS1115_2.setGain(1);
 
     #endif
   #endif
@@ -162,8 +162,8 @@ void pwm_channels_setup()
   ledc_fade_func_install(0);
 
   for (short i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
-    pwm_channels[i].setupInterrupt(); // intitialize our interrupts for fading
-    pwm_channels[i].updateOutput();   // initialize our output with our defaults
+    pwm_channels[i].setupInterrupt();   // intitialize our interrupts for fading
+    pwm_channels[i].updateOutput(true); // initialize our output with our defaults
   }
 }
 
@@ -174,8 +174,7 @@ void pwm_channels_loop()
 
   // maintenance on our channels.
   for (byte id = 0; id < YB_PWM_CHANNEL_COUNT; id++) {
-    pwm_channels[id].checkVoltage();
-    pwm_channels[id].checkAmperage();
+    pwm_channels[id].checkStatus();
     pwm_channels[id].saveThrottledDutyCycle();
     pwm_channels[id].checkIfFadeOver();
 
@@ -185,8 +184,11 @@ void pwm_channels_loop()
   }
 
   // let the client know immediately.
-  if (doSendFastUpdate)
+  if (doSendFastUpdate) {
+    TRACE();
+    DUMP(pwm_channels[0].getStatus());
     sendFastUpdate();
+  }
 }
 
 bool isValidPWMChannel(byte cid)
@@ -273,20 +275,33 @@ void PWMChannel::setup()
     #endif
   #endif
 
-  // setup our default state
-  if (!strcmp(this->defaultState, "ON"))
-    this->state = true;
-  else
-    this->state = false;
+  // voltage zero state
+  this->voltageOffset = 0.0;
+  this->voltage = this->getVoltage();
+  if (this->voltage < (30.0 * 0.05))
+    this->voltageOffset = this->voltage;
 
-  // get our initial readings.
-  this->checkVoltage();
-  this->checkAmperage();
-
-  this->voltageOffset = this->voltage;
-  this->amperageOffset = this->amperage;
+  // amperage zero state
+  this->amperageOffset = 0.0;
+  this->amperage = this->getAmperage();
+  if (this->amperage < (20.0 * 0.05))
+    this->amperageOffset = this->amperage;
 
   Serial.printf("CH%d Voltage Offset: %0.3f / Amperage Offset: %0.3f\n", this->id, this->voltageOffset, this->amperageOffset);
+
+  // default state checking
+  this->outputState = false;
+  this->status = Status::OFF;
+  this->checkStatus();
+
+  // setup our default state
+  if (!strcmp(this->defaultState, "ON")) {
+    this->outputState = true;
+    this->status = Status::ON;
+  } else {
+    this->outputState = false;
+    this->status = Status::OFF;
+  }
 }
 
 void PWMChannel::setupLedc()
@@ -320,7 +335,7 @@ void PWMChannel::saveThrottledDutyCycle()
     this->setDuty(this->dutyCycle);
 }
 
-void PWMChannel::updateOutput()
+void PWMChannel::updateOutput(bool check_status)
 {
   // what PWM do we want?
   int pwm = 0;
@@ -336,16 +351,22 @@ void PWMChannel::updateOutput()
     pwm = MAX_DUTY_CYCLE;
 
   // if its off, zero it out
-  if (!this->state)
+  if (!this->outputState)
     pwm = 0;
 
   // if its tripped, zero it out.
-  if (this->tripped)
+  if (this->status == Status::TRIPPED || this->status == Status::BLOWN) {
+    this->outputState = false;
     pwm = 0;
+  }
 
   // okay, set our pin state.
   if (!isChannelFading[this->id])
     ledcWrite(this->id, pwm);
+
+  // see what we're working with.
+  if (check_status)
+    this->checkStatus();
 }
 
 float PWMChannel::toAmperage(float voltage)
@@ -383,6 +404,12 @@ float PWMChannel::toVoltage(float adcVoltage)
   return v;
 }
 
+void PWMChannel::checkStatus()
+{
+  this->checkVoltage();
+  this->checkAmperage();
+}
+
 float PWMChannel::getVoltage()
 {
   float voltage = this->toVoltage(this->voltageHelper->toVoltage(this->voltageHelper->getReading()));
@@ -393,31 +420,89 @@ void PWMChannel::checkVoltage()
 {
   this->voltage = this->getVoltage();
 
-  // todo: check if we are bypassed or fuse blown?
+  this->checkFuseBlown();
+  this->checkFuseBypassed();
+}
+
+void PWMChannel::checkFuseBlown()
+{
+  if (this->status == Status::ON) {
+    // try to "debounce" the on state
+    for (byte i = 0; i < 2; i++) {
+      if (i > 0) {
+        DUMP(i);
+        DUMP(this->voltage);
+      }
+      if (this->voltage > 8.0)
+        return;
+
+      delay(1);
+      this->voltage = this->getVoltage();
+    }
+
+    TRACE();
+    DUMP(this->voltage);
+    this->status = Status::BLOWN;
+    this->outputState = false;
+    this->updateOutput(false);
+    // } else if (this->status == Status::BLOWN) {
+    //   if (this->voltage > 8.0) {
+    //     this->status = Status::OFF;
+    //     this->outputState = false;
+    //     this->updateOutput(false);
+    //   }
+  }
+}
+
+void PWMChannel::checkFuseBypassed()
+{
+  if (this->status != Status::ON && this->status != Status::BYPASSED) {
+    for (byte i = 0; i < 2; i++) {
+      if (i > 0) {
+        DUMP(i);
+        DUMP(this->voltage);
+      }
+      if (this->voltage < 2.0)
+        return;
+
+      delay(1);
+      this->voltage = this->getVoltage();
+    }
+
+    // dont change our outputState here... bypass can be temporary
+    this->status = Status::BYPASSED;
+  } else if (this->status == Status::BYPASSED) {
+    if (!this->outputState && this->voltage < 2.0) {
+      this->status = Status::OFF;
+    }
+  }
 }
 
 void PWMChannel::checkSoftFuse()
 {
   // only trip once....
-  if (!this->tripped) {
+  if (this->status != Status::TRIPPED) {
     // Check our soft fuse, and our max limit for the board.
     if (abs(this->amperage) >= this->softFuseAmperage ||
         abs(this->amperage) >= YB_PWM_CHANNEL_MAX_AMPS) {
+      DUMP("TRIPPED");
+      DUMP(this->amperage);
+
+      // record some variables
+      this->status = Status::TRIPPED;
+      this->outputState = false;
+
+      // actually shut it down!
+      this->updateOutput(false);
+
+      // our counter
+      this->softFuseTripCount++;
+
       // we will want to notify
       this->sendFastUpdate = true;
 
-      // TODO: maybe double check the amperage again here?
-
-      // record some variables
-      this->tripped = true;
-      this->state = false;
-      this->softFuseTripCount++;
-
       // this is an internally originating change
       strlcpy(this->source, local_hostname, sizeof(this->source));
-
-      // actually shut it down!
-      this->updateOutput();
 
       // save to our storage
       char prefIndex[YB_PREF_KEY_LENGTH];
@@ -432,13 +517,16 @@ void PWMChannel::setFade(float duty, int max_fade_time_ms)
   // is our earlier hardware fade over yet?
   if (!isChannelFading[this->id]) {
     // dutyCycle is a default - will be non-zero when state is off
-    if (this->state)
+    if (this->outputState)
       this->fadeDutyCycleStart = this->dutyCycle;
     else
       this->fadeDutyCycleStart = 0.0;
 
+    TRACE();
+
     // fading turns on the channel.
-    this->state = true;
+    this->outputState = true;
+    this->status = Status::ON;
 
     // some vars for tracking.
     isChannelFading[this->id] = true;
@@ -476,10 +564,14 @@ void PWMChannel::checkIfFadeOver()
       else
         this->dutyCycle = fadeDutyCycleStart;
 
-      if (fadeDutyCycleEnd == 0)
-        this->state = false;
-      else
-        this->state = true;
+      if (fadeDutyCycleEnd == 0) {
+        this->outputState = false;
+        this->status = Status::OFF;
+      } else {
+        this->outputState = true;
+        this->status = Status::ON;
+        TRACE();
+      }
     }
     // okay, update our duty cycle as we go for good UI
     else {
@@ -493,10 +585,14 @@ void PWMChannel::checkIfFadeOver()
         this->dutyCycle = currentDuty;
       }
 
-      if (this->dutyCycle == 0)
-        this->state = false;
-      else
-        this->state = true;
+      if (this->dutyCycle == 0) {
+        this->outputState = false;
+        this->status = Status::OFF;
+      } else {
+        this->outputState = true;
+        this->status = Status::ON;
+        TRACE();
+      }
     }
   }
 }
@@ -531,10 +627,10 @@ void PWMChannel::setDuty(float duty)
 
 void PWMChannel::calculateAverages(unsigned int delta)
 {
-  this->voltage = this->toVoltage(this->voltageHelper->getAverageVoltage());
-  this->voltageHelper->resetAverage();
-  this->amperage = this->toAmperage(this->amperageHelper->getAverageVoltage());
-  this->amperageHelper->resetAverage();
+  // this->voltage = this->toVoltage(this->voltageHelper->getAverageVoltage());
+  // this->voltageHelper->resetAverage();
+  // this->amperage = this->toAmperage(this->amperageHelper->getAverageVoltage());
+  // this->amperageHelper->resetAverage();
 
   // record our total consumption
   if (this->amperage > 0) {
@@ -549,43 +645,51 @@ void PWMChannel::calculateAverages(unsigned int delta)
 
 void PWMChannel::setState(const char* state)
 {
+  DUMP(state);
   if (!strcmp(state, "ON"))
     this->setState(true);
   else
     this->setState(false);
 }
 
-void PWMChannel::setState(bool state)
+void PWMChannel::setState(bool newState)
 {
-  // only if we're changing
-  if (this->state != state || this->tripped) {
-    // this can crash after long fading sessions, reset it with a manual toggle
-    // isChannelFading[this->id] = false;
+  if (newState != outputState) {
+    DUMP(this->getStatus());
+    DUMP(newState);
+
+    // save our output state
+    this->outputState = newState;
 
     // keep track of how many toggles
     this->stateChangeCount++;
 
-    // record our new state
-    this->state = state;
+    // what is our new status?
+    if (newState)
+      this->status = Status::ON;
+    else
+      this->status = Status::OFF;
 
-    // reset soft fuse when we turn off
-    if (!state)
-      this->tripped = false;
+    // change our output pin to reflect
+    this->updateOutput(true);
 
     // flag for update to clients
     this->sendFastUpdate = true;
-
-    // change our output pin to reflect
-    this->updateOutput();
   }
 }
 
-const char* PWMChannel::getState()
+const char* PWMChannel::getStatus()
 {
-  if (this->tripped)
-    return "TRIP";
-  else if (this->state)
+  if (this->status == Status::ON)
     return "ON";
+  else if (this->status == Status::OFF)
+    return "OFF";
+  else if (this->status == Status::TRIPPED)
+    return "TRIPPED";
+  else if (this->status == Status::BLOWN)
+    return "BLOWN";
+  else if (this->status == Status::BYPASSED)
+    return "BYPASSED";
   else
     return "OFF";
 }

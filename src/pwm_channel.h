@@ -22,23 +22,23 @@ class PWMChannel
 {
   protected:
     byte _pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_PINS;
-    void setState(bool state);
 
   public:
     /**
-     * @brief Potential states that channel might be in.
+     * @brief Potential status that channel might be in.
      */
-    enum class ChannelState {
+    enum class Status {
       ON,
       OFF,
       TRIPPED,
-      BYPASSED,
-      BLOWN
+      BLOWN,
+      BYPASSED
     };
 
     byte id = 0;
-    bool state = false;
-    bool tripped = false;
+
+    Status status = Status::OFF;
+    bool outputState = false;
     char name[YB_CHANNEL_NAME_LENGTH];
     char type[30];
     char defaultState[10];
@@ -87,23 +87,28 @@ class PWMChannel
     void setupLedc();
     void setupInterrupt();
     void saveThrottledDutyCycle();
-    void updateOutput();
+    void updateOutput(bool check_status = false);
+    void checkStatus();
 
     float getVoltage();
     float toVoltage(float adcVoltage);
     void checkVoltage();
+    void checkFuseBlown();
+    void checkFuseBypassed();
 
     float getAmperage();
     float toAmperage(float voltage);
     void checkAmperage();
-
     void checkSoftFuse();
+
     void checkIfFadeOver();
     void setState(const char* state);
+    void setState(bool newState);
+
     void setFade(float duty, int max_fade_time_ms);
     void setDuty(float duty);
     void calculateAverages(unsigned int delta);
-    const char* getState();
+    const char* getStatus();
 };
 
 extern PWMChannel pwm_channels[YB_PWM_CHANNEL_COUNT];

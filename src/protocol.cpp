@@ -452,7 +452,7 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   app_enable_serial = input["app_enable_serial"];
   app_enable_ssl = input["app_enable_ssl"];
 
-  if (input["app_update_interval"].is<int>()) {
+  if (input["app_update_interval"].is<JsonVariantConst>()) {
     app_update_interval = input["app_update_interval"] | 500;
     app_update_interval = max(100, (int)app_update_interval);
     app_update_interval = min(5000, (int)app_update_interval);
@@ -619,7 +619,7 @@ void handleSetPWMChannel(JsonVariantConst input, JsonVariant output)
     pwm_channels[cid].setDuty(duty);
 
     // change our output pin to reflect
-    pwm_channels[cid].updateOutput();
+    pwm_channels[cid].updateOutput(true);
   }
 
   // change state
@@ -660,7 +660,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
   char prefIndex[YB_PREF_KEY_LENGTH];
 
   // id is required
-  if (!input["id"].is<int>())
+  if (!input["id"].is<JsonVariantConst>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
   // is it a valid channel?
@@ -775,7 +775,7 @@ void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output)
 {
 #ifdef YB_HAS_PWM_CHANNELS
   // id is required
-  if (!input["id"].is<int>())
+  if (!input["id"].is<JsonVariantConst>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
   // is it a valid channel?
@@ -798,12 +798,10 @@ void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output)
   strlcpy(pwm_channels[cid].source, input["source"] | local_hostname, sizeof(pwm_channels[cid].source));
 
   // update our state
-  if (pwm_channels[cid].tripped)
+  if (!strcmp(pwm_channels[cid].getStatus(), "ON"))
     pwm_channels[cid].setState("OFF");
-  else if (!pwm_channels[cid].state)
-    pwm_channels[cid].setState("ON");
   else
-    pwm_channels[cid].setState("OFF");
+    pwm_channels[cid].setState("ON");
 #else
   return generateErrorJSON(output, "Board does not have output channels.");
 #endif
@@ -816,11 +814,11 @@ void handleFadePWMChannel(JsonVariantConst input, JsonVariant output)
   unsigned long t1, t2, t3, t4 = 0;
 
   // id is required
-  if (!input["id"].is<int>())
+  if (!input["id"].is<JsonVariantConst>())
     return generateErrorJSON(output, "'id' is a required parameter");
   if (!input["duty"].is<float>())
     return generateErrorJSON(output, "'duty' is a required parameter");
-  if (!input["millis"].is<int>())
+  if (!input["millis"].is<JsonVariantConst>())
     return generateErrorJSON(output, "'millis' is a required parameter");
 
   // is it a valid channel?
@@ -864,7 +862,7 @@ void handleSetSwitch(JsonVariantConst input, JsonVariant output)
 {
 #ifdef YB_HAS_INPUT_CHANNELS
   // id is required
-  if (!input["id"].is<int>())
+  if (!input["id"].is<JsonVariantConst>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
   // is it a valid channel?
@@ -907,7 +905,7 @@ void handleConfigSwitch(JsonVariantConst input, JsonVariant output)
   char prefIndex[YB_PREF_KEY_LENGTH];
 
   // id is required
-  if (!input["id"].is<int>())
+  if (!input["id"].is<JsonVariantConst>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
   // is it a valid channel?
@@ -978,7 +976,7 @@ void handleConfigRGB(JsonVariantConst input, JsonVariant output)
   char prefIndex[YB_PREF_KEY_LENGTH];
 
   // id is required
-  if (!input["id"].is<int>())
+  if (!input["id"].is<JsonVariantConst>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
   // is it a valid channel?
@@ -1028,7 +1026,7 @@ void handleSetRGB(JsonVariantConst input, JsonVariant output)
   char prefIndex[YB_PREF_KEY_LENGTH];
 
   // id is required
-  if (!input["id"].is<int>())
+  if (!input["id"].is<JsonVariantConst>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
   // is it a valid channel?
@@ -1083,7 +1081,7 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
   char prefIndex[YB_PREF_KEY_LENGTH];
 
   // id is required
-  if (!input["id"].is<int>())
+  if (!input["id"].is<JsonVariantConst>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
   // is it a valid channel?
@@ -1161,8 +1159,9 @@ void handleSetBrightness(JsonVariantConst input, JsonVariant output)
 
 // loop through all our light stuff and update outputs
 #ifdef YB_HAS_PWM_CHANNELS
-    for (byte i = 0; i < YB_PWM_CHANNEL_COUNT; i++)
-      pwm_channels[i].updateOutput();
+    for (byte i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
+      pwm_channels[i].updateOutput(true);
+    }
 #endif
 
 #ifdef YB_HAS_RGB_CHANNELS
@@ -1260,9 +1259,8 @@ void generateUpdateJSON(JsonVariant output)
 #ifdef YB_HAS_PWM_CHANNELS
   for (byte i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
     output["pwm"][i]["id"] = i;
-    output["pwm"][i]["state"] = pwm_channels[i].getState();
+    output["pwm"][i]["state"] = pwm_channels[i].getStatus();
     output["pwm"][i]["source"] = pwm_channels[i].source;
-    // output["pwm"][i]["tripped"] = pwm_channels[i].tripped;
     if (pwm_channels[i].isDimmable)
       output["pwm"][i]["duty"] = round2(pwm_channels[i].dutyCycle);
     output["pwm"][i]["voltage"] = round2(pwm_channels[i].voltage);
@@ -1317,19 +1315,21 @@ void generateFastUpdateJSON(JsonVariant output)
 
   byte j;
 
+  TRACE();
+
 #ifdef YB_HAS_PWM_CHANNELS
   j = 0;
   for (byte i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
     if (pwm_channels[i].sendFastUpdate) {
       output["pwm"][j]["id"] = i;
-      output["pwm"][j]["state"] = pwm_channels[i].getState();
+      output["pwm"][j]["state"] = pwm_channels[i].getStatus();
       output["pwm"][j]["source"] = pwm_channels[i].source;
       if (pwm_channels[i].isDimmable)
         output["pwm"][j]["duty"] = round2(pwm_channels[i].dutyCycle);
+      output["pwm"][j]["voltage"] = round2(pwm_channels[i].voltage);
       output["pwm"][j]["current"] = round2(pwm_channels[i].amperage);
       output["pwm"][j]["aH"] = round3(pwm_channels[i].ampHours);
       output["pwm"][j]["wH"] = round3(pwm_channels[i].wattHours);
-      // output["pwm"][j]["tripped"] = pwm_channels[i].tripped;
       j++;
 
       // dont need it anymore

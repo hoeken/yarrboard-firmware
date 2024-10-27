@@ -73,6 +73,9 @@ void setup()
   prefs_setup();
   Serial.println("Prefs ok");
 
+  network_setup();
+  Serial.println("Network ok");
+
   ota_setup();
   Serial.println("OTA ok");
 
@@ -106,9 +109,6 @@ void setup()
   bus_voltage_setup();
   Serial.println("Bus voltage ok");
 #endif
-
-  network_setup();
-  Serial.println("Network ok");
 
   server_setup();
   Serial.println("Server ok");
