@@ -86,6 +86,8 @@ class PWMChannel
     void setup();
     void setupLedc();
     void setupInterrupt();
+    void setupOffset();
+    void setupDefaultState();
     void saveThrottledDutyCycle();
     void updateOutput(bool check_status = false);
     void checkStatus();

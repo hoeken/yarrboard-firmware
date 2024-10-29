@@ -162,8 +162,9 @@ void pwm_channels_setup()
   ledc_fade_func_install(0);
 
   for (short i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
-    pwm_channels[i].setupInterrupt();   // intitialize our interrupts for fading
-    pwm_channels[i].updateOutput(true); // initialize our output with our defaults
+    pwm_channels[i].setupInterrupt(); // intitialize our interrupts for fading
+    pwm_channels[i].setupOffset();
+    pwm_channels[i].setupDefaultState();
   }
 }
 
@@ -274,34 +275,6 @@ void PWMChannel::setup()
     this->voltageHelper = new ADS1115Helper(3.3, this->id - 4, &_adcVoltageADS1115_2);
     #endif
   #endif
-
-  // voltage zero state
-  this->voltageOffset = 0.0;
-  this->voltage = this->getVoltage();
-  if (this->voltage < (30.0 * 0.05))
-    this->voltageOffset = this->voltage;
-
-  // amperage zero state
-  this->amperageOffset = 0.0;
-  this->amperage = this->getAmperage();
-  if (this->amperage < (20.0 * 0.05))
-    this->amperageOffset = this->amperage;
-
-  Serial.printf("CH%d Voltage Offset: %0.3f / Amperage Offset: %0.3f\n", this->id, this->voltageOffset, this->amperageOffset);
-
-  // default state checking
-  this->outputState = false;
-  this->status = Status::OFF;
-  this->checkStatus();
-
-  // setup our default state
-  if (!strcmp(this->defaultState, "ON")) {
-    this->outputState = true;
-    this->status = Status::ON;
-  } else {
-    this->outputState = false;
-    this->status = Status::OFF;
-  }
 }
 
 void PWMChannel::setupLedc()
@@ -325,6 +298,43 @@ void PWMChannel::setupInterrupt()
 
   // this is our callback handler for fade end.
   ledc_cb_register(LEDC_LOW_SPEED_MODE, (ledc_channel_t)channel, &callbacks, (void*)channel);
+}
+
+void PWMChannel::setupOffset()
+{
+  // make sure we're off for testing.
+  this->outputState = false;
+  this->status = Status::OFF;
+  this->updateOutput(false);
+
+  // voltage zero state
+  this->voltageOffset = 0.0;
+  float v = this->getVoltage();
+  if (v < (30.0 * 0.05))
+    this->voltageOffset = v;
+
+  // amperage zero state
+  this->amperageOffset = 0.0;
+  float a = this->getAmperage();
+  if (a < (20.0 * 0.05))
+    this->amperageOffset = a;
+
+  Serial.printf("CH%d Voltage Offset: %0.3f / Amperage Offset: %0.3f\n", this->id, this->voltageOffset, this->amperageOffset);
+}
+
+void PWMChannel::setupDefaultState()
+{
+  // load our default status.
+  if (!strcmp(this->defaultState, "ON")) {
+    this->outputState = true;
+    this->status = Status::ON;
+  } else {
+    this->outputState = false;
+    this->status = Status::OFF;
+  }
+
+  // update our pin
+  this->updateOutput(true);
 }
 
 void PWMChannel::saveThrottledDutyCycle()
@@ -389,8 +399,6 @@ float PWMChannel::getAmperage()
 
 void PWMChannel::checkAmperage()
 {
-  this->amperage = this->getAmperage();
-  this->checkSoftFuse();
 }
 
 float PWMChannel::toVoltage(float adcVoltage)
@@ -406,8 +414,12 @@ float PWMChannel::toVoltage(float adcVoltage)
 
 void PWMChannel::checkStatus()
 {
-  this->checkVoltage();
-  this->checkAmperage();
+  this->voltage = this->getVoltage();
+  this->amperage = this->getAmperage();
+
+  this->checkSoftFuse();
+  // this->checkFuseBlown();
+  // this->checkFuseBypassed();
 }
 
 float PWMChannel::getVoltage()
@@ -418,17 +430,13 @@ float PWMChannel::getVoltage()
 
 void PWMChannel::checkVoltage()
 {
-  this->voltage = this->getVoltage();
-
-  this->checkFuseBlown();
-  this->checkFuseBypassed();
 }
 
 void PWMChannel::checkFuseBlown()
 {
   if (this->status == Status::ON) {
     // try to "debounce" the on state
-    for (byte i = 0; i < 2; i++) {
+    for (byte i = 0; i < 10; i++) {
       if (i > 0) {
         DUMP(i);
         DUMP(this->voltage);
@@ -457,7 +465,7 @@ void PWMChannel::checkFuseBlown()
 void PWMChannel::checkFuseBypassed()
 {
   if (this->status != Status::ON && this->status != Status::BYPASSED) {
-    for (byte i = 0; i < 2; i++) {
+    for (byte i = 0; i < 10; i++) {
       if (i > 0) {
         DUMP(i);
         DUMP(this->voltage);

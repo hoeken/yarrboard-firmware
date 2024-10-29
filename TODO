@@ -1,18 +1,21 @@
 * FROTHFET REV D
     * figure out how to handle voltage and wattage during PWM.
         * maybe use bus voltage?
-* fix the issues with the upgrade to ArduinoJSON 7
+    * convert ADC to continuous interrupt driven style
 * upgrade to esp-idf 5.1.x and fix any issues
 * upgrade to PsychicHttp 2.0
-* switch to 1 indexed channels instead of zero
+* add wifi RSSI bars indicator
 * update forms to be consistent style (float labels)
 * go through and re-adjust the various page sizes for our different viewports
+* switch to 1 indexed channels instead of zero
+* update yarrboard client if any changes needed
 * protocol documentation
 * wifi improvements:
     * wifi connection fail should default to AP mode
     * wifi should reconnect on failure
 
 OLD TODO:
+    * RGB Interface Board
     * tie led state to switch state
         * Switch dropdown on LED config (what LED to follow)
         * set on, off, trip colors

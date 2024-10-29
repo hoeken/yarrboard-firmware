@@ -43,9 +43,6 @@
 
 unsigned long lastFrameMillis = 0;
 
-// 16kb stack size.
-// SET_LOOP_TASK_STACK_SIZE(16*1024);
-
 void setup()
 {
   // startup our serial
@@ -72,12 +69,6 @@ void setup()
   // ntp_setup();
   prefs_setup();
   Serial.println("Prefs ok");
-
-  network_setup();
-  Serial.println("Network ok");
-
-  ota_setup();
-  Serial.println("OTA ok");
 
 #ifdef YB_HAS_ADC_CHANNELS
   adc_channels_setup();
@@ -109,6 +100,12 @@ void setup()
   bus_voltage_setup();
   Serial.println("Bus voltage ok");
 #endif
+
+  network_setup();
+  Serial.println("Network ok");
+
+  ota_setup();
+  Serial.println("OTA ok");
 
   server_setup();
   Serial.println("Server ok");
