@@ -18,7 +18,7 @@
 
 // use the pwm channel directly after our PWM channels
 byte fan_pwm_channel = YB_PWM_CHANNEL_COUNT;
-byte fan_pwm_pins[YB_FAN_COUNT] = YB_FAN_PWM_PINS;
+byte fan_mosfet_pins[YB_FAN_COUNT] = YB_FAN_MOSFET_PINS;
 byte fan_tach_pins[YB_FAN_COUNT] = YB_FAN_TACH_PINS;
 
 static volatile int counter_rpm[YB_FAN_COUNT];
@@ -33,28 +33,25 @@ unsigned long lastFanCheckMillis = 0;
 // This is really janky because of this ESP32 bug:
 // ESP32 Errata 3.14. Within the same group of GPIO pins, edge interrupts cannot
 // be used together with other interrupts.
-// void IRAM_ATTR rpm_fan_0_low() { counter_rpm[0]++; }
-// void IRAM_ATTR rpm_fan_1_low() { counter_rpm[1]++; }
+void IRAM_ATTR rpm_fan_0_low() { counter_rpm[0]++; }
+void IRAM_ATTR rpm_fan_1_low() { counter_rpm[1]++; }
 
 void fans_setup()
 {
   for (byte i = 0; i < YB_FAN_COUNT; i++) {
-    // use the pwm channel directly after our PWM channels
-    // ledcSetup(fan_pwm_channel + i, 25000, 8);
-    // ledcAttachPin(fan_pwm_pins[i], fan_pwm_channel + i);
-    set_fan_pwm(0);
+    pinMode(fan_mosfet_pins[i], OUTPUT);
+    digitalWrite(fan_mosfet_pins[i], LOW);
+
+    pinMode(fan_tach_pins[i], INPUT);
 
     counter_rpm[i] = 0;
     last_tacho_measurement[i] = 0;
     fans_last_rpm[i] = 0;
 
-    pinMode(fan_tach_pins[i], INPUT);
-    // digitalWrite(fan_tach_pins[i], HIGH);
-
-    // if (i == 0)
-    //   attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_0_low, FALLING);
-    // if (i == 1)
-    //   attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_1_low, FALLING);
+    if (i == 0)
+      attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_0_low, FALLING);
+    if (i == 1)
+      attachInterrupt(digitalPinToInterrupt(fan_tach_pins[i]), rpm_fan_1_low, FALLING);
   }
 }
 
@@ -70,6 +67,7 @@ void fans_loop()
     float amps_avg = 0;
     float amps_max = 0;
     byte enabled_count = 0;
+
     for (byte id = 0; id < YB_PWM_CHANNEL_COUNT; id++) {
       // only count enabled channels
       if (pwm_channels[id].isEnabled) {
@@ -81,43 +79,17 @@ void fans_loop()
     amps_avg = amps_avg / enabled_count;
 
     // one channel on high?
-    if (amps_max > YB_FAN_SINGLE_CHANNEL_THRESHOLD_END) {
-      set_fan_pwm(255);
+    if (amps_max > YB_FAN_SINGLE_CHANNEL_THRESHOLD) {
+      set_fans_state(true);
       // Serial.println("Single channel full blast");
-    } else if (amps_avg > YB_FAN_AVERAGE_CHANNEL_THRESHOLD_END) {
-      set_fan_pwm(255);
+    } else if (amps_avg > YB_FAN_AVERAGE_CHANNEL_THRESHOLD) {
+      set_fans_state(true);
       // Serial.println("Average current full blast");
-    }
-    // high average amps?
-    else if (amps_avg > YB_FAN_AVERAGE_CHANNEL_THRESHOLD_START ||
-             amps_max > YB_FAN_SINGLE_CHANNEL_THRESHOLD_START) {
-      int avgpwm = map_float(amps_avg, YB_FAN_AVERAGE_CHANNEL_THRESHOLD_START, YB_FAN_AVERAGE_CHANNEL_THRESHOLD_END, 0, 255);
-      // Serial.print("Average pwm: ");
-      // Serial.println(avgpwm);
-
-      int singlepwm = map_float(amps_max, YB_FAN_SINGLE_CHANNEL_THRESHOLD_START, YB_FAN_SINGLE_CHANNEL_THRESHOLD_END, 0, 255);
-      // Serial.print("Single pwm: ");
-      // Serial.println(singlepwm);
-
-      int pwm = max(avgpwm, singlepwm);
-      pwm = constrain(pwm, 0, 255);
-      // Serial.print("Fans partial: ");
-      // Serial.println(pwm);
-
-      set_fan_pwm(pwm);
-    }
-    // no need to make noise
-    else
-      set_fan_pwm(0);
+    } else
+      set_fans_state(false);
 
     lastFanCheckMillis = millis();
   }
-}
-
-float map_float(float x, float in_min, float in_max, float out_min,
-  float out_max)
-{
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 void measure_fan_rpm(byte i)
@@ -143,10 +115,11 @@ void measure_fan_rpm(byte i)
   }
 }
 
-void set_fan_pwm(byte pwm)
+void set_fans_state(bool state)
 {
-  // ledcWrite(fan_pwm_pins[0], pwm);
-  // ledcWrite(fan_pwm_pins[1], pwm);
+  for (byte i = 0; i < YB_FAN_COUNT; i++) {
+    digitalWrite(fan_mosfet_pins[i], state);
+  }
 }
 
 #endif

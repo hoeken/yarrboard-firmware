@@ -7,7 +7,7 @@
 #define YB_PWM_CHANNEL_COUNT      8
 #define YB_PWM_CHANNEL_PINS       {1, 2, 42, 41, 40, 39, 37, 36}
 #define YB_PWM_CHANNEL_FREQUENCY  256
-#define YB_PWM_CHANNEL_RESOLUTION 10
+#define YB_PWM_CHANNEL_RESOLUTION 8
 #define YB_PWM_CHANNEL_ADC_DRIVER_MCP3564
 #define YB_PWM_CHANNEL_ADC_CS   10
 #define YB_PWM_CHANNEL_ADC_SCK  11
@@ -32,13 +32,10 @@
 #define YB_BUS_VOLTAGE_ADDRESS 0x68
 
 #define YB_HAS_FANS
-#define YB_FAN_COUNT                           2
-#define YB_FAN_MOSFET_PINS                     {15, 2}
-#define YB_FAN_PWM_PINS                        {16, 6}
-#define YB_FAN_TACH_PINS                       {17, 7}
-#define YB_FAN_SINGLE_CHANNEL_THRESHOLD_START  5
-#define YB_FAN_SINGLE_CHANNEL_THRESHOLD_END    10
-#define YB_FAN_AVERAGE_CHANNEL_THRESHOLD_START 2
-#define YB_FAN_AVERAGE_CHANNEL_THRESHOLD_END   4
+#define YB_FAN_COUNT                     2
+#define YB_FAN_MOSFET_PINS               {15, 5}
+#define YB_FAN_TACH_PINS                 {17, 7}
+#define YB_FAN_SINGLE_CHANNEL_THRESHOLD  2
+#define YB_FAN_AVERAGE_CHANNEL_THRESHOLD 5
 
 #endif // _CONFIG_FROTHFET_REV_D
