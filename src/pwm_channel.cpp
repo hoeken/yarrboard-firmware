@@ -76,49 +76,26 @@ void pwm_channels_setup()
     Serial.println("MCP3564 ok.");
   }
 
+  //   #ifdef _CONFIG_H_FROTHFET_REV_D
+  // // required since REV D board does not have IRQ connected!!!
+  // _adcCurrentMCP3564.settings.irq.irq_mode = 1;
+  // _adcCurrentMCP3564.write(_adcCurrentMCP3564.settings.irq);
+  //   #endif
+
   _adcCurrentMCP3564.singleEndedMode();
   _adcCurrentMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
   _adcCurrentMCP3564.setAveraging(MCP3x6x::osr::OSR_8192);
 
-    // // required since REV D board does not have IRQ connected!!!
-    // _adcCurrentMCP3564.settings.irq.irq_mode = 1;
-    // _adcCurrentMCP3564.write(mcp.settings.irq);
+  // _adcCurrentMCP3564.enableScanChannel(MCP_CH0);
+  // _adcCurrentMCP3564.enableScanChannel(MCP_CH1);
+  // _adcCurrentMCP3564.enableScanChannel(MCP_CH2);
+  // _adcCurrentMCP3564.enableScanChannel(MCP_CH3);
+  // _adcCurrentMCP3564.enableScanChannel(MCP_CH4);
+  // _adcCurrentMCP3564.enableScanChannel(MCP_CH5);
+  // _adcCurrentMCP3564.enableScanChannel(MCP_CH6);
+  // _adcCurrentMCP3564.startContinuous();
 
-    // _adcCurrentMCP3564.enableScanChannel(MCP_CH0);
-    // _adcCurrentMCP3564.enableScanChannel(MCP_CH1);
-    // _adcCurrentMCP3564.enableScanChannel(MCP_CH2);
-    // _adcCurrentMCP3564.enableScanChannel(MCP_CH3);
-    // _adcCurrentMCP3564.enableScanChannel(MCP_CH4);
-    // _adcCurrentMCP3564.enableScanChannel(MCP_CH5);
-    // _adcCurrentMCP3564.enableScanChannel(MCP_CH6);
-    // _adcCurrentMCP3564.startContinuous();
-
-    // Serial.println("config0");
-    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.config0);
-    // Serial.println("config1");
-    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.config1);
-    // Serial.println("config2");
-    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.config2);
-    // Serial.println("config3");
-    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.config3);
-    // Serial.println("irq");
-    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.irq);
-    // Serial.println("mux");
-    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.mux);
-    // Serial.println("scan");
-    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.scan);
-    // Serial.println("timer");
-    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.timer);
-    // Serial.println("offsetcal");
-    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.offsetcal);
-    // Serial.println("gaincal");
-    // _adcCurrentMCP3564.read(_adcCurrentMCP3564.settings.gaincal);
-
-    // Serial.print("Reference: ");
-    // Serial.println(_adcCurrentMCP3564.getReference());
-
-    // Serial.print("Max Value: ");
-    // Serial.print(_adcCurrentMCP3564.getMaxValue());
+  _adcCurrentMCP3564.printConfig();
 
   #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
 
@@ -134,14 +111,20 @@ void pwm_channels_setup()
     Serial.println("Voltage ADS115 #1 OK");
   else
     Serial.println("Voltage ADS115 #1 Not Found");
+
+  _adcVoltageADS1115_1.setMode(1); //  SINGLE SHOT MODE
   _adcVoltageADS1115_1.setGain(1);
+  _adcVoltageADS1115_1.setDataRate(7);
 
   _adcVoltageADS1115_2.begin();
   if (_adcVoltageADS1115_2.isConnected())
     Serial.println("Voltage ADS115 #2 OK");
   else
     Serial.println("Voltage ADS115 #2 Not Found");
+
+  _adcVoltageADS1115_2.setMode(1); //  SINGLE SHOT MODE
   _adcVoltageADS1115_2.setGain(1);
+  _adcVoltageADS1115_2.setDataRate(7);
 
     #endif
   #endif
@@ -307,17 +290,21 @@ void PWMChannel::setupOffset()
   this->status = Status::OFF;
   this->updateOutput(false);
 
+  Serial.print("s");
+
   // voltage zero state
   this->voltageOffset = 0.0;
   float v = this->getVoltage();
   if (v < (30.0 * 0.05))
     this->voltageOffset = v;
+  Serial.print("v");
 
   // amperage zero state
   this->amperageOffset = 0.0;
   float a = this->getAmperage();
   if (a < (20.0 * 0.05))
     this->amperageOffset = a;
+  Serial.print("a");
 
   Serial.printf("CH%d Voltage Offset: %0.3f / Amperage Offset: %0.3f\n", this->id, this->voltageOffset, this->amperageOffset);
 }
@@ -644,7 +631,8 @@ void PWMChannel::calculateAverages(unsigned int delta)
   if (this->amperage > 0) {
     this->ampHours += this->amperage * ((float)delta / 3600000.0);
 
-    if (this->voltage)
+    // only use our voltage if we're not pwming.
+    if (this->voltage && this->dutyCycle == 1.0)
       this->wattHours += this->amperage * this->voltage * ((float)delta / 3600000.0);
     else
       this->wattHours += this->amperage * busVoltage * ((float)delta / 3600000.0);
