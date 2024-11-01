@@ -18,16 +18,13 @@
 * wifi improvements:
     * wifi connection fail should default to AP mode
     * wifi should reconnect on failure
-* other MFD integrations:
-    * garmin?
-    * raymarine?
 
 # LONG TERM:
 
 * Look into turning yarrboard UI/framework into a library for use in other projects (brineomatic)
-
-# OLD TODO:
-    * RGB Interface Board
-    * tie led state to switch state
-        * Switch dropdown on LED config (what LED to follow)
-        * set on, off, trip colors
+* Integrations with other automation frameworks?
+    * Home Assistant
+    * mqqt?
+* other MFD integrations:
+    * garmin?
+    * raymarine?
