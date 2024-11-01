@@ -411,8 +411,8 @@ void PWMChannel::checkStatus()
   this->amperage = this->getAmperage();
 
   this->checkSoftFuse();
-  // this->checkFuseBlown();
-  // this->checkFuseBypassed();
+  this->checkFuseBlown();
+  this->checkFuseBypassed();
 }
 
 float PWMChannel::getVoltage()

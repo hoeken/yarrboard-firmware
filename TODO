@@ -1,20 +1,32 @@
-* FROTHFET REV D
-    * convert ADC to continuous interrupt driven style
-    * add dev board rgb led supportj
-    * add temperature, vdd support to adc library
+# FROTHFET REV D
+
+* update state transitions from UI/api:
+    * soft trip -> off -> on
+    * fuse blown -> off -> on
+* convert ADC to continuous interrupt driven style
+* add dev board rgb led support
+* add temperature, vdd support to adc library
 * upgrade to esp-idf 5.1.x and fix any issues
 * upgrade to PsychicHttp 2.0
 * add wifi RSSI bars indicator
 * update forms to be consistent style (float labels)
-* go through and re-adjust the various page sizes for our different viewports
 * switch to 1 indexed channels instead of zero
-* update yarrboard client if any changes needed
+* update yarrboard client if any changes needed - probably for state
+* update signalk plugin - same
+* go through and re-adjust the various page sizes for our different viewports
 * protocol documentation
 * wifi improvements:
     * wifi connection fail should default to AP mode
     * wifi should reconnect on failure
+* other MFD integrations:
+    * garmin?
+    * raymarine?
 
-OLD TODO:
+# LONG TERM:
+
+* Look into turning yarrboard UI/framework into a library for use in other projects (brineomatic)
+
+# OLD TODO:
     * RGB Interface Board
     * tie led state to switch state
         * Switch dropdown on LED config (what LED to follow)
