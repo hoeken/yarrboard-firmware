@@ -84,7 +84,7 @@ void pwm_channels_setup()
 
   _adcCurrentMCP3564.singleEndedMode();
   _adcCurrentMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
-  _adcCurrentMCP3564.setAveraging(MCP3x6x::osr::OSR_8192);
+  _adcCurrentMCP3564.setAveraging(MCP3x6x::osr::OSR_1024);
 
   // _adcCurrentMCP3564.enableScanChannel(MCP_CH0);
   // _adcCurrentMCP3564.enableScanChannel(MCP_CH1);
