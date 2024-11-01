@@ -97,6 +97,12 @@ void pwm_channels_setup()
 
   _adcCurrentMCP3564.printConfig();
 
+  Serial.print("VDD: ");
+  Serial.println(_adcCurrentMCP3564.analogRead(MCP_AVDD));
+
+  Serial.print("TEMP: ");
+  Serial.println(_adcCurrentMCP3564.analogRead(MCP_TEMP));
+
   #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
 
   _adcCurrentMCP3208.begin(YB_PWM_CHANNEL_ADC_CS);

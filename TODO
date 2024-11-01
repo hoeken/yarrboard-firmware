@@ -1,7 +1,7 @@
 * FROTHFET REV D
-    * figure out how to handle voltage and wattage during PWM.
-        * maybe use bus voltage?
     * convert ADC to continuous interrupt driven style
+    * add dev board rgb led supportj
+    * add temperature, vdd support to adc library
 * upgrade to esp-idf 5.1.x and fix any issues
 * upgrade to PsychicHttp 2.0
 * add wifi RSSI bars indicator
