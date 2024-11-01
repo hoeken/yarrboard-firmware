@@ -1,8 +1,5 @@
 # FROTHFET REV D
 
-* update state transitions from UI/api:
-    * soft trip -> off -> on
-    * fuse blown -> off -> on
 * convert ADC to continuous interrupt driven style
 * add dev board rgb led support
 * add temperature, vdd support to adc library

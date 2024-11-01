@@ -797,9 +797,10 @@ void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output)
   // save our source
   strlcpy(pwm_channels[cid].source, input["source"] | local_hostname, sizeof(pwm_channels[cid].source));
 
-  // update our state
-  if (!strcmp(pwm_channels[cid].getStatus(), "ON"))
+  // these states should all change to off
+  if (!strcmp(pwm_channels[cid].getStatus(), "ON") || !strcmp(pwm_channels[cid].getStatus(), "TRIPPED") || !strcmp(pwm_channels[cid].getStatus(), "BLOWN"))
     pwm_channels[cid].setState("OFF");
+  // OFF and BYPASS can be turned on.
   else
     pwm_channels[cid].setState("ON");
 #else

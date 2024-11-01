@@ -648,6 +648,21 @@ void PWMChannel::calculateAverages(unsigned int delta)
 void PWMChannel::setState(const char* state)
 {
   DUMP(state);
+
+  if (!strcmp(state, "ON"))
+    this->status = Status::ON;
+  else if (!strcmp(state, "OFF"))
+    this->status = Status::OFF;
+  // these happen elsewhere in the code.
+  // else if (!strcmp(state, "TRIPPED"))
+  //   this->status = Status::TRIPPED;
+  // else if (!strcmp(state, "BLOWN"))
+  //   this->status = Status::BLOWN;
+  // else if (!strcmp(state, "BYPASSED"))
+  //   this->status = Status::BYPASSED;
+  // else
+  //   this->status = Status::OFF;
+
   if (!strcmp(state, "ON"))
     this->setState(true);
   else
