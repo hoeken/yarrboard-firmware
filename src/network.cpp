@@ -152,6 +152,12 @@ bool connectToWifi(const char* ssid, const char* pass)
         Serial.println("[WiFi] WiFi is connected!");
         Serial.print("[WiFi] IP address: ");
         Serial.println(WiFi.localIP());
+
+        // #ifdef YB_HAS_STATUS_WS2818
+        //         status_led.setPixelColor(0, status_led.Color(0, 255, 0));
+        //         status_led.show();
+        // #endif
+
         return true;
         break;
       default:

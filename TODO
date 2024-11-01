@@ -1,10 +1,13 @@
 # FROTHFET REV D
 
 * convert ADC to continuous interrupt driven style
-* add dev board rgb led support
+* rgb status should have its own .h/.cpp file
+    * we should do something interesting with it.
+    * wifi connection status?
 * add temperature, vdd support to adc library
 * upgrade to esp-idf 5.1.x and fix any issues
 * upgrade to PsychicHttp 2.0
+* clean up #includes and libraries
 * add wifi RSSI bars indicator
 * update forms to be consistent style (float labels)
 * switch to 1 indexed channels instead of zero

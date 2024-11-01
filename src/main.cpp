@@ -41,6 +41,11 @@
   #include "bus_voltage.h"
 #endif
 
+#ifdef YB_HAS_STATUS_WS2818
+  #include <Adafruit_NeoPixel.h>
+Adafruit_NeoPixel status_led(1, YB_STATUS_WS2818_PIN, NEO_RGB + NEO_KHZ800);
+#endif
+
 unsigned long lastFrameMillis = 0;
 
 void setup()
@@ -65,6 +70,13 @@ void setup()
 
   debug_setup();
   Serial.println("Debug ok");
+
+#ifdef YB_HAS_STATUS_WS2818
+  status_led.begin();
+  status_led.setPixelColor(0, status_led.Color(0, 0, 255));
+  status_led.setBrightness(50);
+  status_led.show();
+#endif
 
   // ntp_setup();
   prefs_setup();
@@ -112,6 +124,11 @@ void setup()
 
   protocol_setup();
   Serial.println("Protocol ok");
+
+#ifdef YB_HAS_STATUS_WS2818
+  status_led.setPixelColor(0, status_led.Color(0, 255, 0));
+  status_led.show();
+#endif
 }
 
 void loop()
