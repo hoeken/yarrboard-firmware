@@ -33,10 +33,6 @@
   #define YB_DEFAULT_HOSTNAME "yarrboard"
 #endif
 
-#ifndef YB_DEFAULT_AP
-  #define YB_DEFAULT_AP "yarrboard"
-#endif
-
 #ifndef YB_DEFAULT_AP_SSID
   #define YB_DEFAULT_AP_SSID "Yarrboard"
 #endif
