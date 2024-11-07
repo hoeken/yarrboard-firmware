@@ -46,6 +46,10 @@
 Adafruit_NeoPixel status_led(1, YB_STATUS_WS2818_PIN, NEO_RGB + NEO_KHZ800);
 #endif
 
+#ifdef YB_IS_BRINEOMATIC
+  #include "brineomatic.h"
+#endif
+
 unsigned long lastFrameMillis = 0;
 
 void setup()
@@ -113,6 +117,10 @@ void setup()
   Serial.println("Bus voltage ok");
 #endif
 
+#ifdef YB_IS_BRINEOMATIC
+  brineomatic_setup();
+#endif
+
   network_setup();
   Serial.println("Network ok");
 
@@ -156,6 +164,10 @@ void loop()
 
 #ifdef YB_HAS_BUS_VOLTAGE
   bus_voltage_loop();
+#endif
+
+#ifdef YB_IS_BRINEOMATIC
+  brineomatic_loop();
 #endif
 
   network_loop();
