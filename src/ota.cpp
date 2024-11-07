@@ -68,6 +68,13 @@ unsigned long ota_last_message = 0;
 
 void ota_setup()
 {
+  if (app_enable_ota) {
+    ArduinoOTA.setHostname(local_hostname);
+    ArduinoOTA.setPort(3232);
+    ArduinoOTA.setPassword(admin_pass);
+    ArduinoOTA.begin();
+  }
+
   FOTA.setManifestURL("https://raw.githubusercontent.com/hoeken/yarrboard/main/firmware/firmware.json");
   FOTA.setRootCA(MyRootCA);
   FOTA.setPubKey(MyPubKey);
@@ -110,5 +117,9 @@ void ota_loop()
   if (doOTAUpdate) {
     FOTA.handle();
     doOTAUpdate = false;
+  }
+
+  if (app_enable_ota) {
+    ArduinoOTA.handle();
   }
 }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,31 +12,37 @@
     <link rel="stylesheet" type="text/css" href="style.css">
     <script src="yarrboard-client.js"></script>
     <script src="yarrboard.js"></script>
-    <script src="jquery-3.7.0.min.js"></script> 
+    <script src="jquery-3.7.0.min.js"></script>
     <script src="bootstrap.min.js"></script>
     <script src="jscookie.js"></script>
     <script src="spectrum.min.js"></script>
     <script src="marked.min.js"></script>
 </head>
+
 <body>
     <script>
         $(document).ready(start_yarrboard);
         let FF_FOUC_FIX;
     </script>
     <div class="col-xl-8 col-lg-10 mx-auto">
-        <nav id="navbar" class="navbar sticky-top navbar-expand-md bg-body-tertiary navbar-light bg-light rounded-bottom" style="display: none">
+        <nav id="navbar"
+            class="navbar sticky-top navbar-expand-md bg-body-tertiary navbar-light bg-light rounded-bottom"
+            style="display: none">
             <div class="container-fluid">
                 <a class="navbar-brand" onclick="open_page('control')" href="#control">
-                    <img class="logo align-top me-3" src="logo-72.png" alt="Avast ye scurvy dog." width="30" height="30">
+                    <img class="logo align-top me-3" src="logo-72.png" alt="Avast ye scurvy dog." width="30"
+                        height="30">
                     <span id="boardName">Yarrboard</span>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav align-items-center">
                         <li id="controlNav" class="nav-item nav-permission">
-                            <a class="nav-link active" onclick="open_page('control')" aria-current="page" href="#control">Control</a>
+                            <a class="nav-link active" onclick="open_page('control')" aria-current="page"
+                                href="#control">Control</a>
                         </li>
                         <li id="statsNav" class="nav-item nav-permission">
                             <a class="nav-link" onclick="open_page('stats')" href="#stats">Status</a>
@@ -63,7 +70,7 @@
             </div>
         </nav>
         <script>
-            $('.navbar-collapse ul li a').click(function(){ 
+            $('.navbar-collapse ul li a').click(function () {
                 $('.navbar-toggler:visible').click();
             });
             $(function () {
@@ -258,23 +265,25 @@
                                                     <th>Total Clients</th>
                                                     <td id="total_client_count" class="text-end"></td>
                                                 </tr>
-                                            </table>    
+                                            </table>
                                         </td>
                                     </tr>
                                     <tr onclick="$('#memory_stats').toggle()">
                                         <th scope="row">Memory Usage</th>
                                         <td class="align-middle">
-                                            <div id="memory_usage" class="progress" role="progressbar" aria-label="Memory Usage" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                            <div id="memory_usage" class="progress" role="progressbar"
+                                                aria-label="Memory Usage" aria-valuenow="0" aria-valuemin="0"
+                                                aria-valuemax="100">
                                                 <div class="progress-bar" style="width: 0%">0 KiB</div>
                                             </div>
                                         </td>
                                     </tr>
-                                    <tr id="memory_stats" style="display: none">         
+                                    <tr id="memory_stats" style="display: none">
                                         <td colspan="2">
                                             <table style="width: 100%">
                                                 <tr>
                                                     <th scope="row">Heap Size</th>
-                                                    <td id="heap_size" class="text-end"></td>    
+                                                    <td id="heap_size" class="text-end"></td>
                                                 </tr>
                                                 <tr>
                                                     <th scope="row">Min Free Heap</th>
@@ -289,8 +298,8 @@
                                                     <td id="max_alloc_heap" class="text-end"></td>
                                                 </tr>
                                             </table>
-                                        </td>      
-                                    </tr>          
+                                        </td>
+                                    </tr>
                                     <tr>
                                         <th scope="row">IP Address</th>
                                         <td id="ip_address" class="text-end"></td>
@@ -343,7 +352,8 @@
                         </div>
                     </div>
                     <div class="mb-3 text-center">
-                        <button type="button" class="btn btn-primary" onclick="save_network_settings()">Save Settings</button>
+                        <button type="button" class="btn btn-primary" onclick="save_network_settings()">Save
+                            Settings</button>
                     </div>
                 </div>
                 <div id="settingsPage" class="pageContainer" style="display:none">
@@ -354,7 +364,8 @@
                                 <label for="default_role" class="col-form-label">Default User Role</label>
                                 <select id="default_role" class="form-select" aria-label="Default User Role">
                                     <option value="nobody">Nobody - Everyone must login.</option>
-                                    <option value="guest">Guest - Anyone can view and interact. (Admin must login)</option>
+                                    <option value="guest">Guest - Anyone can view and interact. (Admin must login)
+                                    </option>
                                     <option value="admin">Admin - Anyone has full control. (No login)</option>
                                 </select>
                             </div>
@@ -384,9 +395,11 @@
                             </div>
                             <div class="mb-3">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="app_enable_ssl" checked>
+                                    <input class="form-check-input" type="checkbox" value="" id="app_enable_ssl"
+                                        checked>
                                     <label class="form-check-label" for="app_enable_ssl">
-                                        Enable SSL / HTTPS Encryption? (<a href="https://github.com/hoeken/yarrboard#enable-ssl">documentation</a>)
+                                        Enable SSL / HTTPS Encryption? (<a
+                                            href="https://github.com/hoeken/yarrboard#enable-ssl">documentation</a>)
                                     </label>
                                 </div>
                             </div>
@@ -404,25 +417,40 @@
                             </div>
                             <div class="mb-3">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="app_enable_mfd" checked>
+                                    <input class="form-check-input" type="checkbox" value="" id="app_enable_ota"
+                                        checked>
+                                    <label class="form-check-label" for="app_enable_ota">
+                                        Enable OTA uploading (for dev w/ VSCode)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="app_enable_mfd"
+                                        checked>
                                     <label class="form-check-label" for="app_enable_mfd">
-                                        Enable MFD Integration (<a href="https://github.com/hoeken/yarrboard#mfd-integration">documentation</a>)
+                                        Enable MFD Integration (<a
+                                            href="https://github.com/hoeken/yarrboard#mfd-integration">documentation</a>)
                                     </label>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="app_enable_api" checked>
+                                    <input class="form-check-input" type="checkbox" value="" id="app_enable_api"
+                                        checked>
                                     <label class="form-check-label" for="app_enable_api">
-                                        Enable Web API (<a href="https://github.com/hoeken/yarrboard#web-api-protocol">documentation</a>)
+                                        Enable Web API (<a
+                                            href="https://github.com/hoeken/yarrboard#web-api-protocol">documentation</a>)
                                     </label>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="app_enable_serial" checked>
+                                    <input class="form-check-input" type="checkbox" value="" id="app_enable_serial"
+                                        checked>
                                     <label class="form-check-label" for="app_enable_serial">
-                                        Enable Serial / USB API (<a href="https://github.com/hoeken/yarrboard#serial-api-protocol">documentation</a>)
+                                        Enable Serial / USB API (<a
+                                            href="https://github.com/hoeken/yarrboard#serial-api-protocol">documentation</a>)
                                     </label>
                                 </div>
                             </div>
@@ -435,7 +463,8 @@
                         </div>
                     </div>
                     <div class="mb-3 text-center">
-                        <button type="button" class="btn btn-primary" onclick="save_app_settings()">Save Settings</button>
+                        <button type="button" class="btn btn-primary" onclick="save_app_settings()">Save
+                            Settings</button>
                     </div>
                 </div>
                 <div id="systemPage" class="pageContainer" style="display:none">
@@ -446,38 +475,50 @@
                                 <div id="firmware_checking" class="alert alert-secondary" role="alert">
                                     Checking for new firmware...
                                 </div>
-                                <div id="firmware_up_to_date" class="alert alert-success" role="alert" style="display: none">
+                                <div id="firmware_up_to_date" class="alert alert-success" role="alert"
+                                    style="display: none">
                                     Firmware is up to date.
                                 </div>
-                                <div id="firmware_update_available" style="display: none" class="alert alert-primary mt-3" role="alert">
+                                <div id="firmware_update_available" style="display: none"
+                                    class="alert alert-primary mt-3" role="alert">
                                     <h1>New Firmware Available</h1>
                                     <ul>
-                                        <li>Version: <span id="new_firmware_version"></span> (<a id="firmware_bin" href="">Firmware</a>)</li>
+                                        <li>Version: <span id="new_firmware_version"></span> (<a id="firmware_bin"
+                                                href="">Firmware</a>)</li>
                                     </ul>
                                     <div id="firmware_changelog" style="display: none">
                                         <h1>Changelog</h1>
                                     </div>
-                                    <button id="btn_update_firmware" type="button" class="btn btn-primary" onclick="update_firmware()">Update Firmware</button>
-                                    <br/>
+                                    <button id="btn_update_firmware" type="button" class="btn btn-primary"
+                                        onclick="update_firmware()">Update Firmware</button>
+                                    <br />
                                     <div id="progress_wrapper" style="display: none" class="mt-4">
-                                        <p>Update may take a while, please be patient.  After an update, this page will refresh. You may need to clear your browser cache after updating the firmware if you are having issues.</p>
+                                        <p>Update may take a while, please be patient. After an update, this page will
+                                            refresh. You may need to clear your browser cache after updating the
+                                            firmware if you are having issues.</p>
                                         Firmware Update:
-                                        <div class="progress" role="progressbar" aria-label="Firmware Update" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                                            <div id="firmware_progress" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
+                                        <div class="progress" role="progressbar" aria-label="Firmware Update"
+                                            aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                            <div id="firmware_progress"
+                                                class="progress-bar progress-bar-striped progress-bar-animated"
+                                                style="width: 0%"></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="row">
                                 <h5>Miscellaneous</h5>
-                                <button class="btn btn-primary mb-3" type="button" onclick="restart_board()">Restart Board</button>
-                                <button class="btn btn-danger" type="button" onclick="reset_to_factory()">Reset to Factory Defaults</button>
+                                <button class="btn btn-primary mb-3" type="button" onclick="restart_board()">Restart
+                                    Board</button>
+                                <button class="btn btn-danger" type="button" onclick="reset_to_factory()">Reset to
+                                    Factory Defaults</button>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div id="loginPage" style="display:none" class="pageContainer form-signin mt-3 mx-auto">
-                    <h1 class="text-center"><img class="mb-4 logo" src="/favicon.png" alt="" width="72" height="72"> Yarrboard</h1>
+                    <h1 class="text-center"><img class="mb-4 logo" src="/favicon.png" alt="" width="72" height="72">
+                        Yarrboard</h1>
                     <div class="form-floating">
                         <input type="username" class="form-control" id="username" placeholder="admin">
                         <label for="username">Username</label>
@@ -500,32 +541,37 @@
                     <div id="websocket_status">
                         WebSocket:
                         <span id="connection_startup" class="connection_status text-primary">CONNECTING</span>
-                        <span id="connection_good" class="connection_status text-success" style="display: none">CONNECTED</span>
-                        <span id="connection_retrying" class="connection_status text-warning" style="display: none">RETRYING</span>
-                        <span id="connection_failed" class="connection_status text-danger" style="display: none">FAILED</span>
+                        <span id="connection_good" class="connection_status text-success"
+                            style="display: none">CONNECTED</span>
+                        <span id="connection_retrying" class="connection_status text-warning"
+                            style="display: none">RETRYING</span>
+                        <span id="connection_failed" class="connection_status text-danger"
+                            style="display: none">FAILED</span>
                     </div>
-                    <a id="projectName" href="https://github.com/hoeken/yarrboard">Yarrboard</a> &copy; <span onclick="$('#debug_log').toggle()">2023</span><br>
-                    <a href="https://www.oshwa.org/"><img src="oshw-logo-antipixel.webp"></a>        
+                    <a id="projectName" href="https://github.com/hoeken/yarrboard">Yarrboard</a> &copy; <span
+                        onclick="$('#debug_log').toggle()">2023</span><br>
+                    <a href="https://www.oshwa.org/"><img src="oshw-logo-antipixel.webp"></a>
                 </div>
                 <div class="col-xs-12 col-sm-6">
                     <table class="table table-sm table-borderless">
                         <tr>
-                          <td><label for="darkSwitch">Dark&nbsp;Mode</label></td>
-                          <td>
-                            <div class="form-check form-switch">
-                              <input class="form-check-input" type="checkbox" id="darkSwitch">
-                            </div>
-                          </td>
+                            <td><label for="darkSwitch">Dark&nbsp;Mode</label></td>
+                            <td>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="darkSwitch">
+                                </div>
+                            </td>
                         </tr>
                         <tr>
-                          <td><label for="brightnessSlider">Brightness</label></td>
-                          <td width="99%"><input type="range" class="form-range" min="0" max="100" id="brightnessSlider"></td>
+                            <td><label for="brightnessSlider">Brightness</label></td>
+                            <td width="99%"><input type="range" class="form-range" min="0" max="100"
+                                    id="brightnessSlider"></td>
                         </tr>
                     </table>
                 </div>
             </div>
             <div id="debug_log" style="display: none">
-                Viewport: 
+                Viewport:
                 <span class="d-none d-xs-block d-sm-none">xs</span>
                 <span class="d-none d-sm-block d-md-none">sm</span>
                 <span class="d-none d-md-block d-lg-none">md</span>
@@ -538,4 +584,5 @@
         </footer>
     </div>
 </body>
+
 </html>

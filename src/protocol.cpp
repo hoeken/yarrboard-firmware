@@ -17,6 +17,7 @@ unsigned int app_update_interval = 500;
 bool app_enable_mfd = true;
 bool app_enable_api = true;
 bool app_enable_serial = false;
+bool app_enable_ota = false;
 bool app_enable_ssl = false;
 bool is_serial_authenticated = false;
 UserRole app_default_role = NOBODY;
@@ -77,6 +78,8 @@ void protocol_setup()
     app_enable_api = preferences.getBool("appEnableApi");
   if (preferences.isKey("appEnableSerial"))
     app_enable_serial = preferences.getBool("appEnableSerial");
+  if (preferences.isKey("appEnableOTA"))
+    app_enable_ota = preferences.getBool("appEnableOTA");
 
   // if (preferences.isKey("brightness"))
   //   globalBrightness = preferences.getFloat("brightness");
@@ -450,6 +453,7 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   app_enable_mfd = input["app_enable_mfd"];
   app_enable_api = input["app_enable_api"];
   app_enable_serial = input["app_enable_serial"];
+  app_enable_ota = input["app_enable_ota"];
   app_enable_ssl = input["app_enable_ssl"];
 
   if (input["app_update_interval"].is<JsonVariantConst>()) {
@@ -468,6 +472,7 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   preferences.putBool("appEnableMFD", app_enable_mfd);
   preferences.putBool("appEnableApi", app_enable_api);
   preferences.putBool("appEnableSerial", app_enable_serial);
+  preferences.putBool("appEnableOTA", app_enable_ota);
   preferences.putBool("appEnableSSL", app_enable_ssl);
 
   // write our pem to local storage
@@ -479,6 +484,10 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   File fp2 = LittleFS.open("/server.key", "w");
   fp2.print(input["server_key"] | "");
   fp2.close();
+
+  // init our ota.
+  if (app_enable_ota)
+    ota_setup();
 
   // restart the board.
   if (old_app_enable_ssl != app_enable_ssl)
@@ -1186,6 +1195,7 @@ void generateConfigJSON(JsonVariant output)
   output["name"] = board_name;
   output["hostname"] = local_hostname;
   output["use_ssl"] = app_enable_ssl;
+  output["enable_ota"] = app_enable_ota;
   output["uuid"] = uuid;
   output["default_role"] = getRoleText(app_default_role);
   output["brightness"] = globalBrightness;
@@ -1433,6 +1443,7 @@ void generateAppConfigJSON(JsonVariant output)
   output["app_enable_mfd"] = app_enable_mfd;
   output["app_enable_api"] = app_enable_api;
   output["app_enable_serial"] = app_enable_serial;
+  output["app_enable_ota"] = app_enable_ota;
   output["app_enable_ssl"] = app_enable_ssl;
   output["server_cert"] = server_cert;
   output["server_key"] = server_key;

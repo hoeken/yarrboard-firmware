@@ -116,14 +116,14 @@ void setup()
   network_setup();
   Serial.println("Network ok");
 
-  ota_setup();
-  Serial.println("OTA ok");
-
   server_setup();
   Serial.println("Server ok");
 
   protocol_setup();
   Serial.println("Protocol ok");
+
+  ota_setup();
+  Serial.println("OTA ok");
 
 #ifdef YB_HAS_STATUS_WS2818
   status_led.setPixelColor(0, status_led.Color(0, 255, 0));

@@ -11,6 +11,7 @@
 
 #include "server.h"
 #include "utility.h"
+#include <ArduinoOTA.h>
 
 #define DISABLE_ALL_LIBRARY_WARNINGS
 #include <esp32FOTA.hpp>

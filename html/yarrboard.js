@@ -983,6 +983,7 @@ function start_websocket() {
       $("#app_enable_mfd").prop("checked", msg.app_enable_mfd);
       $("#app_enable_api").prop("checked", msg.app_enable_api);
       $("#app_enable_serial").prop("checked", msg.app_enable_serial);
+      $("#app_enable_ota").prop("checked", msg.app_enable_ota);
 
       //for our ssl stuff
       $("#app_enable_ssl").prop("checked", msg.app_enable_ssl);
@@ -1629,6 +1630,7 @@ function save_app_settings() {
   let app_enable_mfd = $("#app_enable_mfd").prop("checked");
   let app_enable_api = $("#app_enable_api").prop("checked");
   let app_enable_serial = $("#app_enable_serial").prop("checked");
+  let app_enable_ota = $("#app_enable_ota").prop("checked");
   let app_enable_ssl = $("#app_enable_ssl").prop("checked");
   let server_cert = $("#server_cert").val();
   let server_key = $("#server_key").val();
@@ -1665,6 +1667,7 @@ function save_app_settings() {
     "app_enable_mfd": app_enable_mfd,
     "app_enable_api": app_enable_api,
     "app_enable_serial": app_enable_serial,
+    "app_enable_ota": app_enable_ota,
     "app_enable_ssl": app_enable_ssl,
     "server_cert": server_cert,
     "server_key": server_key

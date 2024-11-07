@@ -17,10 +17,10 @@ const byte DNS_PORT = 53;
 DNSServer dnsServer;
 
 // default config info for our wifi
-char wifi_ssid[YB_WIFI_SSID_LENGTH] = "Yarrboard";
-char wifi_pass[YB_WIFI_PASSWORD_LENGTH] = "";
+char wifi_ssid[YB_WIFI_SSID_LENGTH] = YB_DEFAULT_AP_SSID;
+char wifi_pass[YB_WIFI_PASSWORD_LENGTH] = YB_DEFAULT_AP_PASS;
 char wifi_mode[16] = "ap";
-char local_hostname[YB_HOSTNAME_LENGTH] = "yarrboard";
+char local_hostname[YB_HOSTNAME_LENGTH] = YB_DEFAULT_HOSTNAME;
 
 // identify yourself!
 char uuid[13];

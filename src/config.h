@@ -29,6 +29,22 @@
   #error "No board config has been defined"
 #endif
 
+#ifndef YB_DEFAULT_HOSTNAME
+  #define YB_DEFAULT_HOSTNAME "yarrboard"
+#endif
+
+#ifndef YB_DEFAULT_AP
+  #define YB_DEFAULT_AP "yarrboard"
+#endif
+
+#ifndef YB_DEFAULT_AP_SSID
+  #define YB_DEFAULT_AP_SSID "Yarrboard"
+#endif
+
+#ifndef YB_DEFAULT_AP_PASS
+  #define YB_DEFAULT_AP_PASS ""
+#endif
+
 // time before saving fade pwm to preserve flash
 #define YB_DUTY_SAVE_TIMEOUT 5000
 
