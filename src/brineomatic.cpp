@@ -32,13 +32,13 @@ byte motor_b_pins[YB_DC_MOTOR_CHANNEL_COUNT] = YB_DC_MOTOR_B_PINS;
 OneWire oneWire(YB_DS18B20_PIN);
 DallasTemperature ds18b20(&oneWire);
 DeviceAddress motorThermometer;
-float motor_temperature = 0.0;
+float temperatureReading = 0.0;
 
 byte flowmeter_pin = YB_FLOWMETER_PIN;
 static volatile int pulse_counter = 0;
 unsigned long lastFlowmeterCheckMillis = 0;
-float lastFlowmeterMeasurement = 0.0;
 float flowmeterPulsesPerLiter = YB_FLOWMETER_DEFAULT_PPL;
+float flowrateReading = 0.0;
 
 void IRAM_ATTR flowmeter_interrupt()
 {
@@ -48,7 +48,7 @@ void IRAM_ATTR flowmeter_interrupt()
 ADS1115 brineomatic_adc(YB_ADS1115_ADDRESS);
 GravityTDS gravityTds;
 float water_temperature = 25;
-float tdsValue = 0;
+float tdsReading = 0;
 
 float lowPressureReading = 0.0;
 float highPressureReading = 0.0;
@@ -85,7 +85,7 @@ void brineomatic_setup()
   attachInterrupt(digitalPinToInterrupt(flowmeter_pin), flowmeter_interrupt, FALLING);
   pulse_counter = 0;
   lastFlowmeterCheckMillis = 0;
-  lastFlowmeterMeasurement = 0.0;
+  flowrateReading = 0.0;
 
   // DS18B20 Sensor
   ds18b20.begin();
@@ -133,18 +133,18 @@ void brineomatic_loop()
 
 void measure_flowmeter()
 {
-  if (millis() - lastFlowmeterMeasurement >= 1000) {
+  if (millis() - lastFlowmeterCheckMillis >= 1000) {
     // detach interrupt while calculating rpm
     detachInterrupt(digitalPinToInterrupt(flowmeter_pin));
 
     // calculate flowrate
-    lastFlowmeterMeasurement = pulse_counter / flowmeterPulsesPerLiter;
+    flowrateReading = pulse_counter / flowmeterPulsesPerLiter;
 
     // reset counter
     pulse_counter = 0;
 
     // store milliseconds when tacho was measured the last time
-    lastFlowmeterMeasurement = millis();
+    lastFlowmeterCheckMillis = millis();
 
     // attach interrupt again
     attachInterrupt(digitalPinToInterrupt(flowmeter_pin), flowmeter_interrupt, FALLING);
@@ -160,7 +160,7 @@ void measure_temperature()
     return;
   }
 
-  motor_temperature = tempC;
+  temperatureReading = tempC;
 }
 
 void measure_tds()
@@ -170,8 +170,8 @@ void measure_tds()
 
   int16_t reading = brineomatic_adc.readADC(1);
   if (brineomatic_adc.getError() == ADS1X15_OK) {
-    gravityTds.update(reading);          // sample and calculate
-    tdsValue = gravityTds.getTdsValue(); // then get the value
+    gravityTds.update(reading);            // sample and calculate
+    tdsReading = gravityTds.getTdsValue(); // then get the value
   }
 }
 
@@ -183,6 +183,7 @@ void measure_lp_sensor()
 
     if (voltage < 0.4) {
       Serial.println("No LP Sensor Detected");
+      lowPressureReading = -1;
       return;
     }
 
@@ -199,6 +200,7 @@ void measure_hp_sensor()
 
     if (voltage < 0.4) {
       Serial.println("No HP Sensor Detected");
+      highPressureReading = -1;
       return;
     }
 

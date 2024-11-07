@@ -1312,6 +1312,17 @@ void generateUpdateJSON(JsonVariant output)
     output["rgb"][i]["blue"] = rgb_channels[i].blue;
   }
 #endif
+
+#ifdef YB_IS_BRINEOMATIC
+  // relays
+  // servos
+  // motor(s)
+  output["temperature"] = temperatureReading;
+  output["flowrate"] = flowrateReading;
+  output["tds"] = tdsReading;
+  output["low_pressure"] = lowPressureReading;
+  output["high_pressure"] = highPressureReading;
+#endif
 }
 
 void generateFastUpdateJSON(JsonVariant output)

@@ -9,6 +9,12 @@
 #ifndef YARR_BRINEOMATIC_H
 #define YARR_BRINEOMATIC_H
 
+extern float temperatureReading;
+extern float flowrateReading;
+extern float tdsReading;
+extern float lowPressureReading;
+extern float highPressureReading;
+
 void brineomatic_setup();
 void brineomatic_loop();
 

@@ -45,6 +45,10 @@
   #include "bus_voltage.h"
 #endif
 
+#ifdef YB_IS_BRINEOMATIC
+  #include "brineomatic.h"
+#endif
+
 // extern unsigned int handledMessages;
 extern char board_name[YB_BOARD_NAME_LENGTH];
 extern char admin_user[YB_USERNAME_LENGTH];
