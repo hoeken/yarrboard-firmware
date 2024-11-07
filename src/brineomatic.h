@@ -18,11 +18,22 @@ extern float highPressureReading;
 void brineomatic_setup();
 void brineomatic_loop();
 
+void brineomatic_state_machine(void* pvParameters);
+
 void measure_flowmeter();
 void measure_temperature();
 void measure_tds();
 void measure_lp_sensor();
 void measure_hp_sensor();
+
+enum class WatermakerStatus {
+  STARTUP,
+  IDLE,
+  RUNNING,
+  FLUSHING,
+  PICKLING,
+  PICKLED
+};
 
 template <class X, class M, class N, class O, class Q>
 X map_generic(X x, M in_min, N in_max, O out_min, Q out_max)

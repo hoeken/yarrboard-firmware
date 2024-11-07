@@ -120,6 +120,17 @@ void brineomatic_setup()
   gravityTds.setAref(YB_ADS1115_VREF); // reference voltage on ADC
   gravityTds.setAdcRange(2 ^ 15);      // 16 bit ADC, but its differential
   gravityTds.begin();                  // initialization
+
+  // Create a FreeRTOS task for the state machine
+  xTaskCreatePinnedToCore(
+    brineomatic_state_machine,   // Task function
+    "brineomatic_state_machine", // Name of the task
+    2048,                        // Stack size
+    NULL,                        // Task input parameters
+    1,                           // Priority of the task
+    NULL,                        // Task handle
+    1                            // Core where the task should run
+  );
 }
 
 void brineomatic_loop()
@@ -129,6 +140,145 @@ void brineomatic_loop()
   measure_tds();
   measure_lp_sensor();
   measure_hp_sensor();
+}
+
+WatermakerStatus currentState = WatermakerStatus::STARTUP;
+
+// State machine task function
+void brineomatic_state_machine(void* pvParameters)
+{
+  while (true) {
+    switch (currentState) {
+
+      //
+      // STARTUP
+      //
+      case WatermakerStatus::STARTUP:
+        Serial.println("State: STARTUP");
+        // wm.setPressure(0);
+        // wm.setDiversion(false);
+        // wm.disableHighPressurePump();
+        // wm.disableBoostPump();
+        // if (wm.isPickled)
+        //   currentState = WatermakerStatus::PICKLED;
+        // else
+        //   currentState = WatermakerStatus::IDLE;
+        break;
+
+      //
+      // PICKLED
+      //
+      case WatermakerStatus::PICKLED:
+        Serial.println("State: PICKLED");
+        break;
+
+      //
+      // IDLE
+      //
+      case WatermakerStatus::IDLE:
+        Serial.println("State: IDLE");
+        break;
+
+      //
+      // RUNNING
+      //
+      case WatermakerStatus::RUNNING:
+        Serial.println("State: RUNNING");
+
+        // unsigned long runtimeStart = millis();
+        // float volume = 0.0;
+
+        // wm.setPressureTarget(0);
+        // wm.setDiversion(false);
+        // wm.disableHighPressurePump();
+        // wm.disableBoostPump();
+
+        // if (wm.hasBoostPump()) {
+        //   wm.enableBoostPump();
+        //   while (wm.getLowPressure() < wm.getLowPressureMinimum())
+        //     vTaskDelay(pdMS_TO_TICKS(100));
+        // }
+
+        // wm.enableHighPressurePump();
+        // wm.setPressureTarget(750);
+        // while (wm.getHighPressure() < wm.getHighPressureMinimum())
+        //   vTaskDelay(pdMS_TO_TICKS(100));
+
+        // bool ready = false;
+        // while (!ready) {
+        //   if (wm.getFlowrate() >= wm.getFlowrateMinimum())
+        //     ready = true;
+        //   else if (wm.getSalinity() <= wm.getSalinityMaximum())
+        //     ready = true;
+
+        //   vTaskDelay(pdMS_TO_TICKS(100));
+        // }
+
+        // wm.setDiversion(true);
+
+        // if (millis() - runtimeStart > desiredRuntime || volume > desiredVolume) {
+        //   wm.setDiversion(false);
+        //   wm.setPressureTarget(0);
+        //   wm.disableHighPressurePump();
+        //   wm.disableBoostPump();
+
+        //   currentState = WatermakerStatus::FLUSHING;
+        // }
+
+        break;
+
+      //
+      // FLUSHING
+      //
+      case WatermakerStatus::FLUSHING:
+        Serial.println("State: FLUSHING");
+
+        // unsigned long flushStart = millis();
+
+        // wm.setDiversion(false);
+        // wm.setPressureTarget(0);
+        // wm.disableHighPressurePump();
+        // wm.disableBoostPump();
+
+        // wm.openFlushValve();
+        // while (millis() - flushStart > flushDuration) {
+        //   vTaskDelay(pdMS_TO_TICKS(100));
+        // }
+        // wm.closeFlushValve();
+
+        // currentState = WatermakerStatus::IDLE;
+
+        break;
+
+      //
+      // PICKLING
+      //
+      case WatermakerStatus::PICKLING:
+        Serial.println("State: PICKLING");
+
+        // unsigned long pickleStart = millis();
+
+        // wm.setDiversion(false);
+        // wm.setPressureTarget(0);
+        // wm.disableHighPressurePump();
+        // wm.disableBoostPump();
+
+        // wm.enableBoostPump();
+        // wm.enableHighPressurePump();
+        // while (millis() - pickleStart > pickleDuration) {
+        //   vTaskDelay(pdMS_TO_TICKS(100));
+        // }
+        // wm.disableHighPressurePump();
+        // wm.disableBoostPump();
+
+        // currentState = WatermakerStatus::PICKLED;
+
+        break;
+    }
+
+    // Add a delay to prevent task starvation
+    vTaskDelay(pdMS_TO_TICKS(100));
+  }
 }
 
 void measure_flowmeter()
