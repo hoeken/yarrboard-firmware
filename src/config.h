@@ -25,6 +25,8 @@
   #include "./configs/config.rgb-input-reva.h"
 #elif defined YB_CONFIG_RGB_INPUT_REV_B
   #include "./configs/config.rgb-input-revb.h"
+#elif defined YB_CONFIG_BRINEOMATIC_REV_A
+  #include "./configs/config.brineomatic-rev-a.h"
 #else
   #error "No board config has been defined"
 #endif
