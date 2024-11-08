@@ -580,6 +580,12 @@ function start_websocket() {
         $('#adcControlDiv').show();
       }
 
+      //UI for brineomatic
+      $('bomControlDiv').hide();
+      if (msg.brineomatic) {
+        $('#bomControlDiv').show();
+      }
+
       //only do it as needed
       if (!page_ready.config || current_page != "config") {
         //populate our pwm edit table
@@ -853,6 +859,36 @@ function start_websocket() {
             $(`#adcBar${ch.id}`).attr("aria-valuenow", percentage);
           }
         }
+      }
+
+      if (msg.brineomatic) {
+        let temperature = Math.round(msg.temperature);
+        let flowrate = Math.round(msg.flowrate);
+        let salinity = Math.round(msg.salinity);
+        let filter_pressure = Math.round(msg.filter_pressure);
+        if (filter_pressure < 0 && filter_pressure > -10)
+          filter_pressure = 0;
+        let membrane_pressure = Math.round(msg.membrane_pressure);
+        if (membrane_pressure < 0 && membrane_pressure > -10)
+          membrane_pressure = 0;
+
+        $("#bomTemperature").html(`${temperature}C`);
+        $("#bomFlowrate").html(`${flowrate} LPM`);
+
+        if (salinity < 5000)
+          $("#bomSalinity").html(`${salinity} PPM`);
+        else
+          $("#bomSalinity").html("N/A");
+
+        if (filter_pressure >= 0)
+          $("#bomFilterPressure").html(`${filter_pressure} PSI`);
+        else
+          $("#bomFilterPressure").html("N/A");
+
+        if (membrane_pressure >= 0)
+          $("#bomMembranePressure").html(`${membrane_pressure} PSI`);
+        else
+          $("#bomMembranePressure").html("N/A");
       }
 
       page_ready.control = true;

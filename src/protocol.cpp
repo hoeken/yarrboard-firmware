@@ -1256,6 +1256,13 @@ void generateConfigJSON(JsonVariant output)
     output["rgb"][i]["enabled"] = rgb_channels[i].isEnabled;
   }
 #endif
+
+#ifdef YB_IS_BRINEOMATIC
+  // relays
+  // servos
+  // motor(s)
+  output["brineomatic"] = true;
+#endif
 }
 
 void generateUpdateJSON(JsonVariant output)
@@ -1317,6 +1324,7 @@ void generateUpdateJSON(JsonVariant output)
   // relays
   // servos
   // motor(s)
+  output["brineomatic"] = true;
   output["temperature"] = wm.getTemperature();
   output["flowrate"] = wm.getFlowrate();
   output["salinity"] = wm.getSalinity();

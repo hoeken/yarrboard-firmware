@@ -108,6 +108,8 @@ void brineomatic_setup()
     Serial.println("Unable to find address for DS18B20");
 
   ds18b20.setResolution(motorThermometer, 9);
+  ds18b20.setWaitForConversion(false);
+  ds18b20.requestTemperatures();
 
   Wire.begin();
   brineomatic_adc.begin();
@@ -341,13 +343,16 @@ void measure_flowmeter()
 
 void measure_temperature()
 {
-  float tempC = ds18b20.getTempC(motorThermometer);
-  if (tempC == DEVICE_DISCONNECTED_C) {
-    // Serial.println("Error: Could not read ds18B20 temperature data");
-    return;
-  }
+  if (ds18b20.isConversionComplete()) {
+    float tempC = ds18b20.getTempC(motorThermometer);
 
-  wm.setTemperature(tempC);
+    if (tempC == DEVICE_DISCONNECTED_C) {
+      wm.setTemperature(-999);
+    }
+    wm.setTemperature(tempC);
+
+    ds18b20.requestTemperatures();
+  }
 }
 
 void measure_salinity(int16_t reading)
@@ -364,7 +369,7 @@ void measure_filter_pressure(int16_t reading)
 
   if (voltage < 0.4) {
     Serial.println("No LP Sensor Detected");
-    wm.setFilterPressure(-1);
+    wm.setFilterPressure(-999);
     return;
   }
 
@@ -379,7 +384,7 @@ void measure_membrane_pressure(int16_t reading)
 
   if (voltage < 0.4) {
     Serial.println("No HP Sensor Detected");
-    wm.setMembranePressure(-1);
+    wm.setMembranePressure(-999);
     return;
   }
 
