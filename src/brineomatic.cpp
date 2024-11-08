@@ -341,14 +341,12 @@ void measure_flowmeter()
 
 void measure_temperature()
 {
-  // method 2 - faster
   float tempC = ds18b20.getTempC(motorThermometer);
   if (tempC == DEVICE_DISCONNECTED_C) {
-    Serial.println("Error: Could not read ds18B20 temperature data");
+    // Serial.println("Error: Could not read ds18B20 temperature data");
     return;
   }
 
-  // update our model
   wm.setTemperature(tempC);
 }
 
