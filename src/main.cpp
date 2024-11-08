@@ -21,6 +21,10 @@
   #include "pwm_channel.h"
 #endif
 
+#ifdef YB_HAS_RELAY_CHANNELS
+  #include "relay_channel.h"
+#endif
+
 #ifdef YB_HAS_INPUT_CHANNELS
   #include "input_channel.h"
 #endif
@@ -104,7 +108,12 @@ void setup()
 
 #ifdef YB_HAS_PWM_CHANNELS
   pwm_channels_setup();
-  Serial.println("Output channels ok");
+  Serial.println("PWM channels ok");
+#endif
+
+#ifdef YB_HAS_RELAY_CHANNELS
+  relay_channels_setup();
+  Serial.println("Relay channels ok");
 #endif
 
 #ifdef YB_HAS_FANS
@@ -156,6 +165,10 @@ void loop()
 
 #ifdef YB_HAS_PWM_CHANNELS
   pwm_channels_loop();
+#endif
+
+#ifdef YB_HAS_RELAY_CHANNELS
+  relay_channels_loop();
 #endif
 
 #ifdef YB_HAS_FANS
