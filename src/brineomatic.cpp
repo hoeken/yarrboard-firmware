@@ -52,6 +52,8 @@ void IRAM_ATTR flowmeter_interrupt()
 }
 
 ADS1115 brineomatic_adc(YB_ADS1115_ADDRESS);
+byte current_ads1115_channel = 0;
+
 GravityTDS gravityTds;
 float water_temperature = 25;
 
@@ -110,13 +112,16 @@ void brineomatic_setup()
   Wire.begin();
   brineomatic_adc.begin();
   if (brineomatic_adc.isConnected())
-    Serial.println("ADS115 OK");
+    Serial.println("ADS1115 OK");
   else
-    Serial.println("ADS115 Not Found");
+    Serial.println("ADS1115 Not Found");
 
   brineomatic_adc.setMode(1);     // SINGLE SHOT MODE
   brineomatic_adc.setGain(1);     // ±4.096V
-  brineomatic_adc.setDataRate(7); // fastest
+  brineomatic_adc.setDataRate(4); // 128sps
+
+  current_ads1115_channel = 0;
+  brineomatic_adc.requestADC(current_ads1115_channel);
 
   gravityTds.setAref(YB_ADS1115_VREF); // reference voltage on ADC
   gravityTds.setAdcRange(2 ^ 15);      // 16 bit ADC, but its differential
@@ -138,9 +143,30 @@ void brineomatic_loop()
 {
   measure_flowmeter();
   measure_temperature();
-  measure_salinity();
-  measure_filter_pressure();
-  measure_membrane_pressure();
+
+  if (brineomatic_adc.isReady()) {
+    int16_t value = brineomatic_adc.getValue();
+
+    if (brineomatic_adc.getError() == ADS1X15_OK) {
+      if (current_ads1115_channel == 0)
+        true; // thermistor channel - unused for now
+      else if (current_ads1115_channel == 1)
+        measure_salinity(value);
+      else if (current_ads1115_channel == 2)
+        measure_filter_pressure(value);
+      else if (current_ads1115_channel == 3)
+        measure_membrane_pressure(value);
+    } else
+      Serial.println("ADC Error.");
+
+    // update to our channel index
+    current_ads1115_channel++;
+    if (current_ads1115_channel == 4)
+      current_ads1115_channel = 0;
+
+    // request new conversion
+    brineomatic_adc.requestADC(current_ads1115_channel);
+  }
 }
 
 Brineomatic::Status currentState = Brineomatic::Status::STARTUP;
@@ -326,51 +352,42 @@ void measure_temperature()
   wm.setTemperature(tempC);
 }
 
-void measure_salinity()
+void measure_salinity(int16_t reading)
 {
-  int16_t reading = brineomatic_adc.readADC(1);
-  if (brineomatic_adc.getError() == ADS1X15_OK) {
-    gravityTds.setTemperature(water_temperature); // set the temperature and execute temperature compensation
-    gravityTds.update(reading);                   // sample and calculate
-    float tdsReading = gravityTds.getTdsValue();  // then get the value
-    wm.setSalinity(tdsReading);
-  }
+  gravityTds.setTemperature(water_temperature); // set the temperature and execute temperature compensation
+  gravityTds.update(reading);                   // sample and calculate
+  float tdsReading = gravityTds.getTdsValue();  // then get the value
+  wm.setSalinity(tdsReading);
 }
 
-void measure_filter_pressure()
+void measure_filter_pressure(int16_t reading)
 {
-  int16_t reading = brineomatic_adc.readADC(2);
-  if (brineomatic_adc.getError() == ADS1X15_OK) {
-    float voltage = brineomatic_adc.toVoltage(reading);
+  float voltage = brineomatic_adc.toVoltage(reading);
 
-    if (voltage < 0.4) {
-      Serial.println("No LP Sensor Detected");
-      wm.setFilterPressure(-1);
-      return;
-    }
-
-    float amperage = (voltage / YB_420_RESISTOR) * 1000;
-    float lowPressureReading = map_generic(amperage, 4.0, 20.0, 0.0, YB_LP_SENSOR_MAX);
-    wm.setFilterPressure(lowPressureReading);
+  if (voltage < 0.4) {
+    Serial.println("No LP Sensor Detected");
+    wm.setFilterPressure(-1);
+    return;
   }
+
+  float amperage = (voltage / YB_420_RESISTOR) * 1000;
+  float lowPressureReading = map_generic(amperage, 4.0, 20.0, 0.0, YB_LP_SENSOR_MAX);
+  wm.setFilterPressure(lowPressureReading);
 }
 
-void measure_membrane_pressure()
+void measure_membrane_pressure(int16_t reading)
 {
-  int16_t reading = brineomatic_adc.readADC(3);
-  if (brineomatic_adc.getError() == ADS1X15_OK) {
-    float voltage = brineomatic_adc.toVoltage(reading);
+  float voltage = brineomatic_adc.toVoltage(reading);
 
-    if (voltage < 0.4) {
-      Serial.println("No HP Sensor Detected");
-      wm.setMembranePressure(-1);
-      return;
-    }
-
-    float amperage = (voltage / YB_420_RESISTOR) * 1000;
-    float highPressureReading = map_generic(amperage, 4.0, 20.0, 0.0, YB_HP_SENSOR_MAX);
-    wm.setMembranePressure(highPressureReading);
+  if (voltage < 0.4) {
+    Serial.println("No HP Sensor Detected");
+    wm.setMembranePressure(-1);
+    return;
   }
+
+  float amperage = (voltage / YB_420_RESISTOR) * 1000;
+  float highPressureReading = map_generic(amperage, 4.0, 20.0, 0.0, YB_HP_SENSOR_MAX);
+  wm.setMembranePressure(highPressureReading);
 }
 
 Brineomatic::Brineomatic() : isPickled(false),

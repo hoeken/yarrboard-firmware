@@ -16,9 +16,9 @@ void brineomatic_state_machine(void* pvParameters);
 
 void measure_flowmeter();
 void measure_temperature();
-void measure_tds();
-void measure_lp_sensor();
-void measure_hp_sensor();
+void measure_salinity(int16_t reading);
+void measure_filter_pressure(int16_t reading);
+void measure_membrane_pressure(int16_t reading);
 
 class Brineomatic
 {
