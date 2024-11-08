@@ -54,7 +54,6 @@ void IRAM_ATTR flowmeter_interrupt()
 ADS1115 brineomatic_adc(YB_ADS1115_ADDRESS);
 GravityTDS gravityTds;
 float water_temperature = 25;
-float tdsReading = 0;
 
 void brineomatic_setup()
 {
@@ -139,9 +138,9 @@ void brineomatic_loop()
 {
   measure_flowmeter();
   measure_temperature();
-  measure_tds();
-  measure_lp_sensor();
-  measure_hp_sensor();
+  measure_salinity();
+  measure_filter_pressure();
+  measure_membrane_pressure();
 }
 
 Brineomatic::Status currentState = Brineomatic::Status::STARTUP;
@@ -327,19 +326,18 @@ void measure_temperature()
   wm.setTemperature(tempC);
 }
 
-void measure_tds()
+void measure_salinity()
 {
-  // temperature = readTemperature();  //add your temperature sensor and read it
-  // gravityTds.setTemperature(temperature); // set the temperature and execute temperature compensation
-
   int16_t reading = brineomatic_adc.readADC(1);
   if (brineomatic_adc.getError() == ADS1X15_OK) {
-    gravityTds.update(reading);            // sample and calculate
-    tdsReading = gravityTds.getTdsValue(); // then get the value
+    gravityTds.setTemperature(water_temperature); // set the temperature and execute temperature compensation
+    gravityTds.update(reading);                   // sample and calculate
+    float tdsReading = gravityTds.getTdsValue();  // then get the value
+    wm.setSalinity(tdsReading);
   }
 }
 
-void measure_lp_sensor()
+void measure_filter_pressure()
 {
   int16_t reading = brineomatic_adc.readADC(2);
   if (brineomatic_adc.getError() == ADS1X15_OK) {
@@ -357,7 +355,7 @@ void measure_lp_sensor()
   }
 }
 
-void measure_hp_sensor()
+void measure_membrane_pressure()
 {
   int16_t reading = brineomatic_adc.readADC(3);
   if (brineomatic_adc.getError() == ADS1X15_OK) {
