@@ -206,6 +206,10 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleTogglePWMChannel(input, output);
     else if (!strcmp(cmd, "fade_pwm_channel"))
       return handleFadePWMChannel(input, output);
+    else if (!strcmp(cmd, "set_relay_channel"))
+      return handleSetRelayChannel(input, output);
+    else if (!strcmp(cmd, "toggle_relay_channel"))
+      return handleToggleRelayChannel(input, output);
     else if (!strcmp(cmd, "set_switch"))
       return handleSetSwitch(input, output);
     else if (!strcmp(cmd, "set_rgb"))
@@ -238,6 +242,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleOTAStart(input, output);
     else if (!strcmp(cmd, "config_pwm_channel"))
       return handleConfigPWMChannel(input, output);
+    else if (!strcmp(cmd, "config_relay_channel"))
+      return handleConfigRelayChannel(input, output);
     else if (!strcmp(cmd, "config_switch"))
       return handleConfigSwitch(input, output);
     else if (!strcmp(cmd, "config_adc"))
@@ -868,6 +874,179 @@ void handleFadePWMChannel(JsonVariantConst input, JsonVariant output)
 #endif
 }
 
+void handleConfigRelayChannel(JsonVariantConst input, JsonVariant output)
+{
+#ifdef YB_HAS_RELAY_CHANNELS
+  char prefIndex[YB_PREF_KEY_LENGTH];
+
+  // id is required
+  if (!input["id"].is<JsonVariantConst>())
+    return generateErrorJSON(output, "'id' is a required parameter");
+
+  // is it a valid channel?
+  byte cid = input["id"];
+  if (!isValidRelayChannel(cid))
+    return generateErrorJSON(output, "Invalid channel id");
+
+  // channel name
+  if (input["name"].is<String>()) {
+    // is it too long?
+    if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
+      char error[50];
+      sprintf(error, "Maximum channel name length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
+      return generateErrorJSON(output, error);
+    }
+
+    // save to our storage
+    strlcpy(relay_channels[cid].name, input["name"] | "Relay ?", sizeof(relay_channels[cid].name));
+    sprintf(prefIndex, "rlyName%d", cid);
+    preferences.putString(prefIndex, relay_channels[cid].name);
+
+    // give them the updated config
+    return generateConfigJSON(output);
+  }
+
+  // channel type
+  if (input["type"].is<String>()) {
+    // is it too long?
+    if (strlen(input["type"]) > YB_TYPE_LENGTH - 1) {
+      char error[50];
+      sprintf(error, "Maximum channel type length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
+      return generateErrorJSON(output, error);
+    }
+
+    // save to our storage
+    strlcpy(relay_channels[cid].type, input["type"] | "other", sizeof(relay_channels[cid].type));
+    sprintf(prefIndex, "rlyType%d", cid);
+    preferences.putString(prefIndex, relay_channels[cid].type);
+
+    // give them the updated config
+    return generateConfigJSON(output);
+  }
+
+  // default state
+  if (input["defaultState"].is<String>()) {
+    // is it too long?
+    if (strlen(input["defaultState"]) >
+        sizeof(relay_channels[cid].defaultState) - 1) {
+      char error[50];
+      sprintf(error, "Maximum default state length is %s characters.", sizeof(relay_channels[cid].defaultState) - 1);
+      return generateErrorJSON(output, error);
+    }
+
+    // save to our storage
+    strlcpy(relay_channels[cid].defaultState, input["defaultState"] | "OFF", sizeof(relay_channels[cid].defaultState));
+    sprintf(prefIndex, "rlyDefault%d", cid);
+    preferences.putString(prefIndex, relay_channels[cid].defaultState);
+
+    // give them the updated config
+    return generateConfigJSON(output);
+  }
+
+  // enabled
+  if (input["enabled"].is<bool>()) {
+    // save right nwo.
+    bool enabled = input["enabled"];
+    relay_channels[cid].isEnabled = enabled;
+
+    // save to our storage
+    sprintf(prefIndex, "rlyEnabled%d", cid);
+    preferences.putBool(prefIndex, enabled);
+
+    // give them the updated config
+    return generateConfigJSON(output);
+  }
+#else
+  return generateErrorJSON(output, "Board does not have relay channels.");
+#endif
+}
+
+void handleSetRelayChannel(JsonVariantConst input, JsonVariant output)
+{
+#ifdef YB_HAS_RELAY_CHANNELS
+  char prefIndex[YB_PREF_KEY_LENGTH];
+
+  // id is required
+  if (!input["id"].is<JsonVariantConst>())
+    return generateErrorJSON(output, "'id' is a required parameter");
+
+  // is it a valid channel?
+  byte cid = input["id"];
+  if (!isValidRelayChannel(cid))
+    return generateErrorJSON(output, "Invalid channel id");
+
+  // is it enabled?
+  if (!relay_channels[cid].isEnabled)
+    return generateErrorJSON(output, "Channel is not enabled.");
+
+  // change state
+  if (input["state"].is<String>()) {
+    // source is required
+    if (!input["source"].is<String>())
+      return generateErrorJSON(output, "'source' is a required parameter");
+
+    // check the length
+    char error[50];
+    if (strlen(input["source"]) > YB_HOSTNAME_LENGTH - 1) {
+      sprintf(error, "Maximum source length is %s characters.", YB_HOSTNAME_LENGTH - 1);
+      return generateErrorJSON(output, error);
+    }
+
+    // get our data
+    strlcpy(relay_channels[cid].source, input["source"] | local_hostname, sizeof(relay_channels[cid].source));
+
+    // okay, set our state
+    char state[10];
+    strlcpy(state, input["state"] | "OFF", sizeof(state));
+
+    // update our pwm channel
+    relay_channels[cid].setState(state);
+
+    // get that update out ASAP... if its our own update
+    if (!strcmp(relay_channels[cid].source, local_hostname))
+      sendFastUpdate();
+  }
+#else
+  return generateErrorJSON(output, "Board does not have relay channels.");
+#endif
+}
+
+void handleToggleRelayChannel(JsonVariantConst input, JsonVariant output)
+{
+#ifdef YB_HAS_RELAY_CHANNELS
+  // id is required
+  if (!input["id"].is<JsonVariantConst>())
+    return generateErrorJSON(output, "'id' is a required parameter");
+
+  // is it a valid channel?
+  byte cid = input["id"];
+  if (!isValidRelayChannel(cid))
+    return generateErrorJSON(output, "Invalid channel id");
+
+  // source is required
+  if (!input["source"].is<String>())
+    return generateErrorJSON(output, "'source' is a required parameter");
+
+  // check the length
+  char error[50];
+  if (strlen(input["source"]) > YB_HOSTNAME_LENGTH - 1) {
+    sprintf(error, "Maximum source length is %s characters.", YB_HOSTNAME_LENGTH - 1);
+    return generateErrorJSON(output, error);
+  }
+
+  // save our source
+  strlcpy(relay_channels[cid].source, input["source"] | local_hostname, sizeof(relay_channels[cid].source));
+
+  // relays are simple on/off.
+  if (!strcmp(relay_channels[cid].getStatus(), "ON"))
+    relay_channels[cid].setState("OFF");
+  else
+    relay_channels[cid].setState("ON");
+#else
+  return generateErrorJSON(output, "Board does not have relay channels.");
+#endif
+}
+
 void handleSetSwitch(JsonVariantConst input, JsonVariant output)
 {
 #ifdef YB_HAS_INPUT_CHANNELS
@@ -1227,6 +1406,16 @@ void generateConfigJSON(JsonVariant output)
   }
 #endif
 
+#ifdef YB_HAS_RELAY_CHANNELS
+  for (byte i = 0; i < YB_RELAY_CHANNEL_COUNT; i++) {
+    output["relay"][i]["id"] = i;
+    output["relay"][i]["name"] = relay_channels[i].name;
+    output["relay"][i]["type"] = relay_channels[i].type;
+    output["relay"][i]["enabled"] = relay_channels[i].isEnabled;
+    output["relay"][i]["defaultState"] = relay_channels[i].defaultState;
+  }
+#endif
+
 // input / digital IO channels
 #ifdef YB_HAS_INPUT_CHANNELS
   for (byte i = 0; i < YB_INPUT_CHANNEL_COUNT; i++) {
@@ -1285,6 +1474,14 @@ void generateUpdateJSON(JsonVariant output)
     output["pwm"][i]["current"] = round2(pwm_channels[i].amperage);
     output["pwm"][i]["aH"] = round3(pwm_channels[i].ampHours);
     output["pwm"][i]["wH"] = round3(pwm_channels[i].wattHours);
+  }
+#endif
+
+#ifdef YB_HAS_RELAY_CHANNELS
+  for (byte i = 0; i < YB_RELAY_CHANNEL_COUNT; i++) {
+    output["relay"][i]["id"] = i;
+    output["relay"][i]["state"] = relay_channels[i].getStatus();
+    output["relay"][i]["source"] = relay_channels[i].source;
   }
 #endif
 

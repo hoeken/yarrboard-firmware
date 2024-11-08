@@ -43,7 +43,7 @@ class RelayChannel
 
     void setup();
     void setupDefaultState();
-    void updateOutput(bool check_status = false);
+    void updateOutput();
 
     void setState(const char* state);
     void setState(bool newState);

@@ -154,6 +154,75 @@ const PWMEditCard = (ch) => `
 </div>
 `;
 
+const RelayControlCard = (ch) => `
+<div id="relay${ch.id}" class="col-xs-12 col-sm-6">
+  <table class="w-100 h-100 p-2">
+    <tr>
+      <td>
+        <button id="relayState${ch.id}" type="button" class="btn relayButton text-center" onclick="toggle_relay_state(${ch.id})">
+          <table style="width: 100%">
+            <tbody>
+              <tr>
+                <td class="relayIcon text-center align-middle pe-2">
+                  ${pwm_type_images[ch.type]}
+                </td>
+                <td class="text-center" style="width: 99%">
+                  <div id="relayName${ch.id}">${ch.name}</div>
+                  <div id="relayStatus${ch.id}"></div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </button>
+      </td>
+    </tr>
+  </table>
+</div>
+`;
+
+const RelayEditCard = (ch) => `
+<div id="relayEditCard${ch.id}" class="col-xs-12 col-sm-6">
+  <div class="p-3 border border-secondary rounded">
+    <h5>Relay Channel #${ch.id}</h5>
+    <div class="form-floating mb-3">
+      <input type="text" class="form-control" id="fRelayName${ch.id}" value="${ch.name}">
+      <label for="fRelayName${ch.id}">Name</label>
+    </div>
+    <div class="invalid-feedback">Must be 30 characters or less.</div>
+    <div class="form-check form-switch mb-3">
+      <input class="form-check-input" type="checkbox" id="fRelayEnabled${ch.id}">
+      <label class="form-check-label" for="fRelayEnabled${ch.id}">
+        Enabled
+      </label>
+    </div>
+    <div class="form-floating mb-3">
+      <select id="fRelayDefaultState${ch.id}" class="form-select" aria-label="Default State (on boot)">
+        <option value="ON">ON</option>
+        <option value="OFF">OFF</option>
+      </select>
+      <label for="fRelayDefaultState${ch.id}">Default State (on boot)</label>
+    </div>
+    <div class="form-floating">
+      <select id="fRelayType${ch.id}" class="form-select" aria-label="Output Type">
+        <option value="light">Light</option>
+        <option value="motor">Motor</option>
+        <option value="water_pump">Water Pump</option>
+        <option value="bilge_pump">Bilge Pump</option>
+        <option value="fuel_pump">Fuel Pump</option>
+        <option value="fan">Fan</option>
+        <option value="solenoid">Solenoid</option>
+        <option value="fridge">Refrigerator</option>
+        <option value="freezer">Freezer</option>
+        <option value="charger">Charger</option>
+        <option value="electronics">Electronics</option>
+        <option value="other">Other</option>
+      </select>
+      <label for="fRelayType${ch.id}">Output Type</label>
+    </div>
+  </div>
+</div>
+`;
+
 const SwitchControlRow = (id, name) => `
 <tr id="switch${id}" class="switchRow">
   <td class="text-center"><button id="switchState${id}" type="button" class="btn btn-sm" style="width: 80px"></button></td>
@@ -498,6 +567,22 @@ function start_websocket() {
         $('#pwmStatsDiv').show();
       }
 
+      //do we have relay channels?
+      $('#relayControlDiv').hide();
+      $('#relayStatsDiv').hide();
+      if (msg.relay) {
+        //fresh slate
+        $('#relayCards').html("");
+        for (ch of msg.relay) {
+          if (ch.enabled) {
+            $('#relayCards').append(RelayControlCard(ch));
+          }
+        }
+
+        $('#relayControlDiv').show();
+        $('#relayStatsDiv').show();
+      }
+
       //populate our switch control table
       $('#switchControlDiv').hide();
       $('#switchStatsDiv').hide();
@@ -623,6 +708,30 @@ function start_websocket() {
           $('#pwmConfig').show();
         }
 
+        //edit controls for each relay
+        $('#relayConfig').hide();
+        if (msg.relay) {
+          $('#relayConfigForm').html("");
+          for (ch of msg.relay) {
+            $('#relayConfigForm').append(RelayEditCard(ch));
+            $(`#fRelayEnabled${ch.id}`).prop("checked", ch.enabled);
+            $(`#fRelayType${ch.id}`).val(ch.type);
+            $(`#fRelayDefaultState${ch.id}`).val(ch.defaultState);
+
+            //enable/disable other stuff.
+            $(`#fRelayName${ch.id}`).prop('disabled', !ch.enabled);
+            $(`#fRelayType${ch.id}`).prop('disabled', !ch.enabled);
+            $(`#fRelayDefaultState${ch.id}`).prop('disabled', !ch.enabled);
+
+            //validate + save
+            $(`#fRelayEnabled${ch.id}`).change(validate_relay_enabled);
+            $(`#fRelayName${ch.id}`).change(validate_relay_name);
+            $(`#fRelayType${ch.id}`).change(validate_relay_type);
+            $(`#fRelayDefaultState${ch.id}`).change(validate_relay_default_state);
+          }
+          $('#relayConfig').show();
+        }
+
         //edit controls for each switch
         $('#switchConfig').hide();
         if (msg.switches) {
@@ -728,7 +837,6 @@ function start_websocket() {
 
       //our pwm info
       if (msg.pwm) {
-        console.log(msg.pwm);
         for (ch of msg.pwm) {
           if (current_config.pwm[ch.id].enabled) {
             if (ch.state == "ON") {
@@ -808,6 +916,24 @@ function start_websocket() {
             }
             else
               $('#pwmWattage' + ch.id).hide();
+          }
+        }
+      }
+
+      //our relay info
+      if (msg.relay) {
+        for (ch of msg.relay) {
+          if (current_config.relay[ch.id].enabled) {
+            if (ch.state == "ON") {
+              $('#relayState' + ch.id).addClass("btn-success");
+              $('#relayState' + ch.id).removeClass("btn-secondary");
+              $(`#relayStatus${ch.id}`).hide();
+            }
+            else {
+              $('#relayState' + ch.id).addClass("btn-secondary");
+              $('#relayState' + ch.id).removeClass("btn-success");
+              $(`#relayStatus${ch.id}`).hide();
+            }
           }
         }
       }
@@ -1151,6 +1277,14 @@ function toggle_state(id) {
   client.togglePWMChannel(id, current_config.hostname, true);
 }
 
+function toggle_relay_state(id) {
+  client.send({
+    "cmd": "toggle_relay_channel",
+    "id": id,
+    "source": current_config.hostname
+  }, true);
+}
+
 function toggle_adc_details(id) {
   $(`#adc${id}Details`).toggle();
 }
@@ -1439,6 +1573,87 @@ function validate_pwm_default_state(e) {
     //set our new pwm name!
     client.send({
       "cmd": "config_pwm_channel",
+      "id": id,
+      "defaultState": value
+    });
+  }
+}
+
+function validate_relay_name(e) {
+  let ele = e.target;
+  let id = ele.id.match(/\d+/)[0];
+  let value = ele.value;
+
+  if (value.length <= 0 || value.length > 30) {
+    $(ele).removeClass("is-valid");
+    $(ele).addClass("is-invalid");
+  }
+  else {
+    $(ele).removeClass("is-invalid");
+    $(ele).addClass("is-valid");
+
+    client.send({
+      "cmd": "config_relay_channel",
+      "id": id,
+      "name": value
+    });
+  }
+}
+
+function validate_relay_enabled(e) {
+  let ele = e.target;
+  let id = ele.id.match(/\d+/)[0];
+  let value = ele.checked;
+
+  $(`#fPWMName${id}`).prop('disabled', !value);
+  $(`#fPWMType${id}`).prop('disabled', !value);
+  $(`#fPWMDefaultState${id}`).prop('disabled', !value);
+
+  $(ele).addClass("is-valid");
+
+  client.send({
+    "cmd": "config_relay_channel",
+    "id": id,
+    "enabled": value
+  });
+}
+
+function validate_relay_type(e) {
+  let ele = e.target;
+  let id = ele.id.match(/\d+/)[0];
+  let value = ele.value;
+
+  if (value.length <= 0 || value.length > 30) {
+    $(ele).removeClass("is-valid");
+    $(ele).addClass("is-invalid");
+  }
+  else {
+    $(ele).removeClass("is-invalid");
+    $(ele).addClass("is-valid");
+
+    client.send({
+      "cmd": "config_relay_channel",
+      "id": id,
+      "type": value
+    });
+  }
+}
+
+function validate_relay_default_state(e) {
+  let ele = e.target;
+  let id = ele.id.match(/\d+/)[0];
+  let value = ele.value;
+
+  if (value.length <= 0 || value.length > 10) {
+    $(ele).removeClass("is-valid");
+    $(ele).addClass("is-invalid");
+  }
+  else {
+    $(ele).removeClass("is-invalid");
+    $(ele).addClass("is-valid");
+
+    client.send({
+      "cmd": "config_relay_channel",
       "id": id,
       "defaultState": value
     });

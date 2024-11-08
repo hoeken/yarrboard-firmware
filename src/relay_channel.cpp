@@ -82,27 +82,25 @@ void RelayChannel::setupDefaultState()
   }
 
   // update our pin
-  this->updateOutput(true);
+  this->updateOutput();
 }
 
-void RelayChannel::updateOutput(bool check_status)
+void RelayChannel::updateOutput()
 {
-  digitalWrite(_pins[id], check_status);
+  digitalWrite(_pins[id], outputState);
 }
 
 void RelayChannel::setState(const char* state)
 {
   DUMP(state);
 
-  if (!strcmp(state, "ON"))
+  if (!strcmp(state, "ON")) {
     this->status = Status::ON;
-  else if (!strcmp(state, "OFF"))
-    this->status = Status::OFF;
-
-  if (!strcmp(state, "ON"))
     this->setState(true);
-  else
+  } else if (!strcmp(state, "OFF")) {
+    this->status = Status::OFF;
     this->setState(false);
+  }
 }
 
 void RelayChannel::setState(bool newState)
@@ -119,10 +117,10 @@ void RelayChannel::setState(bool newState)
       this->status = Status::ON;
     else
       this->status = Status::OFF;
-
-    // change our output pin to reflect
-    this->updateOutput(true);
   }
+
+  // change our output pin to reflect
+  this->updateOutput();
 }
 
 const char* RelayChannel::getStatus()
