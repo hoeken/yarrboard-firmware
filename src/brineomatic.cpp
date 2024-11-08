@@ -18,6 +18,14 @@
   #include <GravityTDS.h>
   #include <OneWire.h>
 
+Brineomatic wm;
+uint64_t desiredRuntime = 0;
+float desiredVolume = 0;
+uint64_t flushDuration = 0;
+uint64_t pickleDuration = 0;
+uint64_t nextFlushTime = 0;
+uint64_t flushInterval = 5ULL * 24 * 60 * 60 * 1000000; // 5 day default, in microseconds
+
 byte relay_pins[YB_RELAY_CHANNEL_COUNT] = YB_RELAY_CHANNEL_PINS;
 
 Servo servos[YB_SERVO_CHANNEL_COUNT];
@@ -32,13 +40,11 @@ byte motor_b_pins[YB_DC_MOTOR_CHANNEL_COUNT] = YB_DC_MOTOR_B_PINS;
 OneWire oneWire(YB_DS18B20_PIN);
 DallasTemperature ds18b20(&oneWire);
 DeviceAddress motorThermometer;
-float temperatureReading = 0.0;
 
 byte flowmeter_pin = YB_FLOWMETER_PIN;
 static volatile int pulse_counter = 0;
 unsigned long lastFlowmeterCheckMillis = 0;
 float flowmeterPulsesPerLiter = YB_FLOWMETER_DEFAULT_PPL;
-float flowrateReading = 0.0;
 
 void IRAM_ATTR flowmeter_interrupt()
 {
@@ -49,9 +55,6 @@ ADS1115 brineomatic_adc(YB_ADS1115_ADDRESS);
 GravityTDS gravityTds;
 float water_temperature = 25;
 float tdsReading = 0;
-
-float lowPressureReading = 0.0;
-float highPressureReading = 0.0;
 
 void brineomatic_setup()
 {
@@ -85,7 +88,6 @@ void brineomatic_setup()
   attachInterrupt(digitalPinToInterrupt(flowmeter_pin), flowmeter_interrupt, FALLING);
   pulse_counter = 0;
   lastFlowmeterCheckMillis = 0;
-  flowrateReading = 0.0;
 
   // DS18B20 Sensor
   ds18b20.begin();
@@ -142,7 +144,7 @@ void brineomatic_loop()
   measure_hp_sensor();
 }
 
-WatermakerStatus currentState = WatermakerStatus::STARTUP;
+Brineomatic::Status currentState = Brineomatic::Status::STARTUP;
 
 // State machine task function
 void brineomatic_state_machine(void* pvParameters)
@@ -153,125 +155,133 @@ void brineomatic_state_machine(void* pvParameters)
       //
       // STARTUP
       //
-      case WatermakerStatus::STARTUP:
+      case Brineomatic::Status::STARTUP:
         Serial.println("State: STARTUP");
-        // wm.setPressure(0);
-        // wm.setDiversion(false);
-        // wm.disableHighPressurePump();
-        // wm.disableBoostPump();
-        // if (wm.isPickled)
-        //   currentState = WatermakerStatus::PICKLED;
-        // else
-        //   currentState = WatermakerStatus::IDLE;
+        wm.setMembranePressureTarget(0);
+        wm.setDiversion(false);
+        wm.disableHighPressurePump();
+        wm.disableBoostPump();
+        if (wm.isPickled)
+          currentState = Brineomatic::Status::PICKLED;
+        else {
+          if (wm.autoFlushEnabled)
+            nextFlushTime = millis() + flushInterval;
+          currentState = Brineomatic::Status::IDLE;
+        }
         break;
 
       //
       // PICKLED
       //
-      case WatermakerStatus::PICKLED:
+      case Brineomatic::Status::PICKLED:
         Serial.println("State: PICKLED");
         break;
 
       //
       // IDLE
       //
-      case WatermakerStatus::IDLE:
+      case Brineomatic::Status::IDLE:
         Serial.println("State: IDLE");
+        if (wm.autoFlushEnabled && millis() > nextFlushTime)
+          currentState = Brineomatic::Status::FLUSHING;
         break;
 
       //
       // RUNNING
       //
-      case WatermakerStatus::RUNNING:
+      case Brineomatic::Status::RUNNING: {
         Serial.println("State: RUNNING");
 
-        // unsigned long runtimeStart = millis();
-        // float volume = 0.0;
+        unsigned long runtimeStart = millis();
+        float volume = 0.0;
 
-        // wm.setPressureTarget(0);
-        // wm.setDiversion(false);
-        // wm.disableHighPressurePump();
-        // wm.disableBoostPump();
+        wm.setMembranePressureTarget(0);
+        wm.setDiversion(false);
+        wm.disableHighPressurePump();
+        wm.disableBoostPump();
 
-        // if (wm.hasBoostPump()) {
-        //   wm.enableBoostPump();
-        //   while (wm.getLowPressure() < wm.getLowPressureMinimum())
-        //     vTaskDelay(pdMS_TO_TICKS(100));
-        // }
+        if (wm.hasBoostPump()) {
+          wm.enableBoostPump();
+          while (wm.getFilterPressure() < wm.getFilterPressureMinimum())
+            vTaskDelay(pdMS_TO_TICKS(100));
+        }
 
-        // wm.enableHighPressurePump();
-        // wm.setPressureTarget(750);
-        // while (wm.getHighPressure() < wm.getHighPressureMinimum())
-        //   vTaskDelay(pdMS_TO_TICKS(100));
+        wm.enableHighPressurePump();
+        wm.setMembranePressureTarget(750);
+        while (wm.getMembranePressure() < wm.getMembranePressureMinimum())
+          vTaskDelay(pdMS_TO_TICKS(100));
 
-        // bool ready = false;
-        // while (!ready) {
-        //   if (wm.getFlowrate() >= wm.getFlowrateMinimum())
-        //     ready = true;
-        //   else if (wm.getSalinity() <= wm.getSalinityMaximum())
-        //     ready = true;
+        bool ready = false;
+        while (!ready) {
+          if (wm.getFlowrate() >= wm.getFlowrateMinimum())
+            ready = true;
+          else if (wm.getSalinity() <= wm.getSalinityMaximum())
+            ready = true;
 
-        //   vTaskDelay(pdMS_TO_TICKS(100));
-        // }
+          vTaskDelay(pdMS_TO_TICKS(100));
+        }
 
-        // wm.setDiversion(true);
+        wm.setDiversion(true);
 
-        // if (millis() - runtimeStart > desiredRuntime || volume > desiredVolume) {
-        //   wm.setDiversion(false);
-        //   wm.setPressureTarget(0);
-        //   wm.disableHighPressurePump();
-        //   wm.disableBoostPump();
+        if (millis() - runtimeStart > desiredRuntime || volume > desiredVolume) {
+          wm.setDiversion(false);
+          wm.setMembranePressureTarget(0);
+          wm.disableHighPressurePump();
+          wm.disableBoostPump();
 
-        //   currentState = WatermakerStatus::FLUSHING;
-        // }
-
+          currentState = Brineomatic::Status::FLUSHING;
+        }
         break;
+      }
 
       //
       // FLUSHING
       //
-      case WatermakerStatus::FLUSHING:
+      case Brineomatic::Status::FLUSHING: {
         Serial.println("State: FLUSHING");
 
-        // unsigned long flushStart = millis();
+        unsigned long flushStart = millis();
 
-        // wm.setDiversion(false);
-        // wm.setPressureTarget(0);
-        // wm.disableHighPressurePump();
-        // wm.disableBoostPump();
+        wm.setDiversion(false);
+        wm.setMembranePressureTarget(0);
+        wm.disableHighPressurePump();
+        wm.disableBoostPump();
 
-        // wm.openFlushValve();
-        // while (millis() - flushStart > flushDuration) {
-        //   vTaskDelay(pdMS_TO_TICKS(100));
-        // }
-        // wm.closeFlushValve();
+        wm.openFlushValve();
+        while (millis() - flushStart > flushDuration) {
+          vTaskDelay(pdMS_TO_TICKS(100));
+        }
+        wm.closeFlushValve();
 
-        // currentState = WatermakerStatus::IDLE;
+        if (wm.autoFlushEnabled)
+          nextFlushTime = millis() + flushInterval;
 
+        currentState = Brineomatic::Status::IDLE;
         break;
+      }
 
       //
       // PICKLING
       //
-      case WatermakerStatus::PICKLING:
+      case Brineomatic::Status::PICKLING:
         Serial.println("State: PICKLING");
 
-        // unsigned long pickleStart = millis();
+        unsigned long pickleStart = millis();
 
-        // wm.setDiversion(false);
-        // wm.setPressureTarget(0);
-        // wm.disableHighPressurePump();
-        // wm.disableBoostPump();
+        wm.setDiversion(false);
+        wm.setMembranePressureTarget(0);
+        wm.disableHighPressurePump();
+        wm.disableBoostPump();
 
-        // wm.enableBoostPump();
-        // wm.enableHighPressurePump();
-        // while (millis() - pickleStart > pickleDuration) {
-        //   vTaskDelay(pdMS_TO_TICKS(100));
-        // }
-        // wm.disableHighPressurePump();
-        // wm.disableBoostPump();
+        wm.enableBoostPump();
+        wm.enableHighPressurePump();
+        while (millis() - pickleStart > pickleDuration) {
+          vTaskDelay(pdMS_TO_TICKS(100));
+        }
+        wm.disableHighPressurePump();
+        wm.disableBoostPump();
 
-        // currentState = WatermakerStatus::PICKLED;
+        currentState = Brineomatic::Status::PICKLED;
 
         break;
     }
@@ -288,7 +298,7 @@ void measure_flowmeter()
     detachInterrupt(digitalPinToInterrupt(flowmeter_pin));
 
     // calculate flowrate
-    flowrateReading = pulse_counter / flowmeterPulsesPerLiter;
+    float flowrate = pulse_counter / flowmeterPulsesPerLiter;
 
     // reset counter
     pulse_counter = 0;
@@ -298,6 +308,9 @@ void measure_flowmeter()
 
     // attach interrupt again
     attachInterrupt(digitalPinToInterrupt(flowmeter_pin), flowmeter_interrupt, FALLING);
+
+    // update our model
+    wm.setFlowrate(flowrate);
   }
 }
 
@@ -310,7 +323,8 @@ void measure_temperature()
     return;
   }
 
-  temperatureReading = tempC;
+  // update our model
+  wm.setTemperature(tempC);
 }
 
 void measure_tds()
@@ -333,12 +347,13 @@ void measure_lp_sensor()
 
     if (voltage < 0.4) {
       Serial.println("No LP Sensor Detected");
-      lowPressureReading = -1;
+      wm.setFilterPressure(-1);
       return;
     }
 
     float amperage = (voltage / YB_420_RESISTOR) * 1000;
     float lowPressureReading = map_generic(amperage, 4.0, 20.0, 0.0, YB_LP_SENSOR_MAX);
+    wm.setFilterPressure(lowPressureReading);
   }
 }
 
@@ -350,13 +365,151 @@ void measure_hp_sensor()
 
     if (voltage < 0.4) {
       Serial.println("No HP Sensor Detected");
-      highPressureReading = -1;
+      wm.setMembranePressure(-1);
       return;
     }
 
     float amperage = (voltage / YB_420_RESISTOR) * 1000;
     float highPressureReading = map_generic(amperage, 4.0, 20.0, 0.0, YB_HP_SENSOR_MAX);
+    wm.setMembranePressure(highPressureReading);
   }
+}
+
+Brineomatic::Brineomatic() : isPickled(false),
+                             autoFlushEnabled(true),
+                             diversionValveOpen(false),
+                             highPressurePumpEnabled(false),
+                             boostPumpEnabled(false),
+                             flushValveOpen(false),
+                             currentTemperature(0.0),
+                             currentFlowrate(0.0),
+                             currentSalinity(0.0),
+                             currentFilterPressure(0.0),
+                             currentMembranePressure(0.0),
+                             membranePressureTarget(0)
+{
+}
+
+void Brineomatic::setFilterPressure(float pressure)
+{
+  currentFilterPressure = pressure;
+}
+
+void Brineomatic::setMembranePressure(float pressure)
+{
+  currentMembranePressure = pressure;
+}
+
+void Brineomatic::setMembranePressureTarget(float pressure)
+{
+  membranePressureTarget = pressure;
+}
+
+void Brineomatic::setDiversion(bool value)
+{
+  diversionValveOpen = value;
+}
+
+void Brineomatic::setFlowrate(float flowrate)
+{
+  currentFlowrate = flowrate;
+}
+
+void Brineomatic::setTemperature(float temp)
+{
+  currentTemperature = temp;
+}
+
+void Brineomatic::setSalinity(float salinity)
+{
+  currentSalinity = salinity;
+}
+
+void Brineomatic::disableHighPressurePump()
+{
+  highPressurePumpEnabled = false;
+  Serial.println("High-pressure pump disabled");
+}
+
+void Brineomatic::disableBoostPump()
+{
+  boostPumpEnabled = false;
+  Serial.println("Boost pump disabled");
+}
+
+void Brineomatic::enableHighPressurePump()
+{
+  highPressurePumpEnabled = true;
+  Serial.println("High-pressure pump enabled");
+}
+
+void Brineomatic::enableBoostPump()
+{
+  boostPumpEnabled = true;
+  Serial.println("Boost pump enabled");
+}
+
+bool Brineomatic::hasBoostPump()
+{
+  // Assume the system always has a boost pump
+  return true;
+}
+
+float Brineomatic::getFilterPressure()
+{
+  return currentFilterPressure;
+}
+
+float Brineomatic::getFilterPressureMinimum()
+{
+  return lowPressureMinimum;
+}
+
+float Brineomatic::getMembranePressure()
+{
+  return currentMembranePressure;
+}
+
+float Brineomatic::getMembranePressureMinimum()
+{
+  return highPressureMinimum;
+}
+
+float Brineomatic::getFlowrate()
+{
+  return currentFlowrate;
+}
+
+float Brineomatic::getFlowrateMinimum()
+{
+  return flowrateMinimum;
+}
+
+float Brineomatic::getTemperature()
+{
+  return currentTemperature;
+}
+
+float Brineomatic::getSalinity()
+{
+  return currentSalinity;
+}
+
+float Brineomatic::getSalinityMaximum()
+{
+  return salinityMaximum;
+}
+
+void Brineomatic::openFlushValve()
+{
+  flushValveOpen = true;
+  Serial.println("Flush valve opened");
+}
+
+void Brineomatic::closeFlushValve()
+{
+  flushValveOpen = false;
+  Serial.println("Flush valve closed");
 }
 
 #endif

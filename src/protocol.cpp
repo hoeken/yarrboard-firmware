@@ -1317,11 +1317,11 @@ void generateUpdateJSON(JsonVariant output)
   // relays
   // servos
   // motor(s)
-  output["temperature"] = temperatureReading;
-  output["flowrate"] = flowrateReading;
-  output["tds"] = tdsReading;
-  output["low_pressure"] = lowPressureReading;
-  output["high_pressure"] = highPressureReading;
+  output["temperature"] = wm.getTemperature();
+  output["flowrate"] = wm.getFlowrate();
+  output["salinity"] = wm.getSalinity();
+  output["filter_pressure"] = wm.getFilterPressure();
+  output["membrane_pressure"] = wm.getMembranePressure();
 #endif
 }
 

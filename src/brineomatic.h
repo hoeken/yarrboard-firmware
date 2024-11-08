@@ -9,12 +9,6 @@
 #ifndef YARR_BRINEOMATIC_H
 #define YARR_BRINEOMATIC_H
 
-extern float temperatureReading;
-extern float flowrateReading;
-extern float tdsReading;
-extern float lowPressureReading;
-extern float highPressureReading;
-
 void brineomatic_setup();
 void brineomatic_loop();
 
@@ -26,14 +20,71 @@ void measure_tds();
 void measure_lp_sensor();
 void measure_hp_sensor();
 
-enum class WatermakerStatus {
-  STARTUP,
-  IDLE,
-  RUNNING,
-  FLUSHING,
-  PICKLING,
-  PICKLED
+class Brineomatic
+{
+  public:
+    bool isPickled;
+    bool autoFlushEnabled;
+
+    Brineomatic();
+
+    enum class Status {
+      STARTUP,
+      IDLE,
+      RUNNING,
+      FLUSHING,
+      PICKLING,
+      PICKLED
+    };
+
+    void setFilterPressure(float pressure);
+    void setMembranePressure(float pressure);
+    void setMembranePressureTarget(float pressure);
+    void setDiversion(bool value);
+    void setFlowrate(float flowrate);
+    void setTemperature(float temp);
+    void setSalinity(float salinity);
+
+    void disableHighPressurePump();
+    void disableBoostPump();
+    void enableHighPressurePump();
+    void enableBoostPump();
+    bool hasBoostPump();
+
+    float getFilterPressure();
+    float getFilterPressureMinimum();
+    float getMembranePressure();
+    float getMembranePressureMinimum();
+    float getFlowrate();
+    float getFlowrateMinimum();
+    float getTemperature();
+    float getSalinity();
+    float getSalinityMaximum();
+
+    void openFlushValve();
+    void closeFlushValve();
+
+  private:
+    bool highPressurePumpEnabled;
+    bool boostPumpEnabled;
+    bool diversionValveOpen;
+    bool flushValveOpen;
+
+    float currentTemperature;
+    float currentFlowrate;
+    float currentSalinity;
+    float currentFilterPressure;
+    float currentMembranePressure;
+
+    float membranePressureTarget;
+
+    const float lowPressureMinimum = 10.0;   // Example value
+    const float highPressureMinimum = 700.0; // Example value
+    const float flowrateMinimum = 5.0;       // Example value
+    const float salinityMaximum = 500.0;     // Example value
 };
+
+extern Brineomatic wm;
 
 template <class X, class M, class N, class O, class Q>
 X map_generic(X x, M in_min, N in_max, O out_min, Q out_max)
