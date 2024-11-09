@@ -666,10 +666,15 @@ function start_websocket() {
       }
 
       //UI for brineomatic
+      $('bomInformationDiv').hide();
       $('bomControlDiv').hide();
       if (msg.brineomatic) {
+        $('#bomInformationDiv').show();
         $('#bomControlDiv').show();
       }
+
+      //also hide our other stuff here...
+      $('#relayControlDiv').hide();
 
       //only do it as needed
       if (!page_ready.config || current_page != "config") {
@@ -1000,6 +1005,26 @@ function start_websocket() {
 
         $("#bomStatus").html(msg.status);
 
+        //default to hide all.
+        $("#runBrineomatic").hide();
+        $("#flushBrineomatic").hide();
+        $("#pickleBrineomatic").hide();
+        $("#stopBrineomatic").hide();
+        $("#manualBrineomatic").hide();
+
+        //what buttons to show?
+        if (msg.status == "IDLE") {
+          $("#runBrineomatic").show();
+          $("#flushBrineomatic").show();
+          $("#pickleBrineomatic").show();
+          $("#manualBrineomatic").show();
+        }
+        else if (msg.status == "PICKLED") {
+          $("#flushBrineomatic").show();
+        }
+        else
+          $("#stopBrineomatic").show();
+
         if (msg.next_flush_countdown > 0) {
           $("#bomNextFlushCountdownData").html(secondsToDhms(Math.round(msg.next_flush_countdown / 1000000)));
           $("#bomNextFlushCountdown").show();
@@ -1322,6 +1347,10 @@ function show_alert(message, type = 'danger') {
   },
     750 //speed
   );
+}
+
+function manual_brineomatic() {
+  $('#relayControlDiv').toggle();
 }
 
 function toggle_state(id) {

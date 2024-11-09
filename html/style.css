@@ -53,6 +53,18 @@ tr.pwmRow #statsTable tbody tr {
     height: 160px;
 } */
 
+.brineomaticControlButton {
+    width: 100%;
+    height: 65px;
+    font-weight: bold;
+    font-size: 1.5rem !important;
+}
+
+.brineomaticControlButton span {
+    width: 100px;
+    display: inline-block;
+}
+
 .relayButton,
 .pwmButton {
     width: 100%;
