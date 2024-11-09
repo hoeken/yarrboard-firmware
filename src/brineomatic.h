@@ -9,6 +9,10 @@
 #ifndef YARR_BRINEOMATIC_H
 #define YARR_BRINEOMATIC_H
 
+#include "relay_channel.h"
+
+class RelayChannel;
+
 void brineomatic_setup();
 void brineomatic_loop();
 
@@ -26,6 +30,10 @@ class Brineomatic
     bool isPickled;
     bool autoFlushEnabled;
 
+    RelayChannel* flushValve = NULL;
+    RelayChannel* boostPump = NULL;
+    RelayChannel* highPressurePump = NULL;
+
     Brineomatic();
 
     enum class Status {
@@ -40,16 +48,34 @@ class Brineomatic
     void setFilterPressure(float pressure);
     void setMembranePressure(float pressure);
     void setMembranePressureTarget(float pressure);
-    void setDiversion(bool value);
     void setFlowrate(float flowrate);
     void setTemperature(float temp);
     void setSalinity(float salinity);
 
-    void disableHighPressurePump();
-    void disableBoostPump();
+    void start();
+    void startDuration(uint64_t duration);
+    void startVolume(float volume);
+    void flush(uint64_t duration);
+    void pickle(uint64_t duration);
+    void stop();
+
+    void initializeHardware();
+
+    bool hasDiverterValve();
+    void openDiverterValve();
+    void closeDiverterValve();
+
+    bool hasFlushValve();
+    void openFlushValve();
+    void closeFlushValve();
+
+    bool hasHighPressurePump();
     void enableHighPressurePump();
-    void enableBoostPump();
+    void disableHighPressurePump();
+
     bool hasBoostPump();
+    void enableBoostPump();
+    void disableBoostPump();
 
     const char* getStatus();
     uint64_t getNextFlushCountdown();
@@ -70,19 +96,17 @@ class Brineomatic
     float getSalinity();
     float getSalinityMaximum();
 
-    void openFlushValve();
-    void closeFlushValve();
-
     void runStateMachine();
 
   private:
     Status currentStatus;
+    bool stopFlag = false;
 
     float desiredVolume = 0;
 
     // all these times are in microseconds
-    uint64_t runtimeStart;
     uint64_t desiredRuntime = 0;
+    uint64_t runtimeStart;
     uint64_t flushStart = 0;
     uint64_t flushDuration = 5ULL * 60 * 1000000; // 5 minute default, in microseconds
     uint64_t nextFlushTime = 0;

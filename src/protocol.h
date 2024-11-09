@@ -104,6 +104,11 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output);
 void handleSetTheme(JsonVariantConst input, JsonVariant output);
 void handleSetBrightness(JsonVariantConst input, JsonVariant output);
 
+void handleStartWatermaker(JsonVariantConst input, JsonVariant output);
+void handleFlushWatermaker(JsonVariantConst input, JsonVariant output);
+void handlePickleWatermaker(JsonVariantConst input, JsonVariant output);
+void handleStopWatermaker(JsonVariantConst input, JsonVariant output);
+
 void generateHelloJSON(JsonVariant output, UserRole role);
 void generateUpdateJSON(JsonVariant output);
 void generateUpdateJSON(JsonVariant output);

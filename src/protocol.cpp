@@ -218,6 +218,14 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleSetTheme(input, output);
     else if (!strcmp(cmd, "set_brightness"))
       return handleSetBrightness(input, output);
+    else if (!strcmp(cmd, "start_watermaker"))
+      return handleStartWatermaker(input, output);
+    else if (!strcmp(cmd, "flush_watermaker"))
+      return handleFlushWatermaker(input, output);
+    else if (!strcmp(cmd, "pickle_watermaker"))
+      return handlePickleWatermaker(input, output);
+    else if (!strcmp(cmd, "stop_watermaker"))
+      return handleStopWatermaker(input, output);
     else if (!strcmp(cmd, "logout"))
       return handleLogout(input, output, mode, connection);
   }
@@ -1361,6 +1369,62 @@ void handleSetBrightness(JsonVariantConst input, JsonVariant output)
     sendBrightnessUpdate();
   } else
     return generateErrorJSON(output, "'brightness' is a required parameter.");
+}
+
+void handleStartWatermaker(JsonVariantConst input, JsonVariant output)
+{
+  if (strcmp(wm.getStatus(), "IDLE"))
+    return generateErrorJSON(output, "Watermaker is not in IDLE mode.");
+
+  uint64_t duration = input["duration"];
+  float volume = input["volume"];
+
+  if (duration > 0)
+    wm.startDuration(duration);
+  else if (volume > 0)
+    wm.startVolume(volume);
+  else
+    wm.start();
+}
+
+void handleFlushWatermaker(JsonVariantConst input, JsonVariant output)
+{
+  if (!input["duration"].is<JsonVariantConst>())
+    return generateErrorJSON(output, "'duration' is a required parameter");
+
+  uint64_t duration = input["duration"];
+
+  if (!duration)
+    return generateErrorJSON(output, "'duration' must be non-zero");
+
+  if (!strcmp(wm.getStatus(), "IDLE") || !strcmp(wm.getStatus(), "PICKLED"))
+    wm.flush(duration);
+  else
+    return generateErrorJSON(output, "Watermaker is not in IDLE or PICKLED modes.");
+}
+
+void handlePickleWatermaker(JsonVariantConst input, JsonVariant output)
+{
+  if (!input["duration"].is<JsonVariantConst>())
+    return generateErrorJSON(output, "'duration' is a required parameter");
+
+  uint64_t duration = input["duration"];
+
+  if (!duration)
+    return generateErrorJSON(output, "'duration' must be non-zero");
+
+  if (!strcmp(wm.getStatus(), "IDLE"))
+    wm.pickle(duration);
+  else
+    return generateErrorJSON(output, "Watermaker is not in IDLE mode.");
+}
+
+void handleStopWatermaker(JsonVariantConst input, JsonVariant output)
+{
+  if (!strcmp(wm.getStatus(), "RUNNING") || !strcmp(wm.getStatus(), "FLUSHING") || !strcmp(wm.getStatus(), "PICKLING"))
+    wm.stop();
+  else
+    return generateErrorJSON(output, "Watermaker must be in RUNNING, FLUSHING, or PICKLING mode to stop.");
 }
 
 void generateConfigJSON(JsonVariant output)
