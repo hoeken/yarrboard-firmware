@@ -51,6 +51,12 @@ class Brineomatic
     void enableBoostPump();
     bool hasBoostPump();
 
+    const char* getStatus();
+    uint64_t getNextFlushCountdown();
+    uint64_t getFinishCountdown();
+    uint64_t getFlushCountdown();
+    uint64_t getPickleCountdown();
+
     float getFilterPressure();
     float getFilterPressureMinimum();
     float getMembranePressure();
@@ -64,7 +70,23 @@ class Brineomatic
     void openFlushValve();
     void closeFlushValve();
 
+    void runStateMachine();
+
   private:
+    Status currentStatus;
+
+    float desiredVolume = 0;
+
+    // all these times are in microseconds
+    uint64_t runtimeStart;
+    uint64_t desiredRuntime = 0;
+    uint64_t flushStart = 0;
+    uint64_t flushDuration = 5ULL * 60 * 1000000; // 5 minute default, in microseconds
+    uint64_t nextFlushTime = 0;
+    uint64_t flushInterval = 5ULL * 24 * 60 * 60 * 1000000; // 5 day default, in microseconds
+    uint64_t pickleStart = 0;
+    uint64_t pickleDuration = 5ULL * 60 * 1000000; // 5 minute default, in microseconds
+
     bool highPressurePumpEnabled;
     bool boostPumpEnabled;
     bool diversionValveOpen;

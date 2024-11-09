@@ -1518,15 +1518,19 @@ void generateUpdateJSON(JsonVariant output)
 #endif
 
 #ifdef YB_IS_BRINEOMATIC
-  // relays
   // servos
   // motor(s)
   output["brineomatic"] = true;
+  output["status"] = wm.getStatus();
   output["temperature"] = wm.getTemperature();
   output["flowrate"] = wm.getFlowrate();
   output["salinity"] = wm.getSalinity();
   output["filter_pressure"] = wm.getFilterPressure();
   output["membrane_pressure"] = wm.getMembranePressure();
+  output["next_flush_countdown"] = wm.getNextFlushCountdown();
+  output["finish_countdown"] = wm.getFinishCountdown();
+  output["flush_countdown"] = wm.getFlushCountdown();
+  output["pickle_countdown"] = wm.getPickleCountdown();
 #endif
 }
 

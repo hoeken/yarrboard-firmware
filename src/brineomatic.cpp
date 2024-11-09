@@ -19,12 +19,6 @@
   #include <OneWire.h>
 
 Brineomatic wm;
-uint64_t desiredRuntime = 0;
-float desiredVolume = 0;
-uint64_t flushDuration = 0;
-uint64_t pickleDuration = 0;
-uint64_t nextFlushTime = 0;
-uint64_t flushInterval = 5ULL * 24 * 60 * 60 * 1000000; // 5 day default, in microseconds
 
 byte relay_pins[YB_RELAY_CHANNEL_COUNT] = YB_RELAY_CHANNEL_PINS;
 
@@ -43,7 +37,7 @@ DeviceAddress motorThermometer;
 
 byte flowmeter_pin = YB_FLOWMETER_PIN;
 static volatile int pulse_counter = 0;
-unsigned long lastFlowmeterCheckMillis = 0;
+uint64_t lastFlowmeterCheckMicros = 0;
 float flowmeterPulsesPerLiter = YB_FLOWMETER_DEFAULT_PPL;
 
 void IRAM_ATTR flowmeter_interrupt()
@@ -88,7 +82,7 @@ void brineomatic_setup()
   pinMode(flowmeter_pin, INPUT);
   attachInterrupt(digitalPinToInterrupt(flowmeter_pin), flowmeter_interrupt, FALLING);
   pulse_counter = 0;
-  lastFlowmeterCheckMillis = 0;
+  lastFlowmeterCheckMicros = 0;
 
   // DS18B20 Sensor
   ds18b20.begin();
@@ -171,147 +165,11 @@ void brineomatic_loop()
   }
 }
 
-Brineomatic::Status currentState = Brineomatic::Status::STARTUP;
-
 // State machine task function
 void brineomatic_state_machine(void* pvParameters)
 {
   while (true) {
-    switch (currentState) {
-
-      //
-      // STARTUP
-      //
-      case Brineomatic::Status::STARTUP:
-        Serial.println("State: STARTUP");
-        wm.setMembranePressureTarget(0);
-        wm.setDiversion(false);
-        wm.disableHighPressurePump();
-        wm.disableBoostPump();
-        if (wm.isPickled)
-          currentState = Brineomatic::Status::PICKLED;
-        else {
-          if (wm.autoFlushEnabled)
-            nextFlushTime = millis() + flushInterval;
-          currentState = Brineomatic::Status::IDLE;
-        }
-        break;
-
-      //
-      // PICKLED
-      //
-      case Brineomatic::Status::PICKLED:
-        Serial.println("State: PICKLED");
-        break;
-
-      //
-      // IDLE
-      //
-      case Brineomatic::Status::IDLE:
-        Serial.println("State: IDLE");
-        if (wm.autoFlushEnabled && millis() > nextFlushTime)
-          currentState = Brineomatic::Status::FLUSHING;
-        break;
-
-      //
-      // RUNNING
-      //
-      case Brineomatic::Status::RUNNING: {
-        Serial.println("State: RUNNING");
-
-        unsigned long runtimeStart = millis();
-        float volume = 0.0;
-
-        wm.setMembranePressureTarget(0);
-        wm.setDiversion(false);
-        wm.disableHighPressurePump();
-        wm.disableBoostPump();
-
-        if (wm.hasBoostPump()) {
-          wm.enableBoostPump();
-          while (wm.getFilterPressure() < wm.getFilterPressureMinimum())
-            vTaskDelay(pdMS_TO_TICKS(100));
-        }
-
-        wm.enableHighPressurePump();
-        wm.setMembranePressureTarget(750);
-        while (wm.getMembranePressure() < wm.getMembranePressureMinimum())
-          vTaskDelay(pdMS_TO_TICKS(100));
-
-        bool ready = false;
-        while (!ready) {
-          if (wm.getFlowrate() >= wm.getFlowrateMinimum())
-            ready = true;
-          else if (wm.getSalinity() <= wm.getSalinityMaximum())
-            ready = true;
-
-          vTaskDelay(pdMS_TO_TICKS(100));
-        }
-
-        wm.setDiversion(true);
-
-        if (millis() - runtimeStart > desiredRuntime || volume > desiredVolume) {
-          wm.setDiversion(false);
-          wm.setMembranePressureTarget(0);
-          wm.disableHighPressurePump();
-          wm.disableBoostPump();
-
-          currentState = Brineomatic::Status::FLUSHING;
-        }
-        break;
-      }
-
-      //
-      // FLUSHING
-      //
-      case Brineomatic::Status::FLUSHING: {
-        Serial.println("State: FLUSHING");
-
-        unsigned long flushStart = millis();
-
-        wm.setDiversion(false);
-        wm.setMembranePressureTarget(0);
-        wm.disableHighPressurePump();
-        wm.disableBoostPump();
-
-        wm.openFlushValve();
-        while (millis() - flushStart > flushDuration) {
-          vTaskDelay(pdMS_TO_TICKS(100));
-        }
-        wm.closeFlushValve();
-
-        if (wm.autoFlushEnabled)
-          nextFlushTime = millis() + flushInterval;
-
-        currentState = Brineomatic::Status::IDLE;
-        break;
-      }
-
-      //
-      // PICKLING
-      //
-      case Brineomatic::Status::PICKLING:
-        Serial.println("State: PICKLING");
-
-        unsigned long pickleStart = millis();
-
-        wm.setDiversion(false);
-        wm.setMembranePressureTarget(0);
-        wm.disableHighPressurePump();
-        wm.disableBoostPump();
-
-        wm.enableBoostPump();
-        wm.enableHighPressurePump();
-        while (millis() - pickleStart > pickleDuration) {
-          vTaskDelay(pdMS_TO_TICKS(100));
-        }
-        wm.disableHighPressurePump();
-        wm.disableBoostPump();
-
-        currentState = Brineomatic::Status::PICKLED;
-
-        break;
-    }
+    wm.runStateMachine();
 
     // Add a delay to prevent task starvation
     vTaskDelay(pdMS_TO_TICKS(100));
@@ -320,7 +178,7 @@ void brineomatic_state_machine(void* pvParameters)
 
 void measure_flowmeter()
 {
-  if (millis() - lastFlowmeterCheckMillis >= 1000) {
+  if (esp_timer_get_time() - lastFlowmeterCheckMicros >= 1000000) {
     // detach interrupt while calculating rpm
     detachInterrupt(digitalPinToInterrupt(flowmeter_pin));
 
@@ -330,8 +188,8 @@ void measure_flowmeter()
     // reset counter
     pulse_counter = 0;
 
-    // store milliseconds when tacho was measured the last time
-    lastFlowmeterCheckMillis = millis();
+    // store microseconds when tacho was measured the last time
+    lastFlowmeterCheckMicros = esp_timer_get_time();
 
     // attach interrupt again
     attachInterrupt(digitalPinToInterrupt(flowmeter_pin), flowmeter_interrupt, FALLING);
@@ -404,7 +262,8 @@ Brineomatic::Brineomatic() : isPickled(false),
                              currentSalinity(0.0),
                              currentFilterPressure(0.0),
                              currentMembranePressure(0.0),
-                             membranePressureTarget(0)
+                             membranePressureTarget(0),
+                             currentStatus(Status::STARTUP)
 {
 }
 
@@ -530,4 +389,193 @@ void Brineomatic::closeFlushValve()
   Serial.println("Flush valve closed");
 }
 
+const char* Brineomatic::getStatus()
+{
+  if (currentStatus == Status::STARTUP)
+    return "STARTUP";
+  else if (currentStatus == Status::IDLE)
+    return "IDLE";
+  else if (currentStatus == Status::RUNNING)
+    return "RUNNING";
+  else if (currentStatus == Status::FLUSHING)
+    return "FLUSHING";
+  else if (currentStatus == Status::PICKLING)
+    return "PICKLING";
+  else if (currentStatus == Status::PICKLED)
+    return "PICKLED";
+  else
+    return "UNKNOWN";
+}
+
+uint64_t Brineomatic::getNextFlushCountdown()
+{
+
+  if (currentStatus == Status::IDLE && autoFlushEnabled)
+    return nextFlushTime - esp_timer_get_time();
+
+  return 0;
+}
+
+uint64_t Brineomatic::getFinishCountdown()
+{
+  if (currentStatus == Status::RUNNING && desiredRuntime > 0)
+    return (runtimeStart + desiredRuntime) - esp_timer_get_time();
+
+  return 0;
+}
+
+uint64_t Brineomatic::getFlushCountdown()
+{
+  if (currentStatus == Status::FLUSHING)
+    return (flushStart + flushDuration) - esp_timer_get_time();
+
+  return 0;
+}
+
+uint64_t Brineomatic::getPickleCountdown()
+{
+  if (currentStatus == Status::PICKLING)
+    return (pickleStart + pickleDuration) - esp_timer_get_time();
+
+  return 0;
+}
+
+void Brineomatic::runStateMachine()
+{
+  switch (currentStatus) {
+
+    //
+    // STARTUP
+    //
+    case Status::STARTUP:
+      Serial.println("State: STARTUP");
+      setMembranePressureTarget(0);
+      setDiversion(false);
+      disableHighPressurePump();
+      disableBoostPump();
+      if (isPickled)
+        currentStatus = Status::PICKLED;
+      else {
+        if (autoFlushEnabled)
+          nextFlushTime = esp_timer_get_time() + flushInterval;
+        currentStatus = Status::IDLE;
+      }
+      break;
+
+    //
+    // PICKLED
+    //
+    case Status::PICKLED:
+      Serial.println("State: PICKLED");
+      break;
+
+    //
+    // IDLE
+    //
+    case Status::IDLE:
+      Serial.println("State: IDLE");
+      if (autoFlushEnabled && esp_timer_get_time() > nextFlushTime)
+        currentStatus = Status::FLUSHING;
+      break;
+
+    //
+    // RUNNING
+    //
+    case Status::RUNNING: {
+      Serial.println("State: RUNNING");
+
+      runtimeStart = esp_timer_get_time();
+      float volume = 0.0;
+
+      setMembranePressureTarget(0);
+      setDiversion(false);
+      disableHighPressurePump();
+      disableBoostPump();
+
+      if (hasBoostPump()) {
+        enableBoostPump();
+        while (getFilterPressure() < getFilterPressureMinimum())
+          vTaskDelay(pdMS_TO_TICKS(100));
+      }
+
+      enableHighPressurePump();
+      setMembranePressureTarget(750);
+      while (getMembranePressure() < getMembranePressureMinimum())
+        vTaskDelay(pdMS_TO_TICKS(100));
+
+      bool ready = false;
+      while (!ready) {
+        if (getFlowrate() >= getFlowrateMinimum())
+          ready = true;
+        else if (getSalinity() <= getSalinityMaximum())
+          ready = true;
+
+        vTaskDelay(pdMS_TO_TICKS(100));
+      }
+
+      setDiversion(true);
+
+      if (esp_timer_get_time() - runtimeStart > desiredRuntime || volume > desiredVolume) {
+        setDiversion(false);
+        setMembranePressureTarget(0);
+        disableHighPressurePump();
+        disableBoostPump();
+
+        currentStatus = Status::FLUSHING;
+      }
+      break;
+    }
+
+    //
+    // FLUSHING
+    //
+    case Status::FLUSHING: {
+      Serial.println("State: FLUSHING");
+
+      flushStart = esp_timer_get_time();
+
+      setDiversion(false);
+      setMembranePressureTarget(0);
+      disableHighPressurePump();
+      disableBoostPump();
+
+      openFlushValve();
+      while (esp_timer_get_time() - flushStart > flushDuration) {
+        vTaskDelay(pdMS_TO_TICKS(100));
+      }
+      closeFlushValve();
+
+      if (autoFlushEnabled)
+        nextFlushTime = esp_timer_get_time() + flushInterval;
+
+      currentStatus = Status::IDLE;
+      break;
+    }
+
+    //
+    // PICKLING
+    //
+    case Status::PICKLING:
+      Serial.println("State: PICKLING");
+
+      pickleStart = esp_timer_get_time();
+
+      setDiversion(false);
+      setMembranePressureTarget(0);
+      disableHighPressurePump();
+      disableBoostPump();
+
+      enableBoostPump();
+      enableHighPressurePump();
+      while (esp_timer_get_time() - pickleStart > pickleDuration) {
+        vTaskDelay(pdMS_TO_TICKS(100));
+      }
+      disableHighPressurePump();
+      disableBoostPump();
+
+      currentStatus = Status::PICKLED;
+
+      break;
+  }
+}
 #endif

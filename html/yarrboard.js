@@ -998,6 +998,36 @@ function start_websocket() {
         if (membrane_pressure < 0 && membrane_pressure > -10)
           membrane_pressure = 0;
 
+        $("#bomStatus").html(msg.status);
+
+        if (msg.next_flush_countdown > 0) {
+          $("#bomNextFlushCountdownData").html(secondsToDhms(Math.round(msg.next_flush_countdown / 1000000)));
+          $("#bomNextFlushCountdown").show();
+        }
+        else
+          $("#bomNextFlushCountdown").hide();
+
+        if (msg.finish_countdown > 0) {
+          $("#bomFinishCountdownData").html(secondsToDhms(Math.round(msg.finish_countdown / 1000000)));
+          $("#bomFinishCountdown").show();
+        }
+        else
+          $("#bomFinishCountdown").hide();
+
+        if (msg.flush_countdown > 0) {
+          $("#bomFlushCountdownData").html(secondsToDhms(Math.round(msg.flush_countdown / 1000000)));
+          $("#bomFlushCountdown").show();
+        }
+        else
+          $("#bomFlushCountdown").hide();
+
+        if (msg.pickle_countdown > 0) {
+          $("#bomPickleCountdownData").html(secondsToDhms(Math.round(msg.pickle_countdown / 1000000)));
+          $("#bomPickleCountdown").show();
+        }
+        else
+          $("#bomPickleCountdown").hide();
+
         $("#bomTemperature").html(`${temperature}C`);
         $("#bomFlowrate").html(`${flowrate} LPM`);
 

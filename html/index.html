@@ -88,16 +88,30 @@
             <div class="mx-3 my-3">
                 <div id="liveAlertPlaceholder"></div>
                 <div id="controlPage" class="pageContainer row" style="display:none">
-                    <div id="bomControlDiv" style="display:none" class="col-md-12">
-                        <h4 class="text-center">Sensors</h4>
+                    <div id="bomControlDiv" style="display:none" class="col-md-6">
+                        <h4 class="text-center">Information</h4>
                         <table id="bomTable" class="table table-hover">
-                            <thead>
+                            <tbody id="bomTableBody">
                                 <tr>
-                                    <th scope="col">Name</th>
-                                    <th class="text-center" scope="col">Reading</th>
+                                    <td>Status</td>
+                                    <td id="bomStatus"></td>
                                 </tr>
-                            </thead>
-                            <tbody id="bomTableBody" class="table-group-divider">
+                                <tr id="bomNextFlushCountdown" style="display: none">
+                                    <td>Next Autoflush</td>
+                                    <td id="bomNextFlushCountdownData"></td>
+                                </tr>
+                                <tr id="bomFinishCountdown" style="display: none">
+                                    <td>Finish Countdown</td>
+                                    <td id="bomFinishCountdownData"></td>
+                                </tr>
+                                <tr id="bomFlushCountdown" style="display: none">
+                                    <td>Flush Countdown</td>
+                                    <td id="bomFlushCountdownData"></td>
+                                </tr>
+                                <tr id="bomPickleCountdown" style="display: none">
+                                    <td>Pickle Countdown</td>
+                                    <td id="bomPickleCountdownData"></td>
+                                </tr>
                                 <tr>
                                     <td>Temperature</td>
                                     <td id="bomTemperature"></td>
@@ -124,7 +138,8 @@
                     <div id="controlDiv" style="display:none" class="col-md-12">
                         <div id="pwmCards" class="row g-3"></div>
                     </div>
-                    <div id="relayControlDiv" style="display:none" class="col-md-12">
+                    <div id="relayControlDiv" style="display:none" class="col-md-6">
+                        <h4 class="text-center">Relays</h4>
                         <div id="relayCards" class="row g-3"></div>
                     </div>
                     <div id="switchControlDiv" style="display:none" class="col-md-4">
