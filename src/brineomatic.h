@@ -53,8 +53,11 @@ class Brineomatic
 
     const char* getStatus();
     uint64_t getNextFlushCountdown();
+    uint64_t getRuntimeElapsed();
     uint64_t getFinishCountdown();
+    uint64_t getFlushElapsed();
     uint64_t getFlushCountdown();
+    uint64_t getPickleElapsed();
     uint64_t getPickleCountdown();
 
     float getFilterPressure();

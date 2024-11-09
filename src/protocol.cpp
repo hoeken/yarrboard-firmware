@@ -1527,10 +1527,24 @@ void generateUpdateJSON(JsonVariant output)
   output["salinity"] = wm.getSalinity();
   output["filter_pressure"] = wm.getFilterPressure();
   output["membrane_pressure"] = wm.getMembranePressure();
-  output["next_flush_countdown"] = wm.getNextFlushCountdown();
-  output["finish_countdown"] = wm.getFinishCountdown();
-  output["flush_countdown"] = wm.getFlushCountdown();
-  output["pickle_countdown"] = wm.getPickleCountdown();
+
+  if (!strcmp(wm.getStatus(), "IDLE"))
+    output["next_flush_countdown"] = wm.getNextFlushCountdown();
+
+  if (!strcmp(wm.getStatus(), "RUNNING")) {
+    output["runtime_elapsed"] = wm.getRuntimeElapsed();
+    output["finish_countdown"] = wm.getFinishCountdown();
+  }
+
+  if (!strcmp(wm.getStatus(), "FLUSHING")) {
+    output["flush_elapsed"] = wm.getFlushElapsed();
+    output["flush_countdown"] = wm.getFlushCountdown();
+  }
+
+  if (!strcmp(wm.getStatus(), "PICKLING")) {
+    output["pickle_elapsed"] = wm.getPickleElapsed();
+    output["pickle_countdown"] = wm.getPickleCountdown();
+  }
 #endif
 }
 

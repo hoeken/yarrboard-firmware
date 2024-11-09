@@ -416,6 +416,14 @@ uint64_t Brineomatic::getNextFlushCountdown()
   return 0;
 }
 
+uint64_t Brineomatic::getRuntimeElapsed()
+{
+  if (currentStatus == Status::RUNNING)
+    return esp_timer_get_time() - runtimeStart;
+
+  return 0;
+}
+
 uint64_t Brineomatic::getFinishCountdown()
 {
   if (currentStatus == Status::RUNNING && desiredRuntime > 0)
@@ -424,10 +432,26 @@ uint64_t Brineomatic::getFinishCountdown()
   return 0;
 }
 
+uint64_t Brineomatic::getFlushElapsed()
+{
+  if (currentStatus == Status::FLUSHING)
+    return esp_timer_get_time() - flushStart;
+
+  return 0;
+}
+
 uint64_t Brineomatic::getFlushCountdown()
 {
   if (currentStatus == Status::FLUSHING)
     return (flushStart + flushDuration) - esp_timer_get_time();
+
+  return 0;
+}
+
+uint64_t Brineomatic::getPickleElapsed()
+{
+  if (currentStatus == Status::PICKLING)
+    return esp_timer_get_time() - pickleStart;
 
   return 0;
 }

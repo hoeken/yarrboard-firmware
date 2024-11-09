@@ -1007,6 +1007,13 @@ function start_websocket() {
         else
           $("#bomNextFlushCountdown").hide();
 
+        if (msg.runtime_elapsed > 0) {
+          $("#bomRuntimeElapsedData").html(secondsToDhms(Math.round(msg.runtime_elapsed / 1000000)));
+          $("#bomRuntimeElapsed").show();
+        }
+        else
+          $("#bomRuntimeElapsed").hide();
+
         if (msg.finish_countdown > 0) {
           $("#bomFinishCountdownData").html(secondsToDhms(Math.round(msg.finish_countdown / 1000000)));
           $("#bomFinishCountdown").show();
@@ -1014,12 +1021,26 @@ function start_websocket() {
         else
           $("#bomFinishCountdown").hide();
 
+        if (msg.flush_elapsed > 0) {
+          $("#bomFlushElapsedData").html(secondsToDhms(Math.round(msg.flush_elapsed / 1000000)));
+          $("#bomFlushElapsed").show();
+        }
+        else
+          $("#bomFlushElapsed").hide();
+
         if (msg.flush_countdown > 0) {
           $("#bomFlushCountdownData").html(secondsToDhms(Math.round(msg.flush_countdown / 1000000)));
           $("#bomFlushCountdown").show();
         }
         else
           $("#bomFlushCountdown").hide();
+
+        if (msg.pickle_elapsed > 0) {
+          $("#bomPickleElapsedData").html(secondsToDhms(Math.round(msg.pickle_elapsed / 1000000)));
+          $("#bomPickleElapsed").show();
+        }
+        else
+          $("#bomPickleElapsed").hide();
 
         if (msg.pickle_countdown > 0) {
           $("#bomPickleCountdownData").html(secondsToDhms(Math.round(msg.pickle_countdown / 1000000)));
