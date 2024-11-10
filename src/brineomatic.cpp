@@ -102,6 +102,14 @@ void brineomatic_setup()
   gravityTds.setAdcRange(2 ^ 15);      // 16 bit ADC, but its differential
   gravityTds.begin();                  // initialization
 
+  char prefIndex[YB_PREF_KEY_LENGTH];
+
+  // enabled or no
+  if (preferences.isKey("bomPickled"))
+    wm.isPickled = preferences.getBool("bomPickled");
+  else
+    wm.isPickled = false;
+
   // Create a FreeRTOS task for the state machine
   xTaskCreatePinnedToCore(
     brineomatic_state_machine,   // Task function
@@ -639,49 +647,41 @@ void Brineomatic::runStateMachine()
     // FLUSHING
     //
     case Status::FLUSHING: {
-      Serial.println("State: FLUSHING");
 
       flushStart = esp_timer_get_time();
 
       initializeHardware();
-      TRACE();
 
-      DUMP(lowPressureMinimum);
       openFlushValve();
       while (getFilterPressure() < getFilterPressureMinimum()) {
-        if (stopFlag) {
-          initializeHardware();
-          currentStatus = Status::IDLE;
-          return;
-        }
-
-        DUMP(getFilterPressure());
-        Serial.println("Waiting on filter pressure");
-        vTaskDelay(pdMS_TO_TICKS(100));
-      }
-      TRACE();
-
-      enableHighPressurePump();
-      TRACE();
-
-      while (esp_timer_get_time() - flushStart < flushDuration) {
-        Serial.println("Flushing.");
-        if (stopFlag) {
-          initializeHardware();
-          currentStatus = Status::IDLE;
-          return;
-        }
+        if (stopFlag)
+          break;
 
         vTaskDelay(pdMS_TO_TICKS(100));
       }
-      TRACE();
 
-      Serial.println("Flush done.");
+      // short little delay for fresh water valve to fully open
+      vTaskDelay(pdMS_TO_TICKS(5000));
+
+      if (!stopFlag) {
+        enableHighPressurePump();
+
+        while (esp_timer_get_time() - flushStart < flushDuration) {
+          if (stopFlag)
+            break;
+
+          vTaskDelay(pdMS_TO_TICKS(100));
+        }
+      }
 
       initializeHardware();
 
       if (autoFlushEnabled)
         nextFlushTime = esp_timer_get_time() + flushInterval;
+
+      // keep track over restarts.
+      isPickled = false;
+      preferences.putBool("bomPickled", false);
 
       currentStatus = Status::IDLE;
       break;
@@ -699,11 +699,8 @@ void Brineomatic::runStateMachine()
 
       enableHighPressurePump();
       while (esp_timer_get_time() - pickleStart < pickleDuration) {
-        if (stopFlag) {
-          initializeHardware();
-          currentStatus = Status::PICKLED;
-          return;
-        }
+        if (stopFlag)
+          break;
 
         vTaskDelay(pdMS_TO_TICKS(100));
       }
@@ -711,6 +708,9 @@ void Brineomatic::runStateMachine()
       initializeHardware();
 
       currentStatus = Status::PICKLED;
+
+      // keep track over restarts.
+      preferences.putBool("bomPickled", true);
 
       break;
   }
