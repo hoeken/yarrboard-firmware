@@ -65,6 +65,10 @@ tr.pwmRow #statsTable tbody tr {
     display: inline-block;
 }
 
+#bomTableBody th {
+    width: 50%;
+}
+
 .relayButton,
 .pwmButton {
     width: 100%;
