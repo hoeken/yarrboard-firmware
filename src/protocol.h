@@ -9,10 +9,6 @@
 #ifndef YARR_PROTOCOL_H
 #define YARR_PROTOCOL_H
 
-#include <Arduino.h>
-#include <ArduinoJson.h>
-#include <PsychicHttp.h>
-
 #include "adchelper.h"
 #include "debug.h"
 #include "network.h"
@@ -20,6 +16,11 @@
 #include "prefs.h"
 #include "server.h"
 #include "utility.h"
+#include <Arduino.h>
+#include <ArduinoJson.h>
+#include <PsychicHttp.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 #ifdef YB_HAS_INPUT_CHANNELS
   #include "input_channel.h"
@@ -136,6 +137,7 @@ void sendThemeUpdate();
 void sendFastUpdate();
 void sendOTAProgressUpdate(float progress);
 void sendOTAProgressFinished();
+void sendDebug(const char* format, ...);
 void sendToAll(const char* jsonString, UserRole auth_level);
 
 #endif /* !YARR_PROTOCOL_H */

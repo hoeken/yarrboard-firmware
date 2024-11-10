@@ -227,12 +227,11 @@ const ServoControlCard = (ch) => `
 <div id="servo${ch.id}" class="col-xs-12 col-sm-6">
   <table class="w-100 h-100 p-2">
     <tr>
-      <td id="servoName${ch.id}">${ch.name}</td>
+      <td width="75%" id="servoName${ch.id}">${ch.name}</td>
       <td id="servoAngle${ch.id}"></td>
-      <td id="servoUsec${ch.id}"></td>
     </tr>
     <tr>
-      <td colspan="3">
+      <td colspan="2">
         <input type="range" class="form-range" min="0" max="180" step="1" id="servoSlider${ch.id}" list="servoMarker${ch.id}">
         <datalist id="servoMarker${ch.id}">
           <option value="0"></option>
@@ -486,7 +485,9 @@ function start_websocket() {
   };
 
   client.onmessage = function (msg) {
-    if (msg.msg == 'hello') {
+    if (msg.debug)
+      yarrboard_log(`SERVER: ${msg.debug}`);
+    else if (msg.msg == 'hello') {
       app_role = msg.role;
       default_app_role = msg.default_role;
 
@@ -1060,7 +1061,6 @@ function start_websocket() {
             if (currentServoSliderID != ch.id) {
               $('#servoSlider' + ch.id).val(ch.angle);
               $('#servoAngle' + ch.id).html(`${ch.angle}°`);
-              $('#servoUsec' + ch.id).html(`${ch.usec}μs`);
             }
           }
         }
@@ -1726,8 +1726,6 @@ function set_servo_angle(e) {
   if (value >= 0 && value <= 180) {
     //update our button
     $(`#servoAngle${id}`).html(`${value}°`);
-    let usec = Math.round(map_value(value, 0, 180, 500, 2500));
-    $(`#servoUsec${id}`).html(`${usec}μs`);
 
     client.send({
       "cmd": "set_servo_channel",

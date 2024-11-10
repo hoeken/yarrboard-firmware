@@ -1128,17 +1128,17 @@ void handleSetServoChannel(JsonVariantConst input, JsonVariant output)
     return generateErrorJSON(output, "Channel is not enabled.");
 
   if (input["usec"].is<JsonVariantConst>()) {
-    int usec = input["usec"];
+    float usec = input["usec"];
 
     if (usec >= 500 && usec <= 2500)
-      servo_channels[cid].servo.write(usec);
+      servo_channels[cid].write(usec);
     else
       return generateErrorJSON(output, "'usec' must be between 500 and 2500");
   } else if (input["angle"].is<JsonVariantConst>()) {
-    int angle = input["angle"];
+    float angle = input["angle"];
 
     if (angle >= 0 && angle <= 180)
-      servo_channels[cid].servo.write(angle);
+      servo_channels[cid].write(angle);
     else
       return generateErrorJSON(output, "'angle' must be between 0 and 180");
 
@@ -1654,8 +1654,7 @@ void generateUpdateJSON(JsonVariant output)
 #ifdef YB_HAS_SERVO_CHANNELS
   for (byte i = 0; i < YB_SERVO_CHANNEL_COUNT; i++) {
     output["servo"][i]["id"] = i;
-    output["servo"][i]["usec"] = servo_channels[i].servo.readMicroseconds();
-    output["servo"][i]["angle"] = servo_channels[i].servo.read();
+    output["servo"][i]["angle"] = servo_channels[i].getAngle();
   }
 #endif
 
@@ -1977,6 +1976,42 @@ void sendOTAProgressFinished()
   if (jsonBuffer != NULL) {
     serializeJson(output, jsonBuffer, jsonSize + 1);
     sendToAll(jsonBuffer, GUEST);
+  }
+  free(jsonBuffer);
+}
+
+void sendDebug(const char* format, ...)
+{
+  char msg[128];
+
+  va_list args;
+  va_start(args, format);
+
+  // Format the message into the msg buffer
+  int len = vsnprintf(msg, sizeof(msg), format, args);
+
+  va_end(args);
+
+  if (len < 0) {
+    // Handle encoding error
+    return;
+  } else if (len >= sizeof(msg)) {
+    // Message was truncated
+    // Optionally handle this case (e.g., log a warning or increase MSG_BUF_SIZE)
+  }
+
+  JsonDocument output;
+  output["debug"] = msg;
+
+  // dynamically allocate our buffer
+  size_t jsonSize = measureJson(output);
+  char* jsonBuffer = (char*)malloc(jsonSize + 1);
+  jsonBuffer[jsonSize] = '\0'; // null terminate
+
+  // did we get anything?
+  if (jsonBuffer != NULL) {
+    serializeJson(output, jsonBuffer, jsonSize + 1);
+    sendToAll(jsonBuffer, NOBODY);
   }
   free(jsonBuffer);
 }

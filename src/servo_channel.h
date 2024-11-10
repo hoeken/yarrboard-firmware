@@ -13,7 +13,7 @@
 #include "prefs.h"
 #include "protocol.h"
 #include <Arduino.h>
-#include <ESP32Servo.h>
+#include <Servo.h>
 
 class ServoChannel
 {
@@ -24,11 +24,13 @@ class ServoChannel
     byte id = 0;
     char name[YB_CHANNEL_NAME_LENGTH];
     bool isEnabled = false;
+    float currentAngle = 0.0;
 
-    Servo servo;
+    //    Servo servo;
 
     void setup();
-    void write(int value);
+    void write(float angle);
+    float getAngle();
 };
 
 extern ServoChannel servo_channels[YB_SERVO_CHANNEL_COUNT];

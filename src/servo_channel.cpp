@@ -12,6 +12,8 @@
 
   #include "servo_channel.h"
 
+Servo _servo = Servo();
+
 // the main star of the event
 ServoChannel servo_channels[YB_SERVO_CHANNEL_COUNT];
 
@@ -54,11 +56,21 @@ void ServoChannel::setup()
   else
     this->isEnabled = true;
 
-  // init our class
-  servo.setTimerWidth(20);
-  servo.setPeriodHertz(50); // Standard 50hz servo
-  servo.attach(_pins[id], 500, 2500);
-  servo.writeMicroseconds(1500);
+  // init our servo
+  _servo.attach(_pins[id]);
+  _servo.setFrequency(_pins[id], 50); // standard 50hz
+  write(90);
+}
+
+void ServoChannel::write(float angle)
+{
+  currentAngle = angle;
+  _servo.write(_pins[id], currentAngle);
+}
+
+float ServoChannel::getAngle()
+{
+  return currentAngle;
 }
 
 #endif
