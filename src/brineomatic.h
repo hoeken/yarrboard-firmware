@@ -88,13 +88,13 @@ class Brineomatic
     void disableBoostPump();
 
     const char* getStatus();
-    uint64_t getNextFlushCountdown();
-    uint64_t getRuntimeElapsed();
-    uint64_t getFinishCountdown();
-    uint64_t getFlushElapsed();
-    uint64_t getFlushCountdown();
-    uint64_t getPickleElapsed();
-    uint64_t getPickleCountdown();
+    int64_t getNextFlushCountdown();
+    int64_t getRuntimeElapsed();
+    int64_t getFinishCountdown();
+    int64_t getFlushElapsed();
+    int64_t getFlushCountdown();
+    int64_t getPickleElapsed();
+    int64_t getPickleCountdown();
 
     float getFilterPressure();
     float getFilterPressureMinimum();

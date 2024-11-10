@@ -490,59 +490,66 @@ const char* Brineomatic::getStatus()
     return "UNKNOWN";
 }
 
-uint64_t Brineomatic::getNextFlushCountdown()
+int64_t Brineomatic::getNextFlushCountdown()
 {
-
-  if (currentStatus == Status::IDLE && autoFlushEnabled)
-    return nextFlushTime - esp_timer_get_time();
+  int64_t countdown = nextFlushTime - esp_timer_get_time();
+  if (currentStatus == Status::IDLE && autoFlushEnabled && countdown > 0)
+    return countdown;
 
   return 0;
 }
 
-uint64_t Brineomatic::getRuntimeElapsed()
+int64_t Brineomatic::getRuntimeElapsed()
 {
-  if (currentStatus == Status::RUNNING)
-    return esp_timer_get_time() - runtimeStart;
+  int64_t elapsed = esp_timer_get_time() - runtimeStart;
+
+  if (currentStatus == Status::RUNNING && elapsed > 0)
+    return elapsed;
 
   return 0;
 }
 
-uint64_t Brineomatic::getFinishCountdown()
+int64_t Brineomatic::getFinishCountdown()
 {
-  if (currentStatus == Status::RUNNING && desiredRuntime > 0)
-    return (runtimeStart + desiredRuntime) - esp_timer_get_time();
+  int64_t countdown = (runtimeStart + desiredRuntime) - esp_timer_get_time();
+  if (currentStatus == Status::RUNNING && desiredRuntime > 0 && countdown > 0)
+    return countdown;
 
   return 0;
 }
 
-uint64_t Brineomatic::getFlushElapsed()
+int64_t Brineomatic::getFlushElapsed()
 {
-  if (currentStatus == Status::FLUSHING)
-    return esp_timer_get_time() - flushStart;
+  int64_t elapsed = esp_timer_get_time() - flushStart;
+  if (currentStatus == Status::FLUSHING && elapsed > 0)
+    return elapsed;
 
   return 0;
 }
 
-uint64_t Brineomatic::getFlushCountdown()
+int64_t Brineomatic::getFlushCountdown()
 {
-  if (currentStatus == Status::FLUSHING)
-    return (flushStart + flushDuration) - esp_timer_get_time();
+  int64_t countdown = (flushStart + flushDuration) - esp_timer_get_time();
+  if (currentStatus == Status::FLUSHING && countdown > 0)
+    return countdown;
 
   return 0;
 }
 
-uint64_t Brineomatic::getPickleElapsed()
+int64_t Brineomatic::getPickleElapsed()
 {
-  if (currentStatus == Status::PICKLING)
-    return esp_timer_get_time() - pickleStart;
+  int64_t elapsed = esp_timer_get_time() - pickleStart;
+  if (currentStatus == Status::PICKLING && elapsed > 0)
+    return elapsed;
 
   return 0;
 }
 
-uint64_t Brineomatic::getPickleCountdown()
+int64_t Brineomatic::getPickleCountdown()
 {
-  if (currentStatus == Status::PICKLING)
-    return (pickleStart + pickleDuration) - esp_timer_get_time();
+  int64_t countdown = (pickleStart + pickleDuration) - esp_timer_get_time();
+  if (currentStatus == Status::PICKLING && countdown > 0)
+    return countdown;
 
   return 0;
 }
@@ -634,7 +641,7 @@ void Brineomatic::runStateMachine()
 
       closeDiverterValve();
 
-      while (esp_timer_get_time() - runtimeStart < desiredRuntime && volume < desiredVolume) {
+      while (getRuntimeElapsed() < desiredRuntime && volume < desiredVolume) {
         if (stopFlag) {
           initializeHardware();
           currentStatus = Status::FLUSHING;
@@ -672,7 +679,7 @@ void Brineomatic::runStateMachine()
       if (!stopFlag) {
         enableHighPressurePump();
 
-        while (esp_timer_get_time() - flushStart < flushDuration) {
+        while (getFlushElapsed() < flushDuration) {
           if (stopFlag)
             break;
 
@@ -704,7 +711,7 @@ void Brineomatic::runStateMachine()
       initializeHardware();
 
       enableHighPressurePump();
-      while (esp_timer_get_time() - pickleStart < pickleDuration) {
+      while (getPickleElapsed() < pickleDuration) {
         if (stopFlag)
           break;
 
