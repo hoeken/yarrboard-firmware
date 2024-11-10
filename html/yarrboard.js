@@ -1215,7 +1215,7 @@ function start_websocket() {
           $("#bomPickleCountdown").hide();
 
         $("#bomTemperature").html(`${temperature}C`);
-        $("#bomFlowrate").html(`${flowrate} LPM`);
+        $("#bomFlowrate").html(`${flowrate} LPH`);
 
         if (salinity < 5000)
           $("#bomSalinity").html(`${salinity} PPM`);
