@@ -25,6 +25,10 @@
   #include "relay_channel.h"
 #endif
 
+#ifdef YB_HAS_SERVO_CHANNELS
+  #include "servo_channel.h"
+#endif
+
 #ifdef YB_HAS_INPUT_CHANNELS
   #include "input_channel.h"
 #endif
@@ -116,6 +120,11 @@ void setup()
   Serial.println("Relay channels ok");
 #endif
 
+#ifdef YB_HAS_SERVO_CHANNELS
+  servo_channels_setup();
+  Serial.println("Servo channels ok");
+#endif
+
 #ifdef YB_HAS_FANS
   fans_setup();
   Serial.println("Fans ok");
@@ -169,6 +178,10 @@ void loop()
 
 #ifdef YB_HAS_RELAY_CHANNELS
   relay_channels_loop();
+#endif
+
+#ifdef YB_HAS_SERVO_CHANNELS
+  servo_channels_loop();
 #endif
 
 #ifdef YB_HAS_FANS

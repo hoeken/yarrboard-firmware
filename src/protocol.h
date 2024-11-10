@@ -41,6 +41,10 @@
   #include "relay_channel.h"
 #endif
 
+#ifdef YB_HAS_SERVO_CHANNELS
+  #include "servo_channel.h"
+#endif
+
 #ifdef YB_HAS_FANS
   #include "fans.h"
 #endif
@@ -96,6 +100,8 @@ void handleFadePWMChannel(JsonVariantConst input, JsonVariant output);
 void handleConfigRelayChannel(JsonVariantConst input, JsonVariant output);
 void handleSetRelayChannel(JsonVariantConst input, JsonVariant output);
 void handleToggleRelayChannel(JsonVariantConst input, JsonVariant output);
+void handleConfigServoChannel(JsonVariantConst input, JsonVariant output);
+void handleSetServoChannel(JsonVariantConst input, JsonVariant output);
 void handleSetSwitch(JsonVariantConst input, JsonVariant output);
 void handleConfigSwitch(JsonVariantConst input, JsonVariant output);
 void handleConfigRGB(JsonVariantConst input, JsonVariant output);

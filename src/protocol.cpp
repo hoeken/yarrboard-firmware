@@ -210,6 +210,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleSetRelayChannel(input, output);
     else if (!strcmp(cmd, "toggle_relay_channel"))
       return handleToggleRelayChannel(input, output);
+    else if (!strcmp(cmd, "set_servo_channel"))
+      return handleSetServoChannel(input, output);
     else if (!strcmp(cmd, "set_switch"))
       return handleSetSwitch(input, output);
     else if (!strcmp(cmd, "set_rgb"))
@@ -252,6 +254,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleConfigPWMChannel(input, output);
     else if (!strcmp(cmd, "config_relay_channel"))
       return handleConfigRelayChannel(input, output);
+    else if (!strcmp(cmd, "config_servo_channel"))
+      return handleConfigServoChannel(input, output);
     else if (!strcmp(cmd, "config_switch"))
       return handleConfigSwitch(input, output);
     else if (!strcmp(cmd, "config_adc"))
@@ -1055,6 +1059,97 @@ void handleToggleRelayChannel(JsonVariantConst input, JsonVariant output)
 #endif
 }
 
+void handleConfigServoChannel(JsonVariantConst input, JsonVariant output)
+{
+#ifdef YB_HAS_SERVO_CHANNELS
+  char prefIndex[YB_PREF_KEY_LENGTH];
+
+  // id is required
+  if (!input["id"].is<JsonVariantConst>())
+    return generateErrorJSON(output, "'id' is a required parameter");
+
+  // is it a valid channel?
+  byte cid = input["id"];
+  if (!isValidServoChannel(cid))
+    return generateErrorJSON(output, "Invalid channel id");
+
+  // channel name
+  if (input["name"].is<String>()) {
+    // is it too long?
+    if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
+      char error[50];
+      sprintf(error, "Maximum channel name length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
+      return generateErrorJSON(output, error);
+    }
+
+    // save to our storage
+    strlcpy(servo_channels[cid].name, input["name"] | "Servo ?", sizeof(servo_channels[cid].name));
+    sprintf(prefIndex, "srvName%d", cid);
+    preferences.putString(prefIndex, servo_channels[cid].name);
+
+    // give them the updated config
+    return generateConfigJSON(output);
+  }
+
+  // enabled
+  if (input["enabled"].is<bool>()) {
+    // save right nwo.
+    bool enabled = input["enabled"];
+    servo_channels[cid].isEnabled = enabled;
+
+    // save to our storage
+    sprintf(prefIndex, "srvEnabled%d", cid);
+    preferences.putBool(prefIndex, enabled);
+
+    // give them the updated config
+    return generateConfigJSON(output);
+  }
+#else
+  return generateErrorJSON(output, "Board does not have servo channels.");
+#endif
+}
+
+void handleSetServoChannel(JsonVariantConst input, JsonVariant output)
+{
+#ifdef YB_HAS_SERVO_CHANNELS
+  char prefIndex[YB_PREF_KEY_LENGTH];
+
+  // id is required
+  if (!input["id"].is<JsonVariantConst>())
+    return generateErrorJSON(output, "'id' is a required parameter");
+
+  // is it a valid channel?
+  byte cid = input["id"];
+  if (!isValidServoChannel(cid))
+    return generateErrorJSON(output, "Invalid channel id");
+
+  // is it enabled?
+  if (!servo_channels[cid].isEnabled)
+    return generateErrorJSON(output, "Channel is not enabled.");
+
+  if (input["usec"].is<JsonVariantConst>()) {
+    int usec = input["usec"];
+
+    if (usec >= 500 && usec <= 2500)
+      servo_channels[cid].servo.write(usec);
+    else
+      return generateErrorJSON(output, "'usec' must be between 500 and 2500");
+  } else if (input["angle"].is<JsonVariantConst>()) {
+    int angle = input["angle"];
+
+    if (angle >= 0 && angle <= 180)
+      servo_channels[cid].servo.write(angle);
+    else
+      return generateErrorJSON(output, "'angle' must be between 0 and 180");
+
+  } else
+    return generateErrorJSON(output, "'usec' or 'angle' parameter is required.");
+
+#else
+  return generateErrorJSON(output, "Board does not have servo channels.");
+#endif
+}
+
 void handleSetSwitch(JsonVariantConst input, JsonVariant output)
 {
 #ifdef YB_HAS_INPUT_CHANNELS
@@ -1482,6 +1577,14 @@ void generateConfigJSON(JsonVariant output)
   }
 #endif
 
+#ifdef YB_HAS_SERVO_CHANNELS
+  for (byte i = 0; i < YB_SERVO_CHANNEL_COUNT; i++) {
+    output["servo"][i]["id"] = i;
+    output["servo"][i]["name"] = servo_channels[i].name;
+    output["servo"][i]["enabled"] = servo_channels[i].isEnabled;
+  }
+#endif
+
 // input / digital IO channels
 #ifdef YB_HAS_INPUT_CHANNELS
   for (byte i = 0; i < YB_INPUT_CHANNEL_COUNT; i++) {
@@ -1513,9 +1616,6 @@ void generateConfigJSON(JsonVariant output)
 #endif
 
 #ifdef YB_IS_BRINEOMATIC
-  // relays
-  // servos
-  // motor(s)
   output["brineomatic"] = true;
 #endif
 }
@@ -1548,6 +1648,14 @@ void generateUpdateJSON(JsonVariant output)
     output["relay"][i]["id"] = i;
     output["relay"][i]["state"] = relay_channels[i].getStatus();
     output["relay"][i]["source"] = relay_channels[i].source;
+  }
+#endif
+
+#ifdef YB_HAS_SERVO_CHANNELS
+  for (byte i = 0; i < YB_SERVO_CHANNEL_COUNT; i++) {
+    output["servo"][i]["id"] = i;
+    output["servo"][i]["usec"] = servo_channels[i].servo.readMicroseconds();
+    output["servo"][i]["angle"] = servo_channels[i].servo.read();
   }
 #endif
 

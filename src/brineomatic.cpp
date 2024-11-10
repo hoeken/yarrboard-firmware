@@ -14,18 +14,10 @@
   #include <ADS1X15.h>
   #include <Arduino.h>
   #include <DallasTemperature.h>
-  #include <ESP32Servo.h>
   #include <GravityTDS.h>
   #include <OneWire.h>
 
 Brineomatic wm;
-
-byte relay_pins[YB_RELAY_CHANNEL_COUNT] = YB_RELAY_CHANNEL_PINS;
-
-Servo servos[YB_SERVO_CHANNEL_COUNT];
-byte servo_pins[YB_SERVO_CHANNEL_COUNT] = YB_SERVO_CHANNEL_PINS;
-int servo_min_us = 1000;
-int servo_max_us = 2000;
 
 byte motor_a_pins[YB_DC_MOTOR_CHANNEL_COUNT] = YB_DC_MOTOR_A_PINS;
 byte motor_b_pins[YB_DC_MOTOR_CHANNEL_COUNT] = YB_DC_MOTOR_B_PINS;
@@ -36,7 +28,7 @@ DallasTemperature ds18b20(&oneWire);
 DeviceAddress motorThermometer;
 
 byte flowmeter_pin = YB_FLOWMETER_PIN;
-static volatile int pulse_counter = 0;
+static volatile uint16_t pulse_counter = 0;
 uint64_t lastFlowmeterCheckMicros = 0;
 float flowmeterPulsesPerLiter = YB_FLOWMETER_DEFAULT_PPL;
 
@@ -53,23 +45,10 @@ float water_temperature = 25;
 
 void brineomatic_setup()
 {
-  byte relay_pins[YB_RELAY_CHANNEL_COUNT] = YB_RELAY_CHANNEL_PINS;
-  byte servo_pins[YB_SERVO_CHANNEL_COUNT] = YB_SERVO_CHANNEL_PINS;
   byte motor_a_pins[YB_DC_MOTOR_CHANNEL_COUNT] = YB_DC_MOTOR_A_PINS;
   byte motor_b_pins[YB_DC_MOTOR_CHANNEL_COUNT] = YB_DC_MOTOR_B_PINS;
 
   byte flowmeter_pin = YB_FLOWMETER_PIN;
-
-  for (byte i = 0; i < YB_RELAY_CHANNEL_COUNT; i++) {
-    pinMode(relay_pins[i], OUTPUT);
-    digitalWrite(relay_pins[i], LOW);
-  }
-
-  for (byte i = 0; i < YB_SERVO_CHANNEL_COUNT; i++) {
-    ESP32PWM::allocateTimer(i);
-    servos[i].setPeriodHertz(50); // Standard 50hz servo
-    servos[i].attach(servo_pins[i], servo_min_us, servo_max_us);
-  }
 
   for (byte i = 0; i < YB_DC_MOTOR_CHANNEL_COUNT; i++) {
     pinMode(motor_a_pins[i], OUTPUT);

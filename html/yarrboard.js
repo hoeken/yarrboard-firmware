@@ -223,6 +223,51 @@ const RelayEditCard = (ch) => `
 </div>
 `;
 
+const ServoControlCard = (ch) => `
+<div id="servo${ch.id}" class="col-xs-12 col-sm-6">
+  <table class="w-100 h-100 p-2">
+    <tr>
+      <td id="servoName${ch.id}">${ch.name}</td>
+      <td id="servoAngle${ch.id}"></td>
+      <td id="servoUsec${ch.id}"></td>
+    </tr>
+    <tr>
+      <td colspan="3">
+        <input type="range" class="form-range" min="0" max="180" step="1" id="servoSlider${ch.id}" list="servoMarker${ch.id}">
+        <datalist id="servoMarker${ch.id}">
+          <option value="0"></option>
+          <option value="30"></option>
+          <option value="60"></option>
+          <option value="90"></option>
+          <option value="120"></option>
+          <option value="150"></option>
+          <option value="180"></option>
+        </datalist>
+      </td>
+    </tr>
+  </table>
+</div>
+`;
+
+const ServoEditCard = (ch) => `
+<div id="servoEditCard${ch.id}" class="col-xs-12 col-sm-6">
+  <div class="p-3 border border-secondary rounded">
+    <h5>Servo Channel #${ch.id}</h5>
+    <div class="form-floating mb-3">
+      <input type="text" class="form-control" id="fServoName${ch.id}" value="${ch.name}">
+      <label for="fServoName${ch.id}">Name</label>
+    </div>
+    <div class="invalid-feedback">Must be 30 characters or less.</div>
+    <div class="form-check form-switch mb-3">
+      <input class="form-check-input" type="checkbox" id="fServoEnabled${ch.id}">
+      <label class="form-check-label" for="fServoEnabled${ch.id}">
+        Enabled
+      </label>
+    </div>
+  </div>
+</div>
+`;
+
 const SwitchControlRow = (id, name) => `
 <tr id="switch${id}" class="switchRow">
   <td class="text-center"><button id="switchState${id}" type="button" class="btn btn-sm" style="width: 80px"></button></td>
@@ -347,6 +392,7 @@ const AlertBox = (message, type) => `
 </div>`;
 
 let currentPWMSliderID = -1;
+let currentServoSliderID = -1;
 let currentRGBPickerID = -1;
 let currentlyPickingBrightness = false;
 
@@ -583,6 +629,51 @@ function start_websocket() {
         $('#relayStatsDiv').show();
       }
 
+      //do we have servo channels?
+      $('#servoControlDiv').hide();
+      $('#servoStatsDiv').hide();
+      if (msg.servo) {
+        //fresh slate
+        $('#servoCards').html("");
+        for (ch of msg.servo) {
+          if (ch.enabled) {
+            $('#servoCards').append(ServoControlCard(ch));
+
+            $('#servoSlider' + ch.id).change(set_servo_angle);
+
+            //update our duty when we move
+            $('#servoSlider' + ch.id).on("input", set_servo_angle);
+
+            //stop updating the UI when we are choosing a duty
+            $('#servoSlider' + ch.id).on('focus', function (e) {
+              let ele = e.target;
+              let id = ele.id.match(/\d+/)[0];
+              currentServoSliderID = id;
+            });
+
+            //stop updating the UI when we are choosing a duty
+            $('#servoSlider' + ch.id).on('touchstart', function (e) {
+              let ele = e.target;
+              let id = ele.id.match(/\d+/)[0];
+              currentServoSliderID = id;
+            });
+
+            //restart the UI updates when slider is closed
+            $('#servoSlider' + ch.id).on("blur", function (e) {
+              currentServoSliderID = -1;
+            });
+
+            //restart the UI updates when slider is closed
+            $('#servoSlider' + ch.id).on("touchend", function (e) {
+              currentServoSliderID = -1;
+            });
+          }
+        }
+
+        $('#servoControlDiv').show();
+        $('#servoStatsDiv').show();
+      }
+
       //populate our switch control table
       $('#switchControlDiv').hide();
       $('#switchStatsDiv').hide();
@@ -675,6 +766,7 @@ function start_websocket() {
 
       //also hide our other stuff here...
       $('#relayControlDiv').hide();
+      $('#servoControlDiv').hide();
 
       //only do it as needed
       if (!page_ready.config || current_page != "config") {
@@ -735,6 +827,24 @@ function start_websocket() {
             $(`#fRelayDefaultState${ch.id}`).change(validate_relay_default_state);
           }
           $('#relayConfig').show();
+        }
+
+        //edit controls for each servo
+        $('#servoConfig').hide();
+        if (msg.servo) {
+          $('#servoConfigForm').html("");
+          for (ch of msg.servo) {
+            $('#servoConfigForm').append(ServoEditCard(ch));
+            $(`#fServoEnabled${ch.id}`).prop("checked", ch.enabled);
+
+            //enable/disable other stuff.
+            $(`#fServoName${ch.id}`).prop('disabled', !ch.enabled);
+
+            //validate + save
+            $(`#fServoEnabled${ch.id}`).change(validate_servo_enabled);
+            $(`#fServoName${ch.id}`).change(validate_servo_name);
+          }
+          $('#servoConfig').show();
         }
 
         //edit controls for each switch
@@ -938,6 +1048,19 @@ function start_websocket() {
               $('#relayState' + ch.id).addClass("btn-secondary");
               $('#relayState' + ch.id).removeClass("btn-success");
               $(`#relayStatus${ch.id}`).hide();
+            }
+          }
+        }
+      }
+
+      //our servo info
+      if (msg.servo) {
+        for (ch of msg.servo) {
+          if (current_config.servo[ch.id].enabled) {
+            if (currentServoSliderID != ch.id) {
+              $('#servoSlider' + ch.id).val(ch.angle);
+              $('#servoAngle' + ch.id).html(`${ch.angle}°`);
+              $('#servoUsec' + ch.id).html(`${ch.usec}μs`);
             }
           }
         }
@@ -1368,6 +1491,7 @@ function show_alert(message, type = 'danger') {
 
 function manual_brineomatic() {
   $('#relayControlDiv').toggle();
+  $('#servoControlDiv').toggle();
 }
 
 function start_brineomatic_manual() {
@@ -1591,6 +1715,30 @@ function set_duty_cycle(e) {
     //update our duty cycle
     client.setPWMChannelDuty(id, value, false);
   }
+}
+
+function set_servo_angle(e) {
+  let ele = e.target;
+  let id = ele.id.match(/\d+/)[0];
+  let value = ele.value;
+
+  //must be realistic.
+  if (value >= 0 && value <= 180) {
+    //update our button
+    $(`#servoAngle${id}`).html(`${value}°`);
+    let usec = Math.round(map_value(value, 0, 180, 500, 2500));
+    $(`#servoUsec${id}`).html(`${usec}μs`);
+
+    client.send({
+      "cmd": "set_servo_channel",
+      "id": id,
+      "angle": value
+    });
+  }
+}
+
+function map_value(value, fromLow, fromHigh, toLow, toHigh) {
+  return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
 }
 
 function set_brightness(e) {
@@ -1821,6 +1969,45 @@ function validate_relay_default_state(e) {
       "defaultState": value
     });
   }
+}
+
+function validate_servo_name(e) {
+  let ele = e.target;
+  let id = ele.id.match(/\d+/)[0];
+  let value = ele.value;
+
+  if (value.length <= 0 || value.length > 30) {
+    $(ele).removeClass("is-valid");
+    $(ele).addClass("is-invalid");
+  }
+  else {
+    $(ele).removeClass("is-invalid");
+    $(ele).addClass("is-valid");
+
+    client.send({
+      "cmd": "config_servo_channel",
+      "id": id,
+      "name": value
+    });
+  }
+}
+
+function validate_servo_enabled(e) {
+  let ele = e.target;
+  let id = ele.id.match(/\d+/)[0];
+  let value = ele.checked;
+
+  $(`#fPWMName${id}`).prop('disabled', !value);
+  $(`#fPWMType${id}`).prop('disabled', !value);
+  $(`#fPWMDefaultState${id}`).prop('disabled', !value);
+
+  $(ele).addClass("is-valid");
+
+  client.send({
+    "cmd": "config_servo_channel",
+    "id": id,
+    "enabled": value
+  });
 }
 
 function validate_switch_name(e) {
