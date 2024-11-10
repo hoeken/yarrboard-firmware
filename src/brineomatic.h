@@ -10,8 +10,10 @@
 #define YARR_BRINEOMATIC_H
 
 #include "relay_channel.h"
+#include "servo_channel.h"
 
 class RelayChannel;
+class ServoChannel;
 
 void brineomatic_setup();
 void brineomatic_loop();
@@ -33,6 +35,8 @@ class Brineomatic
     RelayChannel* flushValve = NULL;
     RelayChannel* boostPump = NULL;
     RelayChannel* highPressurePump = NULL;
+    ServoChannel* diverterValve = NULL;
+    ServoChannel* highPressureValve = NULL;
 
     Brineomatic();
 

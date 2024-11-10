@@ -116,6 +116,8 @@ void brineomatic_setup()
   // temporary hardcoding.
   wm.highPressurePump = &relay_channels[0];
   wm.flushValve = &relay_channels[1];
+  wm.diverterValve = &servo_channels[0];
+  wm.highPressureValve = &servo_channels[1];
 }
 
 void brineomatic_loop()

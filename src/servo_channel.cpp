@@ -57,7 +57,7 @@ void ServoChannel::setup()
     this->isEnabled = true;
 
   // init our servo
-  _servo.attach(_pins[id]);
+  channel = _servo.attach(_pins[id]);
   _servo.setFrequency(_pins[id], 50); // standard 50hz
   write(90);
 }
@@ -65,7 +65,13 @@ void ServoChannel::setup()
 void ServoChannel::write(float angle)
 {
   currentAngle = angle;
+  _servo.resume(channel);
   _servo.write(_pins[id], currentAngle);
+}
+
+void ServoChannel::disable()
+{
+  _servo.pause(channel);
 }
 
 float ServoChannel::getAngle()

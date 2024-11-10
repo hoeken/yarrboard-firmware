@@ -31,6 +31,10 @@ class ServoChannel
     void setup();
     void write(float angle);
     float getAngle();
+    void disable();
+
+  private:
+    byte channel = 0;
 };
 
 extern ServoChannel servo_channels[YB_SERVO_CHANNEL_COUNT];
