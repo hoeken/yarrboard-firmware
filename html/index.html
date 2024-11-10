@@ -89,13 +89,9 @@
                 <div id="liveAlertPlaceholder"></div>
                 <div id="controlPage" class="pageContainer row" style="display:none">
                     <div id="bomInformationDiv" style="display:none" class="col-md-8">
-                        <h4 class="text-center">Information</h4>
+                        <h4 class="text-center">Status: <span class="badge" id="bomStatus"></span></h4>
                         <table id="bomTable" class="table table-hover">
                             <tbody id="bomTableBody">
-                                <tr>
-                                    <td>Status</td>
-                                    <td id="bomStatus"></td>
-                                </tr>
                                 <tr id="bomNextFlushCountdown" style="display: none">
                                     <td>Next Autoflush</td>
                                     <td id="bomNextFlushCountdownData"></td>
@@ -238,7 +234,8 @@
                                                         script (eg. NodeRed)
                                                     </div>
                                                     <button type="button" class="btn btn-success my-3"
-                                                        data-bs-dismiss="modal" style="width: 100%">Start</button>
+                                                        data-bs-dismiss="modal" style="width: 100%"
+                                                        onclick="start_brineomatic_manual()">Start</button>
                                                 </div>
                                                 <div class="col-md-4">
                                                     <h5>Duration</h5>
@@ -253,7 +250,8 @@
                                                         </div>
                                                     </div>
                                                     <button type="button" class="btn btn-success my-3"
-                                                        data-bs-dismiss="modal" style="width: 100%">Start</button>
+                                                        data-bs-dismiss="modal" style="width: 100%"
+                                                        onclick="start_brineomatic_duration()">Start</button>
                                                 </div>
                                                 <div class="col-md-4">
                                                     <h5>Volume</h5>
@@ -268,7 +266,8 @@
                                                         </div>
                                                     </div>
                                                     <button type="button" class="btn btn-success my-3"
-                                                        data-bs-dismiss="modal" style="width: 100%">Start</button>
+                                                        data-bs-dismiss="modal" style="width: 100%"
+                                                        onclick="start_brineomatic_volume()">Start</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -307,8 +306,8 @@
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary"
                                             data-bs-dismiss="modal">Cancel</button>
-                                        <button type="button" class="btn btn-primary"
-                                            data-bs-dismiss="modal">Flush</button>
+                                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                                            onclick="flush_brineomatic()">Flush</button>
                                     </div>
                                 </div>
                             </div>
@@ -346,8 +345,8 @@
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary"
                                             data-bs-dismiss="modal">Cancel</button>
-                                        <button type="button" class="btn btn-warning"
-                                            data-bs-dismiss="modal">Pickle</button>
+                                        <button type="button" class="btn btn-warning" data-bs-dismiss="modal"
+                                            onclick="pickle_brineomatic()">Pickle</button>
                                     </div>
                                 </div>
                             </div>
@@ -370,8 +369,8 @@
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary"
                                             data-bs-dismiss="modal">Cancel</button>
-                                        <button type="button" class="btn btn-danger"
-                                            data-bs-dismiss="modal">Stop</button>
+                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+                                            onclick="stop_brineomatic()">Stop</button>
                                     </div>
                                 </div>
                             </div>

@@ -303,6 +303,7 @@ void Brineomatic::setSalinity(float salinity)
 
 void Brineomatic::start()
 {
+  stopFlag = false;
   if (currentStatus == Status::IDLE) {
     desiredRuntime = 0;
     desiredVolume = 0;
@@ -312,6 +313,7 @@ void Brineomatic::start()
 
 void Brineomatic::startDuration(uint64_t duration)
 {
+  stopFlag = false;
   if (currentStatus == Status::IDLE) {
     desiredRuntime = duration;
     desiredVolume = 0;
@@ -321,6 +323,7 @@ void Brineomatic::startDuration(uint64_t duration)
 
 void Brineomatic::startVolume(float volume)
 {
+  stopFlag = false;
   if (currentStatus == Status::IDLE) {
     desiredRuntime = 0;
     desiredVolume = volume;
@@ -330,7 +333,11 @@ void Brineomatic::startVolume(float volume)
 
 void Brineomatic::flush(uint64_t duration)
 {
-  if (currentStatus == Status::IDLE) {
+  TRACE();
+  DUMP(duration);
+
+  stopFlag = false;
+  if (currentStatus == Status::IDLE || currentStatus == Status::PICKLED) {
     flushDuration = duration;
     currentStatus = Status::FLUSHING;
   }
@@ -338,6 +345,7 @@ void Brineomatic::flush(uint64_t duration)
 
 void Brineomatic::pickle(uint64_t duration)
 {
+  stopFlag = false;
   if (currentStatus == Status::IDLE) {
     pickleDuration = duration;
     currentStatus = Status::PICKLING;
@@ -592,17 +600,35 @@ void Brineomatic::runStateMachine()
 
       if (hasBoostPump()) {
         enableBoostPump();
-        while (getFilterPressure() < getFilterPressureMinimum())
+        while (getFilterPressure() < getFilterPressureMinimum()) {
+          if (stopFlag) {
+            initializeHardware();
+            currentStatus = Status::FLUSHING;
+            return;
+          }
           vTaskDelay(pdMS_TO_TICKS(100));
+        }
       }
 
       enableHighPressurePump();
       setMembranePressureTarget(750);
-      while (getMembranePressure() < getMembranePressureMinimum())
+      while (getMembranePressure() < getMembranePressureMinimum()) {
+        if (stopFlag) {
+          initializeHardware();
+          currentStatus = Status::FLUSHING;
+          return;
+        }
         vTaskDelay(pdMS_TO_TICKS(100));
+      }
 
       bool ready = false;
       while (!ready) {
+        if (stopFlag) {
+          initializeHardware();
+          currentStatus = Status::FLUSHING;
+          return;
+        }
+
         if (getFlowrate() >= getFlowrateMinimum())
           ready = true;
         else if (getSalinity() <= getSalinityMaximum())
@@ -613,10 +639,18 @@ void Brineomatic::runStateMachine()
 
       closeDiverterValve();
 
-      if (esp_timer_get_time() - runtimeStart > desiredRuntime || volume > desiredVolume) {
-        initializeHardware();
-        currentStatus = Status::FLUSHING;
+      while (esp_timer_get_time() - runtimeStart < desiredRuntime && volume < desiredVolume) {
+        if (stopFlag) {
+          initializeHardware();
+          currentStatus = Status::FLUSHING;
+          return;
+        }
+        vTaskDelay(pdMS_TO_TICKS(100));
       }
+
+      initializeHardware();
+      currentStatus = Status::FLUSHING;
+
       break;
     }
 
@@ -629,16 +663,39 @@ void Brineomatic::runStateMachine()
       flushStart = esp_timer_get_time();
 
       initializeHardware();
+      TRACE();
 
+      DUMP(lowPressureMinimum);
       openFlushValve();
-      while (getFilterPressure() < getFilterPressureMinimum())
-        vTaskDelay(pdMS_TO_TICKS(100));
+      while (getFilterPressure() < getFilterPressureMinimum()) {
+        if (stopFlag) {
+          initializeHardware();
+          currentStatus = Status::IDLE;
+          return;
+        }
 
-      enableHighPressurePump();
-
-      while (esp_timer_get_time() - flushStart > flushDuration) {
+        DUMP(getFilterPressure());
+        Serial.println("Waiting on filter pressure");
         vTaskDelay(pdMS_TO_TICKS(100));
       }
+      TRACE();
+
+      enableHighPressurePump();
+      TRACE();
+
+      while (esp_timer_get_time() - flushStart < flushDuration) {
+        Serial.println("Flushing.");
+        if (stopFlag) {
+          initializeHardware();
+          currentStatus = Status::IDLE;
+          return;
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(100));
+      }
+      TRACE();
+
+      Serial.println("Flush done.");
 
       initializeHardware();
 
@@ -659,9 +716,14 @@ void Brineomatic::runStateMachine()
 
       initializeHardware();
 
-      enableBoostPump();
       enableHighPressurePump();
-      while (esp_timer_get_time() - pickleStart > pickleDuration) {
+      while (esp_timer_get_time() - pickleStart < pickleDuration) {
+        if (stopFlag) {
+          initializeHardware();
+          currentStatus = Status::PICKLED;
+          return;
+        }
+
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 

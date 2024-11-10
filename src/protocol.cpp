@@ -1389,6 +1389,8 @@ void handleStartWatermaker(JsonVariantConst input, JsonVariant output)
 
 void handleFlushWatermaker(JsonVariantConst input, JsonVariant output)
 {
+  TRACE();
+
   if (!input["duration"].is<JsonVariantConst>())
     return generateErrorJSON(output, "'duration' is a required parameter");
 

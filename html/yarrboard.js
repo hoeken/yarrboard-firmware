@@ -1004,6 +1004,23 @@ function start_websocket() {
           membrane_pressure = 0;
 
         $("#bomStatus").html(msg.status);
+        $("#bomStatus").removeClass();
+        $("#bomStatus").addClass("badge");
+
+        if (msg.status == "STARTUP")
+          $("#bomStatus").addClass("text-bg-info");
+        if (msg.status == "IDLE")
+          $("#bomStatus").addClass("text-bg-secondary");
+        else if (msg.status == "RUNNING")
+          $("#bomStatus").addClass("text-bg-success");
+        else if (msg.status == "FLUSHING")
+          $("#bomStatus").addClass("text-bg-primary");
+        else if (msg.status == "PICKLING")
+          $("#bomStatus").addClass("text-bg-warning");
+        else if (msg.status == "PICKLED")
+          $("#bomStatus").addClass("text-bg-warning");
+        else
+          $("#bomStatus").addClass("text-bg-danger");
 
         //default to hide all.
         $("#runBrineomatic").hide();
@@ -1351,6 +1368,72 @@ function show_alert(message, type = 'danger') {
 
 function manual_brineomatic() {
   $('#relayControlDiv').toggle();
+}
+
+function start_brineomatic_manual() {
+  client.send({
+    "cmd": "start_watermaker",
+  }, true);
+}
+
+function start_brineomatic_duration() {
+
+  let duration = $("#bomRunDurationInput").val();
+
+  if (duration > 0) {
+    //hours to microseconds
+    let micros = duration * 60 * 60 * 1000000;
+
+    client.send({
+      "cmd": "start_watermaker",
+      "duration": micros
+    }, true);
+  }
+}
+
+function start_brineomatic_volume() {
+  let volume = $("#bomRunVolumeInput").val();
+
+  if (volume > 0) {
+    client.send({
+      "cmd": "start_watermaker",
+      "volume": volume
+    }, true);
+  }
+}
+
+function flush_brineomatic() {
+  let duration = $("#bomFlushDurationInput").val();
+
+  if (duration > 0) {
+    let micros = duration * 60 * 1000000;
+
+    console.log(`flushing ${duration} (${micros})`);
+
+    client.send({
+      "cmd": "flush_watermaker",
+      "duration": micros
+    }, true);
+  }
+}
+
+function pickle_brineomatic() {
+  let duration = $("#bomPickleDurationInput").val();
+
+  if (duration > 0) {
+    let micros = duration * 60 * 1000000;
+
+    client.send({
+      "cmd": "pickle_watermaker",
+      "duration": micros
+    }, true);
+  }
+}
+
+function stop_brineomatic() {
+  client.send({
+    "cmd": "stop_watermaker",
+  }, true);
 }
 
 function toggle_state(id) {
