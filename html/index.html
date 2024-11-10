@@ -153,7 +153,7 @@
                         <div id="bomControlButtons" class="row g-2">
                             <div id="runBrineomatic" class="col-12">
                                 <button class="btn btn-success brineomaticControlButton" type="button"
-                                    onclick="start_brineomatic()">
+                                    data-bs-toggle="modal" data-bs-target="#startBrineomaticModal">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"
                                         class="bi bi-play-circle" viewBox="0 0 16 16">
                                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
@@ -165,7 +165,7 @@
                             </div>
                             <div id="flushBrineomatic" class="col-12">
                                 <button class="btn btn-primary brineomaticControlButton" type="button"
-                                    onclick="flush_brineomatic()">
+                                    data-bs-toggle="modal" data-bs-target="#flushBrineomaticModal">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"
                                         class="bi bi-droplet" viewBox="0 0 16 16">
                                         <path fill-rule="evenodd"
@@ -178,7 +178,7 @@
                             </div>
                             <div id="pickleBrineomatic" class="col-12">
                                 <button class="btn btn-warning brineomaticControlButton" type="button"
-                                    onclick="pickle_brineomatic()">
+                                    data-bs-toggle="modal" data-bs-target="#pickleBrineomaticModal">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"
                                         class="bi bi-shield-plus" viewBox="0 0 16 16">
                                         <path
@@ -191,7 +191,7 @@
                             </div>
                             <div id="stopBrineomatic" class="col-12">
                                 <button class="btn btn-danger brineomaticControlButton" type="button"
-                                    onclick="stop_brineomatic()">
+                                    data-bs-toggle="modal" data-bs-target="#stopBrineomaticModal">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"
                                         class="bi bi-stop-circle" viewBox="0 0 16 16">
                                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
@@ -213,6 +213,167 @@
                                     </svg>
                                     <span class="align-middle mx-2">MANUAL</span>
                                 </button>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="startBrineomaticModal" tabindex="-1" role="dialog"
+                            aria-labelledby="startBrineomaticModalTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="startBrineomaticModalTitle">Start Watermaker -
+                                            Choose Mode
+                                        </h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="container-fluid">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <h5>Manual</h5>
+                                                    <div class="small" style="height: 110px">
+                                                        Run the watermaker until it is stopped by the user or an
+                                                        external
+                                                        script (eg. NodeRed)
+                                                    </div>
+                                                    <button type="button" class="btn btn-success my-3"
+                                                        data-bs-dismiss="modal" style="width: 100%">Start</button>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <h5>Duration</h5>
+                                                    <div class="small" style="height: 70px">
+                                                        Run the watermaker for the time below.
+                                                    </div>
+                                                    <div style="height: 40px">
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control"
+                                                                id="bomRunDurationInput" value="3.5">
+                                                            <span class="input-group-text">hours</span>
+                                                        </div>
+                                                    </div>
+                                                    <button type="button" class="btn btn-success my-3"
+                                                        data-bs-dismiss="modal" style="width: 100%">Start</button>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <h5>Volume</h5>
+                                                    <div class="small" style="height: 70px">
+                                                        Make the amount of water below.
+                                                    </div>
+                                                    <div style="height: 40px">
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control"
+                                                                id="bomRunVolumeInput" value="250">
+                                                            <span class="input-group-text">liters</span>
+                                                        </div>
+                                                    </div>
+                                                    <button type="button" class="btn btn-success my-3"
+                                                        data-bs-dismiss="modal" style="width: 100%">Start</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="flushBrineomaticModal" tabindex="-1" role="dialog"
+                            aria-labelledby="flushBrineomaticModalTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="flushBrineomaticModalTitle">Flush
+                                            Watermaker
+                                        </h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Flush the watermaker for the time below.</p>
+                                        <div class="row">
+                                            <div class="col-5">
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" id="bomFlushDurationInput"
+                                                        value="5">
+                                                    <span class="input-group-text">minutes</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Cancel</button>
+                                        <button type="button" class="btn btn-primary"
+                                            data-bs-dismiss="modal">Flush</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="pickleBrineomaticModal" tabindex="-1" role="dialog"
+                            aria-labelledby="pickleBrineomaticModalTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="pickleBrineomaticModalTitle">Pickle
+                                            Watermaker
+                                        </h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="alert alert-warning" role="alert">
+                                            Make sure you have your watermaker plumbing configured for pickling. The
+                                            input and
+                                            output of the watermaker should lead to a bucket that contains your pickling
+                                            solution.
+                                        </div>
+                                        <p>Pickle the watermaker for the time below.</p>
+                                        <div class="row">
+                                            <div class="col-5">
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" id="bomPickleDurationInput"
+                                                        value="5">
+                                                    <span class="input-group-text">minutes</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Cancel</button>
+                                        <button type="button" class="btn btn-warning"
+                                            data-bs-dismiss="modal">Pickle</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="stopBrineomaticModal" tabindex="-1" role="dialog"
+                            aria-labelledby="stopBrineomaticModalTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="stopBrineomaticTitle">Stop Watermaker
+                                        </h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>If currently RUNNING, it will start a FLUSH cycle.</p>
+                                        <p>If currently FLUSHING or PICKLING, it will just stop.</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Cancel</button>
+                                        <button type="button" class="btn btn-danger"
+                                            data-bs-dismiss="modal">Stop</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -634,7 +795,8 @@
                                         onclick="update_firmware()">Update Firmware</button>
                                     <br />
                                     <div id="progress_wrapper" style="display: none" class="mt-4">
-                                        <p>Update may take a while, please be patient. After an update, this page will
+                                        <p>Update may take a while, please be patient. After an update, this page
+                                            will
                                             refresh. You may need to clear your browser cache after updating the
                                             firmware if you are having issues.</p>
                                         Firmware Update:
