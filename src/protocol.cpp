@@ -228,6 +228,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handlePickleWatermaker(input, output);
     else if (!strcmp(cmd, "stop_watermaker"))
       return handleStopWatermaker(input, output);
+    else if (!strcmp(cmd, "set_watermaker_diverter_valve"))
+      return handleWaterMakerDiverterValve(input, output);
     else if (!strcmp(cmd, "logout"))
       return handleLogout(input, output, mode, connection);
   }
@@ -1522,6 +1524,19 @@ void handleStopWatermaker(JsonVariantConst input, JsonVariant output)
     wm.stop();
   else
     return generateErrorJSON(output, "Watermaker must be in RUNNING, FLUSHING, or PICKLING mode to stop.");
+}
+
+void handleWaterMakerDiverterValve(JsonVariantConst input, JsonVariant output)
+{
+  if (!input["open"].is<JsonVariantConst>())
+    return generateErrorJSON(output, "'open' is a required parameter");
+
+  bool state = input["open"];
+
+  if (state)
+    wm.openDiverterValve();
+  else
+    wm.closeDiverterValve();
 }
 
 void generateConfigJSON(JsonVariant output)

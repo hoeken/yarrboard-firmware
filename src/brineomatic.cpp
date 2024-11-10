@@ -364,10 +364,16 @@ bool Brineomatic::hasDiverterValve()
 
 void Brineomatic::openDiverterValve()
 {
+  diverterValve->write(diverterValveOpenAngle);
+  vTaskDelay(pdMS_TO_TICKS(1000));
+  diverterValve->disable();
 }
 
 void Brineomatic::closeDiverterValve()
 {
+  diverterValve->write(diverterValveClosedAngle);
+  vTaskDelay(pdMS_TO_TICKS(1000));
+  diverterValve->disable();
 }
 
 bool Brineomatic::hasFlushValve()

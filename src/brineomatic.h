@@ -38,6 +38,12 @@ class Brineomatic
     ServoChannel* diverterValve = NULL;
     ServoChannel* highPressureValve = NULL;
 
+    float diverterValveOpenAngle = 35;
+    float diverterValveClosedAngle = 125;
+
+    float highPressureValveOpenMax = 110;
+    float highPressureValveCloseMin = 80;
+
     Brineomatic();
 
     enum class Status {
