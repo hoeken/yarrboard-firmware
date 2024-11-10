@@ -68,6 +68,10 @@ void RelayChannel::setup()
     strlcpy(this->defaultState, preferences.getString(prefIndex).c_str(), sizeof(this->defaultState));
   else
     sprintf(this->defaultState, "OFF", this->id);
+
+  // init!
+  pinMode(_pins[id], OUTPUT);
+  digitalWrite(_pins[id], LOW);
 }
 
 void RelayChannel::setupDefaultState()
@@ -92,8 +96,6 @@ void RelayChannel::updateOutput()
 
 void RelayChannel::setState(const char* state)
 {
-  DUMP(state);
-
   if (!strcmp(state, "ON")) {
     this->status = Status::ON;
     this->setState(true);
