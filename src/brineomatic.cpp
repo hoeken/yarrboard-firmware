@@ -99,7 +99,7 @@ void brineomatic_setup()
   brineomatic_adc.requestADC(current_ads1115_channel);
 
   gravityTds.setAref(YB_ADS1115_VREF); // reference voltage on ADC
-  gravityTds.setAdcRange(2 ^ 15);      // 16 bit ADC, but its differential
+  gravityTds.setAdcRange(15);          // 16 bit ADC, but its differential, so lose 1 bit.
   gravityTds.begin();                  // initialization
 
   char prefIndex[YB_PREF_KEY_LENGTH];
@@ -219,7 +219,7 @@ void measure_filter_pressure(int16_t reading)
   float voltage = brineomatic_adc.toVoltage(reading);
 
   if (voltage < 0.4) {
-    Serial.println("No LP Sensor Detected");
+    // Serial.println("No LP Sensor Detected");
     wm.setFilterPressure(-999);
     return;
   }
@@ -234,7 +234,7 @@ void measure_membrane_pressure(int16_t reading)
   float voltage = brineomatic_adc.toVoltage(reading);
 
   if (voltage < 0.4) {
-    Serial.println("No HP Sensor Detected");
+    // Serial.println("No HP Sensor Detected");
     wm.setMembranePressure(-999);
     return;
   }
@@ -584,7 +584,7 @@ void Brineomatic::runStateMachine()
     // IDLE
     //
     case Status::IDLE:
-      Serial.println("State: IDLE");
+      // Serial.println("State: IDLE");
       if (autoFlushEnabled && esp_timer_get_time() > nextFlushTime)
         currentStatus = Status::FLUSHING;
       break;
