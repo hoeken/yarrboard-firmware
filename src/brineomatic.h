@@ -137,10 +137,10 @@ class Brineomatic
 
     float membranePressureTarget;
 
-    const float lowPressureMinimum = 10.0;   // Example value
-    const float highPressureMinimum = 700.0; // Example value
-    const float flowrateMinimum = 5.0;       // Example value
-    const float salinityMaximum = 500.0;     // Example value
+    const float lowPressureMinimum = 10.0;   // PSI
+    const float highPressureMinimum = 700.0; // PSI
+    const float flowrateMinimum = 120.0;     // LPH
+    const float salinityMaximum = 200.0;     // PPM
 };
 
 extern Brineomatic wm;

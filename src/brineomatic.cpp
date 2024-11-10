@@ -27,7 +27,6 @@ OneWire oneWire(YB_DS18B20_PIN);
 DallasTemperature ds18b20(&oneWire);
 DeviceAddress motorThermometer;
 
-byte flowmeter_pin = YB_FLOWMETER_PIN;
 static volatile uint16_t pulse_counter = 0;
 uint64_t lastFlowmeterCheckMicros = 0;
 float flowmeterPulsesPerLiter = YB_FLOWMETER_DEFAULT_PPL;
@@ -48,8 +47,6 @@ void brineomatic_setup()
   byte motor_a_pins[YB_DC_MOTOR_CHANNEL_COUNT] = YB_DC_MOTOR_A_PINS;
   byte motor_b_pins[YB_DC_MOTOR_CHANNEL_COUNT] = YB_DC_MOTOR_B_PINS;
 
-  byte flowmeter_pin = YB_FLOWMETER_PIN;
-
   for (byte i = 0; i < YB_DC_MOTOR_CHANNEL_COUNT; i++) {
     pinMode(motor_a_pins[i], OUTPUT);
     pinMode(motor_b_pins[i], OUTPUT);
@@ -58,10 +55,10 @@ void brineomatic_setup()
   }
 
   // do our init for our flowmeter
-  pinMode(flowmeter_pin, INPUT);
-  attachInterrupt(digitalPinToInterrupt(flowmeter_pin), flowmeter_interrupt, FALLING);
+  pinMode(YB_FLOWMETER_PIN, INPUT);
   pulse_counter = 0;
   lastFlowmeterCheckMicros = 0;
+  attachInterrupt(digitalPinToInterrupt(YB_FLOWMETER_PIN), flowmeter_interrupt, FALLING);
 
   // DS18B20 Sensor
   ds18b20.begin();
@@ -171,12 +168,22 @@ void brineomatic_state_machine(void* pvParameters)
 
 void measure_flowmeter()
 {
-  if (esp_timer_get_time() - lastFlowmeterCheckMicros >= 1000000) {
+  // check roughly every second
+  uint64_t elapsed = esp_timer_get_time() - lastFlowmeterCheckMicros;
+  if (elapsed >= 1000000) {
     // detach interrupt while calculating rpm
-    detachInterrupt(digitalPinToInterrupt(flowmeter_pin));
+    detachInterrupt(digitalPinToInterrupt(YB_FLOWMETER_PIN));
+
+    sendDebug("pulses: %d", pulse_counter);
 
     // calculate flowrate
-    float flowrate = pulse_counter / flowmeterPulsesPerLiter;
+    float elapsed_seconds = elapsed / 1e6;
+
+    // Calculate liters per second
+    float liters_per_second = (pulse_counter / flowmeterPulsesPerLiter) / elapsed_seconds;
+
+    // Convert to liters per hour
+    float flowrate = liters_per_second * 3600;
 
     // reset counter
     pulse_counter = 0;
@@ -185,7 +192,7 @@ void measure_flowmeter()
     lastFlowmeterCheckMicros = esp_timer_get_time();
 
     // attach interrupt again
-    attachInterrupt(digitalPinToInterrupt(flowmeter_pin), flowmeter_interrupt, FALLING);
+    attachInterrupt(digitalPinToInterrupt(YB_FLOWMETER_PIN), flowmeter_interrupt, FALLING);
 
     // update our model
     wm.setFlowrate(flowrate);
@@ -593,14 +600,15 @@ void Brineomatic::runStateMachine()
     // RUNNING
     //
     case Status::RUNNING: {
-      Serial.println("State: RUNNING");
+      // sendDebug("State: RUNNING");
 
       runtimeStart = esp_timer_get_time();
-      float volume = 0.0;
+      float volume = 0.0001; // just a little bit in case desiredVolume is 0
 
       initializeHardware();
 
       if (hasBoostPump()) {
+        // sendDebug("Boost Pump Started");
         enableBoostPump();
         while (getFilterPressure() < getFilterPressureMinimum()) {
           if (stopFlag) {
@@ -610,10 +618,13 @@ void Brineomatic::runStateMachine()
           }
           vTaskDelay(pdMS_TO_TICKS(100));
         }
+        // sendDebug("Boost Pump OK");
       }
 
+      // sendDebug("High Pressure Pump Started");
       enableHighPressurePump();
       setMembranePressureTarget(750);
+
       while (getMembranePressure() < getMembranePressureMinimum()) {
         if (stopFlag) {
           initializeHardware();
@@ -623,25 +634,31 @@ void Brineomatic::runStateMachine()
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 
+      // sendDebug("High Pressure Pump OK");
+
+      // both flowrate and salinity need to be good
       bool ready = false;
       while (!ready) {
+        ready = true;
         if (stopFlag) {
           initializeHardware();
           currentStatus = Status::FLUSHING;
           return;
         }
 
-        if (getFlowrate() >= getFlowrateMinimum())
-          ready = true;
-        else if (getSalinity() <= getSalinityMaximum())
-          ready = true;
+        // if (getFlowrate() < getFlowrateMinimum())
+        //   ready = false;
+        if (getSalinity() > getSalinityMaximum())
+          ready = false;
 
         vTaskDelay(pdMS_TO_TICKS(100));
       }
+
+      // sendDebug("Flow and Salinity OK");
 
       closeDiverterValve();
 
-      while (getRuntimeElapsed() < desiredRuntime && volume < desiredVolume) {
+      while ((desiredRuntime == 0 && desiredVolume == 0) || (getRuntimeElapsed() < desiredRuntime) || (volume < desiredVolume)) {
         if (stopFlag) {
           initializeHardware();
           currentStatus = Status::FLUSHING;
@@ -649,6 +666,8 @@ void Brineomatic::runStateMachine()
         }
         vTaskDelay(pdMS_TO_TICKS(100));
       }
+
+      // sendDebug("Finished making water.");
 
       initializeHardware();
       currentStatus = Status::FLUSHING;
@@ -661,6 +680,7 @@ void Brineomatic::runStateMachine()
     //
     case Status::FLUSHING: {
 
+      stopFlag = false;
       flushStart = esp_timer_get_time();
 
       initializeHardware();
