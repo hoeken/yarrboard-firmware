@@ -19,6 +19,28 @@
     * wifi connection fail should default to AP mode
     * wifi should reconnect on failure
 
+# BRINEOMATIC
+
+* add PID control to pressure valve
+* add flowmeter volume accumulator
+* add fan control based on temperature
+* add configuration options for:
+    * flowmeter
+    * tds (can we autodetect - whats this look like?)
+    * diverter valve
+    * hp valve servo
+    * hp valve relay
+    * diverter valve relay
+    * default intervals for flush, etc.
+* add tds calibration
+* add water_temperature
+* add timeouts to while() loops in 
+* add safety checks for salinity and flowrate in RUNNING main loop.
+* figure out why sendDebug() is crashing in state machine task.
+* update UI to only show relevant data during the right mode
+* add a DEPICKLING mode that uses seawater instead of fresh to depickle.
+
+
 # LONG TERM:
 
 * Look into turning yarrboard UI/framework into a library for use in other projects (brineomatic)
