@@ -24,6 +24,7 @@
 * add PID control to pressure valve
 * add flowmeter volume accumulator
 * add fan control based on temperature
+* move everything to SI units
 * add configuration options for:
     * flowmeter
     * tds (can we autodetect - whats this look like?)
@@ -32,6 +33,7 @@
     * hp valve relay
     * diverter valve relay
     * default intervals for flush, etc.
+    * options for display units
 * add tds calibration
 * add water_temperature
 * add timeouts to while() loops in 

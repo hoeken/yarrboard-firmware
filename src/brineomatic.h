@@ -11,6 +11,7 @@
 
 #include "relay_channel.h"
 #include "servo_channel.h"
+#include <QuickPID.h>
 
 class RelayChannel;
 class ServoChannel;
@@ -83,6 +84,9 @@ class Brineomatic
     void enableHighPressurePump();
     void disableHighPressurePump();
 
+    bool hasHighPressureValve();
+    void manageHighPressureValve();
+
     bool hasBoostPump();
     void enableBoostPump();
     void disableBoostPump();
@@ -136,6 +140,9 @@ class Brineomatic
     float currentMembranePressure;
 
     float membranePressureTarget;
+    float membranePressurePIDOutput;
+    QuickPID membranePressurePID;
+    float Kp, Ki, Kd;
 
     const float lowPressureMinimum = 10.0;   // PSI
     const float highPressureMinimum = 700.0; // PSI
