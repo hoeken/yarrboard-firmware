@@ -42,8 +42,10 @@ class Brineomatic
     float diverterValveOpenAngle = 35;
     float diverterValveClosedAngle = 125;
 
-    float highPressureValveOpenMax = 110;
-    float highPressureValveCloseMin = 80;
+    float highPressureValveOpenMin;
+    float highPressureValveOpenMax;
+    float highPressureValveCloseMin;
+    float highPressureValveCloseMax;
 
     Brineomatic();
 
@@ -144,9 +146,13 @@ class Brineomatic
     QuickPID membranePressurePID;
     float Kp, Ki, Kd;
 
+    float defaultMembranePressureTarget = 750.0; // PSI
+
     const float lowPressureMinimum = 10.0;   // PSI
-    const float highPressureMinimum = 700.0; // PSI
+    const float highPressureMinimum = 600.0; // PSI
+    const float highPressureMaximum = 900.0; // PSI
     const float flowrateMinimum = 120.0;     // LPH
+    const float flowrateMaximum = 200.0;     // LPH
     const float salinityMaximum = 200.0;     // PPM
 };
 

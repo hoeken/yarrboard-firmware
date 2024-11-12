@@ -90,7 +90,7 @@ void brineomatic_setup()
 
   brineomatic_adc.setMode(1);     // SINGLE SHOT MODE
   brineomatic_adc.setGain(1);     // ±4.096V
-  brineomatic_adc.setDataRate(4); // 128sps
+  brineomatic_adc.setDataRate(2); // 32 samples per second.
 
   current_ads1115_channel = 0;
   brineomatic_adc.requestADC(current_ads1115_channel);
@@ -175,8 +175,6 @@ void measure_flowmeter()
   if (elapsed >= 1000000) {
     // detach interrupt while calculating rpm
     detachInterrupt(digitalPinToInterrupt(YB_FLOWMETER_PIN));
-
-    sendDebug("pulses: %d", pulse_counter);
 
     // calculate flowrate
     float elapsed_seconds = elapsed / 1e6;
@@ -266,12 +264,24 @@ Brineomatic::Brineomatic()
   currentSalinity = 0.0;
   currentFilterPressure = 0.0;
   currentMembranePressure = 0.0;
-  membranePressureTarget = 0;
+  membranePressureTarget = -1;
   currentStatus = Status::STARTUP;
 
-  Kp = 2;
-  Ki = 0;
-  Kd = 0.1;
+  Kp = 0.300;
+  Ki = 0.015;
+  Kd = 0.020;
+
+  // HSR-1425CR
+  //  highPressureValveOpenMin = 90;
+  //  highPressureValveOpenMax = 125;
+  //  highPressureValveCloseMin = 90;
+  //  highPressureValveCloseMax = 55;
+
+  // HSR-2645CR
+  highPressureValveOpenMin = 92.5;
+  highPressureValveOpenMax = 125;
+  highPressureValveCloseMin = 92.5;
+  highPressureValveCloseMax = 55;
 
   membranePressurePID = QuickPID(&currentMembranePressure, &membranePressurePIDOutput, &membranePressureTarget);
   membranePressurePID.SetTunings(Kp, Ki, Kd);
@@ -293,12 +303,22 @@ void Brineomatic::setMembranePressureTarget(float pressure)
 {
   membranePressureTarget = pressure;
 
-  // if (membranePressureTarget > currentMembranePressure)
-  //   membranePressurePID.SetControllerDirection(QuickPID::Action::direct);
-  // else
-  //   membranePressurePID.SetControllerDirection(QuickPID::Action::reverse);
+  if (pressure >= 0) {
+    // we need forward and reverse to control the valve.
+    if (membranePressureTarget > currentMembranePressure) {
+      membranePressurePID.SetControllerDirection(QuickPID::Action::direct);
+    } else {
+      membranePressurePID.SetControllerDirection(QuickPID::Action::reverse);
+    }
 
-  membranePressurePID.Initialize();
+    membranePressurePID.Initialize();
+  }
+  // negative target, turn off the servo.
+  else {
+    sendDebug("negative target, turn off the servo.");
+    highPressureValve->write(highPressureValveCloseMin);
+    highPressureValve->disable();
+  }
 }
 
 void Brineomatic::setFlowrate(float flowrate)
@@ -376,8 +396,17 @@ void Brineomatic::stop()
 
 void Brineomatic::initializeHardware()
 {
-  setMembranePressureTarget(0);
   openDiverterValve();
+
+  // zero pressure and wait for it to drop
+  if (membranePressureTarget > 0) {
+    setMembranePressureTarget(0);
+    while (getMembranePressure() > 50) {
+      vTaskDelay(pdMS_TO_TICKS(100));
+    }
+    setMembranePressureTarget(-1);
+  }
+
   disableHighPressurePump();
   disableBoostPump();
   closeFlushValve();
@@ -589,25 +618,37 @@ void Brineomatic::manageHighPressureValve()
 {
   float angle;
 
-  if (hasHighPressureValve()) {
-    if (membranePressureTarget > 0) {
-      if (membranePressurePID.Compute()) {
-        // forwards
-        if (membranePressurePID.GetDirection() == 0) {
-          angle = map(membranePressurePIDOutput, 0, 255, 90, highPressureValveOpenMax);
-          highPressureValve->write(angle);
+  if (currentStatus != Status::IDLE) {
+    if (hasHighPressureValve()) {
+      if (membranePressureTarget >= 0) {
+
+        // change directions if we are too far off our target
+        // this is only for RUNNING mode when we are close to our target
+        if (currentStatus == Status::RUNNING) {
+          if (currentMembranePressure < membranePressureTarget * 0.98 && membranePressurePID.GetDirection() == (uint8_t)QuickPID::Action::reverse) {
+            sendDebug("forward");
+            membranePressurePID.SetControllerDirection(QuickPID::Action::direct);
+          } else if (currentMembranePressure > membranePressureTarget * 1.02 && membranePressurePID.GetDirection() == (uint8_t)QuickPID::Action::direct) {
+            sendDebug("reverse");
+            membranePressurePID.SetControllerDirection(QuickPID::Action::reverse);
+          }
         }
-        // reverse
-        else {
-          angle = map(membranePressurePIDOutput, 0, 255, 90, highPressureValveCloseMin);
+
+        // run our PID calculations
+        if (membranePressurePID.Compute()) {
+          // forwards / Clockwise / Close valve / Pressure UP
+          if (membranePressurePID.GetDirection() == 0)
+            angle = map(membranePressurePIDOutput, 0, 255, highPressureValveCloseMin, highPressureValveCloseMax);
+          // reverse / Counterclockwise / Open Valve / Pressure DOWN
+          else
+            angle = map(membranePressurePIDOutput, 0, 255, highPressureValveOpenMin, highPressureValveOpenMax);
+
+          // actually control the valve
           highPressureValve->write(angle);
+          sendDebug("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f | output: %.0f / angle: %.0f | reverse? %d", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePIDOutput, angle, membranePressurePID.GetDirection());
         }
-        sendDebug("HP PID | current: %f / target: %f | output: %f / angle: %f", currentMembranePressure, membranePressureTarget, membranePressurePIDOutput, angle);
       }
     }
-    // zero target, turn off the servo.
-    else
-      highPressureValve->disable();
   }
 }
 
@@ -673,9 +714,11 @@ void Brineomatic::runStateMachine()
 
       // sendDebug("High Pressure Pump Started");
       enableHighPressurePump();
-      setMembranePressureTarget(750);
+      setMembranePressureTarget(defaultMembranePressureTarget);
 
       while (getMembranePressure() < getMembranePressureMinimum()) {
+        if (getMembranePressure() > highPressureMaximum)
+          stopFlag = true;
         if (stopFlag) {
           initializeHardware();
           currentStatus = Status::FLUSHING;
@@ -684,11 +727,12 @@ void Brineomatic::runStateMachine()
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 
-      // sendDebug("High Pressure Pump OK");
-
       // both flowrate and salinity need to be good
       bool ready = false;
       while (!ready) {
+        if (getMembranePressure() > highPressureMaximum)
+          stopFlag = true;
+
         ready = true;
         if (stopFlag) {
           initializeHardware();
@@ -696,8 +740,8 @@ void Brineomatic::runStateMachine()
           return;
         }
 
-        // if (getFlowrate() < getFlowrateMinimum())
-        //   ready = false;
+        if (getFlowrate() < getFlowrateMinimum())
+          ready = false;
         if (getSalinity() > getSalinityMaximum())
           ready = false;
 
@@ -709,9 +753,17 @@ void Brineomatic::runStateMachine()
       closeDiverterValve();
 
       while ((desiredRuntime == 0 && desiredVolume == 0) || (getRuntimeElapsed() < desiredRuntime) || (volume < desiredVolume)) {
+
+        if (getMembranePressure() > highPressureMaximum)
+          stopFlag = true;
+        if (getFlowrate() < getFlowrateMinimum())
+          stopFlag = true;
+        if (getSalinity() > getSalinityMaximum())
+          stopFlag = true;
+
         if (stopFlag) {
-          initializeHardware();
           currentStatus = Status::FLUSHING;
+          initializeHardware();
           return;
         }
         vTaskDelay(pdMS_TO_TICKS(100));
