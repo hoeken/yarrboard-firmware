@@ -242,6 +242,10 @@ void measure_membrane_pressure(int16_t reading)
 
   float amperage = (voltage / YB_420_RESISTOR) * 1000;
   float highPressureReading = map_generic(amperage, 4.0, 20.0, 0.0, YB_HP_SENSOR_MAX);
+
+  if (highPressureReading > 800)
+    sendDebug("high pressure: %.3f", highPressureReading);
+
   wm.setMembranePressure(highPressureReading);
 }
 
@@ -645,10 +649,10 @@ void Brineomatic::manageHighPressureValve()
         // change directions if we are too far off our target
         // this is only for RUNNING mode when we are close to our target
         if (currentStatus == Status::RUNNING) {
-          if (currentMembranePressure < membranePressureTarget * 0.98 && membranePressurePID.GetDirection() == (uint8_t)QuickPID::Action::reverse) {
+          if (currentMembranePressure < membranePressureTarget * 0.975 && membranePressurePID.GetDirection() == (uint8_t)QuickPID::Action::reverse) {
             sendDebug("forward");
             membranePressurePID.SetControllerDirection(QuickPID::Action::direct);
-          } else if (currentMembranePressure > membranePressureTarget * 1.02 && membranePressurePID.GetDirection() == (uint8_t)QuickPID::Action::direct) {
+          } else if (currentMembranePressure > membranePressureTarget * 1.025 && membranePressurePID.GetDirection() == (uint8_t)QuickPID::Action::direct) {
             sendDebug("reverse");
             membranePressurePID.SetControllerDirection(QuickPID::Action::reverse);
           }
@@ -750,8 +754,8 @@ void Brineomatic::runStateMachine()
       // both flowrate and salinity need to be good
       bool ready = false;
       while (!ready) {
-        if (getMembranePressure() > highPressureMaximum)
-          stopFlag = true;
+        // if (getMembranePressure() > highPressureMaximum)
+        //   stopFlag = true;
 
         ready = true;
         if (stopFlag) {

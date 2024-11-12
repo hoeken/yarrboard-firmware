@@ -22,7 +22,7 @@
 # BRINEOMATIC
 
 * add a way to bubble up errors from state machine
-* figure out how to make the state machine thread safe
+* figure out how to deal with high pressure errors - maybe a high pressure error counter - only bail after X hits.
 * add lifetime flowmeter accumulator - update at the end of each run.
 * add a total runtime counter.
     * save to preferences, update it at the end of every run / every 5 minutes
