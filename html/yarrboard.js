@@ -1166,6 +1166,34 @@ function start_websocket() {
         else
           $("#stopBrineomatic").show();
 
+        if (msg.run_result && msg.run_result != "STARTUP") {
+          $("#bomRunResult").html(msg.run_result);
+          $("#bomRunResultRow").show();
+        }
+        else
+          $("#bomRunResultRow").hide();
+
+        if (msg.flush_result && msg.flush_result != "STARTUP") {
+          $("#bomFlushResult").html(msg.flush_result);
+          $("#bomFlushResultRow").show();
+        }
+        else
+          $("#bomFlushResultRow").hide();
+
+        if (msg.pickle_result && msg.pickle_result != "STARTUP") {
+          $("#bomPickleResult").html(msg.pickle_result);
+          $("#bomPickleResultRow").show();
+        }
+        else
+          $("#bomPickleResultRow").hide();
+
+        if (msg.depickle_result && msg.depickle_result != "STARTUP") {
+          $("#bomDePickleResult").html(msg.depickle_result);
+          $("#bomDePickleResultRow").show();
+        }
+        else
+          $("#bomDePickleResultRow").hide();
+
         if (msg.next_flush_countdown > 0) {
           $("#bomNextFlushCountdownData").html(secondsToDhms(Math.round(msg.next_flush_countdown / 1000000)));
           $("#bomNextFlushCountdown").show();

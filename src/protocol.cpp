@@ -1710,6 +1710,7 @@ void generateUpdateJSON(JsonVariant output)
   // motor(s)
   output["brineomatic"] = true;
   output["status"] = wm.getStatus();
+  output["run_result"] = wm.resultToString(wm.getRunResult());
   output["temperature"] = wm.getTemperature();
   output["flowrate"] = wm.getFlowrate();
   output["volume"] = wm.getVolume();

@@ -578,7 +578,7 @@ const char* Brineomatic::getStatus()
     return "UNKNOWN";
 }
 
-Brineomatic::Result Brineomatic::getResult()
+Brineomatic::Result Brineomatic::getRunResult()
 {
   return runResult;
 }
