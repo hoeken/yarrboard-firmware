@@ -1118,6 +1118,7 @@ function start_websocket() {
       if (msg.brineomatic) {
         let temperature = Math.round(msg.temperature);
         let flowrate = Math.round(msg.flowrate);
+        let volume = msg.volume.toFixed(1);
         let salinity = Math.round(msg.salinity);
         let filter_pressure = Math.round(msg.filter_pressure);
         if (filter_pressure < 0 && filter_pressure > -10)
@@ -1216,6 +1217,7 @@ function start_websocket() {
 
         $("#bomTemperature").html(`${temperature}C`);
         $("#bomFlowrate").html(`${flowrate} LPH`);
+        $("#bomVolume").html(`${volume}L`);
 
         if (salinity < 5000)
           $("#bomSalinity").html(`${salinity} PPM`);

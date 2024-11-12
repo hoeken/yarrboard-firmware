@@ -21,13 +21,13 @@
 
 # BRINEOMATIC
 
-* add flowmeter volume accumulator
+* add a way to bubble up errors from state machine
+* figure out how to make the state machine thread safe
 * add lifetime flowmeter accumulator - update at the end of each run.
 * add a total runtime counter.
     * save to preferences, update it at the end of every run / every 5 minutes
 * add a STOPPING mode for when the watermaker is shutting down but not yet flushing
     * need to pass in a next state? no should always be flush.  only coming from running.
-* add a way to bubble up errors from state machine.
 * add timeouts to while() loops in state machine
 * add water_temperature
 * add fan control based on temperature

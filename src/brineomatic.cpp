@@ -101,12 +101,6 @@ void brineomatic_setup()
 
   char prefIndex[YB_PREF_KEY_LENGTH];
 
-  // enabled or no
-  if (preferences.isKey("bomPickled"))
-    wm.isPickled = preferences.getBool("bomPickled");
-  else
-    wm.isPickled = false;
-
   // Create a FreeRTOS task for the state machine
   xTaskCreatePinnedToCore(
     brineomatic_state_machine,   // Task function
@@ -173,9 +167,6 @@ void measure_flowmeter()
   // check roughly every second
   uint64_t elapsed = esp_timer_get_time() - lastFlowmeterCheckMicros;
   if (elapsed >= 1000000) {
-    // detach interrupt while calculating rpm
-    detachInterrupt(digitalPinToInterrupt(YB_FLOWMETER_PIN));
-
     // calculate flowrate
     float elapsed_seconds = elapsed / 1e6;
 
@@ -185,14 +176,17 @@ void measure_flowmeter()
     // Convert to liters per hour
     float flowrate = liters_per_second * 3600;
 
+    // update our volume
+    wm.currentVolume += pulse_counter / flowmeterPulsesPerLiter;
+    wm.totalVolume += pulse_counter / flowmeterPulsesPerLiter;
+
     // reset counter
+    detachInterrupt(digitalPinToInterrupt(YB_FLOWMETER_PIN));
     pulse_counter = 0;
+    attachInterrupt(digitalPinToInterrupt(YB_FLOWMETER_PIN), flowmeter_interrupt, FALLING);
 
     // store microseconds when tacho was measured the last time
     lastFlowmeterCheckMicros = esp_timer_get_time();
-
-    // attach interrupt again
-    attachInterrupt(digitalPinToInterrupt(YB_FLOWMETER_PIN), flowmeter_interrupt, FALLING);
 
     // update our model
     wm.setFlowrate(flowrate);
@@ -253,7 +247,22 @@ void measure_membrane_pressure(int16_t reading)
 
 Brineomatic::Brineomatic()
 {
-  isPickled = false;
+  // enabled or no
+  if (preferences.isKey("bomPickled"))
+    isPickled = preferences.getBool("bomPickled");
+  else
+    isPickled = false;
+
+  if (preferences.isKey("bomTotVolume"))
+    totalVolume = preferences.getFloat("bomTotalVolume");
+  else
+    totalVolume = 0.0;
+
+  if (preferences.isKey("bomTotRuntime"))
+    totalRuntime = preferences.getFloat("bomTotRuntime");
+  else
+    totalRuntime = 0.0;
+
   autoFlushEnabled = true;
   diversionValveOpen = false;
   highPressurePumpEnabled = false;
@@ -261,14 +270,15 @@ Brineomatic::Brineomatic()
   flushValveOpen = false;
   currentTemperature = 0.0;
   currentFlowrate = 0.0;
+  currentVolume = 0.0;
   currentSalinity = 0.0;
   currentFilterPressure = 0.0;
   currentMembranePressure = 0.0;
   membranePressureTarget = -1;
   currentStatus = Status::STARTUP;
 
-  Kp = 0.300;
-  Ki = 0.015;
+  Kp = 0.180;
+  Ki = 0.012;
   Kd = 0.020;
 
   // HSR-1425CR
@@ -512,6 +522,16 @@ float Brineomatic::getFlowrateMinimum()
   return flowrateMinimum;
 }
 
+float Brineomatic::getVolume()
+{
+  return currentVolume;
+}
+
+float Brineomatic::getTotalVolume()
+{
+  return totalVolume;
+}
+
 float Brineomatic::getTemperature()
 {
   return currentTemperature;
@@ -645,7 +665,7 @@ void Brineomatic::manageHighPressureValve()
 
           // actually control the valve
           highPressureValve->write(angle);
-          sendDebug("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f | output: %.0f / angle: %.0f | reverse? %d", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePIDOutput, angle, membranePressurePID.GetDirection());
+          sendDebug("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f | reverse? %d", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle, membranePressurePID.GetDirection());
         }
       }
     }
@@ -694,7 +714,7 @@ void Brineomatic::runStateMachine()
       // sendDebug("State: RUNNING");
 
       runtimeStart = esp_timer_get_time();
-      float volume = 0.0001; // just a little bit in case desiredVolume is 0
+      currentVolume = 0;
 
       initializeHardware();
 
@@ -752,14 +772,14 @@ void Brineomatic::runStateMachine()
 
       closeDiverterValve();
 
-      while ((desiredRuntime == 0 && desiredVolume == 0) || (getRuntimeElapsed() < desiredRuntime) || (volume < desiredVolume)) {
+      while ((desiredRuntime == 0 && desiredVolume == 0) || (getRuntimeElapsed() < desiredRuntime) || (getVolume() < desiredVolume)) {
 
-        if (getMembranePressure() > highPressureMaximum)
-          stopFlag = true;
-        if (getFlowrate() < getFlowrateMinimum())
-          stopFlag = true;
-        if (getSalinity() > getSalinityMaximum())
-          stopFlag = true;
+        // if (getMembranePressure() > highPressureMaximum)
+        //   stopFlag = true;
+        // if (getFlowrate() < getFlowrateMinimum())
+        //   stopFlag = true;
+        // if (getSalinity() > getSalinityMaximum())
+        //   stopFlag = true;
 
         if (stopFlag) {
           currentStatus = Status::FLUSHING;
@@ -768,6 +788,9 @@ void Brineomatic::runStateMachine()
         }
         vTaskDelay(pdMS_TO_TICKS(100));
       }
+
+      // save our total volume produced
+      // preferences.putFloat("bomTotalVolume", totalVolume);
 
       // sendDebug("Finished making water.");
 

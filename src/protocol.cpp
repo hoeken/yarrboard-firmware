@@ -1712,6 +1712,8 @@ void generateUpdateJSON(JsonVariant output)
   output["status"] = wm.getStatus();
   output["temperature"] = wm.getTemperature();
   output["flowrate"] = wm.getFlowrate();
+  output["volume"] = wm.getVolume();
+  output["total_volume"] = wm.getTotalVolume();
   output["salinity"] = wm.getSalinity();
   output["filter_pressure"] = wm.getFilterPressure();
   output["membrane_pressure"] = wm.getMembranePressure();

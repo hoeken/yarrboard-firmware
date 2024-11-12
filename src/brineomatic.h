@@ -47,6 +47,9 @@ class Brineomatic
     float highPressureValveCloseMin;
     float highPressureValveCloseMax;
 
+    float currentVolume;
+    float totalVolume;
+
     Brineomatic();
 
     enum class Status {
@@ -108,6 +111,8 @@ class Brineomatic
     float getMembranePressureMinimum();
     float getFlowrate();
     float getFlowrateMinimum();
+    float getVolume();
+    float getTotalVolume();
     float getTemperature();
     float getSalinity();
     float getSalinityMaximum();
@@ -140,6 +145,8 @@ class Brineomatic
     float currentSalinity;
     float currentFilterPressure;
     float currentMembranePressure;
+
+    float totalRuntime;
 
     float membranePressureTarget;
     float membranePressurePIDOutput;
