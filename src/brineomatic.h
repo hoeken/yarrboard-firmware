@@ -56,9 +56,26 @@ class Brineomatic
       STARTUP,
       IDLE,
       RUNNING,
+      STOPPING,
       FLUSHING,
       PICKLING,
+      DEPICKLING,
       PICKLED
+    };
+
+    enum class Result {
+      STARTUP,
+      SUCCESS,
+      EXTERNAL_STOP,
+      ERR_BOOST_PRESSURE_TIMEOUT,
+      ERR_FILTER_PRESSURE_LOW,
+      ERR_FILTER_PRESSURE_HIGH,
+      ERR_MEMBRANE_PRESSURE_LOW,
+      ERR_MEMBRANE_PRESSURE_HIGH,
+      ERR_FLOWRATE_TIMEOUT,
+      ERR_FLOWRATE_LOW,
+      ERR_SALINITY_TIMEOUT,
+      ERR_SALINITY_HIGH
     };
 
     void setFilterPressure(float pressure);
@@ -97,6 +114,9 @@ class Brineomatic
     void disableBoostPump();
 
     const char* getStatus();
+    const char* resultToString(Result result);
+    Result getResult();
+
     int64_t getNextFlushCountdown();
     int64_t getRuntimeElapsed();
     int64_t getFinishCountdown();
@@ -121,6 +141,11 @@ class Brineomatic
 
   private:
     Status currentStatus;
+    Result runResult;
+    Result flushResult;
+    Result pickleResult;
+    Result depickleResult;
+
     bool stopFlag = false;
 
     float desiredVolume = 0;
@@ -155,12 +180,16 @@ class Brineomatic
 
     float defaultMembranePressureTarget = 750.0; // PSI
 
-    const float lowPressureMinimum = 10.0;   // PSI
-    const float highPressureMinimum = 600.0; // PSI
-    const float highPressureMaximum = 900.0; // PSI
-    const float flowrateMinimum = 120.0;     // LPH
-    const float flowrateMaximum = 200.0;     // LPH
-    const float salinityMaximum = 200.0;     // PPM
+    float lowPressureMinimum = 10.0;   // PSI
+    float lowPressureMaximum = 60.0;   // PSI
+    float highPressureMinimum = 600.0; // PSI
+    float highPressureMaximum = 900.0; // PSI
+    float flowrateMinimum = 120.0;     // LPH
+    // float flowrateMaximum = 200.0;     // LPH
+    float salinityMaximum = 200.0; // PPM
+
+    bool checkStopFlag();
+    bool checkMembranePressureHigh();
 };
 
 extern Brineomatic wm;
