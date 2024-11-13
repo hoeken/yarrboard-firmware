@@ -8,6 +8,8 @@ char last_modified[50];
 
 QueueHandle_t wsRequests;
 
+SemaphoreHandle_t sendMutex;
+
 AuthenticatedClient authenticatedClients[YB_CLIENT_LIMIT];
 
 String server_cert;
@@ -15,6 +17,10 @@ String server_key;
 
 void server_setup()
 {
+  sendMutex = xSemaphoreCreateMutex();
+  if (sendMutex == NULL)
+    Serial.println("Failed to create send mutex");
+
   // init our authentication stuff
   for (byte i = 0; i < YB_CLIENT_LIMIT; i++) {
     authenticatedClients[i].socket = 0;
@@ -211,24 +217,28 @@ void server_loop()
 
 void sendToAllWebsockets(const char* jsonString, UserRole auth_level)
 {
-  // make sure we're allowed to see the message
-  if (auth_level > app_default_role) {
-    for (byte i = 0; i < YB_CLIENT_LIMIT; i++) {
-      if (authenticatedClients[i].socket) {
-        // make sure its a valid client
-        PsychicWebSocketClient* client =
-          websocketHandler.getClient(authenticatedClients[i].socket);
-        if (client == NULL)
-          continue;
+  if (xSemaphoreTake(sendMutex, portMAX_DELAY) == pdTRUE) {
+    // make sure we're allowed to see the message
+    if (auth_level > app_default_role) {
+      for (byte i = 0; i < YB_CLIENT_LIMIT; i++) {
+        if (authenticatedClients[i].socket) {
+          // make sure its a valid client
+          PsychicWebSocketClient* client =
+            websocketHandler.getClient(authenticatedClients[i].socket);
+          if (client == NULL)
+            continue;
 
-        if (authenticatedClients[i].role >= auth_level)
-          client->sendMessage(jsonString);
+          if (authenticatedClients[i].role >= auth_level)
+            client->sendMessage(jsonString);
+        }
       }
     }
+    // nope, just sent it to all.
+    else
+      websocketHandler.sendAll(jsonString);
+
+    xSemaphoreGive(sendMutex);
   }
-  // nope, just sent it to all.
-  else
-    websocketHandler.sendAll(jsonString);
 }
 
 bool logClientIn(PsychicWebSocketClient* client, UserRole role)
@@ -354,7 +364,11 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
     // did we get anything?
     if (jsonBuffer != NULL) {
       serializeJson(output, jsonBuffer, jsonSize + 1);
-      client->sendMessage(jsonBuffer);
+
+      if (xSemaphoreTake(sendMutex, portMAX_DELAY) == pdTRUE) {
+        client->sendMessage(jsonBuffer);
+        xSemaphoreGive(sendMutex);
+      }
 
       // keep track!
       sentMessages++;
