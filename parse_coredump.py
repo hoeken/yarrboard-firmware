@@ -25,5 +25,5 @@ if __name__ == '__main__':
 			cmd = f'. ~/esp/esp-idf/export.sh && espcoredump.py info_corefile -c coredump.bin -t raw .pio/build/{args.board}/firmware.elf'
 		else:
 			cmd = f'. ~/esp/esp-idf/export.sh && espcoredump.py info_corefile -c coredump.bin -t raw releases/{args.board}-{args.version}.elf'
-		#os.system(cmd)
-		print(cmd)
+		os.system(cmd)
+		#print(cmd)

@@ -715,7 +715,7 @@ void Brineomatic::manageHighPressureValve()
 
           // actually control the valve
           highPressureValve->write(angle);
-          sendDebug("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f | reverse? %d", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle, membranePressurePID.GetDirection());
+          // sendDebug("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f | reverse? %d", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle, membranePressurePID.GetDirection());
         }
       }
     }
@@ -752,7 +752,8 @@ void Brineomatic::runStateMachine()
     // IDLE
     //
     case Status::IDLE:
-      // Serial.println("State: IDLE");
+      // sendDebug("State: IDLE");
+      //  Serial.println("State: IDLE");
       if (autoFlushEnabled && esp_timer_get_time() > nextFlushTime)
         currentStatus = Status::FLUSHING;
       break;
@@ -761,7 +762,7 @@ void Brineomatic::runStateMachine()
     // RUNNING
     //
     case Status::RUNNING: {
-      // sendDebug("State: RUNNING");
+      sendDebug("State: RUNNING");
 
       runtimeStart = esp_timer_get_time();
       currentVolume = 0;
@@ -769,7 +770,7 @@ void Brineomatic::runStateMachine()
       initializeHardware();
 
       if (hasBoostPump()) {
-        // sendDebug("Boost Pump Started");
+        sendDebug("Boost Pump Started");
         enableBoostPump();
         while (getFilterPressure() < getFilterPressureMinimum()) {
           if (checkStopFlag())
@@ -777,14 +778,16 @@ void Brineomatic::runStateMachine()
 
           vTaskDelay(pdMS_TO_TICKS(100));
         }
-        // sendDebug("Boost Pump OK");
+        sendDebug("Boost Pump OK");
       }
 
-      // sendDebug("High Pressure Pump Started");
+      sendDebug("High Pressure Pump Started");
       enableHighPressurePump();
       setMembranePressureTarget(defaultMembranePressureTarget);
 
       while (getMembranePressure() < getMembranePressureMinimum()) {
+
+        // check this here in case our PID goes crazy
         if (checkMembranePressureHigh())
           return;
 
@@ -794,61 +797,39 @@ void Brineomatic::runStateMachine()
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 
-      // both flowrate and salinity need to be good
-      bool ready = false;
-      while (!ready) {
-        if (checkMembranePressureHigh())
-          return;
-        if (checkStopFlag())
-          return;
+      sendDebug("High Pressure Pump OK");
 
-        ready = true;
-        if (getFlowrate() < getFlowrateMinimum())
-          ready = false;
-        if (getSalinity() > getSalinityMaximum())
-          ready = false;
+      if (!checkFlowAndSalinityStable())
+        return;
 
-        vTaskDelay(pdMS_TO_TICKS(100));
-      }
-
-      // sendDebug("Flow and Salinity OK");
+      sendDebug("Closing Diverter Valve.");
 
       closeDiverterValve();
 
+      if (!checkFlowAndSalinityStable())
+        return;
+
+      sendDebug("Flow and Salinity OK");
+
       while ((desiredRuntime == 0 && desiredVolume == 0) || (getRuntimeElapsed() < desiredRuntime) || (getVolume() < desiredVolume)) {
 
-        if (getFilterPressure() < lowPressureMinimum) {
-          currentStatus = Status::STOPPING;
-          runResult = Result::ERR_FILTER_PRESSURE_LOW;
+        if (checkFilterPressureLow())
           return;
-        }
 
-        if (getFilterPressure() > lowPressureMaximum) {
-          currentStatus = Status::STOPPING;
-          runResult = Result::ERR_FILTER_PRESSURE_HIGH;
+        if (checkFilterPressureHigh())
           return;
-        }
 
-        if (getMembranePressure() < highPressureMinimum) {
-          currentStatus = Status::STOPPING;
-          runResult = Result::ERR_MEMBRANE_PRESSURE_LOW;
+        if (checkMembranePressureLow())
           return;
-        }
 
         if (checkMembranePressureHigh())
           return;
 
-        if (getFlowrate() < getFlowrateMinimum()) {
-          currentStatus = Status::STOPPING;
-          runResult = Result::ERR_FLOWRATE_LOW;
+        if (checkFlowrateLow())
           return;
-        }
 
-        if (getSalinity() > getSalinityMaximum()) {
-          currentStatus = Status::STOPPING;
-          runResult = Result::ERR_SALINITY_HIGH;
+        if (checkSalinityHigh())
           return;
-        }
 
         if (checkStopFlag())
           return;
@@ -856,10 +837,10 @@ void Brineomatic::runStateMachine()
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 
+      sendDebug("Finished making water.");
+
       // save our total volume produced
       preferences.putFloat("bomTotalVolume", totalVolume);
-
-      // sendDebug("Finished making water.");
 
       runResult = Result::SUCCESS;
       currentStatus = Status::STOPPING;
@@ -883,6 +864,7 @@ void Brineomatic::runStateMachine()
     // FLUSHING
     //
     case Status::FLUSHING: {
+      sendDebug("State: FLUSHING");
 
       stopFlag = false;
       flushStart = esp_timer_get_time();
@@ -966,13 +948,125 @@ bool Brineomatic::checkStopFlag()
 
 bool Brineomatic::checkMembranePressureHigh()
 {
-  if (getMembranePressure() > highPressureMaximum) {
+  if (getMembranePressure() > highPressureMaximum)
+    membranePressureHighErrorCount++;
+  else
+    membranePressureHighErrorCount = 0;
+
+  if (membranePressureHighErrorCount > 10) {
     currentStatus = Status::STOPPING;
-    runResult = Result::EXTERNAL_STOP;
+    runResult = Result::ERR_MEMBRANE_PRESSURE_HIGH;
     return true;
   }
 
   return false;
+}
+
+bool Brineomatic::checkMembranePressureLow()
+{
+  if (getMembranePressure() < highPressureMinimum)
+    membranePressureLowErrorCount++;
+  else
+    membranePressureLowErrorCount = 0;
+
+  if (membranePressureLowErrorCount > 10) {
+
+    currentStatus = Status::STOPPING;
+    runResult = Result::ERR_MEMBRANE_PRESSURE_LOW;
+    return true;
+  }
+
+  return false;
+}
+
+bool Brineomatic::checkFilterPressureHigh()
+{
+  if (getFilterPressure() > lowPressureMaximum)
+    filterPressureHighErrorCount++;
+  else
+    filterPressureHighErrorCount = 0;
+
+  if (filterPressureHighErrorCount > 10) {
+    currentStatus = Status::STOPPING;
+    runResult = Result::ERR_FILTER_PRESSURE_HIGH;
+    return true;
+  }
+
+  return false;
+}
+
+bool Brineomatic::checkFilterPressureLow()
+{
+  if (getFilterPressure() < lowPressureMinimum)
+    filterPressureLowErrorCount++;
+  else
+    filterPressureLowErrorCount = 0;
+
+  if (filterPressureLowErrorCount > 10) {
+    currentStatus = Status::STOPPING;
+    runResult = Result::ERR_FILTER_PRESSURE_LOW;
+    return true;
+  }
+
+  return false;
+}
+
+bool Brineomatic::checkFlowrateLow()
+{
+  if (getFlowrate() < getFlowrateMinimum())
+    flowrateLowErrorCount++;
+  else
+    flowrateLowErrorCount = 0;
+
+  if (flowrateLowErrorCount > 10) {
+    currentStatus = Status::STOPPING;
+    runResult = Result::ERR_FLOWRATE_LOW;
+    return true;
+  }
+
+  return false;
+}
+
+bool Brineomatic::checkSalinityHigh()
+{
+  if (getSalinity() > getSalinityMaximum())
+    salinityHighErrorCount++;
+  else
+    salinityHighErrorCount = 0;
+
+  if (salinityHighErrorCount > 10) {
+    currentStatus = Status::STOPPING;
+    runResult = Result::ERR_SALINITY_HIGH;
+    return true;
+  }
+
+  return false;
+}
+
+bool Brineomatic::checkFlowAndSalinityStable()
+{
+  int flowReady = 0;
+  int salinityReady = 0;
+  while (flowReady < 10 || salinityReady < 10) {
+    if (checkMembranePressureHigh())
+      return false;
+    if (checkStopFlag())
+      return false;
+
+    if (getFlowrate() > getFlowrateMinimum())
+      flowReady++;
+    else
+      flowReady = 0;
+
+    if (getSalinity() < getSalinityMaximum())
+      salinityReady++;
+    else
+      salinityReady = 0;
+
+    vTaskDelay(pdMS_TO_TICKS(100));
+  }
+
+  return true;
 }
 
 #endif

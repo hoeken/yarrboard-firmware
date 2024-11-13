@@ -1562,8 +1562,6 @@ function flush_brineomatic() {
   if (duration > 0) {
     let micros = duration * 60 * 1000000;
 
-    console.log(`flushing ${duration} (${micros})`);
-
     client.send({
       "cmd": "flush_watermaker",
       "duration": micros

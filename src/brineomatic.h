@@ -188,8 +188,21 @@ class Brineomatic
     // float flowrateMaximum = 200.0;     // LPH
     float salinityMaximum = 200.0; // PPM
 
+    uint8_t membranePressureHighErrorCount = 0;
+    uint8_t membranePressureLowErrorCount = 0;
+    uint8_t filterPressureHighErrorCount = 0;
+    uint8_t filterPressureLowErrorCount = 0;
+    uint8_t flowrateLowErrorCount = 0;
+    uint8_t salinityHighErrorCount = 0;
+
     bool checkStopFlag();
     bool checkMembranePressureHigh();
+    bool checkMembranePressureLow();
+    bool checkFilterPressureHigh();
+    bool checkFilterPressureLow();
+    bool checkFlowrateLow();
+    bool checkSalinityHigh();
+    bool checkFlowAndSalinityStable();
 };
 
 extern Brineomatic wm;
