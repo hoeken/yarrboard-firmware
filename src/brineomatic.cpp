@@ -583,6 +583,21 @@ Brineomatic::Result Brineomatic::getRunResult()
   return runResult;
 }
 
+Brineomatic::Result Brineomatic::getFlushResult()
+{
+  return flushResult;
+}
+
+Brineomatic::Result Brineomatic::getPickleResult()
+{
+  return pickleResult;
+}
+
+Brineomatic::Result Brineomatic::getDepickleResult()
+{
+  return depickleResult;
+}
+
 const char* Brineomatic::resultToString(Result result)
 {
   switch (result) {
@@ -696,10 +711,10 @@ void Brineomatic::manageHighPressureValve()
         // this is only for RUNNING mode when we are close to our target
         if (currentStatus == Status::RUNNING) {
           if (currentMembranePressure < membranePressureTarget * 0.975 && membranePressurePID.GetDirection() == (uint8_t)QuickPID::Action::reverse) {
-            sendDebug("forward");
+            // sendDebug("forward");
             membranePressurePID.SetControllerDirection(QuickPID::Action::direct);
           } else if (currentMembranePressure > membranePressureTarget * 1.025 && membranePressurePID.GetDirection() == (uint8_t)QuickPID::Action::direct) {
-            sendDebug("reverse");
+            // sendDebug("reverse");
             membranePressurePID.SetControllerDirection(QuickPID::Action::reverse);
           }
         }
@@ -902,6 +917,7 @@ void Brineomatic::runStateMachine()
       isPickled = false;
       preferences.putBool("bomPickled", false);
 
+      flushResult = Result::SUCCESS;
       currentStatus = Status::IDLE;
       break;
     }
@@ -910,7 +926,7 @@ void Brineomatic::runStateMachine()
     // PICKLING
     //
     case Status::PICKLING:
-      Serial.println("State: PICKLING");
+      sendDebug("State: PICKLING");
 
       pickleStart = esp_timer_get_time();
 
@@ -927,6 +943,7 @@ void Brineomatic::runStateMachine()
       initializeHardware();
 
       currentStatus = Status::PICKLED;
+      pickleResult = Result::SUCCESS;
 
       // keep track over restarts.
       preferences.putBool("bomPickled", true);

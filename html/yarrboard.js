@@ -47,6 +47,21 @@ const page_permissions = {
   ]
 };
 
+const brineomatic_result_text = {
+  "STARTUP": "Starting up.",
+  "SUCCESS": "Success",
+  "EXTERNAL_STOP": "Stopped Externally",
+  "ERR_BOOST_PRESSURE_TIMEOUT": "Boost Pressure Timeout",
+  "ERR_FILTER_PRESSURE_LOW": "Filter Pressure Low",
+  "ERR_FILTER_PRESSURE_HIGH": "Filter Pressure High",
+  "ERR_MEMBRANE_PRESSURE_LOW": "Membrane Pressure Low",
+  "ERR_MEMBRANE_PRESSURE_HIGH": "Membrane Pressure High",
+  "ERR_FLOWRATE_TIMEOUT": "Flowrate Timeout",
+  "ERR_FLOWRATE_LOW": "Flowrate Low",
+  "ERR_SALINITY_TIMEOUT": "Salinity Timeout",
+  "ERR_SALINITY_HIGH": "Salinity High"
+}
+
 const BoardNameEdit = (name) => `
 <div class="col-12">
   <h4>Board Name</h4>
@@ -1163,33 +1178,65 @@ function start_websocket() {
         else if (msg.status == "PICKLED") {
           $("#flushBrineomatic").show();
         }
-        else
+        else if (msg.status == "FLUSHING" || msg.status == "PICKLING" || msg.status == "DEPICKLING")
           $("#stopBrineomatic").show();
 
         if (msg.run_result && msg.run_result != "STARTUP") {
-          $("#bomRunResult").html(msg.run_result);
+          $("#bomRunResult").html(brineomatic_result_text[msg.run_result]);
           $("#bomRunResultRow").show();
+
+          $("#bomRunResult").removeClass();
+          if (msg.run_result == "SUCCESS")
+            $("#bomRunResult").addClass("text-bg-success");
+          else if (msg.run_result == "EXTERNAL_STOP")
+            $("#bomRunResult").addClass("text-bg-primary");
+          else
+            $("#bomRunResult").addClass("text-bg-error");
         }
         else
           $("#bomRunResultRow").hide();
 
         if (msg.flush_result && msg.flush_result != "STARTUP") {
-          $("#bomFlushResult").html(msg.flush_result);
+          $("#bomFlushResult").html(brineomatic_result_text[msg.flush_result]);
           $("#bomFlushResultRow").show();
+
+          $("#bomFlushResult").removeClass();
+          if (msg.run_result == "SUCCESS")
+            $("#bomFlushResult").addClass("text-bg-success");
+          else if (msg.run_result == "EXTERNAL_STOP")
+            $("#bomFlushResult").addClass("text-bg-primary");
+          else
+            $("#bomFlushResult").addClass("text-bg-error");
         }
         else
           $("#bomFlushResultRow").hide();
 
         if (msg.pickle_result && msg.pickle_result != "STARTUP") {
-          $("#bomPickleResult").html(msg.pickle_result);
+          $("#bomPickleResult").html(brineomatic_result_text[msg.pickle_result]);
           $("#bomPickleResultRow").show();
+
+          $("#bomPickleResult").removeClass();
+          if (msg.run_result == "SUCCESS")
+            $("#bomPickleResult").addClass("text-bg-success");
+          else if (msg.run_result == "EXTERNAL_STOP")
+            $("#bomPickleResult").addClass("text-bg-primary");
+          else
+            $("#bomPickleResult").addClass("text-bg-error");
         }
         else
           $("#bomPickleResultRow").hide();
 
         if (msg.depickle_result && msg.depickle_result != "STARTUP") {
-          $("#bomDePickleResult").html(msg.depickle_result);
+          $("#bomDePickleResult").html(brineomatic_result_text[msg.depickle_result]);
           $("#bomDePickleResultRow").show();
+
+          $("#bomDePickleResult").removeClass();
+          if (msg.run_result == "SUCCESS")
+            $("#bomDePickleResult").addClass("text-bg-success");
+          else if (msg.run_result == "EXTERNAL_STOP")
+            $("#bomDePickleResult").addClass("text-bg-primary");
+          else
+            $("#bomDePickleResult").addClass("text-bg-error");
         }
         else
           $("#bomDePickleResultRow").hide();

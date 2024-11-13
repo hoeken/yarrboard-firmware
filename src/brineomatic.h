@@ -116,6 +116,9 @@ class Brineomatic
     const char* getStatus();
     const char* resultToString(Result result);
     Result getRunResult();
+    Result getFlushResult();
+    Result getPickleResult();
+    Result getDepickleResult();
 
     int64_t getNextFlushCountdown();
     int64_t getRuntimeElapsed();

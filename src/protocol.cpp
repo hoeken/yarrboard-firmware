@@ -1711,6 +1711,9 @@ void generateUpdateJSON(JsonVariant output)
   output["brineomatic"] = true;
   output["status"] = wm.getStatus();
   output["run_result"] = wm.resultToString(wm.getRunResult());
+  output["flush_result"] = wm.resultToString(wm.getFlushResult());
+  output["pickle_result"] = wm.resultToString(wm.getPickleResult());
+  output["depickle_result"] = wm.resultToString(wm.getDepickleResult());
   output["temperature"] = wm.getTemperature();
   output["flowrate"] = wm.getFlowrate();
   output["volume"] = wm.getVolume();

@@ -21,14 +21,11 @@
 
 # BRINEOMATIC
 
-* figure out how to deal with high pressure errors - maybe a high pressure error counter - only bail after X hits.
 * add lifetime flowmeter accumulator
     * show on stats page
 * add a total runtime counter.
     * save to preferences, update it at the end of every run / every 5 minutes
     * show on stats page
-* add a STOPPING mode for when the watermaker is shutting down but not yet flushing
-    * need to pass in a next state? no should always be flush.  only coming from running.
 * add timeouts to while() loops in state machine
 * add water_temperature
 * add fan control based on temperature
@@ -43,7 +40,6 @@
     * default intervals for flush, etc.
     * options for display units
 * add tds calibration
-* figure out why sendDebug() is crashing in state machine task.
 * update UI to only show relevant data during the right mode
 * add a DEPICKLING mode that uses seawater instead of fresh to depickle.
 
