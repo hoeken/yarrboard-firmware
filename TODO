@@ -21,11 +21,9 @@
 
 # BRINEOMATIC
 
-* add indicator for diverter valve status
+* add indicator for diverter valve, motor, fan, flush valve
 * set flowrate to zero once we start our run
 * minus flowrate from totalFlowrate too
-* temperature -> motor temperature
-* add motor temperature check + error
 * add fan control based on temperature
 * add mid-level commands to set_watermaker
     * boost_pump

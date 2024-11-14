@@ -207,9 +207,9 @@ void measure_temperature()
     float tempC = ds18b20.getTempC(motorThermometer);
 
     if (tempC == DEVICE_DISCONNECTED_C) {
-      wm.setTemperature(-999);
+      wm.setMotorTemperature(-999);
     }
-    wm.setTemperature(tempC);
+    wm.setMotorTemperature(tempC);
 
     ds18b20.requestTemperatures();
   }
@@ -292,7 +292,7 @@ void Brineomatic::init()
 
   currentTankLevel = -1;
   currentWaterTemperature = 25.0;
-  currentTemperature = 0.0;
+  currentMotorTemperature = 0.0;
   currentFlowrate = 0.0;
   currentVolume = 0.0;
   currentSalinity = 0.0;
@@ -365,9 +365,9 @@ void Brineomatic::setFlowrate(float flowrate)
   currentFlowrate = flowrate;
 }
 
-void Brineomatic::setTemperature(float temp)
+void Brineomatic::setMotorTemperature(float temp)
 {
-  currentTemperature = temp;
+  currentMotorTemperature = temp;
 }
 
 void Brineomatic::setSalinity(float salinity)
@@ -602,9 +602,14 @@ void Brineomatic::setTankLevel(float level)
   currentTankLevel = level;
 }
 
-float Brineomatic::getTemperature()
+float Brineomatic::getMotorTemperature()
 {
-  return currentTemperature;
+  return currentMotorTemperature;
+}
+
+float Brineomatic::getMotorTemperatureMaximum()
+{
+  return motorTemperatureMaximum;
 }
 
 float Brineomatic::getSalinity()
@@ -671,6 +676,12 @@ const char* Brineomatic::resultToString(Result result)
       return "STARTUP";
     case Result::SUCCESS:
       return "SUCCESS";
+    case Result::SUCCESS_TIME:
+      return "SUCCESS_TIME";
+    case Result::SUCCESS_VOLUME:
+      return "SUCCESS_VOLUME";
+    case Result::SUCCESS_TANK_LEVEL:
+      return "SUCCESS_TANK_LEVEL";
     case Result::USER_STOP:
       return "USER_STOP";
     case Result::ERR_FLUSH_VALVE_TIMEOUT:
@@ -697,6 +708,8 @@ const char* Brineomatic::resultToString(Result result)
       return "ERR_SALINITY_HIGH";
     case Result::ERR_PRODUCTION_TIMEOUT:
       return "ERR_PRODUCTION_TIMEOUT";
+    case Result::ERR_MOTOR_TEMPERATURE_HIGH:
+      return "ERR_MOTOR_TEMPERATURE_HIGH";
     default:
       return "UNKNOWN";
   }
@@ -932,6 +945,7 @@ void Brineomatic::runStateMachine()
         return;
 
       sendDebug("Closing Diverter Valve.");
+      closeDiverterValve();
 
       // opening the valve sometimes causes a small blip in either, let it stabilize again
       if (waitForFlowrate())
@@ -1276,6 +1290,22 @@ bool Brineomatic::checkSalinityHigh()
   return false;
 }
 
+bool Brineomatic::checkMotorTemperature()
+{
+  if (getMotorTemperature() > getMotorTemperatureMaximum())
+    motorTemperatureErrorCount++;
+  else
+    motorTemperatureErrorCount = 0;
+
+  if (motorTemperatureErrorCount > 10) {
+    currentStatus = Status::STOPPING;
+    runResult = Result::ERR_MOTOR_TEMPERATURE_HIGH;
+    return true;
+  }
+
+  return false;
+}
+
 bool Brineomatic::waitForFlowrate()
 {
   int flowReady = 0;
@@ -1333,7 +1363,7 @@ bool Brineomatic::waitForSalinity()
 
 bool Brineomatic::checkTankLevel()
 {
-  return currentTankLevel >= 0.95;
+  return currentTankLevel >= tankLevelFull;
 }
 
 #endif

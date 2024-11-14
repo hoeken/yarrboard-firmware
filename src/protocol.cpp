@@ -1740,7 +1740,7 @@ void generateUpdateJSON(JsonVariant output)
   output["flush_result"] = wm.resultToString(wm.getFlushResult());
   output["pickle_result"] = wm.resultToString(wm.getPickleResult());
   output["depickle_result"] = wm.resultToString(wm.getDepickleResult());
-  output["temperature"] = wm.getTemperature();
+  output["motor_temperature"] = wm.getMotorTemperature();
   output["water_temperature"] = wm.getWaterTemperature();
   output["flowrate"] = wm.getFlowrate();
   output["volume"] = wm.getVolume();

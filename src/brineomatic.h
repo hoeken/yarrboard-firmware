@@ -70,6 +70,9 @@ class Brineomatic
     enum class Result {
       STARTUP,
       SUCCESS,
+      SUCCESS_TIME,
+      SUCCESS_VOLUME,
+      SUCCESS_TANK_LEVEL,
       USER_STOP,
       ERR_FLUSH_VALVE_TIMEOUT,
       ERR_FILTER_PRESSURE_TIMEOUT,
@@ -82,14 +85,15 @@ class Brineomatic
       ERR_FLOWRATE_LOW,
       ERR_SALINITY_TIMEOUT,
       ERR_SALINITY_HIGH,
-      ERR_PRODUCTION_TIMEOUT
+      ERR_PRODUCTION_TIMEOUT,
+      ERR_MOTOR_TEMPERATURE_HIGH
     };
 
     void setFilterPressure(float pressure);
     void setMembranePressure(float pressure);
     void setMembranePressureTarget(float pressure);
     void setFlowrate(float flowrate);
-    void setTemperature(float temp);
+    void setMotorTemperature(float temp);
     void setWaterTemperature(float temp);
     void setSalinity(float salinity);
     void setTankLevel(float level);
@@ -150,11 +154,12 @@ class Brineomatic
     uint32_t getTotalCycles();
     float getTotalVolume();
     uint64_t getTotalRuntime();
-    float getTemperature();
+    float getMotorTemperature();
     float getWaterTemperature();
     float getSalinity();
     float getSalinityMaximum();
     float getTankLevel();
+    float getMotorTemperatureMaximum();
 
     void runStateMachine();
 
@@ -188,7 +193,7 @@ class Brineomatic
 
     float currentTankLevel;
     float currentWaterTemperature;
-    float currentTemperature;
+    float currentMotorTemperature;
     float currentFlowrate;
     float currentSalinity;
     float currentFilterPressure;
@@ -201,13 +206,15 @@ class Brineomatic
 
     float defaultMembranePressureTarget = 750.0; // PSI
 
-    float lowPressureMinimum = 10.0;   // PSI
-    float lowPressureMaximum = 60.0;   // PSI
-    float highPressureMinimum = 600.0; // PSI
-    float highPressureMaximum = 900.0; // PSI
-    float flowrateMinimum = 120.0;     // LPH
-    // float flowrateMaximum = 200.0;     // LPH
-    float salinityMaximum = 200.0; // PPM
+    float lowPressureMinimum = 2.5;       // PSI
+    float lowPressureMaximum = 60.0;      // PSI
+    float highPressureMinimum = 600.0;    // PSI
+    float highPressureMaximum = 900.0;    // PSI
+    float flowrateMinimum = 120.0;        // LPH
+    float flowrateMaximum = 300.0;        // LPH
+    float salinityMaximum = 200.0;        // PPM
+    float motorTemperatureMaximum = 65.0; // Celcus
+    float tankLevelFull = 0.999;          // 0 = empty, 1 = full
 
     uint8_t membranePressureHighErrorCount = 0;
     uint8_t membranePressureLowErrorCount = 0;
@@ -215,6 +222,7 @@ class Brineomatic
     uint8_t filterPressureLowErrorCount = 0;
     uint8_t flowrateLowErrorCount = 0;
     uint8_t salinityHighErrorCount = 0;
+    uint8_t motorTemperatureErrorCount = 0;
 
     uint64_t flushValveTimeout = 1ULL * 60 * 1000000;       // 1 minute default, in microseconds
     uint64_t filterPressureTimeout = 1ULL * 60 * 1000000;   // 1 minute default, in microseconds
@@ -233,6 +241,7 @@ class Brineomatic
     bool waitForFlowrate();
     bool waitForSalinity();
     bool checkTankLevel();
+    bool checkMotorTemperature();
 };
 
 extern Brineomatic wm;

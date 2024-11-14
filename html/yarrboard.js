@@ -50,6 +50,9 @@ const page_permissions = {
 const brineomatic_result_text = {
   "STARTUP": "Starting up.",
   "SUCCESS": "Success",
+  "SUCCESS_TIME": "Success: Runtime reached.",
+  "SUCCESS_VOLUME": "Success: Volume reached",
+  "SUCCESS_TANK_LEVEL": "Success: Tank Full",
   "USER_STOP": "Stopped by user",
   "ERR_FLUSH_VALVE_TIMEOUT": "Flush Valve Timeout",
   "ERR_FILTER_PRESSURE_TIMEOUT": "Filter Pressure Timeout",
@@ -62,7 +65,8 @@ const brineomatic_result_text = {
   "ERR_FLOWRATE_LOW": "Flowrate Low",
   "ERR_SALINITY_TIMEOUT": "Salinity Timeout",
   "ERR_SALINITY_HIGH": "Salinity High",
-  "ERR_PRODUCTION_TIMEOUT": "Production Timeout"
+  "ERR_PRODUCTION_TIMEOUT": "Production Timeout",
+  "ERR_MOTOR_TEMPERATURE_HIGH": "Motor Temperature High",
 }
 
 const BoardNameEdit = (name) => `
@@ -1136,7 +1140,7 @@ function start_websocket() {
       }
 
       if (msg.brineomatic) {
-        let temperature = Math.round(msg.temperature);
+        let motor_temperature = Math.round(msg.motor_temperature);
         let water_temperature = Math.round(msg.water_temperature);
         let flowrate = Math.round(msg.flowrate);
         let volume = msg.volume.toFixed(1);
@@ -1323,7 +1327,7 @@ function start_websocket() {
 
 
         $("#bomWaterTemperature").html(`${water_temperature}C`);
-        $("#bomTemperature").html(`${temperature}C`);
+        $("#bomMotorTemperature").html(`${motor_temperature}C`);
         $("#bomFlowrate").html(`${flowrate} LPH`);
         $("#bomVolume").html(`${volume}L`);
 
