@@ -91,7 +91,7 @@ void brineomatic_setup()
 
   brineomatic_adc.setMode(1);     // SINGLE SHOT MODE
   brineomatic_adc.setGain(1);     // ±4.096V
-  brineomatic_adc.setDataRate(4); // 128 samples per second.
+  brineomatic_adc.setDataRate(3); // 64 samples per second.
 
   current_ads1115_channel = 0;
   brineomatic_adc.requestADC(current_ads1115_channel);

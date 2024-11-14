@@ -225,7 +225,7 @@ class Brineomatic
     float flowrateMaximum = 300.0;        // LPH
     float salinityMaximum = 200.0;        // PPM
     float motorTemperatureMaximum = 65.0; // Celcus
-    float tankLevelFull = 0.999;          // 0 = empty, 1 = full
+    float tankLevelFull = 0.99;           // 0 = empty, 1 = full
 
     uint8_t membranePressureHighErrorCount = 0;
     uint8_t membranePressureLowErrorCount = 0;

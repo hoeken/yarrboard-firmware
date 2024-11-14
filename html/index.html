@@ -88,7 +88,7 @@
             <div class="mx-3 my-3">
                 <div id="liveAlertPlaceholder"></div>
                 <div id="controlPage" class="pageContainer row" style="display:none">
-                    <div id="bomInformationDiv" style="display:none" class="col-md-8">
+                    <div id="bomInformationDiv" style="display:none" class="col-md-7">
                         <h1 class="text-center">Mode: <span class="badge" id="bomStatus"></span></h1>
                         <table id="bomTable" class="table table-hover">
                             <tbody id="bomTableBody">
@@ -164,11 +164,12 @@
                                     <th>Membrane Pressure</th>
                                     <td id="bomMembranePressureData"></td>
                                 </tr>
-                                <tr id="bomTankLevel" class="bomIDLE bomRUNNING">
+                                <tr id="bomTankLevel" class="bomIDLE bomRUNNING bomFLUSHING">
                                     <th>Tank Level</th>
                                     <td id="bomTankLevelData"></td>
                                 </tr>
-                                <tr id="bomMotorTemperature" class="bomIDLE bomRUNNING">
+                                <tr id="bomMotorTemperature"
+                                    class="bomIDLE bomRUNNING bomFLUSHING bomPICKLING bomDEPICKLING">
                                     <th>Motor Temperature</th>
                                     <td id="bomMotorTemperatureData"></td>
                                 </tr>
@@ -180,9 +181,8 @@
                         </table>
                     </div>
 
-                    <div id="bomControlDiv" style="display:none" class="col-md-4">
+                    <div id="bomControlDiv" style="display:none" class="col-md-5">
                         <div id="bomControlButtons" class="row g-2">
-                            <h1 class="text-center">Controls</h1>
                             <div id="runBrineomatic" class="col-12 bomIDLE">
                                 <button class="btn btn-success brineomaticControlButton" type="button"
                                     data-bs-toggle="modal" data-bs-target="#startBrineomaticModal">
@@ -259,22 +259,30 @@
                             </div>
                             <div id="statusBrineomatic"
                                 class="col-12 bomRUNNING bomFLUSHING bomPICKLING bomDEPICKLING bomSTOPPING">
-                                <h3 class="text-center">Status</h3>
-                                <p id="bomBoostPumpStatus">
-                                    Boost Pump: <span>?</span>
-                                </p>
-                                <p id="bomHighPressurePumpStatus">
-                                    High Pressure Pump: <span>?</span>
-                                </p>
-                                <p id="bomDiverterValveStatus">
-                                    Diverter Valve: <span>?</span>
-                                </p>
-                                <p id="bomFlushValveStatus">
-                                    Flush Valve: <span>?</span>
-                                </p>
-                                <p id="bomFanStatus">
-                                    Fan: <span>?</span>
-                                </p>
+                                <table id="bomStatusTable" class="table table-hover">
+                                    <tbody id="bomStatusTableBody">
+                                        <tr id="bomBoostPumpStatus">
+                                            <th>Boost Pump:</th>
+                                            <td><span></span></td>
+                                        </tr>
+                                        <tr id="bomHighPressurePumpStatus">
+                                            <th>High Pressure Pump:</th>
+                                            <td><span></span></td>
+                                        </tr>
+                                        <tr id="bomDiverterValveStatus">
+                                            <th>Diverter Valve:</th>
+                                            <td><span></span></td>
+                                        </tr>
+                                        <tr id="bomFlushValveStatus">
+                                            <th>Flush Valve:</th>
+                                            <td><span></span></td>
+                                        </tr>
+                                        <tr id="bomFanStatus">
+                                            <th>Cooling Fan:</th>
+                                            <td><span></span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 

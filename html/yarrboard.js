@@ -1151,7 +1151,7 @@ function start_websocket() {
         let membrane_pressure = Math.round(msg.membrane_pressure);
         if (membrane_pressure < 0 && membrane_pressure > -10)
           membrane_pressure = 0;
-        let tank_level = Math.round(msg.tank_level * 100);
+        let tank_level = (msg.tank_level * 100).toFixed(1);
 
         $("#bomStatus").html(msg.status);
         $("#bomStatus").removeClass();
@@ -1314,11 +1314,11 @@ function start_websocket() {
           $('#bomDiverterValveStatus span').addClass("badge");
           if (msg.diverter_valve_open) {
             $("#bomDiverterValveStatus span").addClass("text-bg-secondary");
-            $('#bomDiverterValveStatus span').html("OPEN (OVERBOARD)");
+            $('#bomDiverterValveStatus span').html("OVERBOARD");
           }
           else {
             $("#bomDiverterValveStatus span").addClass("text-bg-primary");
-            $('#bomDiverterValveStatus span').html("CLOSED (TO TANKS)");
+            $('#bomDiverterValveStatus span').html("TO TANK");
           }
         }
         else
