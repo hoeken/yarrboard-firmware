@@ -1538,7 +1538,7 @@ void handleDepickleWatermaker(JsonVariantConst input, JsonVariant output)
 
 void handleStopWatermaker(JsonVariantConst input, JsonVariant output)
 {
-  if (!strcmp(wm.getStatus(), "RUNNING") || !strcmp(wm.getStatus(), "FLUSHING") || !strcmp(wm.getStatus(), "PICKLING"))
+  if (!strcmp(wm.getStatus(), "RUNNING") || !strcmp(wm.getStatus(), "FLUSHING") || !strcmp(wm.getStatus(), "PICKLING") || !strcmp(wm.getStatus(), "DEPICKLING"))
     wm.stop();
   else
     return generateErrorJSON(output, "Watermaker must be in RUNNING, FLUSHING, or PICKLING mode to stop.");

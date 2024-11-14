@@ -94,6 +94,18 @@ void setup()
   prefs_setup();
   Serial.println("Prefs ok");
 
+  network_setup();
+  Serial.println("Network ok");
+
+  server_setup();
+  Serial.println("Server ok");
+
+  protocol_setup();
+  Serial.println("Protocol ok");
+
+  ota_setup();
+  Serial.println("OTA ok");
+
 #ifdef YB_HAS_ADC_CHANNELS
   adc_channels_setup();
   Serial.println("ADC channels ok");
@@ -138,18 +150,6 @@ void setup()
 #ifdef YB_IS_BRINEOMATIC
   brineomatic_setup();
 #endif
-
-  network_setup();
-  Serial.println("Network ok");
-
-  server_setup();
-  Serial.println("Server ok");
-
-  protocol_setup();
-  Serial.println("Protocol ok");
-
-  ota_setup();
-  Serial.println("OTA ok");
 
 #ifdef YB_HAS_STATUS_WS2818
   status_led.setPixelColor(0, status_led.Color(0, 255, 0));

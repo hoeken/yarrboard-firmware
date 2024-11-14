@@ -44,6 +44,8 @@ float water_temperature = 25;
 
 void brineomatic_setup()
 {
+  wm.init();
+
   byte motor_a_pins[YB_DC_MOTOR_CHANNEL_COUNT] = YB_DC_MOTOR_A_PINS;
   byte motor_b_pins[YB_DC_MOTOR_CHANNEL_COUNT] = YB_DC_MOTOR_B_PINS;
 
@@ -101,6 +103,12 @@ void brineomatic_setup()
 
   char prefIndex[YB_PREF_KEY_LENGTH];
 
+  // temporary hardcoding.
+  wm.highPressurePump = &relay_channels[0];
+  wm.flushValve = &relay_channels[1];
+  wm.diverterValve = &servo_channels[0];
+  wm.highPressureValve = &servo_channels[1];
+
   // Create a FreeRTOS task for the state machine
   xTaskCreatePinnedToCore(
     brineomatic_state_machine, // Task function
@@ -111,16 +119,17 @@ void brineomatic_setup()
     NULL,                      // Task handle
     1                          // Core where the task should run
   );
-
-  // temporary hardcoding.
-  wm.highPressurePump = &relay_channels[0];
-  wm.flushValve = &relay_channels[1];
-  wm.diverterValve = &servo_channels[0];
-  wm.highPressureValve = &servo_channels[1];
 }
+
+uint32_t lastOutput;
 
 void brineomatic_loop()
 {
+  if (millis() - lastOutput > 2000) {
+    // for debug stuff here.
+    lastOutput = millis();
+  }
+
   measure_flowmeter();
   measure_temperature();
 
@@ -250,6 +259,10 @@ void measure_membrane_pressure(int16_t reading)
 }
 
 Brineomatic::Brineomatic()
+{
+}
+
+void Brineomatic::init()
 {
   // enabled or no
   if (preferences.isKey("bomPickled"))
@@ -409,7 +422,7 @@ void Brineomatic::pickle(uint64_t duration)
 void Brineomatic::depickle(uint64_t duration)
 {
   stopFlag = false;
-  if (currentStatus == Status::IDLE) {
+  if (currentStatus == Status::PICKLED) {
     depickleDuration = duration;
     currentStatus = Status::DEPICKLING;
   }
@@ -614,8 +627,8 @@ const char* Brineomatic::resultToString(Result result)
       return "STARTUP";
     case Result::SUCCESS:
       return "SUCCESS";
-    case Result::EXTERNAL_STOP:
-      return "EXTERNAL_STOP";
+    case Result::USER_STOP:
+      return "USER_STOP";
     case Result::ERR_BOOST_PRESSURE_TIMEOUT:
       return "ERR_BOOST_PRESSURE_TIMEOUT";
     case Result::ERR_FILTER_PRESSURE_LOW:
@@ -941,11 +954,10 @@ void Brineomatic::runStateMachine()
         nextFlushTime = esp_timer_get_time() + flushInterval;
 
       // keep track over restarts.
-      isPickled = false;
       preferences.putBool("bomPickled", false);
 
       if (stopFlag)
-        flushResult = Result::EXTERNAL_STOP;
+        flushResult = Result::USER_STOP;
       else
         flushResult = Result::SUCCESS;
       currentStatus = Status::IDLE;
@@ -976,7 +988,7 @@ void Brineomatic::runStateMachine()
       currentStatus = Status::PICKLED;
 
       if (stopFlag)
-        pickleResult = Result::EXTERNAL_STOP;
+        pickleResult = Result::USER_STOP;
       else
         pickleResult = Result::SUCCESS;
 
@@ -985,8 +997,8 @@ void Brineomatic::runStateMachine()
 
       break;
 
-      //
-    // PICKLING
+    //
+    // DEPICKLING
     //
     case Status::DEPICKLING:
       sendDebug("State: DEPICKLING");
@@ -1008,9 +1020,9 @@ void Brineomatic::runStateMachine()
       currentStatus = Status::IDLE;
 
       if (stopFlag)
-        pickleResult = Result::EXTERNAL_STOP;
+        depickleResult = Result::USER_STOP;
       else
-        pickleResult = Result::SUCCESS;
+        depickleResult = Result::SUCCESS;
 
       // keep track over restarts.
       preferences.putBool("bomPickled", false);
@@ -1023,7 +1035,7 @@ bool Brineomatic::checkStopFlag()
 {
   if (stopFlag) {
     currentStatus = Status::STOPPING;
-    runResult = Result::EXTERNAL_STOP;
+    runResult = Result::USER_STOP;
     return true;
   }
 

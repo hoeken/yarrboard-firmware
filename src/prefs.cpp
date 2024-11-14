@@ -12,5 +12,10 @@ Preferences preferences;
 
 void prefs_setup()
 {
-  preferences.begin("yarrboard", false);
+  if (preferences.begin("yarrboard", false))
+    Serial.println("Prefs OK");
+  else
+    Serial.println("Opening Preferences failed.");
+
+  Serial.printf("There are: %u entries available in the 'yarrboard' prefs table.\n", preferences.freeEntries());
 }

@@ -50,7 +50,7 @@ const page_permissions = {
 const brineomatic_result_text = {
   "STARTUP": "Starting up.",
   "SUCCESS": "Success",
-  "EXTERNAL_STOP": "Stopped Externally",
+  "USER_STOP": "Stopped by user",
   "ERR_BOOST_PRESSURE_TIMEOUT": "Boost Pressure Timeout",
   "ERR_FILTER_PRESSURE_LOW": "Filter Pressure Low",
   "ERR_FILTER_PRESSURE_HIGH": "Filter Pressure High",
@@ -1190,10 +1190,11 @@ function start_websocket() {
           $("#bomRunResultRow").show();
 
           $("#bomRunResult").removeClass();
+          $("#bomRunResult").addClass("badge");
           if (msg.run_result == "SUCCESS")
             $("#bomRunResult").addClass("text-bg-success");
-          else if (msg.run_result == "EXTERNAL_STOP")
-            $("#bomRunResult").addClass("text-bg-primary");
+          else if (msg.run_result == "USER_STOP")
+            $("#bomRunResult").addClass("text-bg-warning");
           else
             $("#bomRunResult").addClass("text-bg-error");
         }
@@ -1205,10 +1206,11 @@ function start_websocket() {
           $("#bomFlushResultRow").show();
 
           $("#bomFlushResult").removeClass();
-          if (msg.run_result == "SUCCESS")
+          $("#bomFlushResult").addClass("badge");
+          if (msg.flush_result == "SUCCESS")
             $("#bomFlushResult").addClass("text-bg-success");
-          else if (msg.run_result == "EXTERNAL_STOP")
-            $("#bomFlushResult").addClass("text-bg-primary");
+          else if (msg.flush_result == "USER_STOP")
+            $("#bomFlushResult").addClass("text-bg-warning");
           else
             $("#bomFlushResult").addClass("text-bg-error");
         }
@@ -1220,10 +1222,11 @@ function start_websocket() {
           $("#bomPickleResultRow").show();
 
           $("#bomPickleResult").removeClass();
-          if (msg.run_result == "SUCCESS")
+          $("#bomPickleResult").addClass("badge");
+          if (msg.pickle_result == "SUCCESS")
             $("#bomPickleResult").addClass("text-bg-success");
-          else if (msg.run_result == "EXTERNAL_STOP")
-            $("#bomPickleResult").addClass("text-bg-primary");
+          else if (msg.pickle_result == "USER_STOP")
+            $("#bomPickleResult").addClass("text-bg-warning");
           else
             $("#bomPickleResult").addClass("text-bg-error");
         }
@@ -1235,10 +1238,11 @@ function start_websocket() {
           $("#bomDePickleResultRow").show();
 
           $("#bomDePickleResult").removeClass();
-          if (msg.run_result == "SUCCESS")
+          $("#bomDePickleResult").addClass("badge");
+          if (msg.depickle_result == "SUCCESS")
             $("#bomDePickleResult").addClass("text-bg-success");
-          else if (msg.run_result == "EXTERNAL_STOP")
-            $("#bomDePickleResult").addClass("text-bg-primary");
+          else if (msg.depickle_result == "USER_STOP")
+            $("#bomDePickleResult").addClass("text-bg-warning");
           else
             $("#bomDePickleResult").addClass("text-bg-error");
         }
@@ -1655,7 +1659,7 @@ function depickle_brineomatic() {
     let micros = duration * 60 * 1000000;
 
     client.send({
-      "cmd": "pickle_watermaker",
+      "cmd": "depickle_watermaker",
       "duration": micros
     }, true);
   }

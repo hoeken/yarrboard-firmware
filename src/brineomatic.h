@@ -51,6 +51,7 @@ class Brineomatic
     float totalVolume;
 
     Brineomatic();
+    void init();
 
     enum class Status {
       STARTUP,
@@ -66,7 +67,7 @@ class Brineomatic
     enum class Result {
       STARTUP,
       SUCCESS,
-      EXTERNAL_STOP,
+      USER_STOP,
       ERR_BOOST_PRESSURE_TIMEOUT,
       ERR_FILTER_PRESSURE_LOW,
       ERR_FILTER_PRESSURE_HIGH,
