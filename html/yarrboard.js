@@ -1156,6 +1156,8 @@ function start_websocket() {
           $("#bomStatus").addClass("text-bg-primary");
         else if (msg.status == "PICKLING")
           $("#bomStatus").addClass("text-bg-warning");
+        else if (msg.status == "DEPICKLING")
+          $("#bomStatus").addClass("text-bg-warning");
         else if (msg.status == "PICKLED")
           $("#bomStatus").addClass("text-bg-warning");
         else
@@ -1165,6 +1167,7 @@ function start_websocket() {
         $("#runBrineomatic").hide();
         $("#flushBrineomatic").hide();
         $("#pickleBrineomatic").hide();
+        $("#depickleBrineomatic").hide();
         $("#stopBrineomatic").hide();
         $("#manualBrineomatic").hide();
 
@@ -1177,6 +1180,7 @@ function start_websocket() {
         }
         else if (msg.status == "PICKLED") {
           $("#flushBrineomatic").show();
+          $("#depickleBrineomatic").show();
         }
         else if (msg.status == "FLUSHING" || msg.status == "PICKLING" || msg.status == "DEPICKLING")
           $("#stopBrineomatic").show();
@@ -1289,6 +1293,21 @@ function start_websocket() {
         }
         else
           $("#bomPickleCountdown").hide();
+
+        if (msg.depickle_elapsed > 0) {
+          $("#bomDepickleElapsedData").html(secondsToDhms(Math.round(msg.depickle_elapsed / 1000000)));
+          $("#bomDepickleElapsed").show();
+        }
+        else
+          $("#bomDepickleElapsed").hide();
+
+        if (msg.depickle_countdown > 0) {
+          $("#bomDepickleCountdownData").html(secondsToDhms(Math.round(msg.depickle_countdown / 1000000)));
+          $("#bomDepickleCountdown").show();
+        }
+        else
+          $("#bomDepickleCountdown").hide();
+
 
         $("#bomTemperature").html(`${temperature}C`);
         $("#bomFlowrate").html(`${flowrate} LPH`);
@@ -1618,6 +1637,19 @@ function flush_brineomatic() {
 
 function pickle_brineomatic() {
   let duration = $("#bomPickleDurationInput").val();
+
+  if (duration > 0) {
+    let micros = duration * 60 * 1000000;
+
+    client.send({
+      "cmd": "pickle_watermaker",
+      "duration": micros
+    }, true);
+  }
+}
+
+function depickle_brineomatic() {
+  let duration = $("#bomDepickleDurationInput").val();
 
   if (duration > 0) {
     let micros = duration * 60 * 1000000;

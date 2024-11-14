@@ -94,19 +94,19 @@
                             <tbody id="bomTableBody">
                                 <tr id="bomRunResultRow" style="display: none">
                                     <th>Last Run Result</th>
-                                    <td id="bomRunResult"></td>
+                                    <td><span id="bomRunResult"></span></td>
                                 </tr>
                                 <tr id="bomFlushResultRow" style="display: none">
                                     <th>Flush Result</th>
-                                    <td id="bomFlushResult"></td>
+                                    <td><span id="bomFlushResult"></span></td>
                                 </tr>
                                 <tr id="bomPickleResultRow" style="display: none">
                                     <th>Pickle Result</th>
-                                    <td id="bomPickleResult"></td>
+                                    <td><span id="bomPickleResult"></span></td>
                                 </tr>
                                 <tr id="bomDePickleResultRow" style="display: none">
                                     <th>Depickle Result</th>
-                                    <td id="bomDePickleResult"></td>
+                                    <td><span id="bomDePickleResult"></span></td>
                                 </tr>
                                 <tr id="bomNextFlushCountdown" style="display: none">
                                     <th>Next Autoflush</th>
@@ -135,6 +135,14 @@
                                 <tr id="bomPickleCountdown" style="display: none">
                                     <th>Pickling Remaining</th>
                                     <td id="bomPickleCountdownData"></td>
+                                </tr>
+                                <tr id="bomDepickleElapsed" style="display: none">
+                                    <th>De-Pickling Elapsed</th>
+                                    <td id="bomDepickleElapsedData"></td>
+                                </tr>
+                                <tr id="bomDepickleCountdown" style="display: none">
+                                    <th>De-Pickling Remaining</th>
+                                    <td id="bomDepickleCountdownData"></td>
                                 </tr>
                                 <tr>
                                     <th>Temperature</th>
@@ -202,6 +210,17 @@
                                             d="M8 4.5a.5.5 0 0 1 .5.5v1.5H10a.5.5 0 0 1 0 1H8.5V9a.5.5 0 0 1-1 0V7.5H6a.5.5 0 0 1 0-1h1.5V5a.5.5 0 0 1 .5-.5" />
                                     </svg>
                                     <span class="align-middle mx-2">PICKLE</span>
+                                </button>
+                            </div>
+                            <div id="depickleBrineomatic" class="col-12">
+                                <button class="btn btn-warning brineomaticControlButton" type="button"
+                                    data-bs-toggle="modal" data-bs-target="#depickleBrineomaticModal">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"
+                                        class="bi bi-shield-slash" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd"
+                                            d="M1.093 3.093c-.465 4.275.885 7.46 2.513 9.589a11.8 11.8 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7 7 0 0 0 1.048-.625 11.3 11.3 0 0 0 1.733-1.525l-.745-.745a10.3 10.3 0 0 1-1.578 1.392c-.346.244-.652.42-.893.533q-.18.085-.293.118a1 1 0 0 1-.101.025 1 1 0 0 1-.1-.025 2 2 0 0 1-.294-.118 6 6 0 0 1-.893-.533 10.7 10.7 0 0 1-2.287-2.233C3.053 10.228 1.879 7.594 2.06 4.06zM3.98 1.98l-.852-.852A59 59 0 0 1 5.072.559C6.157.266 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.483 3.626-.332 6.491-1.551 8.616l-.77-.77c1.042-1.915 1.72-4.469 1.29-7.702a.48.48 0 0 0-.33-.39c-.65-.213-1.75-.56-2.836-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524a50 50 0 0 0-1.357.39zm9.666 12.374-13-13 .708-.708 13 13z" />
+                                    </svg>
+                                    <span class="align-middle mx-2">DEPICKLE</span>
                                 </button>
                             </div>
                             <div id="stopBrineomatic" class="col-12">
@@ -366,6 +385,44 @@
                                             data-bs-dismiss="modal">Cancel</button>
                                         <button type="button" class="btn btn-warning" data-bs-dismiss="modal"
                                             onclick="pickle_brineomatic()">Pickle</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="depickleBrineomaticModal" tabindex="-1" role="dialog"
+                            aria-labelledby="depickleBrineomaticModalTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="depickleBrineomaticModalTitle">De-pickle
+                                            Watermaker
+                                        </h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="alert alert-warning" role="alert">
+                                            De-pickling the watermaker will flush the membrane with salt water for the
+                                            time below in order to clean the membrane
+                                            and plumbing of the pickling solution.
+                                        </div>
+                                        <p>De-Pickle the watermaker for the time below.</p>
+                                        <div class="row">
+                                            <div class="col-5">
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control"
+                                                        id="bomDepickleDurationInput" value="5">
+                                                    <span class="input-group-text">minutes</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Cancel</button>
+                                        <button type="button" class="btn btn-warning" data-bs-dismiss="modal"
+                                            onclick="depickle_brineomatic()">De-Pickle</button>
                                     </div>
                                 </div>
                             </div>

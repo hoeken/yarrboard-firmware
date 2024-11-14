@@ -1739,6 +1739,12 @@ void generateUpdateJSON(JsonVariant output)
     output["pickle_elapsed"] = wm.getPickleElapsed();
     output["pickle_countdown"] = wm.getPickleCountdown();
   }
+
+  if (!strcmp(wm.getStatus(), "DEPICKLING")) {
+    output["depickle_elapsed"] = wm.getDepickleElapsed();
+    output["depickle_countdown"] = wm.getDepickleCountdown();
+  }
+
 #endif
 }
 

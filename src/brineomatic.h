@@ -127,6 +127,8 @@ class Brineomatic
     int64_t getFlushCountdown();
     int64_t getPickleElapsed();
     int64_t getPickleCountdown();
+    int64_t getDepickleElapsed();
+    int64_t getDepickleCountdown();
 
     float getFilterPressure();
     float getFilterPressureMinimum();
@@ -162,6 +164,8 @@ class Brineomatic
     uint64_t flushInterval = 5ULL * 24 * 60 * 60 * 1000000; // 5 day default, in microseconds
     uint64_t pickleStart = 0;
     uint64_t pickleDuration = 5ULL * 60 * 1000000; // 5 minute default, in microseconds
+    uint64_t depickleStart = 0;
+    uint64_t depickleDuration = 15ULL * 60 * 1000000; // 15 minute default, in microseconds
 
     bool highPressurePumpEnabled;
     bool boostPumpEnabled;

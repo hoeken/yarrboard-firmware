@@ -181,9 +181,9 @@ void measure_flowmeter()
     wm.totalVolume += pulse_counter / flowmeterPulsesPerLiter;
 
     // reset counter
-    detachInterrupt(digitalPinToInterrupt(YB_FLOWMETER_PIN));
+    // detachInterrupt(digitalPinToInterrupt(YB_FLOWMETER_PIN));
     pulse_counter = 0;
-    attachInterrupt(digitalPinToInterrupt(YB_FLOWMETER_PIN), flowmeter_interrupt, FALLING);
+    // attachInterrupt(digitalPinToInterrupt(YB_FLOWMETER_PIN), flowmeter_interrupt, FALLING);
 
     // store microseconds when tacho was measured the last time
     lastFlowmeterCheckMicros = esp_timer_get_time();
@@ -694,6 +694,24 @@ int64_t Brineomatic::getPickleCountdown()
   return 0;
 }
 
+int64_t Brineomatic::getDepickleElapsed()
+{
+  int64_t elapsed = esp_timer_get_time() - depickleStart;
+  if (currentStatus == Status::DEPICKLING && elapsed > 0)
+    return elapsed;
+
+  return 0;
+}
+
+int64_t Brineomatic::getDepickleCountdown()
+{
+  int64_t countdown = (depickleStart + depickleDuration) - esp_timer_get_time();
+  if (currentStatus == Status::DEPICKLING && countdown > 0)
+    return countdown;
+
+  return 0;
+}
+
 bool Brineomatic::hasHighPressureValve()
 {
   return highPressureValve != nullptr;
@@ -917,8 +935,12 @@ void Brineomatic::runStateMachine()
       isPickled = false;
       preferences.putBool("bomPickled", false);
 
-      flushResult = Result::SUCCESS;
+      if (stopFlag)
+        flushResult = Result::EXTERNAL_STOP;
+      else
+        flushResult = Result::SUCCESS;
       currentStatus = Status::IDLE;
+
       break;
     }
 
@@ -943,10 +965,46 @@ void Brineomatic::runStateMachine()
       initializeHardware();
 
       currentStatus = Status::PICKLED;
-      pickleResult = Result::SUCCESS;
+
+      if (stopFlag)
+        pickleResult = Result::EXTERNAL_STOP;
+      else
+        pickleResult = Result::SUCCESS;
 
       // keep track over restarts.
       preferences.putBool("bomPickled", true);
+
+      break;
+
+      //
+    // PICKLING
+    //
+    case Status::DEPICKLING:
+      sendDebug("State: DEPICKLING");
+
+      depickleStart = esp_timer_get_time();
+
+      initializeHardware();
+
+      enableHighPressurePump();
+      while (getDepickleElapsed() < depickleDuration) {
+        if (stopFlag)
+          break;
+
+        vTaskDelay(pdMS_TO_TICKS(100));
+      }
+
+      initializeHardware();
+
+      currentStatus = Status::IDLE;
+
+      if (stopFlag)
+        pickleResult = Result::EXTERNAL_STOP;
+      else
+        pickleResult = Result::SUCCESS;
+
+      // keep track over restarts.
+      preferences.putBool("bomPickled", false);
 
       break;
   }

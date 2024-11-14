@@ -21,6 +21,7 @@
 
 # BRINEOMATIC
 
+* add indicator for diverter valve status
 * add lifetime flowmeter accumulator
     * show on stats page
 * add a total runtime counter.
