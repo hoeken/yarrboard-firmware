@@ -133,6 +133,7 @@ class Brineomatic
     bool hasCoolingFan();
     void enableCoolingFan();
     void disableCoolingFan();
+    void manageCoolingFan();
 
     bool hasHighPressureValve();
     void manageHighPressureValve();
@@ -217,15 +218,17 @@ class Brineomatic
 
     float defaultMembranePressureTarget = 750.0; // PSI
 
-    float lowPressureMinimum = 2.5;       // PSI
-    float lowPressureMaximum = 60.0;      // PSI
-    float highPressureMinimum = 600.0;    // PSI
-    float highPressureMaximum = 900.0;    // PSI
-    float flowrateMinimum = 120.0;        // LPH
-    float flowrateMaximum = 300.0;        // LPH
-    float salinityMaximum = 200.0;        // PPM
-    float motorTemperatureMaximum = 65.0; // Celcus
-    float tankLevelFull = 0.99;           // 0 = empty, 1 = full
+    float lowPressureMinimum = 2.5;        // PSI
+    float lowPressureMaximum = 60.0;       // PSI
+    float highPressureMinimum = 600.0;     // PSI
+    float highPressureMaximum = 900.0;     // PSI
+    float flowrateMinimum = 120.0;         // LPH
+    float flowrateMaximum = 300.0;         // LPH
+    float salinityMaximum = 200.0;         // PPM
+    float motorTemperatureMaximum = 65.0;  // Celcius
+    float tankLevelFull = 0.99;            // 0 = empty, 1 = full
+    float coolingFanOnTemperature = 37.0;  // Celcius
+    float coolingFanOffTemperature = 36.0; // Celcius
 
     uint8_t membranePressureHighErrorCount = 0;
     uint8_t membranePressureLowErrorCount = 0;

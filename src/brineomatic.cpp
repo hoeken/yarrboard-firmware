@@ -105,6 +105,7 @@ void brineomatic_setup()
   // temporary hardcoding.
   wm.highPressurePump = &relay_channels[0];
   wm.flushValve = &relay_channels[1];
+  wm.coolingFan = &relay_channels[2];
   wm.diverterValve = &servo_channels[0];
   wm.highPressureValve = &servo_channels[1];
 
@@ -157,6 +158,7 @@ void brineomatic_loop()
   }
 
   wm.manageHighPressureValve();
+  wm.manageCoolingFan();
 }
 
 // State machine task function
@@ -602,6 +604,16 @@ void Brineomatic::disableCoolingFan()
   if (hasCoolingFan())
     coolingFan->setState(false);
   coolingFanOnState = false;
+}
+
+void Brineomatic::manageCoolingFan()
+{
+  if (hasCoolingFan()) {
+    if (getMotorTemperature() >= coolingFanOnTemperature)
+      enableCoolingFan();
+    else if (getMotorTemperature() <= coolingFanOffTemperature)
+      disableCoolingFan();
+  }
 }
 
 float Brineomatic::getFilterPressure()

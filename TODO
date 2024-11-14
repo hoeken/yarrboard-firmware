@@ -21,9 +21,16 @@
 
 # BRINEOMATIC
 
-* set volume to zero once we start our run
-* minus volume from totalVolume too
-* add fan control based on temperature
+* volume
+    * set volume to zero once we start our run
+    * minus volume from totalVolume too
+    * make sure total volume is getting handled correctly
+* add progress bars for timed runs (run, flush, pickle, depickle)
+* add meter bars for things we have a high and low for.
+    * can we find a lightweight js gauge library?
+* implement motor channels
+    * add motor channels to valve control
+    * will probably need to make a generic Valve class.
 * add mid-level commands to set_watermaker
     * boost_pump
     * high_pressure_pump
