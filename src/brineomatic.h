@@ -90,6 +90,7 @@ class Brineomatic
     void startVolume(float volume);
     void flush(uint64_t duration);
     void pickle(uint64_t duration);
+    void depickle(uint64_t duration);
     void stop();
 
     void initializeHardware();

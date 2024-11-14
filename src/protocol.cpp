@@ -226,6 +226,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleFlushWatermaker(input, output);
     else if (!strcmp(cmd, "pickle_watermaker"))
       return handlePickleWatermaker(input, output);
+    else if (!strcmp(cmd, "depickle_watermaker"))
+      return handleDepickleWatermaker(input, output);
     else if (!strcmp(cmd, "stop_watermaker"))
       return handleStopWatermaker(input, output);
     else if (!strcmp(cmd, "set_watermaker_diverter_valve"))
@@ -1516,6 +1518,22 @@ void handlePickleWatermaker(JsonVariantConst input, JsonVariant output)
     wm.pickle(duration);
   else
     return generateErrorJSON(output, "Watermaker is not in IDLE mode.");
+}
+
+void handleDepickleWatermaker(JsonVariantConst input, JsonVariant output)
+{
+  if (!input["duration"].is<JsonVariantConst>())
+    return generateErrorJSON(output, "'duration' is a required parameter");
+
+  uint64_t duration = input["duration"];
+
+  if (!duration)
+    return generateErrorJSON(output, "'duration' must be non-zero");
+
+  if (!strcmp(wm.getStatus(), "PICKLED"))
+    wm.depickle(duration);
+  else
+    return generateErrorJSON(output, "Watermaker is not in PICKLED mode.");
 }
 
 void handleStopWatermaker(JsonVariantConst input, JsonVariant output)

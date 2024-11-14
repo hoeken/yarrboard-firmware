@@ -114,6 +114,7 @@ void handleSetBrightness(JsonVariantConst input, JsonVariant output);
 void handleStartWatermaker(JsonVariantConst input, JsonVariant output);
 void handleFlushWatermaker(JsonVariantConst input, JsonVariant output);
 void handlePickleWatermaker(JsonVariantConst input, JsonVariant output);
+void handleDepickleWatermaker(JsonVariantConst input, JsonVariant output);
 void handleStopWatermaker(JsonVariantConst input, JsonVariant output);
 void handleWaterMakerDiverterValve(JsonVariantConst input, JsonVariant output);
 

@@ -103,13 +103,13 @@ void brineomatic_setup()
 
   // Create a FreeRTOS task for the state machine
   xTaskCreatePinnedToCore(
-    brineomatic_state_machine,   // Task function
-    "brineomatic_state_machine", // Name of the task
-    2048,                        // Stack size
-    NULL,                        // Task input parameters
-    1,                           // Priority of the task
-    NULL,                        // Task handle
-    1                            // Core where the task should run
+    brineomatic_state_machine, // Task function
+    "brineomatic_sm",          // Name of the task
+    4096,                      // Stack size
+    NULL,                      // Task input parameters
+    1,                         // Priority of the task
+    NULL,                      // Task handle
+    1                          // Core where the task should run
   );
 
   // temporary hardcoding.
@@ -258,7 +258,7 @@ Brineomatic::Brineomatic()
     isPickled = false;
 
   if (preferences.isKey("bomTotVolume"))
-    totalVolume = preferences.getFloat("bomTotalVolume");
+    totalVolume = preferences.getFloat("bomTotVolume");
   else
     totalVolume = 0.0;
 
@@ -403,6 +403,15 @@ void Brineomatic::pickle(uint64_t duration)
   if (currentStatus == Status::IDLE) {
     pickleDuration = duration;
     currentStatus = Status::PICKLING;
+  }
+}
+
+void Brineomatic::depickle(uint64_t duration)
+{
+  stopFlag = false;
+  if (currentStatus == Status::IDLE) {
+    depickleDuration = duration;
+    currentStatus = Status::DEPICKLING;
   }
 }
 
@@ -873,7 +882,7 @@ void Brineomatic::runStateMachine()
       sendDebug("Finished making water.");
 
       // save our total volume produced
-      preferences.putFloat("bomTotalVolume", totalVolume);
+      preferences.putFloat("bomTotVolume", totalVolume);
 
       runResult = Result::SUCCESS;
       currentStatus = Status::STOPPING;
