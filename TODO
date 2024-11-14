@@ -29,6 +29,7 @@
     * show on stats page
 * add timeouts to while() loops in state machine
 * add water_temperature
+* add tank_level - set externally
 * add fan control based on temperature
 * move everything to SI units
 * add configuration options for:

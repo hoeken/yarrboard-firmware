@@ -1160,6 +1160,8 @@ function start_websocket() {
           $("#bomStatus").addClass("text-bg-warning");
         else if (msg.status == "PICKLED")
           $("#bomStatus").addClass("text-bg-warning");
+        else if (msg.status == "STOPPING")
+          $("#bomStatus").addClass("text-bg-info");
         else
           $("#bomStatus").addClass("text-bg-danger");
 
