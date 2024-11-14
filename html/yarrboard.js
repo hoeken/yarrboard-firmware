@@ -1177,181 +1177,183 @@ function start_websocket() {
           $("#bomStatus").addClass("text-bg-danger");
 
         //default to hide all.
-        $("#runBrineomatic").hide();
-        $("#flushBrineomatic").hide();
-        $("#pickleBrineomatic").hide();
-        $("#depickleBrineomatic").hide();
-        $("#stopBrineomatic").hide();
-        $("#manualBrineomatic").hide();
+        $(".bomSTARTUP").hide();
+        $(".bomIDLE").hide();
+        $(".bomRUNNING").hide();
+        $(".bomFLUSHING").hide();
+        $(".bomPICKLING").hide();
+        $(".bomPICKLED").hide();
+        $(".bomDEPICKLING").hide();
+        $(".bomSTOPPING").hide();
 
-        //what buttons to show?
-        if (msg.status == "IDLE") {
-          $("#runBrineomatic").show();
-          $("#flushBrineomatic").show();
-          $("#pickleBrineomatic").show();
-          $("#manualBrineomatic").show();
-        }
-        else if (msg.status == "PICKLED") {
-          $("#flushBrineomatic").show();
-          $("#depickleBrineomatic").show();
-        }
-        else if (msg.status == "RUNNING" || msg.status == "FLUSHING" || msg.status == "PICKLING" || msg.status == "DEPICKLING")
-          $("#stopBrineomatic").show();
+        //show everything for our state
+        $(`.bom${msg.status}`).show();
 
-        if (msg.run_result && msg.run_result != "STARTUP") {
-          $("#bomRunResult").html(brineomatic_result_text[msg.run_result]);
-          $("#bomRunResultRow").show();
+        if (msg.run_result)
+          show_brineomatic_result("#bomRunResult", msg.run_result);
 
-          $("#bomRunResult").removeClass();
-          $("#bomRunResult").addClass("badge");
-          if (msg.run_result == "SUCCESS")
-            $("#bomRunResult").addClass("text-bg-success");
-          else if (msg.run_result == "USER_STOP")
-            $("#bomRunResult").addClass("text-bg-warning");
-          else
-            $("#bomRunResult").addClass("text-bg-error");
-        }
-        else
-          $("#bomRunResultRow").hide();
+        if (msg.flush_result)
+          show_brineomatic_result("#bomFlushResult", msg.flush_result);
 
-        if (msg.flush_result && msg.flush_result != "STARTUP") {
-          $("#bomFlushResult").html(brineomatic_result_text[msg.flush_result]);
-          $("#bomFlushResultRow").show();
+        if (msg.pickle_result)
+          show_brineomatic_result("#bomPickleResult", msg.pickle_result);
 
-          $("#bomFlushResult").removeClass();
-          $("#bomFlushResult").addClass("badge");
-          if (msg.flush_result == "SUCCESS")
-            $("#bomFlushResult").addClass("text-bg-success");
-          else if (msg.flush_result == "USER_STOP")
-            $("#bomFlushResult").addClass("text-bg-warning");
-          else
-            $("#bomFlushResult").addClass("text-bg-error");
-        }
-        else
-          $("#bomFlushResultRow").hide();
+        if (msg.depickle_result)
+          show_brineomatic_result("#bomDePickleResult", msg.depickle_result);
 
-        if (msg.pickle_result && msg.pickle_result != "STARTUP") {
-          $("#bomPickleResult").html(brineomatic_result_text[msg.pickle_result]);
-          $("#bomPickleResultRow").show();
-
-          $("#bomPickleResult").removeClass();
-          $("#bomPickleResult").addClass("badge");
-          if (msg.pickle_result == "SUCCESS")
-            $("#bomPickleResult").addClass("text-bg-success");
-          else if (msg.pickle_result == "USER_STOP")
-            $("#bomPickleResult").addClass("text-bg-warning");
-          else
-            $("#bomPickleResult").addClass("text-bg-error");
-        }
-        else
-          $("#bomPickleResultRow").hide();
-
-        if (msg.depickle_result && msg.depickle_result != "STARTUP") {
-          $("#bomDePickleResult").html(brineomatic_result_text[msg.depickle_result]);
-          $("#bomDePickleResultRow").show();
-
-          $("#bomDePickleResult").removeClass();
-          $("#bomDePickleResult").addClass("badge");
-          if (msg.depickle_result == "SUCCESS")
-            $("#bomDePickleResult").addClass("text-bg-success");
-          else if (msg.depickle_result == "USER_STOP")
-            $("#bomDePickleResult").addClass("text-bg-warning");
-          else
-            $("#bomDePickleResult").addClass("text-bg-error");
-        }
-        else
-          $("#bomDePickleResultRow").hide();
-
-        if (msg.next_flush_countdown > 0) {
+        if (msg.next_flush_countdown > 0)
           $("#bomNextFlushCountdownData").html(secondsToDhms(Math.round(msg.next_flush_countdown / 1000000)));
-          $("#bomNextFlushCountdown").show();
-        }
         else
           $("#bomNextFlushCountdown").hide();
 
-        if (msg.runtime_elapsed > 0) {
+        if (msg.runtime_elapsed > 0)
           $("#bomRuntimeElapsedData").html(secondsToDhms(Math.round(msg.runtime_elapsed / 1000000)));
-          $("#bomRuntimeElapsed").show();
-        }
         else
           $("#bomRuntimeElapsed").hide();
 
-        if (msg.finish_countdown > 0) {
+        if (msg.finish_countdown > 0)
           $("#bomFinishCountdownData").html(secondsToDhms(Math.round(msg.finish_countdown / 1000000)));
-          $("#bomFinishCountdown").show();
-        }
         else
           $("#bomFinishCountdown").hide();
 
-        if (msg.flush_elapsed > 0) {
+        if (msg.flush_elapsed > 0)
           $("#bomFlushElapsedData").html(secondsToDhms(Math.round(msg.flush_elapsed / 1000000)));
-          $("#bomFlushElapsed").show();
-        }
         else
           $("#bomFlushElapsed").hide();
 
-        if (msg.flush_countdown > 0) {
+        if (msg.flush_countdown > 0)
           $("#bomFlushCountdownData").html(secondsToDhms(Math.round(msg.flush_countdown / 1000000)));
-          $("#bomFlushCountdown").show();
-        }
         else
           $("#bomFlushCountdown").hide();
 
-        if (msg.pickle_elapsed > 0) {
+        if (msg.pickle_elapsed > 0)
           $("#bomPickleElapsedData").html(secondsToDhms(Math.round(msg.pickle_elapsed / 1000000)));
-          $("#bomPickleElapsed").show();
-        }
         else
           $("#bomPickleElapsed").hide();
 
-        if (msg.pickle_countdown > 0) {
+        if (msg.pickle_countdown > 0)
           $("#bomPickleCountdownData").html(secondsToDhms(Math.round(msg.pickle_countdown / 1000000)));
-          $("#bomPickleCountdown").show();
-        }
         else
           $("#bomPickleCountdown").hide();
 
-        if (msg.depickle_elapsed > 0) {
+        if (msg.depickle_elapsed > 0)
           $("#bomDepickleElapsedData").html(secondsToDhms(Math.round(msg.depickle_elapsed / 1000000)));
-          $("#bomDepickleElapsed").show();
-        }
         else
           $("#bomDepickleElapsed").hide();
 
-        if (msg.depickle_countdown > 0) {
+        if (msg.depickle_countdown > 0)
           $("#bomDepickleCountdownData").html(secondsToDhms(Math.round(msg.depickle_countdown / 1000000)));
-          $("#bomDepickleCountdown").show();
-        }
         else
           $("#bomDepickleCountdown").hide();
 
-
-        $("#bomWaterTemperature").html(`${water_temperature}C`);
-        $("#bomMotorTemperature").html(`${motor_temperature}C`);
-        $("#bomFlowrate").html(`${flowrate} LPH`);
-        $("#bomVolume").html(`${volume}L`);
-
-        if (msg.tank_level >= 0) {
-          $("#bomTankLevelData").html(`${tank_level}%`);
-          $("#bomTankLevel").show();
-        }
+        if (water_temperature > 0)
+          $("#bomWaterTemperatureData").html(`${water_temperature}C`);
         else
-          $("#bomTankLevel").show();
+          $("#bomWaterTemperature").hide();
+
+        if (motor_temperature > 0)
+          $("#bomMotorTemperatureData").html(`${motor_temperature}C`);
+        else
+          $("#bomMotorTemperature").hide();
+
+        $("#bomFlowrateData").html(`${flowrate} LPH`);
+        $("#bomVolumeData").html(`${volume}L`);
+
+        if (msg.tank_level >= 0)
+          $("#bomTankLevelData").html(`${tank_level}%`);
+        else
+          $("#bomTankLevel").hide();
 
         if (salinity < 5000)
-          $("#bomSalinity").html(`${salinity} PPM`);
+          $("#bomSalinityData").html(`${salinity} PPM`);
         else
-          $("#bomSalinity").html("N/A");
+          $("#bomSalinity").hide();
 
         if (filter_pressure >= 0)
-          $("#bomFilterPressure").html(`${filter_pressure} PSI`);
+          $("#bomFilterPressureData").html(`${filter_pressure} PSI`);
         else
-          $("#bomFilterPressure").html("N/A");
+          $("#bomFilterPressure").hide();
 
         if (membrane_pressure >= 0)
-          $("#bomMembranePressure").html(`${membrane_pressure} PSI`);
+          $("#bomMembranePressureData").html(`${membrane_pressure} PSI`);
         else
-          $("#bomMembranePressure").html("N/A");
+          $("#bomMembranePressure").hide();
+
+        if (current_config.has_boost_pump) {
+          $('#bomBoostPumpStatus span').removeClass();
+          $('#bomBoostPumpStatus span').addClass("badge");
+          if (msg.boost_pump_on) {
+            $("#bomBoostPumpStatus span").addClass("text-bg-primary");
+            $('#bomBoostPumpStatus span').html("ON");
+          }
+          else {
+            $("#bomBoostPumpStatus span").addClass("text-bg-secondary");
+            $('#bomBoostPumpStatus span').html("OFF");
+          }
+        }
+        else
+          $('#bomBoostPumpStatus').hide();
+
+        if (current_config.has_high_pressure_pump) {
+          $('#bomHighPressurePumpStatus span').removeClass();
+          $('#bomHighPressurePumpStatus span').addClass("badge");
+          if (msg.high_pressure_pump_on) {
+            $("#bomHighPressurePumpStatus span").addClass("text-bg-primary");
+            $('#bomHighPressurePumpStatus span').html("ON");
+          }
+          else {
+            $("#bomHighPressurePumpStatus span").addClass("text-bg-secondary");
+            $('#bomHighPressurePumpStatus span').html("OFF");
+          }
+        }
+        else
+          $('#bomHighPressurePumpStatus').hide();
+
+        if (current_config.has_diverter_valve) {
+          $('#bomDiverterValveStatus span').removeClass();
+          $('#bomDiverterValveStatus span').addClass("badge");
+          if (msg.diverter_valve_open) {
+            $("#bomDiverterValveStatus span").addClass("text-bg-secondary");
+            $('#bomDiverterValveStatus span').html("OPEN (OVERBOARD)");
+          }
+          else {
+            $("#bomDiverterValveStatus span").addClass("text-bg-primary");
+            $('#bomDiverterValveStatus span').html("CLOSED (TO TANKS)");
+          }
+        }
+        else
+          $('#bomDiverterValveStatus').hide();
+
+        if (current_config.has_flush_valve) {
+          $('#bomFlushValveStatus span').removeClass();
+          $('#bomFlushValveStatus span').addClass("badge");
+          if (msg.flush_valve_open) {
+            $("#bomFlushValveStatus span").addClass("text-bg-primary");
+            $('#bomFlushValveStatus span').html("OPEN");
+          }
+          else {
+            $("#bomFlushValveStatus span").addClass("text-bg-secondary");
+            $('#bomFlushValveStatus span').html("CLOSED");
+          }
+        }
+        else
+          $('#bomFlushValveStatus').hide();
+
+        if (current_config.has_cooling_fan) {
+          $('#bomFanStatus span').removeClass();
+          $('#bomFanStatus span').addClass("badge");
+          if (msg.cooling_fan_on) {
+            $("#bomFanStatus span").addClass("text-bg-primary");
+            $('#bomFanStatus span').html("ON");
+          }
+          else {
+            $('#bomFanStatus span').html("OFF");
+            $("#bomFanStatus span").addClass("text-bg-secondary");
+          }
+        }
+        else
+          $('#bomFanStatus').hide();
+
       }
 
       page_ready.control = true;
@@ -1616,6 +1618,28 @@ function show_alert(message, type = 'danger') {
   },
     750 //speed
   );
+}
+
+function show_brineomatic_result(result_div, result) {
+  if (result != "STARTUP") {
+    if (brineomatic_result_text[result])
+      $(result_div).html(brineomatic_result_text[result]);
+    else
+      $(result_div).html(result);
+
+    $(result_div).removeClass();
+    $(result_div).addClass("badge");
+    if (result.startsWith("SUCCESS"))
+      $(result_div).addClass("text-bg-success");
+    else if (result == "USER_STOP")
+      $(result_div).addClass("text-bg-primary");
+    else if (result.startsWith("ERR"))
+      $(result_div).addClass("text-bg-error");
+    else
+      $(result_div).addClass("text-bg-warning");
+  }
+  else
+    $(`${result_div}Row`).hide();
 }
 
 function manual_brineomatic() {

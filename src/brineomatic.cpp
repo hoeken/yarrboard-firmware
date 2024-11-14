@@ -285,10 +285,12 @@ void Brineomatic::init()
     totalCycles = 0;
 
   autoFlushEnabled = true;
-  diversionValveOpen = false;
-  highPressurePumpEnabled = false;
-  boostPumpEnabled = false;
-  flushValveOpen = false;
+
+  boostPumpOnState = false;
+  highPressurePumpOnState = false;
+  diverterValveOpenState = true;
+  flushValveOpenState = false;
+  coolingFanOnState = false;
 
   currentTankLevel = -1;
   currentWaterTemperature = 25.0;
@@ -437,7 +439,7 @@ void Brineomatic::depickle(uint64_t duration)
 
 void Brineomatic::stop()
 {
-  if (currentStatus == Status::RUNNING || currentStatus == Status::FLUSHING || currentStatus == Status::PICKLING) {
+  if (currentStatus == Status::RUNNING || currentStatus == Status::FLUSHING || currentStatus == Status::PICKLING || currentStatus == Status::DEPICKLING) {
     stopFlag = true;
   }
 }
@@ -467,40 +469,30 @@ bool Brineomatic::initializeHardware()
   return false;
 }
 
-bool Brineomatic::hasDiverterValve()
+bool Brineomatic::hasBoostPump()
 {
-  return flushValve != nullptr;
+  return boostPump != nullptr;
 }
 
-void Brineomatic::openDiverterValve()
+bool Brineomatic::isBoostPumpOn()
 {
-  diverterValve->write(diverterValveOpenAngle);
-  vTaskDelay(pdMS_TO_TICKS(1000));
-  diverterValve->disable();
+  return boostPumpOnState;
 }
 
-void Brineomatic::closeDiverterValve()
+void Brineomatic::enableBoostPump()
 {
-  diverterValve->write(diverterValveClosedAngle);
-  vTaskDelay(pdMS_TO_TICKS(1000));
-  diverterValve->disable();
+  if (hasBoostPump()) {
+    boostPumpOnState = true;
+    boostPump->setState(true);
+  } else
+    boostPumpOnState = false;
 }
 
-bool Brineomatic::hasFlushValve()
+void Brineomatic::disableBoostPump()
 {
-  return flushValve != nullptr;
-}
-
-void Brineomatic::openFlushValve()
-{
-  if (hasFlushValve())
-    flushValve->setState(true);
-}
-
-void Brineomatic::closeFlushValve()
-{
-  if (hasFlushValve())
-    flushValve->setState(false);
+  if (hasBoostPump())
+    boostPump->setState(false);
+  boostPumpOnState = false;
 }
 
 bool Brineomatic::hasHighPressurePump()
@@ -508,33 +500,108 @@ bool Brineomatic::hasHighPressurePump()
   return highPressurePump != nullptr;
 }
 
+bool Brineomatic::isHighPressurePumpOn()
+{
+  return highPressurePumpOnState;
+}
+
 void Brineomatic::enableHighPressurePump()
 {
-  if (hasHighPressurePump())
+  if (hasHighPressurePump()) {
     highPressurePump->setState(true);
+    highPressurePumpOnState = true;
+  } else
+    highPressurePumpOnState = false;
 }
 
 void Brineomatic::disableHighPressurePump()
 {
   if (hasHighPressurePump())
     highPressurePump->setState(false);
+  highPressurePumpOnState = false;
 }
 
-bool Brineomatic::hasBoostPump()
+bool Brineomatic::hasDiverterValve()
 {
-  return boostPump != nullptr;
+  return flushValve != nullptr;
 }
 
-void Brineomatic::enableBoostPump()
+bool Brineomatic::isDiverterValveOpen()
 {
-  if (hasBoostPump())
-    boostPump->setState(true);
+  return diverterValveOpenState;
 }
 
-void Brineomatic::disableBoostPump()
+void Brineomatic::openDiverterValve()
 {
-  if (hasBoostPump())
-    boostPump->setState(false);
+  if (hasDiverterValve()) {
+    diverterValveOpenState = true;
+    diverterValve->write(diverterValveOpenAngle);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    diverterValve->disable();
+  } else
+    diverterValveOpenState = false;
+}
+
+void Brineomatic::closeDiverterValve()
+{
+  if (hasDiverterValve()) {
+    diverterValve->write(diverterValveClosedAngle);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    diverterValve->disable();
+  }
+  diverterValveOpenState = false;
+}
+
+bool Brineomatic::hasFlushValve()
+{
+  return flushValve != nullptr;
+}
+
+bool Brineomatic::isFlushValveOpen()
+{
+  return flushValveOpenState;
+}
+
+void Brineomatic::openFlushValve()
+{
+  if (hasFlushValve()) {
+    flushValve->setState(true);
+    flushValveOpenState = true;
+  } else
+    flushValveOpenState = false;
+}
+
+void Brineomatic::closeFlushValve()
+{
+  if (hasFlushValve())
+    flushValve->setState(false);
+  flushValveOpenState = false;
+}
+
+bool Brineomatic::hasCoolingFan()
+{
+  return coolingFan != nullptr;
+}
+
+bool Brineomatic::isCoolingFanOn()
+{
+  return coolingFanOnState;
+}
+
+void Brineomatic::enableCoolingFan()
+{
+  if (hasCoolingFan()) {
+    coolingFan->setState(true);
+    coolingFanOnState = true;
+  } else
+    coolingFanOnState = false;
+}
+
+void Brineomatic::disableCoolingFan()
+{
+  if (hasCoolingFan())
+    coolingFan->setState(false);
+  coolingFanOnState = false;
 }
 
 float Brineomatic::getFilterPressure()

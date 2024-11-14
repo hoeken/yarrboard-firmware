@@ -1658,6 +1658,11 @@ void generateConfigJSON(JsonVariant output)
 
 #ifdef YB_IS_BRINEOMATIC
   output["brineomatic"] = true;
+  output["has_boost_pump"] = wm.hasBoostPump();
+  output["has_high_pressure_pump"] = wm.hasHighPressurePump();
+  output["has_diverter_valve"] = wm.hasDiverterValve();
+  output["has_flush_valve"] = wm.hasFlushValve();
+  output["has_cooling_fan"] = wm.hasCoolingFan();
 #endif
 }
 
@@ -1748,6 +1753,17 @@ void generateUpdateJSON(JsonVariant output)
   output["filter_pressure"] = wm.getFilterPressure();
   output["membrane_pressure"] = wm.getMembranePressure();
   output["tank_level"] = wm.getTankLevel();
+
+  if (wm.hasBoostPump())
+    output["boost_pump_on"] = wm.isBoostPumpOn();
+  if (wm.hasHighPressurePump())
+    output["high_pressure_pump_on"] = wm.isHighPressurePumpOn();
+  if (wm.hasDiverterValve())
+    output["diverter_valve_open"] = wm.isDiverterValveOpen();
+  if (wm.hasFlushValve())
+    output["flush_valve_open"] = wm.isFlushValveOpen();
+  if (wm.hasCoolingFan())
+    output["cooling_fan_on"] = wm.isCoolingFanOn();
 
   if (!strcmp(wm.getStatus(), "IDLE"))
     output["next_flush_countdown"] = wm.getNextFlushCountdown();

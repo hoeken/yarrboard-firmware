@@ -36,6 +36,7 @@ class Brineomatic
     RelayChannel* flushValve = NULL;
     RelayChannel* boostPump = NULL;
     RelayChannel* highPressurePump = NULL;
+    RelayChannel* coolingFan = NULL;
     ServoChannel* diverterValve = NULL;
     ServoChannel* highPressureValve = NULL;
 
@@ -63,8 +64,8 @@ class Brineomatic
       STOPPING,
       FLUSHING,
       PICKLING,
-      DEPICKLING,
-      PICKLED
+      PICKLED,
+      DEPICKLING
     };
 
     enum class Result {
@@ -108,24 +109,33 @@ class Brineomatic
 
     bool initializeHardware();
 
-    bool hasDiverterValve();
-    void openDiverterValve();
-    void closeDiverterValve();
+    bool isBoostPumpOn();
+    bool hasBoostPump();
+    void enableBoostPump();
+    void disableBoostPump();
 
-    bool hasFlushValve();
-    void openFlushValve();
-    void closeFlushValve();
-
+    bool isHighPressurePumpOn();
     bool hasHighPressurePump();
     void enableHighPressurePump();
     void disableHighPressurePump();
 
+    bool isDiverterValveOpen();
+    bool hasDiverterValve();
+    void openDiverterValve();
+    void closeDiverterValve();
+
+    bool isFlushValveOpen();
+    bool hasFlushValve();
+    void openFlushValve();
+    void closeFlushValve();
+
+    bool isCoolingFanOn();
+    bool hasCoolingFan();
+    void enableCoolingFan();
+    void disableCoolingFan();
+
     bool hasHighPressureValve();
     void manageHighPressureValve();
-
-    bool hasBoostPump();
-    void enableBoostPump();
-    void disableBoostPump();
 
     const char* getStatus();
     const char* resultToString(Result result);
@@ -186,10 +196,11 @@ class Brineomatic
     uint64_t depickleStart = 0;
     uint64_t depickleDuration = 15ULL * 60 * 1000000; // 15 minute default, in microseconds
 
-    bool highPressurePumpEnabled;
-    bool boostPumpEnabled;
-    bool diversionValveOpen;
-    bool flushValveOpen;
+    bool boostPumpOnState;
+    bool highPressurePumpOnState;
+    bool diverterValveOpenState;
+    bool flushValveOpenState;
+    bool coolingFanOnState;
 
     float currentTankLevel;
     float currentWaterTemperature;
