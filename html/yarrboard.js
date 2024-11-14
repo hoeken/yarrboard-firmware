@@ -51,15 +51,18 @@ const brineomatic_result_text = {
   "STARTUP": "Starting up.",
   "SUCCESS": "Success",
   "USER_STOP": "Stopped by user",
-  "ERR_BOOST_PRESSURE_TIMEOUT": "Boost Pressure Timeout",
+  "ERR_FLUSH_VALVE_TIMEOUT": "Flush Valve Timeout",
+  "ERR_FILTER_PRESSURE_TIMEOUT": "Filter Pressure Timeout",
   "ERR_FILTER_PRESSURE_LOW": "Filter Pressure Low",
   "ERR_FILTER_PRESSURE_HIGH": "Filter Pressure High",
+  "ERR_MEMBRANE_PRESSURE_TIMEOUT": "Membrane Pressure Timeout",
   "ERR_MEMBRANE_PRESSURE_LOW": "Membrane Pressure Low",
   "ERR_MEMBRANE_PRESSURE_HIGH": "Membrane Pressure High",
   "ERR_FLOWRATE_TIMEOUT": "Flowrate Timeout",
   "ERR_FLOWRATE_LOW": "Flowrate Low",
   "ERR_SALINITY_TIMEOUT": "Salinity Timeout",
-  "ERR_SALINITY_HIGH": "Salinity High"
+  "ERR_SALINITY_HIGH": "Salinity High",
+  "ERR_PRODUCTION_TIMEOUT": "Production Timeout"
 }
 
 const BoardNameEdit = (name) => `

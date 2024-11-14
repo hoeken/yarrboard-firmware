@@ -22,7 +22,10 @@
 # BRINEOMATIC
 
 * add indicator for diverter valve status
-* add timeouts to while() loops in state machine
+* set flowrate to zero once we start our run
+* minus flowrate from totalFlowrate too
+* temperature -> motor temperature
+* add motor temperature check + error
 * add fan control based on temperature
 * add mid-level commands to set_watermaker
     * boost_pump
@@ -46,7 +49,10 @@
     * diverter valve relay
     * default intervals for flush, etc.
     * options for display units
+    * timeouts
+    * high/low values
 * add tds calibration
+* ntp server and next flush being an actual time that is stored in preferences (survive reboot)
 
 # LONG TERM:
 

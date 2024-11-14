@@ -71,15 +71,18 @@ class Brineomatic
       STARTUP,
       SUCCESS,
       USER_STOP,
-      ERR_BOOST_PRESSURE_TIMEOUT,
+      ERR_FLUSH_VALVE_TIMEOUT,
+      ERR_FILTER_PRESSURE_TIMEOUT,
       ERR_FILTER_PRESSURE_LOW,
       ERR_FILTER_PRESSURE_HIGH,
+      ERR_MEMBRANE_PRESSURE_TIMEOUT,
       ERR_MEMBRANE_PRESSURE_LOW,
       ERR_MEMBRANE_PRESSURE_HIGH,
       ERR_FLOWRATE_TIMEOUT,
       ERR_FLOWRATE_LOW,
       ERR_SALINITY_TIMEOUT,
-      ERR_SALINITY_HIGH
+      ERR_SALINITY_HIGH,
+      ERR_PRODUCTION_TIMEOUT
     };
 
     void setFilterPressure(float pressure);
@@ -99,7 +102,7 @@ class Brineomatic
     void depickle(uint64_t duration);
     void stop();
 
-    void initializeHardware();
+    bool initializeHardware();
 
     bool hasDiverterValve();
     void openDiverterValve();
@@ -213,6 +216,13 @@ class Brineomatic
     uint8_t flowrateLowErrorCount = 0;
     uint8_t salinityHighErrorCount = 0;
 
+    uint64_t flushValveTimeout = 1ULL * 60 * 1000000;       // 1 minute default, in microseconds
+    uint64_t filterPressureTimeout = 1ULL * 60 * 1000000;   // 1 minute default, in microseconds
+    uint64_t membranePressureTimeout = 1ULL * 60 * 1000000; // 1 minute default, in microseconds
+    uint64_t flowRateTimeout = 1ULL * 60 * 1000000;         // 1 minute default, in microseconds
+    uint64_t salinityTimeout = 1ULL * 60 * 1000000;         // 1 minute default, in microseconds
+    uint64_t productionTimeout = 12ULL * 60 * 60 * 1000000; // 12 hour default, in microseconds
+
     bool checkStopFlag();
     bool checkMembranePressureHigh();
     bool checkMembranePressureLow();
@@ -220,7 +230,8 @@ class Brineomatic
     bool checkFilterPressureLow();
     bool checkFlowrateLow();
     bool checkSalinityHigh();
-    bool checkFlowAndSalinityStable();
+    bool waitForFlowrate();
+    bool waitForSalinity();
     bool checkTankLevel();
 };
 
