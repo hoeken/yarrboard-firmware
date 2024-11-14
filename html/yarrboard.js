@@ -775,9 +775,11 @@ function start_websocket() {
       //UI for brineomatic
       $('bomInformationDiv').hide();
       $('bomControlDiv').hide();
+      $('#bomStatsDiv').hide();
       if (msg.brineomatic) {
         $('#bomInformationDiv').show();
         $('#bomControlDiv').show();
+        $('#bomStatsDiv').show();
       }
 
       //also hide our other stuff here...
@@ -1184,7 +1186,7 @@ function start_websocket() {
           $("#flushBrineomatic").show();
           $("#depickleBrineomatic").show();
         }
-        else if (msg.status == "FLUSHING" || msg.status == "PICKLING" || msg.status == "DEPICKLING")
+        else if (msg.status == "RUNNING" || msg.status == "FLUSHING" || msg.status == "PICKLING" || msg.status == "DEPICKLING")
           $("#stopBrineomatic").show();
 
         if (msg.run_result && msg.run_result != "STARTUP") {
@@ -1418,6 +1420,14 @@ function start_websocket() {
             $('#switchOnCount' + ch.id).html(ch.state_change_count.toLocaleString("en-US"));
           }
         }
+      }
+
+      if (msg.brineomatic) {
+        let totalVolume = Math.round(msg.total_volume);
+        let totalRuntime = (msg.total_runtime / (60 * 60 * 1000000)).toFixed(1);
+        $("#bomTotalCycles").html(msg.total_cycles);
+        $("#bomTotalVolume").html(`${totalVolume}L`);
+        $("#bomTotalRuntime").html(`${totalRuntime} hours`);
       }
 
       page_ready.stats = true;

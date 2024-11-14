@@ -22,11 +22,6 @@
 # BRINEOMATIC
 
 * add indicator for diverter valve status
-* add lifetime flowmeter accumulator
-    * show on stats page
-* add a total runtime counter.
-    * save to preferences, update it at the end of every run / every 5 minutes
-    * show on stats page
 * add timeouts to while() loops in state machine
 * add water_temperature
 * add tank_level - set externally
@@ -43,7 +38,6 @@
     * options for display units
 * add tds calibration
 * update UI to only show relevant data during the right mode
-* add a DEPICKLING mode that uses seawater instead of fresh to depickle.
 
 # LONG TERM:
 

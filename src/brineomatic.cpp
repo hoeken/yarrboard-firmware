@@ -276,9 +276,14 @@ void Brineomatic::init()
     totalVolume = 0.0;
 
   if (preferences.isKey("bomTotRuntime"))
-    totalRuntime = preferences.getFloat("bomTotRuntime");
+    totalRuntime = preferences.getULong64("bomTotRuntime");
   else
     totalRuntime = 0.0;
+
+  if (preferences.isKey("bomTotCycles"))
+    totalCycles = preferences.getUInt("bomTotCycles");
+  else
+    totalCycles = 0;
 
   autoFlushEnabled = true;
   diversionValveOpen = false;
@@ -563,6 +568,16 @@ float Brineomatic::getTotalVolume()
   return totalVolume;
 }
 
+uint64_t Brineomatic::getTotalRuntime()
+{
+  return totalRuntime;
+}
+
+uint32_t Brineomatic::getTotalCycles()
+{
+  return totalCycles;
+}
+
 float Brineomatic::getTemperature()
 {
   return currentTemperature;
@@ -822,6 +837,8 @@ void Brineomatic::runStateMachine()
       runtimeStart = esp_timer_get_time();
       currentVolume = 0;
 
+      uint64_t lastRuntimeUpdate = runtimeStart;
+
       initializeHardware();
 
       if (hasBoostPump()) {
@@ -889,6 +906,13 @@ void Brineomatic::runStateMachine()
         if (checkStopFlag())
           return;
 
+        // save our total runtime occasionally (every minute)
+        if (esp_timer_get_time() - lastRuntimeUpdate > 60000000) {
+          totalRuntime += esp_timer_get_time() - lastRuntimeUpdate;
+          preferences.putULong64("bomTotRuntime", totalRuntime);
+          lastRuntimeUpdate = esp_timer_get_time();
+        }
+
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 
@@ -896,6 +920,9 @@ void Brineomatic::runStateMachine()
 
       // save our total volume produced
       preferences.putFloat("bomTotVolume", totalVolume);
+
+      totalCycles++;
+      preferences.putUInt("bomTotCycles", totalCycles);
 
       runResult = Result::SUCCESS;
       currentStatus = Status::STOPPING;

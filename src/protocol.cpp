@@ -1735,7 +1735,6 @@ void generateUpdateJSON(JsonVariant output)
   output["temperature"] = wm.getTemperature();
   output["flowrate"] = wm.getFlowrate();
   output["volume"] = wm.getVolume();
-  output["total_volume"] = wm.getTotalVolume();
   output["salinity"] = wm.getSalinity();
   output["filter_pressure"] = wm.getFilterPressure();
   output["membrane_pressure"] = wm.getMembranePressure();
@@ -1869,6 +1868,13 @@ void generateStatsJSON(JsonVariant output)
   // info about each of our fans
   for (byte i = 0; i < YB_FAN_COUNT; i++)
     output["fans"][i]["rpm"] = fans_last_rpm[i];
+#endif
+
+#ifdef YB_IS_BRINEOMATIC
+  output["brineomatic"] = true;
+  output["total_cycles"] = wm.getTotalCycles();
+  output["total_volume"] = wm.getTotalVolume();
+  output["total_runtime"] = wm.getTotalRuntime();
 #endif
 }
 

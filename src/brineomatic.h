@@ -48,7 +48,10 @@ class Brineomatic
     float highPressureValveCloseMax;
 
     float currentVolume;
+
+    uint32_t totalCycles;
     float totalVolume;
+    uint64_t totalRuntime;
 
     Brineomatic();
     void init();
@@ -139,7 +142,9 @@ class Brineomatic
     float getFlowrate();
     float getFlowrateMinimum();
     float getVolume();
+    uint32_t getTotalCycles();
     float getTotalVolume();
+    uint64_t getTotalRuntime();
     float getTemperature();
     float getSalinity();
     float getSalinityMaximum();
@@ -179,8 +184,6 @@ class Brineomatic
     float currentSalinity;
     float currentFilterPressure;
     float currentMembranePressure;
-
-    float totalRuntime;
 
     float membranePressureTarget;
     float membranePressurePIDOutput;
