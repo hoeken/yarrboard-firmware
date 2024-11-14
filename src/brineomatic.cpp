@@ -40,7 +40,6 @@ ADS1115 brineomatic_adc(YB_ADS1115_ADDRESS);
 byte current_ads1115_channel = 0;
 
 GravityTDS gravityTds;
-float water_temperature = 25;
 
 void brineomatic_setup()
 {
@@ -218,9 +217,9 @@ void measure_temperature()
 
 void measure_salinity(int16_t reading)
 {
-  gravityTds.setTemperature(water_temperature); // set the temperature and execute temperature compensation
-  gravityTds.update(reading);                   // sample and calculate
-  float tdsReading = gravityTds.getTdsValue();  // then get the value
+  gravityTds.setTemperature(wm.getWaterTemperature()); // set the temperature and execute temperature compensation
+  gravityTds.update(reading);                          // sample and calculate
+  float tdsReading = gravityTds.getTdsValue();         // then get the value
   wm.setSalinity(tdsReading);
 }
 
@@ -290,6 +289,9 @@ void Brineomatic::init()
   highPressurePumpEnabled = false;
   boostPumpEnabled = false;
   flushValveOpen = false;
+
+  currentTankLevel = -1;
+  currentWaterTemperature = 25.0;
   currentTemperature = 0.0;
   currentFlowrate = 0.0;
   currentVolume = 0.0;
@@ -578,6 +580,21 @@ uint32_t Brineomatic::getTotalCycles()
   return totalCycles;
 }
 
+float Brineomatic::getWaterTemperature()
+{
+  return currentWaterTemperature;
+}
+
+void Brineomatic::setWaterTemperature(float temp)
+{
+  currentWaterTemperature = temp;
+}
+
+void Brineomatic::setTankLevel(float level)
+{
+  currentTankLevel = level;
+}
+
 float Brineomatic::getTemperature()
 {
   return currentTemperature;
@@ -591,6 +608,11 @@ float Brineomatic::getSalinity()
 float Brineomatic::getSalinityMaximum()
 {
   return salinityMaximum;
+}
+
+float Brineomatic::getTankLevel()
+{
+  return currentTankLevel;
 }
 
 const char* Brineomatic::getStatus()
@@ -883,7 +905,7 @@ void Brineomatic::runStateMachine()
 
       sendDebug("Flow and Salinity OK");
 
-      while ((desiredRuntime == 0 && desiredVolume == 0) || (getRuntimeElapsed() < desiredRuntime) || (getVolume() < desiredVolume)) {
+      while (true) {
 
         if (checkFilterPressureLow())
           return;
@@ -905,6 +927,18 @@ void Brineomatic::runStateMachine()
 
         if (checkStopFlag())
           return;
+
+        // are we going for time?
+        if (desiredRuntime > 0 && getRuntimeElapsed() >= desiredRuntime)
+          break;
+
+        // are we going for volume?
+        if (desiredVolume > 0 && getVolume() >= desiredVolume)
+          break;
+
+        // tank level means we're finished successfully
+        if (checkTankLevel())
+          break;
 
         // save our total runtime occasionally (every minute)
         if (esp_timer_get_time() - lastRuntimeUpdate > 60000000) {
@@ -1190,6 +1224,11 @@ bool Brineomatic::checkFlowAndSalinityStable()
   }
 
   return true;
+}
+
+bool Brineomatic::checkTankLevel()
+{
+  return currentTankLevel >= 0.95;
 }
 
 #endif

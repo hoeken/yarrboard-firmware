@@ -1134,6 +1134,7 @@ function start_websocket() {
 
       if (msg.brineomatic) {
         let temperature = Math.round(msg.temperature);
+        let water_temperature = Math.round(msg.water_temperature);
         let flowrate = Math.round(msg.flowrate);
         let volume = msg.volume.toFixed(1);
         let salinity = Math.round(msg.salinity);
@@ -1143,6 +1144,7 @@ function start_websocket() {
         let membrane_pressure = Math.round(msg.membrane_pressure);
         if (membrane_pressure < 0 && membrane_pressure > -10)
           membrane_pressure = 0;
+        let tank_level = Math.round(msg.tank_level * 100);
 
         $("#bomStatus").html(msg.status);
         $("#bomStatus").removeClass();
@@ -1317,9 +1319,17 @@ function start_websocket() {
           $("#bomDepickleCountdown").hide();
 
 
+        $("#bomWaterTemperature").html(`${water_temperature}C`);
         $("#bomTemperature").html(`${temperature}C`);
         $("#bomFlowrate").html(`${flowrate} LPH`);
         $("#bomVolume").html(`${volume}L`);
+
+        if (msg.tank_level >= 0) {
+          $("#bomTankLevelData").html(`${tank_level}%`);
+          $("#bomTankLevel").show();
+        }
+        else
+          $("#bomTankLevel").show();
 
         if (salinity < 5000)
           $("#bomSalinity").html(`${salinity} PPM`);

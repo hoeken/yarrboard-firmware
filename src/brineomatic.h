@@ -87,7 +87,9 @@ class Brineomatic
     void setMembranePressureTarget(float pressure);
     void setFlowrate(float flowrate);
     void setTemperature(float temp);
+    void setWaterTemperature(float temp);
     void setSalinity(float salinity);
+    void setTankLevel(float level);
 
     void start();
     void startDuration(uint64_t duration);
@@ -146,8 +148,10 @@ class Brineomatic
     float getTotalVolume();
     uint64_t getTotalRuntime();
     float getTemperature();
+    float getWaterTemperature();
     float getSalinity();
     float getSalinityMaximum();
+    float getTankLevel();
 
     void runStateMachine();
 
@@ -179,6 +183,8 @@ class Brineomatic
     bool diversionValveOpen;
     bool flushValveOpen;
 
+    float currentTankLevel;
+    float currentWaterTemperature;
     float currentTemperature;
     float currentFlowrate;
     float currentSalinity;
@@ -215,6 +221,7 @@ class Brineomatic
     bool checkFlowrateLow();
     bool checkSalinityHigh();
     bool checkFlowAndSalinityStable();
+    bool checkTankLevel();
 };
 
 extern Brineomatic wm;

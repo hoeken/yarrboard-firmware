@@ -230,8 +230,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleDepickleWatermaker(input, output);
     else if (!strcmp(cmd, "stop_watermaker"))
       return handleStopWatermaker(input, output);
-    else if (!strcmp(cmd, "set_watermaker_diverter_valve"))
-      return handleWaterMakerDiverterValve(input, output);
+    else if (!strcmp(cmd, "set_watermaker"))
+      return handleSetWatermaker(input, output);
     else if (!strcmp(cmd, "logout"))
       return handleLogout(input, output, mode, connection);
   }
@@ -1544,17 +1544,25 @@ void handleStopWatermaker(JsonVariantConst input, JsonVariant output)
     return generateErrorJSON(output, "Watermaker must be in RUNNING, FLUSHING, or PICKLING mode to stop.");
 }
 
-void handleWaterMakerDiverterValve(JsonVariantConst input, JsonVariant output)
+void handleSetWatermaker(JsonVariantConst input, JsonVariant output)
 {
-  if (!input["open"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'open' is a required parameter");
+  if (input["water_temperature"].is<JsonVariantConst>()) {
+    float temp = input["water_temperature"];
+    wm.setWaterTemperature(temp);
+  }
 
-  bool state = input["open"];
+  if (input["tank_level"].is<JsonVariantConst>()) {
+    float level = input["tank_level"];
+    wm.setTankLevel(level);
+  }
 
-  if (state)
-    wm.openDiverterValve();
-  else
-    wm.closeDiverterValve();
+  if (input["diverter_valve"].is<JsonVariantConst>()) {
+    bool state = input["open"];
+    if (state)
+      wm.openDiverterValve();
+    else
+      wm.closeDiverterValve();
+  }
 }
 
 void generateConfigJSON(JsonVariant output)
@@ -1733,11 +1741,13 @@ void generateUpdateJSON(JsonVariant output)
   output["pickle_result"] = wm.resultToString(wm.getPickleResult());
   output["depickle_result"] = wm.resultToString(wm.getDepickleResult());
   output["temperature"] = wm.getTemperature();
+  output["water_temperature"] = wm.getWaterTemperature();
   output["flowrate"] = wm.getFlowrate();
   output["volume"] = wm.getVolume();
   output["salinity"] = wm.getSalinity();
   output["filter_pressure"] = wm.getFilterPressure();
   output["membrane_pressure"] = wm.getMembranePressure();
+  output["tank_level"] = wm.getTankLevel();
 
   if (!strcmp(wm.getStatus(), "IDLE"))
     output["next_flush_countdown"] = wm.getNextFlushCountdown();

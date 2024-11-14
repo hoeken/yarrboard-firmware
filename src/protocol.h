@@ -116,7 +116,7 @@ void handleFlushWatermaker(JsonVariantConst input, JsonVariant output);
 void handlePickleWatermaker(JsonVariantConst input, JsonVariant output);
 void handleDepickleWatermaker(JsonVariantConst input, JsonVariant output);
 void handleStopWatermaker(JsonVariantConst input, JsonVariant output);
-void handleWaterMakerDiverterValve(JsonVariantConst input, JsonVariant output);
+void handleSetWatermaker(JsonVariantConst input, JsonVariant output);
 
 void generateHelloJSON(JsonVariant output, UserRole role);
 void generateUpdateJSON(JsonVariant output);
