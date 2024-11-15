@@ -69,6 +69,8 @@ const brineomatic_result_text = {
   "ERR_MOTOR_TEMPERATURE_HIGH": "Motor Temperature High",
 }
 
+let motorTemperatureGauge;
+
 const BoardNameEdit = (name) => `
 <div class="col-12">
   <h4>Board Name</h4>
@@ -787,6 +789,41 @@ function start_websocket() {
         $('#bomInformationDiv').show();
         $('#bomControlDiv').show();
         $('#bomStatsDiv').show();
+
+        motorTemperatureGauge = new RadialGauge({
+          renderTo: "motorTemperatureGauge",
+          width: 200,
+          height: 200,
+          units: '°C',
+          title: "Motor Temperature",
+          value: 0,
+          minValue: 0,
+          maxValue: 70,
+          majorTicks: [
+            '0', '10', '20', '30', '40', '50', '60', '70'
+          ],
+          minorTicks: 2,
+          strokeTicks: false,
+          highlights: [
+            { from: 0, to: 10, color: 'rgba(0,255,0,.15)' },
+            { from: 10, to: 20, color: 'rgba(255,255,0,.15)' },
+            { from: 20, to: 30, color: 'rgba(255,30,0,.25)' },
+            { from: 40, to: 50, color: 'rgba(255,0,225,.25)' },
+            { from: 60, to: 70, color: 'rgba(0,0,255,.25)' },
+          ],
+          // colorPlate: '#222',
+          // colorMajorTicks: '#f5f5f5',
+          // colorMinorTicks: '#ddd',
+          // colorTitle: '#fff',
+          // colorUnits: '#ccc',
+          // colorNumbers: '#eee',
+          // colorNeedle: 'rgba(240, 128, 128, 1)',
+          // colorNeedleEnd: 'rgba(255, 160, 122, .9)',
+          valueBox: true,
+          animationRule: 'bounce',
+          animationDuration: 100
+        });
+        motorTemperatureGauge.draw();
       }
 
       //also hide our other stuff here...
@@ -1153,6 +1190,10 @@ function start_websocket() {
           membrane_pressure = 0;
         let tank_level = (msg.tank_level * 100).toFixed(1);
 
+        //update our gauges.
+        motorTemperatureGauge.value = motor_temperature;
+        motorTemperatureGauge.draw();
+
         $("#bomStatus").html(msg.status);
         $("#bomStatus").removeClass();
         $("#bomStatus").addClass("badge");
@@ -1247,12 +1288,12 @@ function start_websocket() {
           $("#bomDepickleCountdown").hide();
 
         if (water_temperature > 0)
-          $("#bomWaterTemperatureData").html(`${water_temperature}C`);
+          $("#bomWaterTemperatureData").html(`${water_temperature}°C`);
         else
           $("#bomWaterTemperature").hide();
 
         if (motor_temperature > 0)
-          $("#bomMotorTemperatureData").html(`${motor_temperature}C`);
+          $("#bomMotorTemperatureData").html(`${motor_temperature}°C`);
         else
           $("#bomMotorTemperature").hide();
 
