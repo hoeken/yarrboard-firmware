@@ -187,13 +187,13 @@ void measure_flowmeter()
     float flowrate = liters_per_second * 3600;
 
     // update our volume
-    wm.currentVolume += pulse_counter / flowmeterPulsesPerLiter;
-    wm.totalVolume += pulse_counter / flowmeterPulsesPerLiter;
+    if ((wm.hasDiverterValve() && !wm.isDiverterValveOpen()) || !wm.hasDiverterValve()) {
+      wm.currentVolume += pulse_counter / flowmeterPulsesPerLiter;
+      wm.totalVolume += pulse_counter / flowmeterPulsesPerLiter;
+    }
 
     // reset counter
-    // detachInterrupt(digitalPinToInterrupt(YB_FLOWMETER_PIN));
     pulse_counter = 0;
-    // attachInterrupt(digitalPinToInterrupt(YB_FLOWMETER_PIN), flowmeter_interrupt, FALLING);
 
     // store microseconds when tacho was measured the last time
     lastFlowmeterCheckMicros = esp_timer_get_time();

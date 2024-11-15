@@ -1256,8 +1256,15 @@ function start_websocket() {
         else
           $("#bomMotorTemperature").hide();
 
-        $("#bomFlowrateData").html(`${flowrate} LPH`);
-        $("#bomVolumeData").html(`${volume}L`);
+        if (flowrate > 0)
+          $("#bomFlowrateData").html(`${flowrate} LPH`);
+        else
+          $("#bomFlowrate").hide();
+
+        if (volume > 0)
+          $("#bomVolumeData").html(`${volume}L`);
+        else
+          $("#bomVolume").hide();
 
         if (msg.tank_level >= 0)
           $("#bomTankLevelData").html(`${tank_level}%`);

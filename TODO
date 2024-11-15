@@ -21,10 +21,6 @@
 
 # BRINEOMATIC
 
-* volume
-    * set volume to zero once we start our run
-    * minus volume from totalVolume too
-    * make sure total volume is getting handled correctly
 * add progress bars for timed runs (run, flush, pickle, depickle)
 * add meter bars for things we have a high and low for.
     * can we find a lightweight js gauge library?
