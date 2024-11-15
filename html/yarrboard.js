@@ -69,6 +69,10 @@ const brineomatic_result_text = {
   "ERR_MOTOR_TEMPERATURE_HIGH": "Motor Temperature High",
 }
 
+let filterPressureGauge;
+let membranePressureGauge;
+let flowrateGauge;
+let salinityGauge;
 let motorTemperatureGauge;
 
 const BoardNameEdit = (name) => `
@@ -790,10 +794,80 @@ function start_websocket() {
         $('#bomControlDiv').show();
         $('#bomStatsDiv').show();
 
+        filterPressureGauge = new RadialGauge({
+          renderTo: "filterPressureGauge",
+          width: 175,
+          height: 175,
+          units: 'PSI',
+          title: false,
+          value: 0,
+          minValue: 0,
+          maxValue: 100,
+          majorTicks: [
+            '0', '10', '20', '30', '40', '50', '60', '70'
+          ],
+          minorTicks: 2,
+          strokeTicks: false,
+          highlights: [
+            { from: 0, to: 10, color: 'rgba(0,255,0,.15)' },
+            { from: 10, to: 20, color: 'rgba(255,255,0,.15)' },
+            { from: 20, to: 30, color: 'rgba(255,30,0,.25)' },
+            { from: 40, to: 50, color: 'rgba(255,0,225,.25)' },
+            { from: 60, to: 70, color: 'rgba(0,0,255,.25)' },
+          ],
+          // colorPlate: '#222',
+          // colorMajorTicks: '#f5f5f5',
+          // colorMinorTicks: '#ddd',
+          // colorTitle: '#fff',
+          // colorUnits: '#ccc',
+          // colorNumbers: '#eee',
+          // colorNeedle: 'rgba(240, 128, 128, 1)',
+          // colorNeedleEnd: 'rgba(255, 160, 122, .9)',
+          valueBox: true,
+          animationRule: 'bounce',
+          animationDuration: 100
+        });
+        filterPressureGauge.draw();
+
+        membranePressureGauge = new RadialGauge({
+          renderTo: "membranePressureGauge",
+          width: 175,
+          height: 175,
+          units: 'PSI',
+          title: false,
+          value: 0,
+          minValue: 0,
+          maxValue: 1000,
+          // majorTicks: [
+          //   '0', '10', '20', '30', '40', '50', '60', '70'
+          // ],
+          minorTicks: 2,
+          strokeTicks: false,
+          highlights: [
+            { from: 0, to: 10, color: 'rgba(0,255,0,.15)' },
+            { from: 10, to: 20, color: 'rgba(255,255,0,.15)' },
+            { from: 20, to: 30, color: 'rgba(255,30,0,.25)' },
+            { from: 40, to: 50, color: 'rgba(255,0,225,.25)' },
+            { from: 60, to: 70, color: 'rgba(0,0,255,.25)' },
+          ],
+          // colorPlate: '#222',
+          // colorMajorTicks: '#f5f5f5',
+          // colorMinorTicks: '#ddd',
+          // colorTitle: '#fff',
+          // colorUnits: '#ccc',
+          // colorNumbers: '#eee',
+          // colorNeedle: 'rgba(240, 128, 128, 1)',
+          // colorNeedleEnd: 'rgba(255, 160, 122, .9)',
+          valueBox: true,
+          animationRule: 'bounce',
+          animationDuration: 100
+        });
+        membranePressureGauge.draw();
+
         motorTemperatureGauge = new RadialGauge({
           renderTo: "motorTemperatureGauge",
-          width: 200,
-          height: 200,
+          width: 175,
+          height: 175,
           units: '°C',
           title: "Motor Temperature",
           value: 0,
@@ -1191,7 +1265,13 @@ function start_websocket() {
         let tank_level = (msg.tank_level * 100).toFixed(1);
 
         //update our gauges.
+        filterPressureGauge.value = filter_pressure;
+        membranePressureGauge.value = membrane_pressure;
         motorTemperatureGauge.value = motor_temperature;
+
+        //redraw them
+        filterPressureGauge.draw();
+        membranePressureGauge.draw();
         motorTemperatureGauge.draw();
 
         $("#bomStatus").html(msg.status);
