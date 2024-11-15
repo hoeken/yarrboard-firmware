@@ -794,6 +794,8 @@ function start_websocket() {
         $('#bomControlDiv').show();
         $('#bomStatsDiv').show();
 
+        $('#brightnessControl').hide();
+
         filterPressureGauge = new RadialGauge({
           renderTo: "filterPressureGauge",
           width: 175,
