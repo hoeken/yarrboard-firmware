@@ -191,7 +191,7 @@ class Brineomatic
     uint64_t flushStart = 0;
     uint64_t flushDuration = 5ULL * 60 * 1000000; // 5 minute default, in microseconds
     uint64_t nextFlushTime = 0;
-    uint64_t flushInterval = 5ULL * 24 * 60 * 60 * 1000000; // 5 day default, in microseconds
+    uint64_t flushInterval = 3ULL * 24 * 60 * 60 * 1000000; // 3 day default, in microseconds
     uint64_t pickleStart = 0;
     uint64_t pickleDuration = 5ULL * 60 * 1000000; // 5 minute default, in microseconds
     uint64_t depickleStart = 0;
@@ -216,19 +216,18 @@ class Brineomatic
     QuickPID membranePressurePID;
     float Kp, Ki, Kd;
 
-    float defaultMembranePressureTarget = 750.0; // PSI
-
-    float lowPressureMinimum = 2.5;        // PSI
-    float lowPressureMaximum = 60.0;       // PSI
-    float highPressureMinimum = 600.0;     // PSI
-    float highPressureMaximum = 900.0;     // PSI
-    float flowrateMinimum = 120.0;         // LPH
-    float flowrateMaximum = 300.0;         // LPH
-    float salinityMaximum = 200.0;         // PPM
-    float motorTemperatureMaximum = 65.0;  // Celcius
-    float tankLevelFull = 0.99;            // 0 = empty, 1 = full
-    float coolingFanOnTemperature = 37.0;  // Celcius
-    float coolingFanOffTemperature = 36.0; // Celcius
+    float lowPressureMinimum = 2.5;              // PSI
+    float lowPressureMaximum = 60.0;             // PSI
+    float highPressureMinimum = 600.0;           // PSI
+    float defaultMembranePressureTarget = 800.0; // PSI
+    float highPressureMaximum = 950.0;           // PSI
+    float flowrateMinimum = 100.0;               // LPH
+    float flowrateMaximum = 300.0;               // LPH
+    float salinityMaximum = 300.0;               // PPM
+    float motorTemperatureMaximum = 65.0;        // Celcius
+    float tankLevelFull = 0.99;                  // 0 = empty, 1 = full
+    float coolingFanOnTemperature = 37.0;        // Celcius
+    float coolingFanOffTemperature = 36.0;       // Celcius
 
     uint8_t membranePressureHighErrorCount = 0;
     uint8_t membranePressureLowErrorCount = 0;
@@ -241,8 +240,8 @@ class Brineomatic
     uint64_t flushValveTimeout = 1ULL * 60 * 1000000;       // 1 minute default, in microseconds
     uint64_t filterPressureTimeout = 1ULL * 60 * 1000000;   // 1 minute default, in microseconds
     uint64_t membranePressureTimeout = 1ULL * 60 * 1000000; // 1 minute default, in microseconds
-    uint64_t flowRateTimeout = 1ULL * 60 * 1000000;         // 1 minute default, in microseconds
-    uint64_t salinityTimeout = 1ULL * 60 * 1000000;         // 1 minute default, in microseconds
+    uint64_t flowRateTimeout = 2ULL * 60 * 1000000;         // 2 minute default, in microseconds
+    uint64_t salinityTimeout = 5ULL * 60 * 1000000;         // 5 minute default, in microseconds
     uint64_t productionTimeout = 12ULL * 60 * 60 * 1000000; // 12 hour default, in microseconds
 
     bool checkStopFlag();

@@ -467,6 +467,7 @@ bool Brineomatic::initializeHardware()
   disableHighPressurePump();
   disableBoostPump();
   closeFlushValve();
+  disableCoolingFan();
 
   return false;
 }
@@ -608,11 +609,13 @@ void Brineomatic::disableCoolingFan()
 
 void Brineomatic::manageCoolingFan()
 {
-  if (hasCoolingFan()) {
-    if (getMotorTemperature() >= coolingFanOnTemperature)
-      enableCoolingFan();
-    else if (getMotorTemperature() <= coolingFanOffTemperature)
-      disableCoolingFan();
+  if (currentStatus != Status::IDLE) {
+    if (hasCoolingFan()) {
+      if (getMotorTemperature() >= coolingFanOnTemperature)
+        enableCoolingFan();
+      else if (getMotorTemperature() <= coolingFanOffTemperature)
+        disableCoolingFan();
+    }
   }
 }
 
