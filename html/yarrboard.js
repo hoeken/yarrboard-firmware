@@ -75,6 +75,21 @@ let flowrateGauge;
 let salinityGauge;
 let motorTemperatureGauge;
 
+let temperatureChart;
+let pressureChart;
+let salinityChart;
+let flowrateChart;
+let tankLevelChart;
+
+let timeData;
+let motorTemperatureData;
+let waterTemperatureData;
+let filterPressureData;
+let membranePressureData;
+let salinityData;
+let flowrateData;
+let tankLevelData;
+
 const BoardNameEdit = (name) => `
 <div class="col-12">
   <h4>Board Name</h4>
@@ -427,6 +442,8 @@ function start_yarrboard() {
   yarrboard_log("User Agent: " + navigator.userAgent);
   yarrboard_log("Window Width: " + window.innerWidth);
   yarrboard_log("Window Height: " + window.innerHeight);
+  yarrboard_log("Window Location: " + window.location);
+  yarrboard_log("Is canvas supported? " + isCanvasSupported());
 
   //main data connection
   start_websocket();
@@ -902,6 +919,168 @@ function start_websocket() {
         motorTemperatureGauge.draw();
       }
 
+      // Define the data
+      timeData = ['x'];
+      motorTemperatureData = ['Motor Temperature'];
+      waterTemperatureData = ['Water Temperature'];
+      filterPressureData = ['Filter Pressure'];
+      membranePressureData = ['Membrane Pressure'];
+      salinityData = ['Salinity'];
+      flowrateData = ['Flowrate'];
+      tankLevelData = ['Tank Level'];
+
+      temperatureChart = c3.generate({
+        bindto: '#temperatureChart',
+        data: {
+          x: 'x', // Define the x-axis data identifier
+          xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
+          columns: [
+            timeData,
+            motorTemperatureData,
+            waterTemperatureData
+          ],
+          type: 'line' // Line chart
+        },
+        axis: {
+          x: {
+            type: 'timeseries',
+            label: 'Time',
+            tick: {
+              format: '%H:%M:%S'
+            }
+          },
+          y: {
+            label: 'Temperature (°C)',
+            min: 0,
+            max: 80 // Adjust as needed
+          }
+        },
+        point: {
+          show: false // Hide data points for a smoother line
+        }
+      });
+
+      pressureChart = c3.generate({
+        bindto: '#pressureChart',
+        data: {
+          x: 'x', // Define the x-axis data identifier
+          xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
+          columns: [
+            timeData,
+            filterPressureData,
+            membranePressureData
+          ],
+          type: 'line' // Line chart
+        },
+        axis: {
+          x: {
+            type: 'timeseries',
+            label: 'Time',
+            tick: {
+              format: '%H:%M:%S'
+            }
+          },
+          y: {
+            label: 'Pressure (PSI))',
+            min: 0,
+            max: 1000
+          }
+        },
+        point: {
+          show: false // Hide data points for a smoother line
+        }
+      });
+
+      salinityChart = c3.generate({
+        bindto: '#salinityChart',
+        data: {
+          x: 'x', // Define the x-axis data identifier
+          xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
+          columns: [
+            timeData,
+            salinityData
+          ],
+          type: 'line' // Line chart
+        },
+        axis: {
+          x: {
+            type: 'timeseries',
+            label: 'Time',
+            tick: {
+              format: '%H:%M:%S'
+            }
+          },
+          y: {
+            label: 'Salinity (PPM))',
+            min: 0,
+            max: 1500
+          }
+        },
+        point: {
+          show: false // Hide data points for a smoother line
+        }
+      });
+
+      flowrateChart = c3.generate({
+        bindto: '#flowrateChart',
+        data: {
+          x: 'x', // Define the x-axis data identifier
+          xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
+          columns: [
+            timeData,
+            flowrateData
+          ],
+          type: 'line' // Line chart
+        },
+        axis: {
+          x: {
+            type: 'timeseries',
+            label: 'Time',
+            tick: {
+              format: '%H:%M:%S'
+            }
+          },
+          y: {
+            label: 'Flowrate (LPM))',
+            min: 0,
+            max: 250
+          }
+        },
+        point: {
+          show: false // Hide data points for a smoother line
+        }
+      });
+
+      tankLevelChart = c3.generate({
+        bindto: '#tankLevelChart',
+        data: {
+          x: 'x', // Define the x-axis data identifier
+          xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
+          columns: [
+            timeData,
+            tankLevelData
+          ],
+          type: 'line' // Line chart
+        },
+        axis: {
+          x: {
+            type: 'timeseries',
+            label: 'Time',
+            tick: {
+              format: '%H:%M:%S'
+            }
+          },
+          y: {
+            label: 'Tank Level (%))',
+            min: 0,
+            max: 100
+          }
+        },
+        point: {
+          show: false // Hide data points for a smoother line
+        }
+      });
+
       //also hide our other stuff here...
       $('#relayControlDiv').hide();
       $('#servoControlDiv').hide();
@@ -1271,10 +1450,70 @@ function start_websocket() {
         membranePressureGauge.value = membrane_pressure;
         motorTemperatureGauge.value = motor_temperature;
 
-        //redraw them
+        //our gauges
         filterPressureGauge.draw();
         membranePressureGauge.draw();
         motorTemperatureGauge.draw();
+
+        const currentTime = new Date(); // Get current time in ISO format
+        const formattedTime = d3.timeFormat('%Y-%m-%d %H:%M:%S.%L')(currentTime);
+        timeData.push(formattedTime);
+
+        motorTemperatureData.push(motor_temperature);
+        waterTemperatureData.push(water_temperature);
+        filterPressureData.push(filter_pressure);
+        membranePressureData.push(membrane_pressure);
+        salinityData.push(salinity);
+        flowrateData.push(flowrate);
+
+        temperatureChart.load({
+          columns: [
+            timeData,
+            motorTemperatureData,
+            waterTemperatureData
+          ]
+        });
+
+        pressureChart.load({
+          columns: [
+            timeData,
+            filterPressureData,
+            membranePressureData
+          ]
+        });
+
+        salinityChart.load({
+          columns: [
+            timeData,
+            salinityData
+          ]
+        });
+
+        flowrateChart.load({
+          columns: [
+            timeData,
+            flowrateData
+          ]
+        });
+
+        if (msg.tank_level >= 0) {
+          tankLevelData.push(tank_level);
+          tankLevelChart.load({
+            columns: [
+              timeData,
+              tankLevelData
+            ]
+          });
+        }
+
+        // // Append new data to the chart
+        // temperatureChart.flow({
+        //   columns: [
+        //     ['x', formattedTime], // Add new time point
+        //     ['Temperature', motor_temperature] // Add new temperature point
+        //   ],
+        //   length: 0
+        // });
 
         $("#bomStatus").html(msg.status);
         $("#bomStatus").removeClass();
@@ -1764,7 +2003,7 @@ function show_brineomatic_result(result_div, result) {
     else if (result == "USER_STOP")
       $(result_div).addClass("text-bg-primary");
     else if (result.startsWith("ERR"))
-      $(result_div).addClass("text-bg-error");
+      $(result_div).addClass("text-bg-danger");
     else
       $(result_div).addClass("text-bg-warning");
   }
@@ -3004,4 +3243,9 @@ const pwm_type_images = {
 function pwm_get_type_image(ch) {
   if (ch.type == "")
     return;
+}
+
+function isCanvasSupported() {
+  var elem = document.createElement('canvas');
+  return !!(elem.getContext && elem.getContext('2d'));
 }

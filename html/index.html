@@ -10,14 +10,18 @@
     <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="spectrum.min.css">
     <link rel="stylesheet" type="text/css" href="style.css">
+    <link href="c3.min.css" rel="stylesheet">
+
     <script src="yarrboard-client.js"></script>
-    <script src="yarrboard.js"></script>
     <script src="jquery-3.7.0.min.js"></script>
     <script src="bootstrap.min.js"></script>
     <script src="jscookie.js"></script>
     <script src="spectrum.min.js"></script>
     <script src="marked.min.js"></script>
     <script src="gauge.min.js"></script>
+    <script src="d3.min.js"></script>
+    <script src="c3.min.js"></script>
+    <script src="yarrboard.js"></script>
 </head>
 
 <body>
@@ -89,8 +93,8 @@
             <div class="mx-3 my-3">
                 <div id="liveAlertPlaceholder"></div>
                 <div id="controlPage" class="pageContainer row" style="display:none">
-                    <div class="row">
-                        <div id="bomInformationDiv" style="display:none" class="col-md-7">
+                    <div id="bomInterface" class="row mx-0">
+                        <div id="bomInformationDiv" style="display:none" class="col-md-6">
                             <h1 class="text-center">Mode: <span class="badge" id="bomStatus"></span></h1>
                             <table id="bomTable" class="table table-hover">
                                 <tbody id="bomTableBody">
@@ -184,9 +188,10 @@
                             </table>
                         </div>
 
-                        <div id="bomControlDiv" style="display:none" class="col-md-5">
+                        <div id="bomControlDiv" style="display:none" class="col-md-6">
                             <div id="bomControlButtons" class="row g-2">
-                                <div id="runBrineomatic" class="col-12 bomIDLE">
+                                <h1 class="text-center">Control</h1>
+                                <div id="runBrineomatic" class="col-6 bomIDLE">
                                     <button class="btn btn-success brineomaticControlButton" type="button"
                                         data-bs-toggle="modal" data-bs-target="#startBrineomaticModal">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
@@ -199,7 +204,7 @@
                                         <span class="align-middle mx-2">START</span>
                                     </button>
                                 </div>
-                                <div id="flushBrineomatic" class="col-12 bomIDLE bomPICKLED">
+                                <div id="flushBrineomatic" class="col-6 bomIDLE bomPICKLED">
                                     <button class="btn btn-primary brineomaticControlButton" type="button"
                                         data-bs-toggle="modal" data-bs-target="#flushBrineomaticModal">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
@@ -212,7 +217,7 @@
                                         <span class="align-middle mx-2">FLUSH</span>
                                     </button>
                                 </div>
-                                <div id="pickleBrineomatic" class="col-12 bomIDLE">
+                                <div id="pickleBrineomatic" class="col-6 bomIDLE">
                                     <button class="btn btn-warning brineomaticControlButton" type="button"
                                         data-bs-toggle="modal" data-bs-target="#pickleBrineomaticModal">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
@@ -225,7 +230,7 @@
                                         <span class="align-middle mx-2">PICKLE</span>
                                     </button>
                                 </div>
-                                <div id="depickleBrineomatic" class="col-12 bomPICKLED">
+                                <div id="depickleBrineomatic" class="col-6 bomPICKLED">
                                     <button class="btn btn-warning brineomaticControlButton" type="button"
                                         data-bs-toggle="modal" data-bs-target="#depickleBrineomaticModal">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
@@ -237,7 +242,7 @@
                                     </button>
                                 </div>
                                 <div id="stopBrineomatic"
-                                    class="col-12 bomRUNNING bomFLUSHING bomPICKLING bomDEPICKLING">
+                                    class="col-6 bomRUNNING bomFLUSHING bomPICKLING bomDEPICKLING">
                                     <button class="btn btn-danger brineomaticControlButton" type="button"
                                         data-bs-toggle="modal" data-bs-target="#stopBrineomaticModal">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
@@ -250,7 +255,7 @@
                                         <span class="align-middle mx-2">STOP</span>
                                     </button>
                                 </div>
-                                <div id="manualBrineomatic" class="col-12 bomIDLE">
+                                <div id="manualBrineomatic" class="col-6 bomIDLE">
                                     <button class="btn btn-secondary brineomaticControlButton" type="button"
                                         onclick="manual_brineomatic()">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
@@ -498,15 +503,83 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row" style="display: none">
-                            <div class="col-md-4">
+                        <div id="bomGraphs" class="col-md-12">
+                            <h3>Graphs</h3>
+                            <!-- Nav tabs -->
+                            <ul class="nav nav-tabs" id="bomGraphsTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="bomTemperatureGraphTab" data-bs-toggle="tab"
+                                        data-bs-target="#bomTemperatureGraphPanel" type="button"
+                                        role="tab">Temperature</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="bomPressureGraphTab" data-bs-toggle="tab"
+                                        data-bs-target="#bomPressureGraphPanel" type="button"
+                                        role="tab">Pressure</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="bomSalinityGraphTab" data-bs-toggle="tab"
+                                        data-bs-target="#bomSalinityGraphPanel" type="button"
+                                        role="tab">Salinity</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="bomFlowrateGraphTab" data-bs-toggle="tab"
+                                        data-bs-target="#bomFlowrateGraphPanel" type="button"
+                                        role="tab">Flowrate</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="bomTankLevelGraphTab" data-bs-toggle="tab"
+                                        data-bs-target="#bomTankLevelGraphPanel" type="button" role="tab">Tank
+                                        Level</button>
+                                </li>
+                            </ul>
+
+                            <!-- Tab panes -->
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="bomTemperatureGraphPanel" role="tabpanel" tabindex="0">
+                                    <h4>Temperatures</h4>
+                                    <div id="temperatureChart" class="row"></div>
+                                </div>
+                                <div class="tab-pane" id="bomPressureGraphPanel" role="tabpanel" tabindex="0">
+                                    <h4>Pressures</h4>
+                                    <div id="pressureChart" class="row"></div>
+                                </div>
+                                <div class="tab-pane" id="bomSalinityGraphPanel" role="tabpanel" tabindex="0">
+                                    <h4>Salinity</h4>
+                                    <div id="salinityChart" class="row"></div>
+                                </div>
+                                <div class="tab-pane" id="bomFlowrateGraphPanel" role="tabpanel" tabindex="0">
+                                    <h4>Flowrate</h4>
+                                    <div id="flowrateChart" class="row"></div>
+                                </div>
+                                <div class="tab-pane" id="bomTankLevelGraphPanel" role="tabpanel" tabindex="0">
+                                    <h4>Tank Level</h4>
+                                    <div id="tankLevelChart" class="row"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="bomGauges" class="row my-3">
+                            <h3>Gauges</h3>
+                            <div class="col-md-3">
                                 <canvas id="filterPressureGauge"></canvas>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <canvas id="membranePressureGauge"></canvas>
                             </div>
-                            <div class="col-md-4">
-                                <canvas id="motorTemperatureGauge" width="100%"></canvas>
+                            <div class="col-md-3">
+                                <canvas id="motorTemperatureGauge"></canvas>
+                            </div>
+                            <div class="col-md-3">
+                                <canvas id="waterTemperatureGauge"></canvas>
+                            </div>
+                            <div class="col-md-3">
+                                <canvas id="salinityGauge"></canvas>
+                            </div>
+                            <div class="col-md-3">
+                                <canvas id="flowrateGauge"></canvas>
+                            </div>
+                            <div class="col-md-3">
+                                <canvas id="tankLevelGauge"></canvas>
                             </div>
                         </div>
                     </div>
