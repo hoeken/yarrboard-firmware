@@ -1043,7 +1043,7 @@ function start_websocket() {
           y: {
             label: 'Flowrate (LPM))',
             min: 0,
-            max: 250
+            max: 200
           }
         },
         point: {
