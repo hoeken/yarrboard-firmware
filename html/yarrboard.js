@@ -1717,45 +1717,10 @@ function start_websocket() {
         else
           $("#bomDepickleCountdown").hide();
 
-        if (water_temperature > 0)
-          $("#bomWaterTemperatureData").html(`${water_temperature}°C`);
-        else
-          $("#bomWaterTemperature").hide();
-
-        if (motor_temperature > 0)
-          $("#bomMotorTemperatureData").html(`${motor_temperature}°C`);
-        else
-          $("#bomMotorTemperature").hide();
-
-        if (flowrate > 0)
-          $("#bomFlowrateData").html(`${flowrate} LPH`);
-        else
-          $("#bomFlowrate").hide();
-
         if (volume > 0)
           $("#bomVolumeData").html(`${volume}L`);
         else
           $("#bomVolume").hide();
-
-        if (msg.tank_level >= 0)
-          $("#bomTankLevelData").html(`${tank_level}%`);
-        else
-          $("#bomTankLevel").hide();
-
-        if (salinity < 5000)
-          $("#bomSalinityData").html(`${salinity} PPM`);
-        else
-          $("#bomSalinity").hide();
-
-        if (filter_pressure >= 0)
-          $("#bomFilterPressureData").html(`${filter_pressure} PSI`);
-        else
-          $("#bomFilterPressure").hide();
-
-        if (membrane_pressure >= 0)
-          $("#bomMembranePressureData").html(`${membrane_pressure} PSI`);
-        else
-          $("#bomMembranePressure").hide();
 
         if (current_config.has_boost_pump) {
           $('#bomBoostPumpStatus span').removeClass();
