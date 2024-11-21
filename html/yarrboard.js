@@ -2323,8 +2323,11 @@ function open_page(page) {
     get_stats_data();
 
   //request our historical graph data (if any)
-  if (page == "graphs")
+  if (page == "graphs") {
+    // const triggerEl = document.querySelector('#myTab button[data-bs-target="#profile"]')
+    // bootstrap.Tab.getInstance(triggerEl).show() // Select tab by name    
     get_graph_data();
+  }
 
   //request our control updates.
   if (page == "control")
