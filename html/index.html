@@ -52,6 +52,9 @@
                         <li id="statsNav" class="nav-item nav-permission">
                             <a class="nav-link" onclick="open_page('stats')" href="#stats">Status</a>
                         </li>
+                        <li id="graphsNav" class="nav-item nav-permission" style="display: none">
+                            <a class="nav-link" onclick="open_page('graphs')" href="#graphs">Graphs</a>
+                        </li>
                         <li id="configNav" class="nav-item nav-permission">
                             <a class="nav-link" onclick="open_page('config')" href="#config">Config</a>
                         </li>
@@ -98,7 +101,7 @@
                             <h1 class="text-center">Mode: <span class="badge" id="bomStatus"></span></h1>
                             <table id="bomTable" class="table table-hover">
                                 <tbody id="bomTableBody">
-                                    <tr id="bomRunResultRow" class="bomIDLE" style="display: none">
+                                    <tr id="bomRunResultRow" class="bomIDLE bomFLUSHING" style="display: none">
                                         <th>Last Run Result</th>
                                         <td><span id="bomRunResult"></span></td>
                                     </tr>
@@ -118,7 +121,8 @@
                                         <th>Next Autoflush</th>
                                         <td id="bomNextFlushCountdownData"></td>
                                     </tr>
-                                    <tr id="bomRuntimeElapsed" class="bomIDLE bomRUNNING" style="display: none">
+                                    <tr id="bomRuntimeElapsed" class="bomIDLE bomRUNNING bomFLUSHING"
+                                        style="display: none">
                                         <th>Runtime Elapsed</th>
                                         <td id="bomRuntimeElapsedData"></td>
                                     </tr>
@@ -150,7 +154,7 @@
                                         <th>De-Pickling Remaining</th>
                                         <td id="bomDepickleCountdownData"></td>
                                     </tr>
-                                    <tr id="bomVolume" class="bomIDLE bomRUNNING">
+                                    <tr id="bomVolume" class="bomIDLE bomRUNNING bomFLUSHING">
                                         <th>Volume</th>
                                         <td id="bomVolumeData"></td>
                                     </tr>
@@ -180,7 +184,7 @@
                                         <th>Motor Temperature</th>
                                         <td id="bomMotorTemperatureData"></td>
                                     </tr>
-                                    <tr id="bomWaterTemperature" class="bomIDLE bomRUNNING">
+                                    <tr id="bomWaterTemperature" class="bomIDLE bomRUNNING bomFLUSHING">
                                         <th>Water Temperature</th>
                                         <td id="bomWaterTemperatureData"></td>
                                     </tr>
@@ -503,61 +507,6 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="bomGraphs" class="col-md-12">
-                            <h3>Graphs</h3>
-                            <!-- Nav tabs -->
-                            <ul class="nav nav-tabs" id="bomGraphsTabs" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="bomTemperatureGraphTab" data-bs-toggle="tab"
-                                        data-bs-target="#bomTemperatureGraphPanel" type="button"
-                                        role="tab">Temperature</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="bomPressureGraphTab" data-bs-toggle="tab"
-                                        data-bs-target="#bomPressureGraphPanel" type="button"
-                                        role="tab">Pressure</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="bomSalinityGraphTab" data-bs-toggle="tab"
-                                        data-bs-target="#bomSalinityGraphPanel" type="button"
-                                        role="tab">Salinity</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="bomFlowrateGraphTab" data-bs-toggle="tab"
-                                        data-bs-target="#bomFlowrateGraphPanel" type="button"
-                                        role="tab">Flowrate</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="bomTankLevelGraphTab" data-bs-toggle="tab"
-                                        data-bs-target="#bomTankLevelGraphPanel" type="button" role="tab">Tank
-                                        Level</button>
-                                </li>
-                            </ul>
-
-                            <!-- Tab panes -->
-                            <div class="tab-content">
-                                <div class="tab-pane active" id="bomTemperatureGraphPanel" role="tabpanel" tabindex="0">
-                                    <h4>Temperatures</h4>
-                                    <div id="temperatureChart" class="row"></div>
-                                </div>
-                                <div class="tab-pane" id="bomPressureGraphPanel" role="tabpanel" tabindex="0">
-                                    <h4>Pressures</h4>
-                                    <div id="pressureChart" class="row"></div>
-                                </div>
-                                <div class="tab-pane" id="bomSalinityGraphPanel" role="tabpanel" tabindex="0">
-                                    <h4>Salinity</h4>
-                                    <div id="salinityChart" class="row"></div>
-                                </div>
-                                <div class="tab-pane" id="bomFlowrateGraphPanel" role="tabpanel" tabindex="0">
-                                    <h4>Flowrate</h4>
-                                    <div id="flowrateChart" class="row"></div>
-                                </div>
-                                <div class="tab-pane" id="bomTankLevelGraphPanel" role="tabpanel" tabindex="0">
-                                    <h4>Tank Level</h4>
-                                    <div id="tankLevelChart" class="row"></div>
-                                </div>
-                            </div>
-                        </div>
                         <div id="bomGauges" class="row my-3">
                             <h3>Gauges</h3>
                             <div class="col-md-3">
@@ -664,6 +613,60 @@
                             <div id="bomConfigForm" class="row g-3"></div>
                         </div>
                     </form>
+                </div>
+                <div id="graphsPage" class="pageContainer" style="display:none">
+                    <div id="bomGraphs" class="col-md-12">
+                        <h3>Graphs</h3>
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs" id="bomGraphsTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="bomTemperatureGraphTab" data-bs-toggle="tab"
+                                    data-bs-target="#bomTemperatureGraphPanel" type="button"
+                                    role="tab">Temperature</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="bomPressureGraphTab" data-bs-toggle="tab"
+                                    data-bs-target="#bomPressureGraphPanel" type="button" role="tab">Pressure</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="bomSalinityGraphTab" data-bs-toggle="tab"
+                                    data-bs-target="#bomSalinityGraphPanel" type="button" role="tab">Salinity</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="bomFlowrateGraphTab" data-bs-toggle="tab"
+                                    data-bs-target="#bomFlowrateGraphPanel" type="button" role="tab">Flowrate</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="bomTankLevelGraphTab" data-bs-toggle="tab"
+                                    data-bs-target="#bomTankLevelGraphPanel" type="button" role="tab">Tank
+                                    Level</button>
+                            </li>
+                        </ul>
+
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                            <div class="tab-pane active" id="bomTemperatureGraphPanel" role="tabpanel" tabindex="0">
+                                <h4>Temperatures</h4>
+                                <div id="temperatureChart" class="row"></div>
+                            </div>
+                            <div class="tab-pane" id="bomPressureGraphPanel" role="tabpanel" tabindex="0">
+                                <h4>Pressures</h4>
+                                <div id="pressureChart" class="row"></div>
+                            </div>
+                            <div class="tab-pane" id="bomSalinityGraphPanel" role="tabpanel" tabindex="0">
+                                <h4>Salinity</h4>
+                                <div id="salinityChart" class="row"></div>
+                            </div>
+                            <div class="tab-pane" id="bomFlowrateGraphPanel" role="tabpanel" tabindex="0">
+                                <h4>Flowrate</h4>
+                                <div id="flowrateChart" class="row"></div>
+                            </div>
+                            <div class="tab-pane" id="bomTankLevelGraphPanel" role="tabpanel" tabindex="0">
+                                <h4>Tank Level</h4>
+                                <div id="tankLevelChart" class="row"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div id="statsPage" class="pageContainer" style="display:none">
                     <div class="row">

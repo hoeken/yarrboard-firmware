@@ -198,6 +198,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return generateConfigJSON(output);
     else if (!strcmp(cmd, "get_stats"))
       return generateStatsJSON(output);
+    else if (!strcmp(cmd, "get_graph_data"))
+      return generateGraphDataJSON(output);
     else if (!strcmp(cmd, "get_update"))
       return generateUpdateJSON(output);
     else if (!strcmp(cmd, "set_pwm_channel"))
@@ -1901,6 +1903,72 @@ void generateStatsJSON(JsonVariant output)
   output["total_cycles"] = wm.getTotalCycles();
   output["total_volume"] = wm.getTotalVolume();
   output["total_runtime"] = wm.getTotalRuntime();
+#endif
+}
+
+void generateGraphDataJSON(JsonVariant output)
+{
+  // some basic statistics and info
+  output["msg"] = "graph_data";
+
+#ifdef YB_HAS_BUS_VOLTAGE
+  // output["bus_voltage"] = busVoltage;
+#endif
+
+#ifdef YB_HAS_INPUT_CHANNELS
+  // for (byte i = 0; i < YB_INPUT_CHANNEL_COUNT; i++) {
+  //   output["switches"][i]["id"] = i;
+  //   output["switches"][i]["state_change_count"] =
+  //     input_channels[i].stateChangeCount;
+  // }
+#endif
+
+#ifdef YB_HAS_PWM_CHANNELS
+  // // info about each of our channels
+  // for (byte i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
+  //   output["pwm"][i]["id"] = i;
+  //   output["pwm"][i]["name"] = pwm_channels[i].name;
+  //   output["pwm"][i]["aH"] = pwm_channels[i].ampHours;
+  //   output["pwm"][i]["wH"] = pwm_channels[i].wattHours;
+  //   output["pwm"][i]["state_change_count"] = pwm_channels[i].stateChangeCount;
+  //   output["pwm"][i]["soft_fuse_trip_count"] =
+  //     pwm_channels[i].softFuseTripCount;
+  // }
+#endif
+
+#ifdef YB_IS_BRINEOMATIC
+  sendDebug("motor temp size: %d", motor_temperature_data.size());
+
+  JsonArray data;
+
+  data = output["motor_temperature"].to<JsonArray>();
+  for (float value : motor_temperature_data)
+    data.add(value);
+
+  data = output["water_temperature"].to<JsonArray>();
+  for (float value : water_temperature_data)
+    data.add(value);
+
+  data = output["filter_pressure"].to<JsonArray>();
+  for (float value : filter_pressure_data)
+    data.add(value);
+
+  data = output["membrane_pressure"].to<JsonArray>();
+  for (float value : membrane_pressure_data)
+    data.add(value);
+
+  data = output["salinity"].to<JsonArray>();
+  for (float value : salinity_data)
+    data.add(value);
+
+  data = output["flowrate"].to<JsonArray>();
+  for (float value : flowrate_data)
+    data.add(value);
+
+  data = output["tank_level"].to<JsonArray>();
+  for (float value : tank_level_data)
+    data.add(value);
+
 #endif
 }
 

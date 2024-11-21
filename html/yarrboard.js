@@ -14,11 +14,12 @@ let app_config;
 
 let ota_started = false;
 
-const page_list = ["control", "config", "stats", "network", "settings", "system"];
+const page_list = ["control", "config", "stats", "graphs", "network", "settings", "system"];
 const page_ready = {
   "control": false,
   "config": false,
   "stats": false,
+  "graphs": false,
   "network": false,
   "settings": false,
   "system": true,
@@ -33,6 +34,7 @@ const page_permissions = {
     "control",
     "config",
     "stats",
+    "graphs",
     "network",
     "settings",
     "system",
@@ -42,6 +44,7 @@ const page_permissions = {
   "guest": [
     "control",
     "stats",
+    "graphs",
     "login",
     "logout"
   ]
@@ -1457,7 +1460,7 @@ function start_websocket() {
         motorTemperatureGauge.draw();
 
         //only occasionally update our graph to keep it responsive
-        if (Date.now() - lastChartUpdate >= 2500) {
+        if (Date.now() - lastChartUpdate >= 5000) {
           lastChartUpdate = Date.now();
 
           const currentTime = new Date(); // Get current time in ISO format
@@ -1827,6 +1830,13 @@ function start_websocket() {
 
       page_ready.stats = true;
     }
+    else if (msg.msg == "graph_data") {
+      console.log(msg);
+
+      //TODO: do our initial load.
+
+      page_ready.graphs = true;
+    }
     //load up our network config.
     else if (msg.msg == "network_config") {
       //yarrboard_log("network config");
@@ -2139,6 +2149,10 @@ function open_page(page) {
   if (page == "stats")
     get_stats_data();
 
+  //request our historical graph data (if any)
+  if (page == "graphs")
+    get_graph_data();
+
   //request our control updates.
   if (page == "control")
     get_update_data();
@@ -2204,6 +2218,14 @@ function get_stats_data() {
     //keep loading it while we are here.
     if (current_page == "stats")
       setTimeout(get_stats_data, app_update_interval);
+  }
+}
+
+function get_graph_data() {
+  if (client.isOpen() && (app_role == 'guest' || app_role == 'admin')) {
+    client.send({
+      "cmd": "get_graph_data"
+    });
   }
 }
 

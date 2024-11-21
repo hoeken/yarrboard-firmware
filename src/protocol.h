@@ -124,6 +124,7 @@ void generateUpdateJSON(JsonVariant output);
 void generateFastUpdateJSON(JsonVariant output);
 void generateConfigJSON(JsonVariant output);
 void generateStatsJSON(JsonVariant output);
+void generateGraphDataJSON(JsonVariant output);
 void generateNetworkConfigJSON(JsonVariant output);
 void generateAppConfigJSON(JsonVariant output);
 void generateOTAProgressUpdateJSON(JsonVariant output, float progress);

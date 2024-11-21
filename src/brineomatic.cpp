@@ -11,11 +11,22 @@
 #ifdef YB_IS_BRINEOMATIC
 
   #include "brineomatic.h"
+  #include "etl/deque.h"
   #include <ADS1X15.h>
   #include <Arduino.h>
   #include <DallasTemperature.h>
   #include <GravityTDS.h>
   #include <OneWire.h>
+
+etl::deque<float, YB_BOM_DATA_SIZE> motor_temperature_data;
+etl::deque<float, YB_BOM_DATA_SIZE> water_temperature_data;
+etl::deque<float, YB_BOM_DATA_SIZE> filter_pressure_data;
+etl::deque<float, YB_BOM_DATA_SIZE> membrane_pressure_data;
+etl::deque<float, YB_BOM_DATA_SIZE> salinity_data;
+etl::deque<float, YB_BOM_DATA_SIZE> flowrate_data;
+etl::deque<float, YB_BOM_DATA_SIZE> tank_level_data;
+
+uint64_t lastDataStore = 0;
 
 Brineomatic wm;
 
@@ -155,6 +166,41 @@ void brineomatic_loop()
 
     // request new conversion
     brineomatic_adc.requestADC(current_ads1115_channel);
+  }
+
+  if (esp_timer_get_time() - lastDataStore > YB_BOM_DATA_INTERVAL) {
+    lastDataStore = esp_timer_get_time();
+
+    sendDebug("motor temp full: %d", motor_temperature_data.full());
+    sendDebug("motor temp size: %d", motor_temperature_data.size());
+
+    if (motor_temperature_data.full())
+      motor_temperature_data.pop_front();
+    motor_temperature_data.push_back(wm.getMotorTemperature());
+
+    if (water_temperature_data.full())
+      water_temperature_data.pop_front();
+    water_temperature_data.push_back(wm.getWaterTemperature());
+
+    if (filter_pressure_data.full())
+      filter_pressure_data.pop_front();
+    filter_pressure_data.push_back(wm.getFilterPressure());
+
+    if (membrane_pressure_data.full())
+      membrane_pressure_data.pop_front();
+    membrane_pressure_data.push_back(wm.getMembranePressure());
+
+    if (salinity_data.full())
+      salinity_data.pop_front();
+    salinity_data.push_back(wm.getSalinity());
+
+    if (flowrate_data.full())
+      flowrate_data.pop_front();
+    flowrate_data.push_back(wm.getFlowrate());
+
+    if (tank_level_data.full())
+      tank_level_data.pop_front();
+    tank_level_data.push_back(wm.getTankLevel());
   }
 
   wm.manageHighPressureValve();
@@ -964,7 +1010,7 @@ void Brineomatic::runStateMachine()
     // RUNNING
     //
     case Status::RUNNING: {
-      sendDebug("State: RUNNING");
+      // sendDebug("State: RUNNING");
 
       runtimeStart = esp_timer_get_time();
       currentVolume = 0;
@@ -979,7 +1025,7 @@ void Brineomatic::runStateMachine()
 
       uint64_t boostPumpStart = esp_timer_get_time();
       if (hasBoostPump()) {
-        sendDebug("Boost Pump Started");
+        // sendDebug("Boost Pump Started");
         enableBoostPump();
         while (getFilterPressure() < getFilterPressureMinimum()) {
           if (checkStopFlag())
@@ -993,10 +1039,10 @@ void Brineomatic::runStateMachine()
 
           vTaskDelay(pdMS_TO_TICKS(100));
         }
-        sendDebug("Boost Pump OK");
+        // sendDebug("Boost Pump OK");
       }
 
-      sendDebug("High Pressure Pump Started");
+      // sendDebug("High Pressure Pump Started");
       enableHighPressurePump();
       setMembranePressureTarget(defaultMembranePressureTarget);
 
@@ -1019,14 +1065,14 @@ void Brineomatic::runStateMachine()
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 
-      sendDebug("High Pressure Pump OK");
+      // sendDebug("High Pressure Pump OK");
 
       if (waitForFlowrate())
         return;
       if (waitForSalinity())
         return;
 
-      sendDebug("Closing Diverter Valve.");
+      // sendDebug("Closing Diverter Valve.");
       closeDiverterValve();
 
       // opening the valve sometimes causes a small blip in either, let it stabilize again
@@ -1035,7 +1081,7 @@ void Brineomatic::runStateMachine()
       if (waitForSalinity())
         return;
 
-      sendDebug("Flow and Salinity OK");
+      // sendDebug("Flow and Salinity OK");
 
       uint64_t productionStart = esp_timer_get_time();
       while (true) {
@@ -1068,16 +1114,22 @@ void Brineomatic::runStateMachine()
         }
 
         // are we going for time?
-        if (desiredRuntime > 0 && getRuntimeElapsed() >= desiredRuntime)
+        if (desiredRuntime > 0 && getRuntimeElapsed() >= desiredRuntime) {
+          runResult = Result::SUCCESS_TIME;
           break;
+        }
 
         // are we going for volume?
-        if (desiredVolume > 0 && getVolume() >= desiredVolume)
+        if (desiredVolume > 0 && getVolume() >= desiredVolume) {
+          runResult = Result::SUCCESS_VOLUME;
           break;
+        }
 
         // tank level means we're finished successfully
-        if (checkTankLevel())
+        if (checkTankLevel()) {
+          runResult = Result::SUCCESS_TANK_LEVEL;
           break;
+        }
 
         // save our total runtime occasionally (every minute)
         if (esp_timer_get_time() - lastRuntimeUpdate > 60000000) {
@@ -1089,15 +1141,16 @@ void Brineomatic::runStateMachine()
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 
-      sendDebug("Finished making water.");
+      // sendDebug("Finished making water.");
 
       // save our total volume produced
       preferences.putFloat("bomTotVolume", totalVolume);
 
+      // save our total number of cycles
       totalCycles++;
       preferences.putUInt("bomTotCycles", totalCycles);
 
-      runResult = Result::SUCCESS;
+      // next step... turn it off!
       currentStatus = Status::STOPPING;
 
       break;
@@ -1121,7 +1174,7 @@ void Brineomatic::runStateMachine()
     // FLUSHING
     //
     case Status::FLUSHING: {
-      sendDebug("State: FLUSHING");
+      // sendDebug("State: FLUSHING");
 
       stopFlag = false;
       flushStart = esp_timer_get_time();
@@ -1186,7 +1239,7 @@ void Brineomatic::runStateMachine()
     // PICKLING
     //
     case Status::PICKLING:
-      sendDebug("State: PICKLING");
+      // sendDebug("State: PICKLING");
 
       pickleStart = esp_timer_get_time();
 
@@ -1226,7 +1279,7 @@ void Brineomatic::runStateMachine()
     // DEPICKLING
     //
     case Status::DEPICKLING:
-      sendDebug("State: DEPICKLING");
+      // sendDebug("State: DEPICKLING");
 
       depickleStart = esp_timer_get_time();
 

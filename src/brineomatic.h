@@ -9,12 +9,21 @@
 #ifndef YARR_BRINEOMATIC_H
 #define YARR_BRINEOMATIC_H
 
+#include "etl/deque.h"
 #include "relay_channel.h"
 #include "servo_channel.h"
 #include <QuickPID.h>
 
 class RelayChannel;
 class ServoChannel;
+
+extern etl::deque<float, YB_BOM_DATA_SIZE> motor_temperature_data;
+extern etl::deque<float, YB_BOM_DATA_SIZE> water_temperature_data;
+extern etl::deque<float, YB_BOM_DATA_SIZE> filter_pressure_data;
+extern etl::deque<float, YB_BOM_DATA_SIZE> membrane_pressure_data;
+extern etl::deque<float, YB_BOM_DATA_SIZE> salinity_data;
+extern etl::deque<float, YB_BOM_DATA_SIZE> flowrate_data;
+extern etl::deque<float, YB_BOM_DATA_SIZE> tank_level_data;
 
 void brineomatic_setup();
 void brineomatic_loop();
@@ -189,7 +198,7 @@ class Brineomatic
     uint64_t desiredRuntime = 0;
     uint64_t runtimeStart;
     uint64_t flushStart = 0;
-    uint64_t flushDuration = 5ULL * 60 * 1000000; // 5 minute default, in microseconds
+    uint64_t flushDuration = 4ULL * 60 * 1000000; // 4 minute default, in microseconds
     uint64_t nextFlushTime = 0;
     uint64_t flushInterval = 3ULL * 24 * 60 * 60 * 1000000; // 3 day default, in microseconds
     uint64_t pickleStart = 0;

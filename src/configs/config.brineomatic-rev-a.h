@@ -8,6 +8,9 @@
 #define YB_DEFAULT_HOSTNAME "brineomatic"
 #define YB_DEFAULT_AP_SSID  "Brineomatic"
 
+#define YB_BOM_DATA_SIZE     300
+#define YB_BOM_DATA_INTERVAL 5000000
+
 #define YB_HAS_STATUS_WS2818
 #define YB_STATUS_WS2818_PIN 38
 
