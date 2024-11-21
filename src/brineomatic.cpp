@@ -171,9 +171,6 @@ void brineomatic_loop()
   if (esp_timer_get_time() - lastDataStore > YB_BOM_DATA_INTERVAL) {
     lastDataStore = esp_timer_get_time();
 
-    sendDebug("motor temp full: %d", motor_temperature_data.full());
-    sendDebug("motor temp size: %d", motor_temperature_data.size());
-
     if (motor_temperature_data.full())
       motor_temperature_data.pop_front();
     motor_temperature_data.push_back(wm.getMotorTemperature());

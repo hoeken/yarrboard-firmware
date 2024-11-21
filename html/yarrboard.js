@@ -86,7 +86,7 @@ let salinityChart;
 let flowrateChart;
 let tankLevelChart;
 
-let lastChartUpdate = 0;
+let lastChartUpdate = Date.now();
 let timeData;
 let motorTemperatureData;
 let waterTemperatureData;
@@ -1063,7 +1063,9 @@ function start_websocket() {
               type: 'timeseries',
               label: 'Time',
               tick: {
-                format: '%H:%M:%S'
+                format: '%H:%M:%S',
+                culling: true,
+                fit: true
               }
             },
             y: {
@@ -1072,9 +1074,9 @@ function start_websocket() {
               max: 80 // Adjust as needed
             }
           },
-          point: {
-            show: false // Hide data points for a smoother line
-          }
+          point: { show: false },
+          interaction: { enabled: true },
+          transition: { duration: 0 }
         });
 
         pressureChart = c3.generate({
@@ -1103,9 +1105,9 @@ function start_websocket() {
               max: 1000
             }
           },
-          point: {
-            show: false // Hide data points for a smoother line
-          }
+          point: { show: false },
+          interaction: { enabled: true },
+          transition: { duration: 0 }
         });
 
         salinityChart = c3.generate({
@@ -1133,9 +1135,9 @@ function start_websocket() {
               max: 1500
             }
           },
-          point: {
-            show: false // Hide data points for a smoother line
-          }
+          point: { show: false },
+          interaction: { enabled: true },
+          transition: { duration: 0 }
         });
 
         flowrateChart = c3.generate({
@@ -1163,9 +1165,9 @@ function start_websocket() {
               max: 200
             }
           },
-          point: {
-            show: false // Hide data points for a smoother line
-          }
+          point: { show: false },
+          interaction: { enabled: true },
+          transition: { duration: 0 }
         });
 
         tankLevelChart = c3.generate({
@@ -1193,9 +1195,9 @@ function start_websocket() {
               max: 100
             }
           },
-          point: {
-            show: false // Hide data points for a smoother line
-          }
+          point: { show: false },
+          interaction: { enabled: true },
+          transition: { duration: 0 }
         });
 
         //also hide our other stuff here...
@@ -1564,78 +1566,62 @@ function start_websocket() {
         let tank_level = (msg.tank_level * 100).toFixed(1);
 
         //update our gauges.
-        motorTemperatureGauge.load({ columns: [['Motor Temperature', motor_temperature]] });
-        waterTemperatureGauge.load({ columns: [['Water Temperature', water_temperature]] });
-        filterPressureGauge.load({ columns: [['Filter Pressure', filter_pressure]] });
-        membranePressureGauge.load({ columns: [['Membrane Pressure', membrane_pressure]] });
-        salinityGauge.load({ columns: [['Salinity', salinity]] });
-        flowrateGauge.load({ columns: [['Flowrate', flowrate]] });
-        tankLevelGauge.load({ columns: [['Tank Level', tank_level]] });
+        if (current_page == "control") {
+          motorTemperatureGauge.load({ columns: [['Motor Temperature', motor_temperature]] });
+          waterTemperatureGauge.load({ columns: [['Water Temperature', water_temperature]] });
+          filterPressureGauge.load({ columns: [['Filter Pressure', filter_pressure]] });
+          membranePressureGauge.load({ columns: [['Membrane Pressure', membrane_pressure]] });
+          salinityGauge.load({ columns: [['Salinity', salinity]] });
+          flowrateGauge.load({ columns: [['Flowrate', flowrate]] });
+          tankLevelGauge.load({ columns: [['Tank Level', tank_level]] });
+        }
 
-        //only occasionally update our graph to keep it responsive
-        if (Date.now() - lastChartUpdate >= 5000) {
-          lastChartUpdate = Date.now();
+        if (current_page == "graphs") {
 
-          const currentTime = new Date(); // Get current time in ISO format
-          const formattedTime = d3.timeFormat('%Y-%m-%d %H:%M:%S.%L')(currentTime);
-          timeData.push(formattedTime);
+          //only occasionally update our graph to keep it responsive
+          if (Date.now() - lastChartUpdate > 1000) {
+            lastChartUpdate = Date.now();
 
-          motorTemperatureData.push(msg.motor_temperature.toFixed(1));
-          waterTemperatureData.push(msg.water_temperature.toFixed(1));
-          filterPressureData.push(filter_pressure);
-          membranePressureData.push(membrane_pressure);
-          salinityData.push(salinity);
-          flowrateData.push(flowrate);
+            const currentTime = new Date(); // Get current time in ISO format
+            const formattedTime = d3.timeFormat('%Y-%m-%d %H:%M:%S.%L')(currentTime);
 
-          temperatureChart.load({
-            columns: [
-              timeData,
-              motorTemperatureData,
-              waterTemperatureData
-            ]
-          });
-
-          pressureChart.load({
-            columns: [
-              timeData,
-              filterPressureData,
-              membranePressureData
-            ]
-          });
-
-          salinityChart.load({
-            columns: [
-              timeData,
-              salinityData
-            ]
-          });
-
-          flowrateChart.load({
-            columns: [
-              timeData,
-              flowrateData
-            ]
-          });
-
-          if (msg.tank_level >= 0) {
-            tankLevelData.push(tank_level);
-            tankLevelChart.load({
+            temperatureChart.flow({
               columns: [
-                timeData,
-                tankLevelData
+                ['x', formattedTime],
+                ['Motor Temperature', motor_temperature],
+                ['Water Temperature', water_temperature]
+              ]
+            });
+
+            pressureChart.flow({
+              columns: [
+                ['x', formattedTime],
+                ['Filter Pressure', filter_pressure],
+                ['Membrane Pressure', membrane_pressure]
+              ]
+            });
+
+            salinityChart.flow({
+              columns: [
+                ['x', formattedTime],
+                ['Salinity', salinity]
+              ]
+            });
+
+            flowrateChart.flow({
+              columns: [
+                ['x', formattedTime],
+                ['Flowrate', flowrate]
+              ]
+            });
+
+            tankLevelChart.flow({
+              columns: [
+                ['x', formattedTime],
+                ['Tank Level', tank_level]
               ]
             });
           }
-
-          // // Append new data to the chart
-          // temperatureChart.flow({
-          //   columns: [
-          //     ['x', formattedTime], // Add new time point
-          //     ['Temperature', motor_temperature] // Add new temperature point
-          //   ],
-          //   length: 0
-          // });
-
         }
 
         $("#bomStatus").html(msg.status);
@@ -1944,11 +1930,85 @@ function start_websocket() {
       page_ready.stats = true;
     }
     else if (msg.msg == "graph_data") {
-      console.log(msg);
+      if (current_page == "graphs") {
+        timeData = [timeData[0]];
+        // Replace the rest of timeData with incremented timestamps
+        const currentTime = new Date(); // Get current time in ISO format
+        const timeIncrement = 5000; // Increment in milliseconds (5 seconds)
+        for (let i = msg.motor_temperature.length; i > 0; i -= 1) {
+          const newTime = new Date(currentTime.getTime() - i * timeIncrement);
+          const formattedNewTime = d3.timeFormat('%Y-%m-%d %H:%M:%S.%L')(newTime);
+          timeData.push(formattedNewTime);
+        }
 
-      //TODO: do our initial load.
+        if (msg.motor_temperature || msg.water_temperature) {
+          if (msg.motor_temperature)
+            motorTemperatureData = [motorTemperatureData[0]].concat(msg.motor_temperature);
+          if (msg.water_temperature)
+            waterTemperatureData = [waterTemperatureData[0]].concat(msg.water_temperature);
 
-      page_ready.graphs = true;
+          temperatureChart.load({
+            columns: [
+              timeData,
+              motorTemperatureData,
+              waterTemperatureData
+            ]
+          });
+        }
+
+        if (msg.filter_pressure || msg.membrane_pressure) {
+          if (msg.filter_pressure)
+            filterPressureData = [filterPressureData[0]].concat(msg.filter_pressure);
+          if (msg.membrane_pressure)
+            membranePressureData = [membranePressureData[0]].concat(msg.membrane_pressure);
+          pressureChart.load({
+            columns: [
+              timeData,
+              filterPressureData,
+              membranePressureData
+            ]
+          });
+        }
+
+        if (msg.salinity) {
+          salinityData = [salinityData[0]].concat(msg.salinity);
+
+          salinityChart.load({
+            columns: [
+              timeData,
+              salinityData
+            ]
+          });
+
+        }
+
+        if (msg.flowrate) {
+          flowrateData = [flowrateData[0]].concat(msg.flowrate);
+
+          flowrateChart.load({
+            columns: [
+              timeData,
+              flowrateData
+            ]
+          });
+        }
+
+        if (msg.tank_level) {
+          tankLevelData = [tankLevelData[0]].concat(msg.tank_level);
+
+          tankLevelChart.load({
+            columns: [
+              timeData,
+              tankLevelData
+            ]
+          });
+        }
+
+        //start getting updates too.
+        get_update_data();
+
+        page_ready.graphs = true;
+      }
     }
     //load up our network config.
     else if (msg.msg == "network_config") {
@@ -2349,7 +2409,7 @@ function get_update_data() {
     client.getUpdate();
 
     //keep loading it while we are here.
-    if (current_page == "control")
+    if (current_page == "control" || current_page == "graphs")
       setTimeout(get_update_data, app_update_interval);
   }
 }

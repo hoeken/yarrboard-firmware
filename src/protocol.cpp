@@ -1937,8 +1937,6 @@ void generateGraphDataJSON(JsonVariant output)
 #endif
 
 #ifdef YB_IS_BRINEOMATIC
-  sendDebug("motor temp size: %d", motor_temperature_data.size());
-
   JsonArray data;
 
   data = output["motor_temperature"].to<JsonArray>();
