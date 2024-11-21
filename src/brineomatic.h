@@ -179,6 +179,7 @@ class Brineomatic
     float getSalinity();
     float getSalinityMaximum();
     float getTankLevel();
+    float getTankCapacity();
     float getMotorTemperatureMaximum();
 
     void runStateMachine();
@@ -235,8 +236,9 @@ class Brineomatic
     float salinityMaximum = 300.0;               // PPM
     float motorTemperatureMaximum = 65.0;        // Celcius
     float tankLevelFull = 0.99;                  // 0 = empty, 1 = full
-    float coolingFanOnTemperature = 37.0;        // Celcius
-    float coolingFanOffTemperature = 36.0;       // Celcius
+    float tankCapacity = 780;                    // Liters
+    float coolingFanOnTemperature = 35.0;        // Celcius
+    float coolingFanOffTemperature = 34.0;       // Celcius
 
     uint8_t membranePressureHighErrorCount = 0;
     uint8_t membranePressureLowErrorCount = 0;

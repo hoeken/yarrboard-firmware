@@ -1665,6 +1665,7 @@ void generateConfigJSON(JsonVariant output)
   output["has_diverter_valve"] = wm.hasDiverterValve();
   output["has_flush_valve"] = wm.hasFlushValve();
   output["has_cooling_fan"] = wm.hasCoolingFan();
+  output["tank_capacity"] = wm.getTankCapacity();
 #endif
 }
 

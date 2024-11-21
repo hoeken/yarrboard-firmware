@@ -752,6 +752,11 @@ float Brineomatic::getTankLevel()
   return currentTankLevel;
 }
 
+float Brineomatic::getTankCapacity()
+{
+  return tankCapacity;
+}
+
 const char* Brineomatic::getStatus()
 {
   if (currentStatus == Status::STARTUP)
@@ -861,9 +866,20 @@ int64_t Brineomatic::getRuntimeElapsed()
 
 int64_t Brineomatic::getFinishCountdown()
 {
-  int64_t countdown = (runtimeStart + desiredRuntime) - esp_timer_get_time();
-  if (currentStatus == Status::RUNNING && desiredRuntime > 0 && countdown > 0)
-    return countdown;
+  if (currentStatus == Status::RUNNING) {
+    // are we on a timer?
+    if (desiredRuntime > 0) {
+      int64_t countdown = (runtimeStart + desiredRuntime) - esp_timer_get_time();
+      if (countdown > 0)
+        return countdown;
+    }
+    // if we have tank capacity and a flowrate, we can estimate.
+    else if (getTankCapacity() > 0 && getFlowrate() > 0) {
+      float remainingVolume = getTankCapacity() * (1.0 - getTankLevel());
+      int64_t remainingMicros = (remainingVolume / getFlowrate()) * 3600 * 1e6;
+      return remainingMicros;
+    }
+  }
 
   return 0;
 }
