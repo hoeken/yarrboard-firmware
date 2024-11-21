@@ -996,7 +996,7 @@ function start_websocket() {
             pattern: ['#6c757d', '#ffc107', '#198754', '#ffc107', '#dc3545'], // the three color levels for the percentage values.
             threshold: {
               unit: 'value',
-              values: [20, 100, 120, 180, 200]
+              values: [20, 100, 180, 200, 250]
             }
           },
           size: { height: 130 },
