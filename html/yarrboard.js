@@ -72,11 +72,13 @@ const brineomatic_result_text = {
   "ERR_MOTOR_TEMPERATURE_HIGH": "Motor Temperature High",
 }
 
+let motorTemperatureGauge;
+let waterTemperatureGauge;
 let filterPressureGauge;
 let membranePressureGauge;
-let flowrateGauge;
 let salinityGauge;
-let motorTemperatureGauge;
+let flowrateGauge;
+let tankLevelGauge;
 
 let temperatureChart;
 let pressureChart;
@@ -817,277 +819,389 @@ function start_websocket() {
 
         $('#brightnessControl').hide();
 
-        filterPressureGauge = new RadialGauge({
-          renderTo: "filterPressureGauge",
-          width: 175,
-          height: 175,
-          units: 'PSI',
-          title: false,
-          value: 0,
-          minValue: 0,
-          maxValue: 100,
-          majorTicks: [
-            '0', '10', '20', '30', '40', '50', '60', '70'
-          ],
-          minorTicks: 2,
-          strokeTicks: false,
-          highlights: [
-            { from: 0, to: 10, color: 'rgba(0,255,0,.15)' },
-            { from: 10, to: 20, color: 'rgba(255,255,0,.15)' },
-            { from: 20, to: 30, color: 'rgba(255,30,0,.25)' },
-            { from: 40, to: 50, color: 'rgba(255,0,225,.25)' },
-            { from: 60, to: 70, color: 'rgba(0,0,255,.25)' },
-          ],
-          // colorPlate: '#222',
-          // colorMajorTicks: '#f5f5f5',
-          // colorMinorTicks: '#ddd',
-          // colorTitle: '#fff',
-          // colorUnits: '#ccc',
-          // colorNumbers: '#eee',
-          // colorNeedle: 'rgba(240, 128, 128, 1)',
-          // colorNeedleEnd: 'rgba(255, 160, 122, .9)',
-          valueBox: true,
-          animationRule: 'bounce',
-          animationDuration: 100
+        motorTemperatureGauge = c3.generate({
+          bindto: '#motorTemperatureGauge',
+          data: {
+            columns: [
+              ['Motor Temperature', 0]
+            ],
+            type: 'gauge',
+          },
+          gauge: {
+            label: {
+              format: function (value, ratio) {
+                return `${value}°C`;
+              },
+              show: true
+            },
+            min: 0, // 0 is default, //can handle negative min e.g. vacuum / voltage / current flow / rate of change
+            max: 80, // 80 is default
+          },
+          color: {
+            pattern: ['#198754', '#ffc107', '#dc3545'], // the three color levels for the percentage values.
+            threshold: {
+              unit: 'value',
+              values: [50, 75, 100]
+            }
+          },
+          size: { height: 150 },
+          interaction: { enabled: false },
+          transition: { duration: 0 },
+          legend: { hide: true }
         });
-        filterPressureGauge.draw();
 
-        membranePressureGauge = new RadialGauge({
-          renderTo: "membranePressureGauge",
-          width: 175,
-          height: 175,
-          units: 'PSI',
-          title: false,
-          value: 0,
-          minValue: 0,
-          maxValue: 1000,
-          // majorTicks: [
-          //   '0', '10', '20', '30', '40', '50', '60', '70'
-          // ],
-          minorTicks: 2,
-          strokeTicks: false,
-          highlights: [
-            { from: 0, to: 10, color: 'rgba(0,255,0,.15)' },
-            { from: 10, to: 20, color: 'rgba(255,255,0,.15)' },
-            { from: 20, to: 30, color: 'rgba(255,30,0,.25)' },
-            { from: 40, to: 50, color: 'rgba(255,0,225,.25)' },
-            { from: 60, to: 70, color: 'rgba(0,0,255,.25)' },
-          ],
-          // colorPlate: '#222',
-          // colorMajorTicks: '#f5f5f5',
-          // colorMinorTicks: '#ddd',
-          // colorTitle: '#fff',
-          // colorUnits: '#ccc',
-          // colorNumbers: '#eee',
-          // colorNeedle: 'rgba(240, 128, 128, 1)',
-          // colorNeedleEnd: 'rgba(255, 160, 122, .9)',
-          valueBox: true,
-          animationRule: 'bounce',
-          animationDuration: 100
+        waterTemperatureGauge = c3.generate({
+          bindto: '#waterTemperatureGauge',
+          data: {
+            columns: [
+              ['Water Temperature', 0]
+            ],
+            type: 'gauge',
+          },
+          gauge: {
+            label: {
+              format: function (value, ratio) {
+                return `${value}°C`;
+              },
+              show: true
+            },
+            min: 0, // 0 is default, //can handle negative min e.g. vacuum / voltage / current flow / rate of change
+            max: 50, // 80 is default
+          },
+          color: {
+            pattern: ['#0d6efd', '#198754', '#ffc107', '#dc3545'], // the three color levels for the percentage values.
+            threshold: {
+              unit: 'value',
+              values: [10, 30, 40, 50]
+            }
+          },
+          size: { height: 150 },
+          interaction: { enabled: false },
+          transition: { duration: 0 },
+          legend: { hide: true }
         });
-        membranePressureGauge.draw();
 
-        motorTemperatureGauge = new RadialGauge({
-          renderTo: "motorTemperatureGauge",
-          width: 175,
-          height: 175,
-          units: '°C',
-          title: "Motor Temperature",
-          value: 0,
-          minValue: 0,
-          maxValue: 70,
-          majorTicks: [
-            '0', '10', '20', '30', '40', '50', '60', '70'
-          ],
-          minorTicks: 2,
-          strokeTicks: false,
-          highlights: [
-            { from: 0, to: 10, color: 'rgba(0,255,0,.15)' },
-            { from: 10, to: 20, color: 'rgba(255,255,0,.15)' },
-            { from: 20, to: 30, color: 'rgba(255,30,0,.25)' },
-            { from: 40, to: 50, color: 'rgba(255,0,225,.25)' },
-            { from: 60, to: 70, color: 'rgba(0,0,255,.25)' },
-          ],
-          // colorPlate: '#222',
-          // colorMajorTicks: '#f5f5f5',
-          // colorMinorTicks: '#ddd',
-          // colorTitle: '#fff',
-          // colorUnits: '#ccc',
-          // colorNumbers: '#eee',
-          // colorNeedle: 'rgba(240, 128, 128, 1)',
-          // colorNeedleEnd: 'rgba(255, 160, 122, .9)',
-          valueBox: true,
-          animationRule: 'bounce',
-          animationDuration: 100
+        filterPressureGauge = c3.generate({
+          bindto: '#filterPressureGauge',
+          data: {
+            columns: [
+              ['Filter Pressure', 0]
+            ],
+            type: 'gauge',
+          },
+          gauge: {
+            label: {
+              format: function (value, ratio) {
+                return `${value} PSI`;
+              },
+              show: true
+            },
+            min: 0,
+            max: 50,
+          },
+          color: {
+            pattern: ['#dc3545', '#ffc107', '#198754', '#ffc107', '#dc3545'], // the three color levels for the percentage values.
+            threshold: {
+              unit: 'value',
+              values: [5, 10, 40, 45, 50]
+            }
+          },
+          size: { height: 150 },
+          interaction: { enabled: false },
+          transition: { duration: 0 },
+          legend: { hide: true }
         });
-        motorTemperatureGauge.draw();
+
+        membranePressureGauge = c3.generate({
+          bindto: '#membranePressureGauge',
+          data: {
+            columns: [
+              ['Membrane Pressure', 0]
+            ],
+            type: 'gauge',
+          },
+          gauge: {
+            label: {
+              format: function (value, ratio) {
+                return `${value} PSI`;
+              },
+              show: true
+            },
+            min: 0,
+            max: 1000,
+          },
+          color: {
+            pattern: ['#0d6efd', '#198754', '#dc3545'], // the three color levels for the percentage values.
+            threshold: {
+              unit: 'value',
+              values: [700, 900, 1000]
+            }
+          },
+          size: { height: 150 },
+          interaction: { enabled: false },
+          transition: { duration: 0 },
+          legend: { hide: true }
+        });
+
+        salinityGauge = c3.generate({
+          bindto: '#salinityGauge',
+          data: {
+            columns: [
+              ['Salinity', 0]
+            ],
+            type: 'gauge',
+          },
+          gauge: {
+            label: {
+              format: function (value, ratio) {
+                return `${value} PPM`;
+              },
+              show: true
+            },
+            min: 0,
+            max: 1500,
+          },
+          color: {
+            pattern: ['#198754', '#ffc107', '#dc3545'], // the three color levels for the percentage values.
+            threshold: {
+              unit: 'value',
+              values: [200, 300, 1500]
+            }
+          },
+          size: { height: 150 },
+          interaction: { enabled: false },
+          transition: { duration: 0 },
+          legend: { hide: true }
+        });
+
+        flowrateGauge = c3.generate({
+          bindto: '#flowrateGauge',
+          data: {
+            columns: [
+              ['Flowrate', 0]
+            ],
+            type: 'gauge',
+          },
+          gauge: {
+            label: {
+              format: function (value, ratio) {
+                return `${value} LPM`;
+              },
+              show: true
+            },
+            min: 0,
+            max: 220,
+          },
+          color: {
+            pattern: ['#6c757d', '#ffc107', '#198754', '#ffc107', '#dc3545'], // the three color levels for the percentage values.
+            threshold: {
+              unit: 'value',
+              values: [20, 100, 120, 180, 200]
+            }
+          },
+          size: { height: 150 },
+          interaction: { enabled: false },
+          transition: { duration: 0 },
+          legend: { hide: true }
+        });
+
+        tankLevelGauge = c3.generate({
+          bindto: '#tankLevelGauge',
+          data: {
+            columns: [
+              ['Tank Level', 0]
+            ],
+            type: 'gauge',
+          },
+          gauge: {
+            label: {
+              format: function (value, ratio) {
+                return `${value}%`;
+              },
+              show: true
+            },
+            min: 0,
+            max: 100,
+          },
+          color: {
+            pattern: ['#6c757d', '#ffc107', '#198754'],
+            threshold: {
+              unit: 'value',
+              values: [10, 20, 100]
+            }
+          },
+          size: { height: 150 },
+          interaction: { enabled: false },
+          transition: { duration: 0 },
+          legend: { hide: true }
+        });
+
+        // Define the data
+        timeData = ['x'];
+        motorTemperatureData = ['Motor Temperature'];
+        waterTemperatureData = ['Water Temperature'];
+        filterPressureData = ['Filter Pressure'];
+        membranePressureData = ['Membrane Pressure'];
+        salinityData = ['Salinity'];
+        flowrateData = ['Flowrate'];
+        tankLevelData = ['Tank Level'];
+
+        temperatureChart = c3.generate({
+          bindto: '#temperatureChart',
+          data: {
+            x: 'x', // Define the x-axis data identifier
+            xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
+            columns: [
+              timeData,
+              motorTemperatureData,
+              waterTemperatureData
+            ],
+            type: 'line' // Line chart
+          },
+          axis: {
+            x: {
+              type: 'timeseries',
+              label: 'Time',
+              tick: {
+                format: '%H:%M:%S'
+              }
+            },
+            y: {
+              label: 'Temperature (°C)',
+              min: 0,
+              max: 80 // Adjust as needed
+            }
+          },
+          point: {
+            show: false // Hide data points for a smoother line
+          }
+        });
+
+        pressureChart = c3.generate({
+          bindto: '#pressureChart',
+          data: {
+            x: 'x', // Define the x-axis data identifier
+            xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
+            columns: [
+              timeData,
+              filterPressureData,
+              membranePressureData
+            ],
+            type: 'line' // Line chart
+          },
+          axis: {
+            x: {
+              type: 'timeseries',
+              label: 'Time',
+              tick: {
+                format: '%H:%M:%S'
+              }
+            },
+            y: {
+              label: 'Pressure (PSI))',
+              min: 0,
+              max: 1000
+            }
+          },
+          point: {
+            show: false // Hide data points for a smoother line
+          }
+        });
+
+        salinityChart = c3.generate({
+          bindto: '#salinityChart',
+          data: {
+            x: 'x', // Define the x-axis data identifier
+            xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
+            columns: [
+              timeData,
+              salinityData
+            ],
+            type: 'line' // Line chart
+          },
+          axis: {
+            x: {
+              type: 'timeseries',
+              label: 'Time',
+              tick: {
+                format: '%H:%M:%S'
+              }
+            },
+            y: {
+              label: 'Salinity (PPM))',
+              min: 0,
+              max: 1500
+            }
+          },
+          point: {
+            show: false // Hide data points for a smoother line
+          }
+        });
+
+        flowrateChart = c3.generate({
+          bindto: '#flowrateChart',
+          data: {
+            x: 'x', // Define the x-axis data identifier
+            xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
+            columns: [
+              timeData,
+              flowrateData
+            ],
+            type: 'line' // Line chart
+          },
+          axis: {
+            x: {
+              type: 'timeseries',
+              label: 'Time',
+              tick: {
+                format: '%H:%M:%S'
+              }
+            },
+            y: {
+              label: 'Flowrate (LPM))',
+              min: 0,
+              max: 200
+            }
+          },
+          point: {
+            show: false // Hide data points for a smoother line
+          }
+        });
+
+        tankLevelChart = c3.generate({
+          bindto: '#tankLevelChart',
+          data: {
+            x: 'x', // Define the x-axis data identifier
+            xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
+            columns: [
+              timeData,
+              tankLevelData
+            ],
+            type: 'line' // Line chart
+          },
+          axis: {
+            x: {
+              type: 'timeseries',
+              label: 'Time',
+              tick: {
+                format: '%H:%M:%S'
+              }
+            },
+            y: {
+              label: 'Tank Level (%))',
+              min: 0,
+              max: 100
+            }
+          },
+          point: {
+            show: false // Hide data points for a smoother line
+          }
+        });
+
+        //also hide our other stuff here...
+        $('#relayControlDiv').hide();
+        $('#servoControlDiv').hide();
       }
-
-      // Define the data
-      timeData = ['x'];
-      motorTemperatureData = ['Motor Temperature'];
-      waterTemperatureData = ['Water Temperature'];
-      filterPressureData = ['Filter Pressure'];
-      membranePressureData = ['Membrane Pressure'];
-      salinityData = ['Salinity'];
-      flowrateData = ['Flowrate'];
-      tankLevelData = ['Tank Level'];
-
-      temperatureChart = c3.generate({
-        bindto: '#temperatureChart',
-        data: {
-          x: 'x', // Define the x-axis data identifier
-          xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
-          columns: [
-            timeData,
-            motorTemperatureData,
-            waterTemperatureData
-          ],
-          type: 'line' // Line chart
-        },
-        axis: {
-          x: {
-            type: 'timeseries',
-            label: 'Time',
-            tick: {
-              format: '%H:%M:%S'
-            }
-          },
-          y: {
-            label: 'Temperature (°C)',
-            min: 0,
-            max: 80 // Adjust as needed
-          }
-        },
-        point: {
-          show: false // Hide data points for a smoother line
-        }
-      });
-
-      pressureChart = c3.generate({
-        bindto: '#pressureChart',
-        data: {
-          x: 'x', // Define the x-axis data identifier
-          xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
-          columns: [
-            timeData,
-            filterPressureData,
-            membranePressureData
-          ],
-          type: 'line' // Line chart
-        },
-        axis: {
-          x: {
-            type: 'timeseries',
-            label: 'Time',
-            tick: {
-              format: '%H:%M:%S'
-            }
-          },
-          y: {
-            label: 'Pressure (PSI))',
-            min: 0,
-            max: 1000
-          }
-        },
-        point: {
-          show: false // Hide data points for a smoother line
-        }
-      });
-
-      salinityChart = c3.generate({
-        bindto: '#salinityChart',
-        data: {
-          x: 'x', // Define the x-axis data identifier
-          xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
-          columns: [
-            timeData,
-            salinityData
-          ],
-          type: 'line' // Line chart
-        },
-        axis: {
-          x: {
-            type: 'timeseries',
-            label: 'Time',
-            tick: {
-              format: '%H:%M:%S'
-            }
-          },
-          y: {
-            label: 'Salinity (PPM))',
-            min: 0,
-            max: 1500
-          }
-        },
-        point: {
-          show: false // Hide data points for a smoother line
-        }
-      });
-
-      flowrateChart = c3.generate({
-        bindto: '#flowrateChart',
-        data: {
-          x: 'x', // Define the x-axis data identifier
-          xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
-          columns: [
-            timeData,
-            flowrateData
-          ],
-          type: 'line' // Line chart
-        },
-        axis: {
-          x: {
-            type: 'timeseries',
-            label: 'Time',
-            tick: {
-              format: '%H:%M:%S'
-            }
-          },
-          y: {
-            label: 'Flowrate (LPM))',
-            min: 0,
-            max: 200
-          }
-        },
-        point: {
-          show: false // Hide data points for a smoother line
-        }
-      });
-
-      tankLevelChart = c3.generate({
-        bindto: '#tankLevelChart',
-        data: {
-          x: 'x', // Define the x-axis data identifier
-          xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
-          columns: [
-            timeData,
-            tankLevelData
-          ],
-          type: 'line' // Line chart
-        },
-        axis: {
-          x: {
-            type: 'timeseries',
-            label: 'Time',
-            tick: {
-              format: '%H:%M:%S'
-            }
-          },
-          y: {
-            label: 'Tank Level (%))',
-            min: 0,
-            max: 100
-          }
-        },
-        point: {
-          show: false // Hide data points for a smoother line
-        }
-      });
-
-      //also hide our other stuff here...
-      $('#relayControlDiv').hide();
-      $('#servoControlDiv').hide();
 
       //only do it as needed
       if (!page_ready.config || current_page != "config") {
@@ -1450,14 +1564,13 @@ function start_websocket() {
         let tank_level = (msg.tank_level * 100).toFixed(1);
 
         //update our gauges.
-        filterPressureGauge.value = filter_pressure;
-        membranePressureGauge.value = membrane_pressure;
-        motorTemperatureGauge.value = motor_temperature;
-
-        //our gauges
-        filterPressureGauge.draw();
-        membranePressureGauge.draw();
-        motorTemperatureGauge.draw();
+        motorTemperatureGauge.load({ columns: [['Motor Temperature', motor_temperature]] });
+        waterTemperatureGauge.load({ columns: [['Water Temperature', water_temperature]] });
+        filterPressureGauge.load({ columns: [['Filter Pressure', filter_pressure]] });
+        membranePressureGauge.load({ columns: [['Membrane Pressure', membrane_pressure]] });
+        salinityGauge.load({ columns: [['Salinity', salinity]] });
+        flowrateGauge.load({ columns: [['Flowrate', flowrate]] });
+        tankLevelGauge.load({ columns: [['Tank Level', tank_level]] });
 
         //only occasionally update our graph to keep it responsive
         if (Date.now() - lastChartUpdate >= 5000) {
