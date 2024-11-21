@@ -844,7 +844,7 @@ function start_websocket() {
               values: [50, 75, 100]
             }
           },
-          size: { height: 150 },
+          size: { height: 130 },
           interaction: { enabled: false },
           transition: { duration: 0 },
           legend: { hide: true }
@@ -875,7 +875,7 @@ function start_websocket() {
               values: [10, 30, 40, 50]
             }
           },
-          size: { height: 150 },
+          size: { height: 130 },
           interaction: { enabled: false },
           transition: { duration: 0 },
           legend: { hide: true }
@@ -906,7 +906,7 @@ function start_websocket() {
               values: [5, 10, 40, 45, 50]
             }
           },
-          size: { height: 150 },
+          size: { height: 130 },
           interaction: { enabled: false },
           transition: { duration: 0 },
           legend: { hide: true }
@@ -937,7 +937,7 @@ function start_websocket() {
               values: [700, 900, 1000]
             }
           },
-          size: { height: 150 },
+          size: { height: 130 },
           interaction: { enabled: false },
           transition: { duration: 0 },
           legend: { hide: true }
@@ -968,7 +968,7 @@ function start_websocket() {
               values: [200, 300, 1500]
             }
           },
-          size: { height: 150 },
+          size: { height: 130 },
           interaction: { enabled: false },
           transition: { duration: 0 },
           legend: { hide: true }
@@ -999,7 +999,7 @@ function start_websocket() {
               values: [20, 100, 120, 180, 200]
             }
           },
-          size: { height: 150 },
+          size: { height: 130 },
           interaction: { enabled: false },
           transition: { duration: 0 },
           legend: { hide: true }
@@ -1030,7 +1030,7 @@ function start_websocket() {
               values: [10, 20, 100]
             }
           },
-          size: { height: 150 },
+          size: { height: 130 },
           interaction: { enabled: false },
           transition: { duration: 0 },
           legend: { hide: true }
