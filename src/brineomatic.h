@@ -198,7 +198,7 @@ class Brineomatic
     uint64_t desiredRuntime = 0;
     uint64_t runtimeStart;
     uint64_t flushStart = 0;
-    uint64_t flushDuration = 4ULL * 60 * 1000000; // 4 minute default, in microseconds
+    uint64_t flushDuration = 3ULL * 60 * 1000000; // 3 minute default, in microseconds
     uint64_t nextFlushTime = 0;
     uint64_t flushInterval = 3ULL * 24 * 60 * 60 * 1000000; // 3 day default, in microseconds
     uint64_t pickleStart = 0;

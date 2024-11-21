@@ -990,7 +990,7 @@ function start_websocket() {
               show: true
             },
             min: 0,
-            max: 220,
+            max: 250,
           },
           color: {
             pattern: ['#6c757d', '#ffc107', '#198754', '#ffc107', '#dc3545'], // the three color levels for the percentage values.
