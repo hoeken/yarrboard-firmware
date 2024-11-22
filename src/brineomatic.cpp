@@ -296,8 +296,8 @@ void measure_membrane_pressure(int16_t reading)
   float amperage = (voltage / YB_420_RESISTOR) * 1000;
   float highPressureReading = map_generic(amperage, 4.0, 20.0, 0.0, YB_HP_SENSOR_MAX);
 
-  if (highPressureReading > 800)
-    sendDebug("high pressure: %.3f", highPressureReading);
+  // if (highPressureReading > ge)
+  //   sendDebug("high pressure: %.3f", highPressureReading);
 
   wm.setMembranePressure(highPressureReading);
 }
@@ -353,10 +353,6 @@ void Brineomatic::init()
   pickleResult = Result::STARTUP;
   depickleResult = Result::STARTUP;
 
-  Kp = 0.180;
-  Ki = 0.012;
-  Kd = 0.020;
-
   // HSR-1425CR
   //  highPressureValveOpenMin = 90;
   //  highPressureValveOpenMax = 125;
@@ -369,10 +365,23 @@ void Brineomatic::init()
   highPressureValveCloseMin = 92.5;
   highPressureValveCloseMax = 55;
 
+  // PID settings - Ramp Up
+  KpRamp = 2.2;
+  KiRamp = 0;
+  KdRamp = 0.55;
+
+  // PID Settings - Maintain
+  KpMaintain = 1.20;
+  KiMaintain = 0.12;
+  KdMaintain = 0;
+
+  // PID controller
   membranePressurePID = QuickPID(&currentMembranePressure, &membranePressurePIDOutput, &membranePressureTarget);
-  membranePressurePID.SetTunings(Kp, Ki, Kd);
   membranePressurePID.SetMode(QuickPID::Control::automatic);
-  membranePressurePID.SetOutputLimits(0, 255);
+  membranePressurePID.SetAntiWindupMode(QuickPID::iAwMode::iAwClamp);
+  membranePressurePID.SetTunings(KpRamp, KiRamp, KdRamp);
+  membranePressurePID.SetControllerDirection(QuickPID::Action::direct);
+  membranePressurePID.SetOutputLimits(YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX);
 }
 
 void Brineomatic::setFilterPressure(float pressure)
@@ -389,20 +398,18 @@ void Brineomatic::setMembranePressureTarget(float pressure)
 {
   membranePressureTarget = pressure;
 
+  // positive target, initialize our PID.
   if (pressure >= 0) {
-    // we need forward and reverse to control the valve.
-    if (membranePressureTarget > currentMembranePressure) {
-      membranePressurePID.SetControllerDirection(QuickPID::Action::direct);
-    } else {
-      membranePressurePID.SetControllerDirection(QuickPID::Action::reverse);
-    }
-
     membranePressurePID.Initialize();
+    membranePressurePID.Reset();
+
+    // header for debugging.
+    Serial.println("Membrane Pressure Target,Current Membrane Pressure,Pterm,Iterm,Kterm,Output Sum, PID Output, Servo Angle");
   }
   // negative target, turn off the servo.
   else {
     sendDebug("negative target, turn off the servo.");
-    highPressureValve->write(highPressureValveCloseMin);
+    highPressureValve->write(highPressureValveCloseMin); // neutral / stop
     highPressureValve->disable();
   }
 }
@@ -498,7 +505,7 @@ bool Brineomatic::initializeHardware()
   uint64_t membranePressureStart = esp_timer_get_time();
   if (membranePressureTarget > 0) {
     setMembranePressureTarget(0);
-    while (getMembranePressure() > 50) {
+    while (getMembranePressure() > 65) {
       vTaskDelay(pdMS_TO_TICKS(100));
 
       if (esp_timer_get_time() - membranePressureStart > membranePressureTimeout)
@@ -951,31 +958,22 @@ void Brineomatic::manageHighPressureValve()
     if (hasHighPressureValve()) {
       if (membranePressureTarget >= 0) {
 
-        // change directions if we are too far off our target
-        // this is only for RUNNING mode when we are close to our target
-        if (currentStatus == Status::RUNNING) {
-          if (currentMembranePressure < membranePressureTarget * 0.975 && membranePressurePID.GetDirection() == (uint8_t)QuickPID::Action::reverse) {
-            // sendDebug("forward");
-            membranePressurePID.SetControllerDirection(QuickPID::Action::direct);
-          } else if (currentMembranePressure > membranePressureTarget * 1.025 && membranePressurePID.GetDirection() == (uint8_t)QuickPID::Action::direct) {
-            // sendDebug("reverse");
-            membranePressurePID.SetControllerDirection(QuickPID::Action::reverse);
-          }
-        }
+        // only use Ki for tuning once we are close to our target.
+        if (abs(membranePressureTarget - currentMembranePressure) / membranePressureTarget > 0.05)
+          membranePressurePID.SetTunings(KpRamp, KiRamp, KdRamp);
+        else
+          membranePressurePID.SetTunings(KpMaintain, KpMaintain, KdMaintain);
 
         // run our PID calculations
         if (membranePressurePID.Compute()) {
-          // forwards / Clockwise / Close valve / Pressure UP
-          if (membranePressurePID.GetDirection() == 0)
-            angle = map(membranePressurePIDOutput, 0, 255, highPressureValveCloseMin, highPressureValveCloseMax);
-          // reverse / Counterclockwise / Open Valve / Pressure DOWN
-          else
-            angle = map(membranePressurePIDOutput, 0, 255, highPressureValveOpenMin, highPressureValveOpenMax);
+          angle = map(membranePressurePIDOutput, YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX, highPressureValveOpenMax, highPressureValveCloseMax);
 
-          // actually control the valve
           highPressureValve->write(angle);
-          // sendDebug("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f | reverse? %d", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle, membranePressurePID.GetDirection());
+
+          sendDebug("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
+          Serial.printf("%f,%f,%f,%f,%f,%f,%f,%d\n", membranePressureTarget, currentMembranePressure, membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
         }
+      } else {
       }
     }
   }

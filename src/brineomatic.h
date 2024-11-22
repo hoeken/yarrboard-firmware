@@ -224,7 +224,13 @@ class Brineomatic
     float membranePressureTarget;
     float membranePressurePIDOutput;
     QuickPID membranePressurePID;
-    float Kp, Ki, Kd;
+
+    float KpRamp = 0;
+    float KiRamp = 0;
+    float KdRamp = 0;
+    float KpMaintain = 0;
+    float KiMaintain = 0;
+    float KdMaintain = 0;
 
     float lowPressureMinimum = 2.5;              // PSI
     float lowPressureMaximum = 60.0;             // PSI
