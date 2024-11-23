@@ -1771,8 +1771,8 @@ void generateUpdateJSON(JsonVariant output)
   if (!strcmp(wm.getStatus(), "IDLE"))
     output["next_flush_countdown"] = wm.getNextFlushCountdown();
 
+  output["runtime_elapsed"] = wm.getRuntimeElapsed();
   if (!strcmp(wm.getStatus(), "RUNNING")) {
-    output["runtime_elapsed"] = wm.getRuntimeElapsed();
     output["finish_countdown"] = wm.getFinishCountdown();
   }
 

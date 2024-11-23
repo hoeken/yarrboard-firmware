@@ -371,8 +371,8 @@ void Brineomatic::init()
   KdRamp = 0.55;
 
   // PID Settings - Maintain
-  KpMaintain = 1.20;
-  KiMaintain = 0.12;
+  KpMaintain = 1.50;
+  KiMaintain = 0.15;
   KdMaintain = 0;
 
   // PID controller
@@ -498,6 +498,8 @@ void Brineomatic::stop()
 
 bool Brineomatic::initializeHardware()
 {
+  bool isFailure = false;
+
   openDiverterValve();
 
   // zero pressure and wait for it to drop
@@ -508,8 +510,10 @@ bool Brineomatic::initializeHardware()
     while (getMembranePressure() > 65) {
       vTaskDelay(pdMS_TO_TICKS(100));
 
-      if (esp_timer_get_time() - membranePressureStart > membranePressureTimeout)
-        return true;
+      if (esp_timer_get_time() - membranePressureStart > membranePressureTimeout) {
+        isFailure = true;
+        break;
+      }
     }
     setMembranePressureTarget(-1);
   }
@@ -519,7 +523,7 @@ bool Brineomatic::initializeHardware()
   closeFlushValve();
   disableCoolingFan();
 
-  return false;
+  return isFailure;
 }
 
 bool Brineomatic::hasBoostPump()
@@ -968,7 +972,13 @@ void Brineomatic::manageHighPressureValve()
         if (membranePressurePID.Compute()) {
           angle = map(membranePressurePIDOutput, YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX, highPressureValveOpenMax, highPressureValveCloseMax);
 
-          highPressureValve->write(angle);
+          // if we're close, just disable so its not constantly drawing current.
+          if (abs(membranePressureTarget - currentMembranePressure) / membranePressureTarget > 0.01)
+            highPressureValve->write(angle);
+          else {
+            highPressureValve->disable();
+            membranePressurePID.Reset(); // keep our pid from winding up.
+          }
 
           sendDebug("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
           Serial.printf("%f,%f,%f,%f,%f,%f,%f,%d\n", membranePressureTarget, currentMembranePressure, membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
