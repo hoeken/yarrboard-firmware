@@ -1565,6 +1565,13 @@ void handleSetWatermaker(JsonVariantConst input, JsonVariant output)
     else
       wm.closeDiverterValve();
   }
+
+  if (input["kp_maintain"].is<JsonVariantConst>())
+    wm.KpMaintain = input["kp_maintain"];
+  if (input["ki_maintain"].is<JsonVariantConst>())
+    wm.KiMaintain = input["ki_maintain"];
+  if (input["kd_maintain"].is<JsonVariantConst>())
+    wm.KdMaintain = input["kd_maintain"];
 }
 
 void generateConfigJSON(JsonVariant output)

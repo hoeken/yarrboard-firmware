@@ -57,6 +57,13 @@ class Brineomatic
     float highPressureValveCloseMin;
     float highPressureValveCloseMax;
 
+    float KpRamp = 0;
+    float KiRamp = 0;
+    float KdRamp = 0;
+    float KpMaintain = 0;
+    float KiMaintain = 0;
+    float KdMaintain = 0;
+
     float currentVolume;
 
     uint32_t totalCycles;
@@ -197,7 +204,8 @@ class Brineomatic
 
     // all these times are in microseconds
     uint64_t desiredRuntime = 0;
-    uint64_t runtimeStart;
+    uint64_t runtimeStart = 0;
+    uint64_t runtimeElapsed = 0;
     uint64_t flushStart = 0;
     uint64_t flushDuration = 3ULL * 60 * 1000000; // 3 minute default, in microseconds
     uint64_t nextFlushTime = 0;
@@ -224,13 +232,6 @@ class Brineomatic
     float membranePressureTarget;
     float membranePressurePIDOutput;
     QuickPID membranePressurePID;
-
-    float KpRamp = 0;
-    float KiRamp = 0;
-    float KdRamp = 0;
-    float KpMaintain = 0;
-    float KiMaintain = 0;
-    float KdMaintain = 0;
 
     float lowPressureMinimum = 2.5;              // PSI
     float lowPressureMaximum = 60.0;             // PSI

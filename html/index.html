@@ -51,7 +51,7 @@
                         <li id="statsNav" class="nav-item nav-permission">
                             <a class="nav-link" onclick="open_page('stats')" href="#stats">Status</a>
                         </li>
-                        <li id="graphsNav" class="nav-item nav-permission" style="display: none">
+                        <li id="graphsNav" class="nav-item nav-permission mfdHide" style="display: none">
                             <a class="nav-link" onclick="open_page('graphs')" href="#graphs">Graphs</a>
                         </li>
                         <li id="configNav" class="nav-item nav-permission">
@@ -476,33 +476,40 @@
                             </div>
                         </div>
                         <div id="bomGauges" class="row gx-0 my-3">
-                            <div class="col-md-3 col-sm-4">
+                            <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Filter Pressure</h6>
-                                <div id="filterPressureGauge"></div>
+                                <div id="filterPressureGauge" class="mfdHide"></div>
+                                <h1 id="filterPressureData" class="mfdShow"></h1>
                             </div>
-                            <div class="col-md-3 col-sm-4 col-xs-6">
+                            <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Membrane Pressure</h6>
-                                <div id="membranePressureGauge"></div>
+                                <div id="membranePressureGauge" class="mfdHide"></div>
+                                <h1 id="membranePressureData" class="mfdShow"></h1>
                             </div>
-                            <div class="col-md-3 col-sm-4 col-xs-6">
+                            <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Salinity</h6>
-                                <div id="salinityGauge"></div>
+                                <div id="salinityGauge" class="mfdHide"></div>
+                                <h1 id="salinityData" class="mfdShow"></h1>
                             </div>
-                            <div class="col-md-3 col-sm-4 col-xs-6">
+                            <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Flowrate</h6>
-                                <div id="flowrateGauge"></div>
+                                <div id="flowrateGauge" class="mfdHide"></div>
+                                <h1 id="flowrateData" class="mfdShow"></h1>
                             </div>
-                            <div class="col-md-3 col-sm-4 col-xs-6">
+                            <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Motor Temperature</h6>
-                                <div id="motorTemperatureGauge"></div>
+                                <div id="motorTemperatureGauge" class="mfdHide"></div>
+                                <h1 id="motorTemperatureData" class="mfdShow"></h1>
                             </div>
-                            <div class="col-md-3 col-sm-4 col-xs-6">
+                            <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Water Temperature</h6>
-                                <div id="waterTemperatureGauge"></div>
+                                <div id="waterTemperatureGauge" class="mfdHide"></div>
+                                <h1 id="waterTemperatureData" class="mfdShow"></h1>
                             </div>
-                            <div class="col-md-3 col-sm-4 col-xs-6">
+                            <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Tank Level</h6>
-                                <div id="tankLevelGauge"></div>
+                                <div id="tankLevelGauge" class="mfdHide"></div>
+                                <h1 id="tankLevelData" class="mfdShow"></h1>
                             </div>
                         </div>
                     </div>
@@ -589,53 +596,62 @@
                     </form>
                 </div>
                 <div id="graphsPage" class="pageContainer" style="display:none">
-                    <div id="bomGraphs" class="col-md-12">
+                    <div id="bomGraphs" class="col-md-12 mfdHide">
                         <h3>Graphs</h3>
                         <!-- Nav tabs -->
                         <ul class="nav nav-tabs" id="bomGraphsTabs" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="bomTemperatureGraphTab" data-bs-toggle="tab"
-                                    data-bs-target="#bomTemperatureGraphPanel" type="button"
-                                    role="tab">Temperature</button>
+                                    data-bs-target="#bomTemperatureGraphPanel" type="button" role="tab"
+                                    aria-controls="bomTemperatureGraphPanel" aria-selected="true">Temperature</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="bomPressureGraphTab" data-bs-toggle="tab"
-                                    data-bs-target="#bomPressureGraphPanel" type="button" role="tab">Pressure</button>
+                                    data-bs-target="#bomPressureGraphPanel" type="button" role="tab"
+                                    aria-controls="bomPressureGraphPanel" aria-selected="false">Pressure</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="bomSalinityGraphTab" data-bs-toggle="tab"
-                                    data-bs-target="#bomSalinityGraphPanel" type="button" role="tab">Salinity</button>
+                                    data-bs-target="#bomSalinityGraphPanel" type="button" role="tab"
+                                    aria-controls="bomSalinityGraphPanel" aria-selected="false">Salinity</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="bomFlowrateGraphTab" data-bs-toggle="tab"
-                                    data-bs-target="#bomFlowrateGraphPanel" type="button" role="tab">Flowrate</button>
+                                    data-bs-target="#bomFlowrateGraphPanel" type="button" role="tab"
+                                    aria-controls="bomFlowrateGraphPanel" aria-selected="false">Flowrate</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="bomTankLevelGraphTab" data-bs-toggle="tab"
-                                    data-bs-target="#bomTankLevelGraphPanel" type="button" role="tab">Tank
+                                    data-bs-target="#bomTankLevelGraphPanel" type="button" role="tab"
+                                    aria-controls="bomTankLevelGraphPanel" aria-selected="false">Tank
                                     Level</button>
                             </li>
                         </ul>
 
                         <!-- Tab panes -->
                         <div class="tab-content">
-                            <div class="tab-pane active" id="bomTemperatureGraphPanel" role="tabpanel" tabindex="0">
+                            <div class="tab-pane fade show active" id="bomTemperatureGraphPanel" role="tabpanel"
+                                aria-labelledby="bomTemperatureGraphPanel">
                                 <h4>Temperatures</h4>
                                 <div id="temperatureChart" class="row"></div>
                             </div>
-                            <div class="tab-pane" id="bomPressureGraphPanel" role="tabpanel" tabindex="0">
+                            <div class="tab-pane fade" id="bomPressureGraphPanel" role="tabpanel"
+                                aria-labelledby="bomPressureGraphPanel">
                                 <h4>Pressures</h4>
                                 <div id="pressureChart" class="row"></div>
                             </div>
-                            <div class="tab-pane" id="bomSalinityGraphPanel" role="tabpanel" tabindex="0">
+                            <div class="tab-pane fade" id="bomSalinityGraphPanel" role="tabpanel"
+                                aria-labelledby="bomSalinityGraphPanel">
                                 <h4>Salinity</h4>
                                 <div id="salinityChart" class="row"></div>
                             </div>
-                            <div class="tab-pane" id="bomFlowrateGraphPanel" role="tabpanel" tabindex="0">
+                            <div class="tab-pane fade" id="bomFlowrateGraphPanel" role="tabpanel"
+                                aria-labelledby="bomFlowrateGraphPanel">
                                 <h4>Flowrate</h4>
                                 <div id="flowrateChart" class="row"></div>
                             </div>
-                            <div class="tab-pane" id="bomTankLevelGraphPanel" role="tabpanel" tabindex="0">
+                            <div class="tab-pane fade" id="bomTankLevelGraphPanel" role="tabpanel"
+                                aria-labelledby="bomTankLevelGraphPanel">
                                 <h4>Tank Level</h4>
                                 <div id="tankLevelChart" class="row"></div>
                             </div>
@@ -1053,39 +1069,39 @@
     </div>
     </main>
     <footer class="p-4 text-body-secondary text-center">
-        <div class="row">
-            <div class="col-xs-12 col-sm-6">
-                <div id="websocket_status">
-                    WebSocket:
-                    <span id="connection_startup" class="connection_status text-primary">CONNECTING</span>
-                    <span id="connection_good" class="connection_status text-success"
-                        style="display: none">CONNECTED</span>
-                    <span id="connection_retrying" class="connection_status text-warning"
-                        style="display: none">RETRYING</span>
-                    <span id="connection_failed" class="connection_status text-danger"
-                        style="display: none">FAILED</span>
+        <div id="darkModeUI" class="row justify-content-center">
+            <div class="col-auto">
+                <label for="darkSwitch">Dark&nbsp;Mode</label>
+            </div>
+            <div class="col-auto">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="darkSwitch">
                 </div>
+            </div>
+        </div>
+        <div id="brightnessUI" class="row justify-content-center" style="display: none">
+            <div class="col-auto">
+                <label for="brightnessSlider">Brightness</label>
+            </div>
+            <div class="col-auto">
+                <div id="brightnessControl" class="form-check form-switch">
+                    <input type="range" class="form-range" min="0" max="100" id="brightnessSlider">
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div id="websocket_status">
+                WebSocket:
+                <span id="connection_startup" class="connection_status text-primary">CONNECTING</span>
+                <span id="connection_good" class="connection_status text-success" style="display: none">CONNECTED</span>
+                <span id="connection_retrying" class="connection_status text-warning"
+                    style="display: none">RETRYING</span>
+                <span id="connection_failed" class="connection_status text-danger" style="display: none">FAILED</span>
+            </div>
+            <div id="copyright">
                 <a id="projectName" href="https://github.com/hoeken/yarrboard">Yarrboard</a> &copy; <span
                     onclick="$('#debug_log').toggle()" id="year">2024</span><br>
                 <a href="https://www.oshwa.org/"><img src="oshw-logo-antipixel.webp"></a>
-            </div>
-            <div class="col-xs-12 col-sm-6">
-                <table class="table table-sm table-borderless">
-                    <tr>
-                        <td><label for="darkSwitch">Dark&nbsp;Mode</label></td>
-                        <td>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="darkSwitch">
-                            </div>
-                        </td>
-                    </tr>
-                    <tr id="brightnessControl">
-                        <td><label for="brightnessSlider">Brightness</label></td>
-                        <td width="99%">
-                            <input type="range" class="form-range" min="0" max="100" id="brightnessSlider">
-                        </td>
-                    </tr>
-                </table>
             </div>
         </div>
         <div id="debug_log" style="display: none">

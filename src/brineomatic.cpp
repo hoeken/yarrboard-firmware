@@ -867,12 +867,10 @@ int64_t Brineomatic::getNextFlushCountdown()
 
 int64_t Brineomatic::getRuntimeElapsed()
 {
-  int64_t elapsed = esp_timer_get_time() - runtimeStart;
+  if (currentStatus == Status::RUNNING)
+    runtimeElapsed = esp_timer_get_time() - runtimeStart;
 
-  if (currentStatus == Status::RUNNING && elapsed > 0)
-    return elapsed;
-
-  return 0;
+  return runtimeElapsed;
 }
 
 int64_t Brineomatic::getFinishCountdown()
@@ -980,8 +978,8 @@ void Brineomatic::manageHighPressureValve()
             membranePressurePID.Reset(); // keep our pid from winding up.
           }
 
-          sendDebug("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
-          Serial.printf("%f,%f,%f,%f,%f,%f,%f,%d\n", membranePressureTarget, currentMembranePressure, membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
+          // sendDebug("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
+          // Serial.printf("%f,%f,%f,%f,%f,%f,%f,%d\n", membranePressureTarget, currentMembranePressure, membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
         }
       } else {
       }
