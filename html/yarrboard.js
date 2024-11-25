@@ -3604,7 +3604,7 @@ function isCanvasSupported() {
 // Function to update the progress bar
 function updateProgressBar(ele, progress) {
   // Ensure the progress value is within bounds
-  const clampedProgress = Math.min(Math.max(progress, 0), 100);
+  const clampedProgress = Math.round(Math.min(Math.max(progress, 0), 100));
 
   // Get the progress container and inner progress bar
   const progressContainer = document.getElementById(ele);
@@ -3618,7 +3618,7 @@ function updateProgressBar(ele, progress) {
     progressContainer.setAttribute("aria-valuenow", clampedProgress);
 
     // Optional: Update the text inside the progress bar
-    progressBar.textContent = Math.round(clampedProgress) + "%";
+    progressBar.textContent = clampedProgress + "%";
   } else {
     console.error("Progress bar element not found!");
   }
