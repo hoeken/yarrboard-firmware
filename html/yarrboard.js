@@ -117,7 +117,7 @@ const brineomatic_gauge_setup = {
     "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.primary, bootstrapColors.success, bootstrapColors.danger]
   },
   "salinity": {
-    "thresholds": [200, 300, 1500],
+    "thresholds": [300, 400, 1500],
     "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
   },
   "flowrate": {
@@ -1810,6 +1810,14 @@ function start_websocket() {
         else
           $("#bomFinishCountdown").hide();
 
+        if (msg.runtime_elapsed > 0 && msg.finish_countdown > 0) {
+          const runtimeProgress = (msg.runtime_elapsed / (msg.runtime_elapsed + msg.finish_countdown)) * 100;
+          updateProgressBar("bomRunProgressBar", runtimeProgress);
+          $('#bomRunProgressRow').show();
+        } else {
+          $('#bomRunProgressRow').hide();
+        }
+
         if (msg.flush_elapsed > 0)
           $("#bomFlushElapsedData").html(secondsToDhms(Math.round(msg.flush_elapsed / 1000000)));
         else
@@ -1819,6 +1827,14 @@ function start_websocket() {
           $("#bomFlushCountdownData").html(secondsToDhms(Math.round(msg.flush_countdown / 1000000)));
         else
           $("#bomFlushCountdown").hide();
+
+        if (msg.flush_elapsed > 0 && msg.flush_countdown > 0) {
+          const flushProgress = (msg.flush_elapsed / (msg.flush_elapsed + msg.flush_countdown)) * 100;
+          updateProgressBar("bomFlushProgressBar", flushProgress);
+          $('#bomFlushProgressRow').show();
+        } else {
+          $('#bomFlushProgressRow').hide();
+        }
 
         if (msg.pickle_elapsed > 0)
           $("#bomPickleElapsedData").html(secondsToDhms(Math.round(msg.pickle_elapsed / 1000000)));
@@ -1830,6 +1846,14 @@ function start_websocket() {
         else
           $("#bomPickleCountdown").hide();
 
+        if (msg.pickle_elapsed > 0 && msg.pickle_countdown > 0) {
+          const pickleProgress = (msg.pickle_elapsed / (msg.pickle_elapsed + msg.pickle_countdown)) * 100;
+          updateProgressBar("bomPickleProgressBar", pickleProgress);
+          $('#bomPickleProgressRow').show();
+        } else {
+          $('#bomPickleProgressRow').hide();
+        }
+
         if (msg.depickle_elapsed > 0)
           $("#bomDepickleElapsedData").html(secondsToDhms(Math.round(msg.depickle_elapsed / 1000000)));
         else
@@ -1839,6 +1863,14 @@ function start_websocket() {
           $("#bomDepickleCountdownData").html(secondsToDhms(Math.round(msg.depickle_countdown / 1000000)));
         else
           $("#bomDepickleCountdown").hide();
+
+        if (msg.depickle_elapsed > 0 && msg.depickle_countdown > 0) {
+          const depickleProgress = (msg.depickle_elapsed / (msg.depickle_elapsed + msg.depickle_countdown)) * 100;
+          updateProgressBar("#bomDepickleProgressBar", depickleProgress);
+          $('#bomDepickleProgressRow').show();
+        } else {
+          $('#bomDepickleProgressRow').hide();
+        }
 
         if (volume > 0)
           $("#bomVolumeData").html(`${volume}L`);
@@ -3567,4 +3599,27 @@ function pwm_get_type_image(ch) {
 function isCanvasSupported() {
   var elem = document.createElement('canvas');
   return !!(elem.getContext && elem.getContext('2d'));
+}
+
+// Function to update the progress bar
+function updateProgressBar(ele, progress) {
+  // Ensure the progress value is within bounds
+  const clampedProgress = Math.min(Math.max(progress, 0), 100);
+
+  // Get the progress container and inner progress bar
+  const progressContainer = document.getElementById(ele);
+  const progressBar = progressContainer.querySelector(".progress-bar");
+
+  if (progressContainer && progressBar) {
+    // Update the width style property
+    progressBar.style.width = clampedProgress + "%";
+
+    // Update the aria-valuenow attribute for accessibility
+    progressContainer.setAttribute("aria-valuenow", clampedProgress);
+
+    // Optional: Update the text inside the progress bar
+    progressBar.textContent = Math.round(clampedProgress) + "%";
+  } else {
+    console.error("Progress bar element not found!");
+  }
 }

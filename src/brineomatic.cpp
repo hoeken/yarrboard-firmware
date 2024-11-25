@@ -372,7 +372,7 @@ void Brineomatic::init()
 
   // PID Settings - Maintain
   KpMaintain = 1.50;
-  KiMaintain = 0.15;
+  KiMaintain = 0.10;
   KdMaintain = 0;
 
   // PID controller
