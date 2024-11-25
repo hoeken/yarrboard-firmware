@@ -2391,11 +2391,6 @@ function show_brineomatic_result(result_div, result) {
     $(`${result_div}Row`).hide();
 }
 
-function manual_brineomatic() {
-  $('#relayControlDiv').toggle();
-  $('#servoControlDiv').toggle();
-}
-
 function start_brineomatic_manual() {
   client.send({
     "cmd": "start_watermaker",

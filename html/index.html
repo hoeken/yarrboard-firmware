@@ -92,7 +92,7 @@
                     <div class="spinner-border" role="status" style="width: 7rem; height: 7rem;"></div>
                 </div>
             </div>
-            <div class="mx-3">
+            <div class="mx-3 mt-3">
                 <div id="liveAlertPlaceholder"></div>
                 <div id="controlPage" class="pageContainer row" style="display:none">
                     <div id="bomInterface" class="row mx-0">
@@ -278,7 +278,7 @@
                                     </button>
                                 </div>
                                 <div id="idleBrineomatic" class="col-6 bomMANUAL">
-                                    <button class="btn btn-secondary brineomaticControlButton" type="button"
+                                    <button class="btn btn-primary brineomaticControlButton" type="button"
                                         onclick="idle_brineomatic()">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
                                             fill="currentColor" class="bi bi-arrow-counterclockwise"
@@ -536,9 +536,13 @@
                                                 aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <p>Manual mode is for testing individual parts of your watermaker system as
-                                                well as manually controlling the machine. All automatic controls such as
-                                                fans and autoflush will be disabled.
+                                            <p>Manual mode gives you low level access to control individual components
+                                                of your watermaker. Autoflush, fan/temperature control, etc will be
+                                                disabled.</p>
+                                            <div class="alert alert-warning" role="alert">
+                                                Warning: there are no safety checks in manual mode, please be careful as
+                                                you could possibly damage your watermaker.
+                                            </div>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary"
@@ -633,11 +637,11 @@
                     <div id="controlDiv" style="display:none" class="col-md-12">
                         <div id="pwmCards" class="row g-3"></div>
                     </div>
-                    <div id="relayControlDiv" style="display:none" class="col-md-12">
+                    <div id="relayControlDiv" style="display:none" class="col-md-12 bomMANUAL">
                         <h4 class="text-center">Relays</h4>
                         <div id="relayCards" class="row g-3"></div>
                     </div>
-                    <div id="servoControlDiv" style="display:none" class="col-md-12">
+                    <div id="servoControlDiv" style="display:none" class="col-md-12 bomMANUAL">
                         <h4 class="text-center">Servos</h4>
                         <div id="servoCards" class="row g-3"></div>
                     </div>
