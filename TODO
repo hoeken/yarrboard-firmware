@@ -21,9 +21,11 @@
 
 # BRINEOMATIC
 
+* add MANUAL mode - mostly same as IDLE, but don't control anything
+    * no automatic fan control
+    * should save mode to preferences
 * add progress bars for timed runs (run, flush, pickle, depickle)
-* add meter bars for things we have a high and low for.
-    * can we find a lightweight js gauge library?
+    * elapsed / elapsed+remaining
 * implement motor channels
     * add motor channels to valve control
     * will probably need to make a generic Valve class.

@@ -475,41 +475,71 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="bomGauges" class="row gx-0 my-3">
+                        <div id="bomGauges" class="row gx-0 my-3 mfdHide">
                             <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Filter Pressure</h6>
-                                <div id="filterPressureGauge" class="mfdHide"></div>
-                                <h1 id="filterPressureData" class="mfdShow"></h1>
+                                <div id="filterPressureGauge"></div>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Membrane Pressure</h6>
-                                <div id="membranePressureGauge" class="mfdHide"></div>
-                                <h1 id="membranePressureData" class="mfdShow"></h1>
+                                <div id="membranePressureGauge"></div>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Salinity</h6>
-                                <div id="salinityGauge" class="mfdHide"></div>
-                                <h1 id="salinityData" class="mfdShow"></h1>
+                                <div id="salinityGauge"></div>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Flowrate</h6>
-                                <div id="flowrateGauge" class="mfdHide"></div>
-                                <h1 id="flowrateData" class="mfdShow"></h1>
+                                <div id="flowrateGauge"></div>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Motor Temperature</h6>
-                                <div id="motorTemperatureGauge" class="mfdHide"></div>
-                                <h1 id="motorTemperatureData" class="mfdShow"></h1>
+                                <div id="motorTemperatureGauge"></div>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Water Temperature</h6>
-                                <div id="waterTemperatureGauge" class="mfdHide"></div>
-                                <h1 id="waterTemperatureData" class="mfdShow"></h1>
+                                <div id="waterTemperatureGauge"></div>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Tank Level</h6>
-                                <div id="tankLevelGauge" class="mfdHide"></div>
-                                <h1 id="tankLevelData" class="mfdShow"></h1>
+                                <div id="tankLevelGauge"></div>
+                            </div>
+                        </div>
+                        <div id="bomGaugesMFD" class="mfdShow row gx-0 gy-3 my-3 text-center">
+                            <div class="col-md-3 col-sm-4 col-6">
+                                <h6 class="my-0">Filter Pressure</h6>
+                                <h1 id="filterPressureData" class="my-0"></h1>
+                                <h5 id="filterPressureUnits" class="text-body-tertiary">PSI</h5>
+                            </div>
+                            <div class="col-md-3 col-sm-4 col-6">
+                                <h6 class="my-0 text-center">Membrane Pressure</h6>
+                                <h1 id="membranePressureData" class="my-0"></h1>
+                                <h5 id="membranePressureUnits" class="text-body-tertiary">PSI</h5>
+                            </div>
+                            <div class="col-md-3 col-sm-4 col-6">
+                                <h6 class="my-0 text-center">Salinity</h6>
+                                <h1 id="salinityData" class="my-0"></h1>
+                                <h5 id="salinityUnits" class="text-body-tertiary">PPM</h5>
+                            </div>
+                            <div class="col-md-3 col-sm-4 col-6">
+                                <h6 class="my-0 text-center">Flowrate</h6>
+                                <h1 id="flowrateData" class="my-0"></h1>
+                                <h5 id="flowrateUnits" class="text-body-tertiary">LPH</h5>
+                            </div>
+                            <div class="col-md-3 col-sm-4 col-6">
+                                <h6 class="my-0 text-center">Motor Temperature</h6>
+                                <h1 id="motorTemperatureData" class="my-0"></h1>
+                                <h5 id="motorTemperatureUnits" class="text-body-tertiary">°C</h5>
+                            </div>
+                            <div class="col-md-3 col-sm-4 col-6">
+                                <h6 class="my-0 text-center" class="my-0">Water Temperature</h6>
+                                <h1 id="waterTemperatureData"></h1>
+                                <h5 id="waterTemperatureUnits" class="text-body-tertiary">°C</h5>
+                            </div>
+                            <div class="col-md-3 col-sm-4 col-6">
+                                <h6 class="my-0 text-center" class="my-0">Tank Level</h6>
+                                <h1 id="tankLevelData"></h1>
+                                <h5 id="tankLevelUnits" class="text-body-tertiary">%</h5>
                             </div>
                         </div>
                     </div>

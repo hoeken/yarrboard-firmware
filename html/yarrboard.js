@@ -50,6 +50,33 @@ const page_permissions = {
   ]
 };
 
+function getBootstrapColors() {
+  const colors = {};
+  const styles = getComputedStyle(document.documentElement);
+
+  // List of Bootstrap color variable names
+  const colorNames = [
+    '--bs-primary',
+    '--bs-secondary',
+    '--bs-success',
+    '--bs-danger',
+    '--bs-warning',
+    '--bs-info',
+    '--bs-light',
+    '--bs-dark'
+  ];
+
+  // Loop through each variable and store its value without the `--bs-` prefix
+  colorNames.forEach(color => {
+    const name = color.replace('--bs-', ''); // Remove the prefix
+    colors[name] = styles.getPropertyValue(color).trim();
+  });
+
+  return colors;
+}
+
+const bootstrapColors = getBootstrapColors();
+
 const brineomatic_result_text = {
   "STARTUP": "Starting up.",
   "SUCCESS": "Success",
@@ -70,6 +97,65 @@ const brineomatic_result_text = {
   "ERR_SALINITY_HIGH": "Salinity High",
   "ERR_PRODUCTION_TIMEOUT": "Production Timeout",
   "ERR_MOTOR_TEMPERATURE_HIGH": "Motor Temperature High",
+}
+
+const brineomatic_gauge_setup = {
+  "motor_temperature": {
+    "thresholds": [50, 75, 100],
+    "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
+  },
+  "water_temperature": {
+    "thresholds": [10, 30, 40, 50],
+    "colors": [bootstrapColors.primary, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
+  },
+  "filter_pressure": {
+    "thresholds": [0, 5, 10, 40, 45, 50],
+    "colors": [bootstrapColors.secondary, bootstrapColors.danger, bootstrapColors.warning, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
+  },
+  "membrane_pressure": {
+    "thresholds": [0, 600, 700, 900, 1000],
+    "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.primary, bootstrapColors.success, bootstrapColors.danger]
+  },
+  "salinity": {
+    "thresholds": [200, 300, 1500],
+    "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
+  },
+  "flowrate": {
+    "thresholds": [20, 100, 180, 200, 250],
+    "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
+  },
+  "tank_level": {
+    "thresholds": [10, 20, 100],
+    "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.success]
+  }
+};
+
+function bom_set_data_color(name, value, ele) {
+  // Check if the name exists in brineomatic_gauge_setup
+  const setup = brineomatic_gauge_setup[name];
+  if (!setup) {
+    console.warn(`No setup found for name: ${name}`);
+    return;
+  }
+
+  const { thresholds, colors } = setup;
+
+  // Ensure thresholds and colors arrays are of equal length
+  if (thresholds.length !== colors.length) {
+    console.error(`Thresholds and colors arrays length mismatch for name: ${name}`);
+    return;
+  }
+
+  // Iterate over thresholds to find the appropriate color
+  for (let i = 0; i < thresholds.length; i++) {
+    if (value <= thresholds[i]) {
+      ele.css("color", colors[i]);
+      return;
+    }
+  }
+
+  // If value exceeds all thresholds, set color to the last color
+  ele.css("color", colors[colors.length - 1]);
 }
 
 let motorTemperatureGauge;
@@ -840,10 +926,10 @@ function start_websocket() {
               max: 80, // 80 is default
             },
             color: {
-              pattern: ['#198754', '#ffc107', '#dc3545'], // the three color levels for the percentage values.
+              pattern: brineomatic_gauge_setup.motor_temperature.colors,
               threshold: {
                 unit: 'value',
-                values: [50, 75, 100]
+                values: brineomatic_gauge_setup.motor_temperature.thresholds
               }
             },
             size: { height: 130 },
@@ -871,10 +957,10 @@ function start_websocket() {
               max: 50, // 80 is default
             },
             color: {
-              pattern: ['#0d6efd', '#198754', '#ffc107', '#dc3545'], // the three color levels for the percentage values.
+              pattern: brineomatic_gauge_setup.water_temperature.colors,
               threshold: {
                 unit: 'value',
-                values: [10, 30, 40, 50]
+                values: brineomatic_gauge_setup.water_temperature.thresholds
               }
             },
             size: { height: 130 },
@@ -902,10 +988,10 @@ function start_websocket() {
               max: 50,
             },
             color: {
-              pattern: ['#dc3545', '#ffc107', '#198754', '#ffc107', '#dc3545'], // the three color levels for the percentage values.
+              pattern: brineomatic_gauge_setup.filter_pressure.colors,
               threshold: {
                 unit: 'value',
-                values: [5, 10, 40, 45, 50]
+                values: brineomatic_gauge_setup.filter_pressure.thresholds
               }
             },
             size: { height: 130 },
@@ -933,10 +1019,10 @@ function start_websocket() {
               max: 1000,
             },
             color: {
-              pattern: ['#0d6efd', '#198754', '#dc3545'], // the three color levels for the percentage values.
+              pattern: brineomatic_gauge_setup.membrane_pressure.colors,
               threshold: {
                 unit: 'value',
-                values: [700, 900, 1000]
+                values: brineomatic_gauge_setup.membrane_pressure.thresholds
               }
             },
             size: { height: 130 },
@@ -964,10 +1050,10 @@ function start_websocket() {
               max: 1500,
             },
             color: {
-              pattern: ['#198754', '#ffc107', '#dc3545'], // the three color levels for the percentage values.
+              pattern: brineomatic_gauge_setup.salinity.colors,
               threshold: {
                 unit: 'value',
-                values: [200, 300, 1500]
+                values: brineomatic_gauge_setup.salinity.thresholds
               }
             },
             size: { height: 130 },
@@ -995,10 +1081,10 @@ function start_websocket() {
               max: 250,
             },
             color: {
-              pattern: ['#6c757d', '#ffc107', '#198754', '#ffc107', '#dc3545'], // the three color levels for the percentage values.
+              pattern: brineomatic_gauge_setup.flowrate.colors,
               threshold: {
                 unit: 'value',
-                values: [20, 100, 180, 200, 250]
+                values: brineomatic_gauge_setup.flowrate.thresholds
               }
             },
             size: { height: 130 },
@@ -1026,10 +1112,10 @@ function start_websocket() {
               max: 100,
             },
             color: {
-              pattern: ['#6c757d', '#ffc107', '#198754'],
+              pattern: brineomatic_gauge_setup.tank_level.colors,
               threshold: {
                 unit: 'value',
-                values: [10, 20, 100]
+                values: brineomatic_gauge_setup.tank_level.thresholds
               }
             },
             size: { height: 130 },
@@ -1575,7 +1661,7 @@ function start_websocket() {
         let membrane_pressure = Math.round(msg.membrane_pressure);
         if (membrane_pressure < 0 && membrane_pressure > -10)
           membrane_pressure = 0;
-        let tank_level = (msg.tank_level * 100).toFixed(1);
+        let tank_level = Math.round(msg.tank_level * 100);
 
         //update our gauges.
         if (!isMFD()) {
@@ -1636,6 +1722,27 @@ function start_websocket() {
               });
             }
           }
+        } else {
+          $("#filterPressureData").html(filter_pressure);
+          bom_set_data_color("filter_pressure", filter_pressure, $("#filterPressureData"));
+
+          $("#membranePressureData").html(membrane_pressure);
+          bom_set_data_color("membrane_pressure", membrane_pressure, $("#membranePressureData"));
+
+          $("#salinityData").html(salinity);
+          bom_set_data_color("salinity", salinity, $("#salinityData"));
+
+          $("#flowrateData").html(flowrate);
+          bom_set_data_color("flowrate", flowrate, $("#flowrateData"));
+
+          $("#motorTemperatureData").html(motor_temperature);
+          bom_set_data_color("motor_temperature", motor_temperature, $("#motorTemperatureData"));
+
+          $("#waterTemperatureData").html(water_temperature);
+          bom_set_data_color("water_temperature", water_temperature, $("#waterTemperatureData"));
+
+          $("#tankLevelData").html(tank_level);
+          bom_set_data_color("tank_level", tank_level, $("#tankLevelData"));
         }
 
         $("#bomStatus").html(msg.status);
@@ -1644,7 +1751,9 @@ function start_websocket() {
 
         if (msg.status == "STARTUP")
           $("#bomStatus").addClass("text-bg-info");
-        if (msg.status == "IDLE")
+        else if (msg.status == "IDLE")
+          $("#bomStatus").addClass("text-bg-secondary");
+        else if (msg.status == "MANUAL")
           $("#bomStatus").addClass("text-bg-secondary");
         else if (msg.status == "RUNNING")
           $("#bomStatus").addClass("text-bg-success");
@@ -2168,8 +2277,8 @@ function getQueryVariable(name) {
 }
 
 function isMFD() {
-  // if (getQueryVariable("mfd_name") !== null)
-  //   return true;
+  if (getQueryVariable("mfd_name") !== null)
+    return true;
 
   return false;
 }
@@ -2332,9 +2441,6 @@ function open_page(page) {
   //request our historical graph data (if any)
   if (page == "graphs") {
     get_graph_data();
-    // const bsTab = new bootstrap.Tab('#bomPressureGraphTab');
-    // bsTab.show();
-    // $('#bomPressureGraphTab').addClass("active");
   }
 
   //request our control updates.
