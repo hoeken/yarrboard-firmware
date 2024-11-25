@@ -189,10 +189,10 @@
                                             </div>
                                         </td>
                                     </tr>
-                                    <tr id="bomVolume" class="bomIDLE bomRUNNING bomFLUSHING">
+                                    <!-- <tr id="bomVolume" class="bomIDLE bomMANUAL bomRUNNING bomFLUSHING">
                                         <th>Volume Produced</th>
                                         <td id="bomVolumeData"></td>
-                                    </tr>
+                                    </tr> -->
                                 </tbody>
                             </table>
                         </div>
@@ -265,7 +265,7 @@
                                 </div>
                                 <div id="manualBrineomatic" class="col-6 bomIDLE">
                                     <button class="btn btn-secondary brineomaticControlButton" type="button"
-                                        onclick="manual_brineomatic()">
+                                        data-bs-toggle="modal" data-bs-target="#manualBrineomaticModal">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
                                             fill="currentColor" class="bi bi-wrench-adjustable-circle"
                                             viewBox="0 0 16 16">
@@ -275,6 +275,20 @@
                                                 d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z" />
                                         </svg>
                                         <span class="align-middle mx-2">MANUAL</span>
+                                    </button>
+                                </div>
+                                <div id="idleBrineomatic" class="col-6 bomMANUAL">
+                                    <button class="btn btn-secondary brineomaticControlButton" type="button"
+                                        onclick="idle_brineomatic()">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+                                            fill="currentColor" class="bi bi-arrow-counterclockwise"
+                                            viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd"
+                                                d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z" />
+                                            <path
+                                                d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466" />
+                                        </svg>
+                                        <span class="align-middle mx-2">BACK</span>
                                     </button>
                                 </div>
                                 <div id="statusBrineomatic"
@@ -510,6 +524,31 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="modal fade" id="manualBrineomaticModal" tabindex="-1" role="dialog"
+                                aria-labelledby="manualBrineomaticModalTitle" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="stopBrineomaticTitle">Manual Mode
+                                            </h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Manual mode is for testing individual parts of your watermaker system as
+                                                well as manually controlling the machine. All automatic controls such as
+                                                fans and autoflush will be disabled.
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Cancel</button>
+                                            <button type="button" class="btn btn-success" data-bs-dismiss="modal"
+                                                onclick="manual_brineomatic()">Continue</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div id="bomGauges" class="row gx-0 my-3 mfdHide">
                             <div class="col-md-3 col-sm-4 col-6">
@@ -538,7 +577,13 @@
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Tank Level</h6>
-                                <div id="tankLevelGauge"></div>
+                                <div id="tankLevelGauge">
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-4 col-6 text-center">
+                                <h6 class="my-0" class="my-0">Volume Produced</h6>
+                                <div id="volumeGauge">
+                                </div>
                             </div>
                         </div>
                         <div id="bomGaugesMFD" class="mfdShow row gx-0 gy-3 my-3 text-center">
@@ -548,34 +593,39 @@
                                 <h5 id="filterPressureUnits" class="text-body-tertiary">PSI</h5>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
-                                <h6 class="my-0 text-center">Membrane Pressure</h6>
+                                <h6 class="my-0">Membrane Pressure</h6>
                                 <h1 id="membranePressureData" class="my-0"></h1>
                                 <h5 id="membranePressureUnits" class="text-body-tertiary">PSI</h5>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
-                                <h6 class="my-0 text-center">Salinity</h6>
+                                <h6 class="my-0">Salinity</h6>
                                 <h1 id="salinityData" class="my-0"></h1>
                                 <h5 id="salinityUnits" class="text-body-tertiary">PPM</h5>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
-                                <h6 class="my-0 text-center">Flowrate</h6>
+                                <h6 class="my-0">Flowrate</h6>
                                 <h1 id="flowrateData" class="my-0"></h1>
                                 <h5 id="flowrateUnits" class="text-body-tertiary">LPH</h5>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
-                                <h6 class="my-0 text-center">Motor Temperature</h6>
+                                <h6 class="my-0">Motor Temperature</h6>
                                 <h1 id="motorTemperatureData" class="my-0"></h1>
                                 <h5 id="motorTemperatureUnits" class="text-body-tertiary">°C</h5>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
-                                <h6 class="my-0 text-center" class="my-0">Water Temperature</h6>
+                                <h6 class="my-0" class="my-0">Water Temperature</h6>
                                 <h1 id="waterTemperatureData"></h1>
                                 <h5 id="waterTemperatureUnits" class="text-body-tertiary">°C</h5>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
-                                <h6 class="my-0 text-center" class="my-0">Tank Level</h6>
+                                <h6 class="my-0" class="my-0">Tank Level</h6>
                                 <h1 id="tankLevelData"></h1>
                                 <h5 id="tankLevelUnits" class="text-body-tertiary">%</h5>
+                            </div>
+                            <div class="col-md-3 col-sm-4 col-6">
+                                <h6 class="my-0" class="my-0">Volume Produced</h6>
+                                <h1 id="bomVolumeData"></h1>
+                                <h5 id="tankLevelUnits" class="text-body-tertiary">liters</h5>
                             </div>
                         </div>
                     </div>

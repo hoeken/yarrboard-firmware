@@ -232,6 +232,10 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleDepickleWatermaker(input, output);
     else if (!strcmp(cmd, "stop_watermaker"))
       return handleStopWatermaker(input, output);
+    else if (!strcmp(cmd, "idle_watermaker"))
+      return handleIdleWatermaker(input, output);
+    else if (!strcmp(cmd, "manual_watermaker"))
+      return handleManualWatermaker(input, output);
     else if (!strcmp(cmd, "set_watermaker"))
       return handleSetWatermaker(input, output);
     else if (!strcmp(cmd, "logout"))
@@ -1544,6 +1548,22 @@ void handleStopWatermaker(JsonVariantConst input, JsonVariant output)
     wm.stop();
   else
     return generateErrorJSON(output, "Watermaker must be in RUNNING, FLUSHING, or PICKLING mode to stop.");
+}
+
+void handleIdleWatermaker(JsonVariantConst input, JsonVariant output)
+{
+  if (!strcmp(wm.getStatus(), "MANUAL"))
+    wm.idle();
+  else
+    return generateErrorJSON(output, "Watermaker must be in MANUAL mode to IDLE.");
+}
+
+void handleManualWatermaker(JsonVariantConst input, JsonVariant output)
+{
+  if (!strcmp(wm.getStatus(), "IDLE"))
+    wm.manual();
+  else
+    return generateErrorJSON(output, "Watermaker must be in IDLE mode to switch to MANUAL.");
 }
 
 void handleSetWatermaker(JsonVariantConst input, JsonVariant output)

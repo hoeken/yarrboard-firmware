@@ -75,6 +75,7 @@ class Brineomatic
 
     enum class Status {
       STARTUP,
+      MANUAL,
       IDLE,
       RUNNING,
       STOPPING,
@@ -115,6 +116,8 @@ class Brineomatic
     void setSalinity(float salinity);
     void setTankLevel(float level);
 
+    void idle();
+    void manual();
     void start();
     void startDuration(uint64_t duration);
     void startVolume(float volume);

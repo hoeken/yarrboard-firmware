@@ -429,6 +429,18 @@ void Brineomatic::setSalinity(float salinity)
   currentSalinity = salinity;
 }
 
+void Brineomatic::idle()
+{
+  if (currentStatus == Status::MANUAL)
+    currentStatus = Status::IDLE;
+}
+
+void Brineomatic::manual()
+{
+  if (currentStatus == Status::IDLE)
+    currentStatus = Status::MANUAL;
+}
+
 void Brineomatic::start()
 {
   stopFlag = false;
@@ -663,7 +675,7 @@ void Brineomatic::disableCoolingFan()
 
 void Brineomatic::manageCoolingFan()
 {
-  if (currentStatus != Status::IDLE) {
+  if (currentStatus != Status::MANUAL) {
     if (hasCoolingFan()) {
       if (getMotorTemperature() >= coolingFanOnTemperature)
         enableCoolingFan();
@@ -675,7 +687,11 @@ void Brineomatic::manageCoolingFan()
 
 float Brineomatic::getFilterPressure()
 {
-  return currentFilterPressure;
+  // ignore residual pressure in idle mode.
+  if (currentStatus == Status::IDLE && currentFilterPressure <= 2)
+    return 0;
+  else
+    return currentFilterPressure;
 }
 
 float Brineomatic::getFilterPressureMinimum()
@@ -772,6 +788,8 @@ const char* Brineomatic::getStatus()
 {
   if (currentStatus == Status::STARTUP)
     return "STARTUP";
+  else if (currentStatus == Status::MANUAL)
+    return "MANUAL";
   else if (currentStatus == Status::IDLE)
     return "IDLE";
   else if (currentStatus == Status::RUNNING)
@@ -1015,6 +1033,11 @@ void Brineomatic::runStateMachine()
       Serial.println("State: PICKLED");
       break;
 
+    //
+    // MANUAL
+    //
+    case Status::MANUAL:
+      break;
     //
     // IDLE
     //

@@ -127,6 +127,10 @@ const brineomatic_gauge_setup = {
   "tank_level": {
     "thresholds": [10, 20, 100],
     "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.success]
+  },
+  "volume": {
+    "thresholds": [0, 1],
+    "colors": [bootstrapColors.secondary, bootstrapColors.success]
   }
 };
 
@@ -1124,6 +1128,37 @@ function start_websocket() {
             legend: { hide: true }
           });
 
+          volumeGauge = c3.generate({
+            bindto: '#volumeGauge',
+            data: {
+              columns: [
+                ['Volume', 0]
+              ],
+              type: 'gauge',
+            },
+            gauge: {
+              label: {
+                format: function (value, ratio) {
+                  return `${value}L`;
+                },
+                show: true
+              },
+              min: 0,
+              max: msg.tank_capacity,
+            },
+            color: {
+              pattern: brineomatic_gauge_setup.volume.colors,
+              threshold: {
+                unit: 'value',
+                values: brineomatic_gauge_setup.volume.thresholds
+              }
+            },
+            size: { height: 130 },
+            interaction: { enabled: false },
+            transition: { duration: 0 },
+            legend: { hide: true }
+          });
+
           // Define the data
           timeData = ['x'];
           motorTemperatureData = ['Motor Temperature'];
@@ -1654,6 +1689,8 @@ function start_websocket() {
         let water_temperature = Math.round(msg.water_temperature);
         let flowrate = Math.round(msg.flowrate);
         let volume = msg.volume.toFixed(1);
+        if (volume >= 100)
+          volume = Math.round(volume);
         let salinity = Math.round(msg.salinity);
         let filter_pressure = Math.round(msg.filter_pressure);
         if (filter_pressure < 0 && filter_pressure > -10)
@@ -1673,6 +1710,7 @@ function start_websocket() {
             salinityGauge.load({ columns: [['Salinity', salinity]] });
             flowrateGauge.load({ columns: [['Flowrate', flowrate]] });
             tankLevelGauge.load({ columns: [['Tank Level', tank_level]] });
+            volumeGauge.load({ columns: [['Volume', volume]] });
           }
 
           if (current_page == "graphs") {
@@ -1743,6 +1781,9 @@ function start_websocket() {
 
           $("#tankLevelData").html(tank_level);
           bom_set_data_color("tank_level", tank_level, $("#tankLevelData"));
+
+          $("#bomVolumeData").html(volume);
+          bom_set_data_color("volume", volume, $("#bomVolumeData"));
         }
 
         $("#bomStatus").html(msg.status);
@@ -1773,6 +1814,7 @@ function start_websocket() {
         //default to hide all.
         $(".bomSTARTUP").hide();
         $(".bomIDLE").hide();
+        $(".bomMANUAL").hide();
         $(".bomRUNNING").hide();
         $(".bomFLUSHING").hide();
         $(".bomPICKLING").hide();
@@ -1871,11 +1913,6 @@ function start_websocket() {
         } else {
           $('#bomDepickleProgressRow').hide();
         }
-
-        if (volume > 0)
-          $("#bomVolumeData").html(`${volume}L`);
-        else
-          $("#bomVolume").hide();
 
         if (current_config.has_boost_pump) {
           $('#bomBoostPumpStatus span').removeClass();
@@ -2428,6 +2465,18 @@ function depickle_brineomatic() {
 function stop_brineomatic() {
   client.send({
     "cmd": "stop_watermaker",
+  }, true);
+}
+
+function manual_brineomatic() {
+  client.send({
+    "cmd": "manual_watermaker",
+  }, true);
+}
+
+function idle_brineomatic() {
+  client.send({
+    "cmd": "idle_watermaker",
   }, true);
 }
 
