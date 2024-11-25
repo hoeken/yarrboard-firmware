@@ -548,7 +548,9 @@ function start_yarrboard() {
   setInterval(check_connection_status, 100);
 
   //light/dark theme init.
-  setTheme(getPreferredTheme());
+  let theme = getPreferredTheme();
+  // yarrboard_log(`preferred theme: ${theme}`);
+  setTheme(theme);
   $("#darkSwitch").change(update_theme_switch);
 
   //brightness slider callbacks
@@ -633,8 +635,11 @@ function start_websocket() {
       default_app_role = msg.default_role;
 
       //light/dark mode
-      if (msg.theme)
-        setTheme(msg.theme);
+      //let the mfd override with ?mode=night, etc.
+      if (!getQueryVariable("mode")) {
+        if (msg.theme)
+          setTheme(msg.theme);
+      }
 
       //auto login?
       if (Cookies.get("username") && Cookies.get("password")) {
@@ -3505,15 +3510,27 @@ function getStoredTheme() { localStorage.getItem('theme'); }
 function setStoredTheme() { localStorage.setItem('theme', theme); }
 
 function getPreferredTheme() {
-  const storedTheme = getStoredTheme();
+  //did we get one passed in? b&g, etc pass in like this.
+  let mode = getQueryVariable("mode");
+  // yarrboard_log(`mode: ${mode}`);
+  if (mode !== null) {
+    if (mode == "night")
+      return "dark";
+    else
+      return "light";
+  }
 
+  //do we have stored one?
+  const storedTheme = getStoredTheme();
   if (storedTheme)
     return storedTheme;
 
+  //prefs?
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
 function setTheme(theme) {
+  // yarrboard_log(`set theme ${theme}`);
   if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
     document.documentElement.setAttribute('data-bs-theme', 'dark');
   else
