@@ -33,6 +33,7 @@ void server_setup()
     Serial.printf("Failed to create queue= %p\n", wsRequests);
 
   server.config.max_open_sockets = YB_CLIENT_LIMIT;
+  server.config.lru_purge_enable = true;
 
   // Populate the last modification date based on build datetime
   sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
