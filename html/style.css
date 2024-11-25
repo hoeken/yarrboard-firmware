@@ -55,7 +55,6 @@ tr.pwmRow #statsTable tbody tr {
 
 .brineomaticControlButton {
     width: 100%;
-    height: 90px;
     font-weight: bold;
     font-size: 1.5rem !important;
 }
