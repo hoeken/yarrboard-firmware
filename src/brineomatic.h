@@ -41,6 +41,7 @@ class Brineomatic
   public:
     bool isPickled;
     bool autoFlushEnabled;
+    bool flushUseHighPressureMotor = false;
 
     RelayChannel* flushValve = NULL;
     RelayChannel* boostPump = NULL;

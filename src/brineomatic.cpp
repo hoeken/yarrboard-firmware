@@ -1246,7 +1246,9 @@ void Brineomatic::runStateMachine()
       vTaskDelay(pdMS_TO_TICKS(5000));
 
       if (!stopFlag) {
-        enableHighPressurePump();
+
+        if (flushUseHighPressureMotor)
+          enableHighPressurePump();
 
         while (getFlushElapsed() < flushDuration) {
           if (stopFlag)
