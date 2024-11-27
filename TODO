@@ -1,24 +1,3 @@
-# FROTHFET REV D
-
-* convert ADC to continuous interrupt driven style
-* rgb status should have its own .h/.cpp file
-    * we should do something interesting with it.
-    * wifi connection status?
-* add temperature, vdd support to adc library
-* upgrade to esp-idf 5.1.x and fix any issues
-* upgrade to PsychicHttp 2.0
-* clean up #includes and libraries
-* add wifi RSSI bars indicator
-* update forms to be consistent style (float labels)
-* switch to 1 indexed channels instead of zero
-* update yarrboard client if any changes needed - probably for state
-* update signalk plugin - same
-* go through and re-adjust the various page sizes for our different viewports
-* protocol documentation
-* wifi improvements:
-    * wifi connection fail should default to AP mode
-    * wifi should reconnect on failure
-
 # BRINEOMATIC
 
 * update yarrboard-client
@@ -54,6 +33,27 @@
 * PID calibration?
 * ntp server and next flush being an actual time that is stored in preferences (survive reboot)
 
+# FROTHFET REV D
+
+* convert ADC to continuous interrupt driven style
+* rgb status should have its own .h/.cpp file
+    * we should do something interesting with it.
+    * wifi connection status?
+* add temperature, vdd support to adc library
+* upgrade to esp-idf 5.1.x and fix any issues
+* upgrade to PsychicHttp 2.0
+* clean up #includes and libraries
+* add wifi RSSI bars indicator
+* update forms to be consistent style (float labels)
+* switch to 1 indexed channels instead of zero
+* update yarrboard client if any changes needed - probably for state
+* update signalk plugin - same
+* go through and re-adjust the various page sizes for our different viewports
+* protocol documentation
+* wifi improvements:
+    * wifi connection fail should default to AP mode
+    * wifi should reconnect on failure
+    
 # LONG TERM:
 
 * Look into turning yarrboard UI/framework into a library for use in other projects (brineomatic)
