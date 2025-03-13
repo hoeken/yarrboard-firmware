@@ -1590,7 +1590,7 @@ function start_websocket() {
             let voltageHTML = `${voltage}V`;
             $('#pwmVoltage' + ch.id).html(voltageHTML);
 
-            let current = ch.current.toFixed(2);
+            let current = ch.current.toFixed(1);
             let currentHTML = `${current}A`;
             $('#pwmCurrent' + ch.id).html(currentHTML);
 

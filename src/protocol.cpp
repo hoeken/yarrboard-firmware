@@ -222,6 +222,7 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleSetTheme(input, output);
     else if (!strcmp(cmd, "set_brightness"))
       return handleSetBrightness(input, output);
+#ifdef YB_IS_BRINEOMATIC
     else if (!strcmp(cmd, "start_watermaker"))
       return handleStartWatermaker(input, output);
     else if (!strcmp(cmd, "flush_watermaker"))
@@ -238,6 +239,7 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleManualWatermaker(input, output);
     else if (!strcmp(cmd, "set_watermaker"))
       return handleSetWatermaker(input, output);
+#endif
     else if (!strcmp(cmd, "logout"))
       return handleLogout(input, output, mode, connection);
   }
@@ -1476,6 +1478,7 @@ void handleSetBrightness(JsonVariantConst input, JsonVariant output)
     return generateErrorJSON(output, "'brightness' is a required parameter.");
 }
 
+#ifdef YB_IS_BRINEOMATIC
 void handleStartWatermaker(JsonVariantConst input, JsonVariant output)
 {
   if (strcmp(wm.getStatus(), "IDLE"))
@@ -1593,6 +1596,8 @@ void handleSetWatermaker(JsonVariantConst input, JsonVariant output)
   if (input["kd_maintain"].is<JsonVariantConst>())
     wm.KdMaintain = input["kd_maintain"];
 }
+
+#endif
 
 void generateConfigJSON(JsonVariant output)
 {

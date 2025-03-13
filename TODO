@@ -35,6 +35,9 @@
 
 # FROTHFET REV D
 
+* add inrush current to pwm / soft fuse checking - will need a stateChangeTime variable too...
+* double check that pwm is not getting set if isDimmable is false
+
 * convert ADC to continuous interrupt driven style
 * rgb status should have its own .h/.cpp file
     * we should do something interesting with it.
