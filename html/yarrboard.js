@@ -1995,6 +1995,8 @@ function start_websocket() {
           $('#bomFanStatus').hide();
 
       }
+      else
+        $('#bomInterface').hide();
 
       if (isMFD()) {
         $(".mfdShow").show()
