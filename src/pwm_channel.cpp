@@ -459,10 +459,10 @@ void PWMChannel::checkFuseBypassed()
 {
   if (this->status != Status::ON && this->status != Status::BYPASSED) {
     for (byte i = 0; i < 10; i++) {
-      if (i > 0) {
-        DUMP(i);
-        DUMP(this->voltage);
-      }
+      // if (i > 0) {
+      //   DUMP(i);
+      //   DUMP(this->voltage);
+      // }
 
       // voltage needs to be over 90%... otherwise we get false readings when shutting off motors as the voltage collapses
       if (this->voltage < busVoltage * 0.90)
