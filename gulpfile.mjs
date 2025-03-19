@@ -35,7 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // const fs = require('fs');
 
 import gulp from 'gulp';
-const {series, src, dest} = gulp;
+const { series, src, dest } = gulp;
 import htmlmin from 'gulp-htmlmin';
 import cleancss from 'gulp-clean-css';
 import uglify from 'gulp-uglify-es';
@@ -48,25 +48,25 @@ import fs from 'fs';
 import crypto from 'crypto';
 
 function clean(cb) {
-     deleteAsync([ "dist/*" ]);
+    deleteAsync(["dist/*"]);
     cb();
 }
-  
+
 function build(cb) {
     cb();
 }
 
 function buildfs_inline(cb) {
     return src('html/*.html')
-        .pipe(favicon({src: "html"}))
+        .pipe(favicon({ src: "html" }))
         .pipe(inline({
             base: 'html/',
-//            js: uglify,
+            //            js: uglify,
             css: [cleancss, inlineImages],
-//            disabledTypes: ['svg', 'img']
+            //            disabledTypes: ['svg', 'img']
         }))
         .pipe(htmlmin({
-//            collapseWhitespace: true,
+            //            collapseWhitespace: true,
             removecomments: true,
             minifyCSS: true,
             minifyJS: true
@@ -83,23 +83,41 @@ function buildfs_embeded(cb) {
     cb();
 }
 
-function buildfs_logo_gz(cb) {
-    return src('html/logo-navico.png')
+function buildfs_yarrboard_logo_gz(cb) {
+    return src('html/logo-yarrboard.png')
+        .pipe(gzip())
+        .pipe(dest("dist"));
+}
+
+function buildfs_frothfet_logo_gz(cb) {
+    return src('html/logo-frothfet.png')
+        .pipe(gzip())
+        .pipe(dest("dist"));
+}
+
+function buildfs_brineomatic_logo_gz(cb) {
+    return src('html/logo-brineomatic.png')
         .pipe(gzip())
         .pipe(dest("dist"));
 }
 
 function buildfs_logo_embedded(cb) {
-    var source = 'dist/logo-navico.png.gz';
-    var destination = 'src/logo-navico.png.gz.h';
+    var source = 'dist/logo-yarrboard.png.gz';
+    var destination = 'src/logo-yarrboard.png.gz.h';
+    write_header_file(source, destination, "logo_yarrboard_gz");
 
-    write_header_file(source, destination, "logo_navico_gz");
+    source = 'dist/logo-brineomatic.png.gz';
+    destination = 'src/logo-brineomatic.png.gz.h';
+    write_header_file(source, destination, "logo_brineomatic_gz");
+
+    source = 'dist/logo-frothfet.png.gz';
+    destination = 'src/logo-frothfet.png.gz.h';
+    write_header_file(source, destination, "logo_frothfet_gz");
 
     cb();
 }
 
-function write_header_file(source, destination, name)
-{
+function write_header_file(source, destination, name) {
     const wstream = fs.createWriteStream(destination);
     wstream.on('error', function (err) {
         console.log(err);
@@ -115,10 +133,10 @@ function write_header_file(source, destination, name)
     wstream.write(`const char ${name}_sha[] = "${hex}";\n`);
     wstream.write(`const uint8_t ${name}[] = {`);
 
-    for (var i=0; i<data.length; i++) {
+    for (var i = 0; i < data.length; i++) {
         if (i % 1000 == 0) wstream.write("\n");
         wstream.write('0x' + ('00' + data[i].toString(16)).slice(-2));
-        if (i<data.length-1) wstream.write(',');
+        if (i < data.length - 1) wstream.write(',');
     }
 
     wstream.write('\n};')
@@ -126,8 +144,8 @@ function write_header_file(source, destination, name)
 
     deleteAsync([source]);
 }
-  
-const all = series(clean, buildfs_inline, buildfs_embeded, buildfs_logo_gz, buildfs_logo_embedded);
+
+const all = series(clean, buildfs_inline, buildfs_embeded, buildfs_yarrboard_logo_gz, buildfs_frothfet_logo_gz, buildfs_brineomatic_logo_gz, buildfs_logo_embedded);
 
 export default all;
 //export build;

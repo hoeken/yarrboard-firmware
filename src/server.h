@@ -25,7 +25,14 @@
 
 // generated at build by running "gulp" in the firmware directory.
 #include "index.html.gz.h"
-#include "logo-navico.png.gz.h"
+
+#ifdef YB_CONFIG_FROTHFET_REV_D
+  #include "logo-frothfet.png.gz.h"
+#elif YB_CONFIG_BRINEOMATIC_REV_A
+  #include "logo-brineomatic.png.gz.h"
+#else
+  #include "logo-navico.png.gz.h"
+#endif
 
 #ifdef YB_HAS_PWM_CHANNELS
   #include "pwm_channel.h"

@@ -114,10 +114,17 @@ void server_setup()
     // And set the last-modified datetime so we can check if we need to send it
     // again next time or not
     response.addHeader("Last-Modified", last_modified);
-    response.addHeader("ETag", logo_navico_gz_sha);
 
-    // add our actual content
-    response.setContent(logo_navico_gz, logo_navico_gz_len);
+#ifdef YB_CONFIG_FROTHFET_REV_D
+    response.addHeader("ETag", logo_frothfet_gz_sha);
+    response.setContent(logo_frothfet_gz, logo_frothfet_gz_len);
+#elif YB_CONFIG_BRINEOMATIC_REV_A
+    response.addHeader("ETag", logo_brineomatic_gz_sha);
+    response.setContent(logo_brineomatic_gz, logo_brineomatic_gz_len);
+#else
+    response.addHeader("ETag", logo_yarrboard_gz_sha);
+    response.setContent(logo_yarrboard_gz, logo_yarrboard_gz_len);
+#endif
 
     return response.send(); });
 
