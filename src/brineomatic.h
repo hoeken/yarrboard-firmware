@@ -57,6 +57,10 @@ class Brineomatic
     float highPressureValveOpenMax;
     float highPressureValveCloseMin;
     float highPressureValveCloseMax;
+    float highPressureValveMaintainOpenMin;
+    float highPressureValveMaintainOpenMax;
+    float highPressureValveMaintainCloseMin;
+    float highPressureValveMaintainCloseMax;
 
     float KpRamp = 0;
     float KiRamp = 0;

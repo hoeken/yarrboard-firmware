@@ -365,6 +365,11 @@ void Brineomatic::init()
   highPressureValveCloseMin = 92.5;
   highPressureValveCloseMax = 55;
 
+  highPressureValveMaintainOpenMin = 92.5;
+  highPressureValveMaintainOpenMax = 100;
+  highPressureValveMaintainCloseMin = 92.5;
+  highPressureValveMaintainCloseMax = 80;
+
   // PID settings - Ramp Up
   KpRamp = 2.2;
   KiRamp = 0;
@@ -372,7 +377,7 @@ void Brineomatic::init()
 
   // PID Settings - Maintain
   KpMaintain = 1.50;
-  KiMaintain = 0.075;
+  KiMaintain = 0.02;
   KdMaintain = 0;
 
   // PID controller
@@ -986,10 +991,15 @@ void Brineomatic::manageHighPressureValve()
 
         // run our PID calculations
         if (membranePressurePID.Compute()) {
-          angle = map(membranePressurePIDOutput, YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX, highPressureValveOpenMax, highPressureValveCloseMax);
+          // different max values for the ramp
+          if (abs(membranePressureTarget - currentMembranePressure) / membranePressureTarget > 0.05)
+            angle = map(membranePressurePIDOutput, YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX, highPressureValveOpenMax, highPressureValveCloseMax);
+          // smaller max values for maintain.
+          else
+            angle = map(membranePressurePIDOutput, YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX, highPressureValveMaintainOpenMax, highPressureValveMaintainCloseMax);
 
           // if we're close, just disable so its not constantly drawing current.
-          if (abs(membranePressureTarget - currentMembranePressure) / membranePressureTarget > 0.01)
+          if (abs(membranePressureTarget - currentMembranePressure) / membranePressureTarget > 0.015)
             highPressureValve->write(angle);
           else {
             highPressureValve->disable();
