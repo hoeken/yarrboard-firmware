@@ -1800,13 +1800,12 @@ void generateUpdateJSON(JsonVariant output)
   if (wm.hasCoolingFan())
     output["cooling_fan_on"] = wm.isCoolingFanOn();
 
-  if (!strcmp(wm.getStatus(), "IDLE"))
-    output["next_flush_countdown"] = wm.getNextFlushCountdown();
+  // if (!strcmp(wm.getStatus(), "IDLE"))
+  output["next_flush_countdown"] = wm.getNextFlushCountdown();
 
   output["runtime_elapsed"] = wm.getRuntimeElapsed();
-  if (!strcmp(wm.getStatus(), "RUNNING")) {
-    output["finish_countdown"] = wm.getFinishCountdown();
-  }
+  // if (!strcmp(wm.getStatus(), "RUNNING"))
+  output["finish_countdown"] = wm.getFinishCountdown();
 
   if (!strcmp(wm.getStatus(), "FLUSHING")) {
     output["flush_elapsed"] = wm.getFlushElapsed();

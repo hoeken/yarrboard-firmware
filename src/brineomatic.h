@@ -248,7 +248,7 @@ class Brineomatic
     float highPressureMaximum = 950.0;           // PSI
     float flowrateMinimum = 100.0;               // LPH
     float flowrateMaximum = 300.0;               // LPH
-    float salinityMaximum = 300.0;               // PPM
+    float salinityMaximum = 500.0;               // PPM
     float motorTemperatureMaximum = 65.0;        // Celcius
     float tankLevelFull = 0.99;                  // 0 = empty, 1 = full
     float tankCapacity = 780;                    // Liters

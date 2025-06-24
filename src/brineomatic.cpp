@@ -999,7 +999,7 @@ void Brineomatic::manageHighPressureValve()
             angle = map(membranePressurePIDOutput, YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX, highPressureValveMaintainOpenMax, highPressureValveMaintainCloseMax);
 
           // if we're close, just disable so its not constantly drawing current.
-          if (abs(membranePressureTarget - currentMembranePressure) / membranePressureTarget > 0.015)
+          if (abs(membranePressureTarget - currentMembranePressure) / membranePressureTarget > 0.01)
             highPressureValve->write(angle);
           else {
             highPressureValve->disable();
