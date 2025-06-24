@@ -101,7 +101,7 @@ const brineomatic_result_text = {
 
 const brineomatic_gauge_setup = {
   "motor_temperature": {
-    "thresholds": [50, 75, 100],
+    "thresholds": [60, 70, 100],
     "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
   },
   "water_temperature": {
@@ -662,7 +662,7 @@ function start_websocket() {
 
       //did we get a crash?
       if (msg.has_coredump)
-        show_alert(`
+        show_admin_alert(`
           <p>Oops, looks like Yarrboard crashed.</p>
           <p>Please download the <a href="/coredump.txt" target="_blank">coredump</a> and report it to our <a href="https://github.com/hoeken/yarrboard/issues">Github Issue Tracker</a> along with the following information:</p>
           <ul><li>Firmware: ${msg.firmware_version}</li><li>Hardware: ${msg.hardware_version}</li></ul>
@@ -2370,6 +2370,19 @@ function show_alert(message, type = 'danger') {
     750 //speed
   );
 }
+
+function show_admin_alert(message, type = 'danger') {
+  //we only need one alert at a time.
+  $('#adminAlertPlaceholder').html(AlertBox(message, type))
+
+  //make sure we can see it.
+  $('html').animate({
+    scrollTop: 0
+  },
+    750 //speed
+  );
+}
+
 
 function show_brineomatic_result(result_div, result) {
   if (result != "STARTUP") {
