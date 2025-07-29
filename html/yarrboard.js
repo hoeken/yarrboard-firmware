@@ -912,6 +912,7 @@ function start_websocket() {
         $('#bomInformationDiv').show();
         $('#bomControlDiv').show();
         $('#bomStatsDiv').show();
+        $('#bomInterface').hide();
 
         $('#brightnessUI').hide();
 
@@ -1995,6 +1996,7 @@ function start_websocket() {
         else
           $('#bomFanStatus').hide();
 
+        $('#bomInterface').show();
       }
       else
         $('#bomInterface').hide();
