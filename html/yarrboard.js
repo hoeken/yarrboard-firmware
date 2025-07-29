@@ -539,6 +539,7 @@ function start_yarrboard() {
   yarrboard_log("Window Width: " + window.innerWidth);
   yarrboard_log("Window Height: " + window.innerHeight);
   yarrboard_log("Window Location: " + window.location);
+  yarrboard_log("Device Pixel Ratio: " + window.devicePixelRatio);
   yarrboard_log("Is canvas supported? " + isCanvasSupported());
 
   //main data connection
@@ -2094,8 +2095,10 @@ function start_websocket() {
 
       if (msg.brineomatic) {
         let totalVolume = Math.round(msg.total_volume);
+        totalVolume = totalVolume.toLocaleString('en-US');
         let totalRuntime = (msg.total_runtime / (60 * 60 * 1000000)).toFixed(1);
-        $("#bomTotalCycles").html(msg.total_cycles);
+        totalRuntime = totalRuntime.toLocaleString('en-US');
+        $("#bomTotalCycles").html(msg.total_cycles.toLocaleString('en-US'));
         $("#bomTotalVolume").html(`${totalVolume}L`);
         $("#bomTotalRuntime").html(`${totalRuntime} hours`);
       }

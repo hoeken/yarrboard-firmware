@@ -244,7 +244,7 @@ class Brineomatic
     float lowPressureMinimum = 2.5;              // PSI
     float lowPressureMaximum = 60.0;             // PSI
     float highPressureMinimum = 600.0;           // PSI
-    float defaultMembranePressureTarget = 800.0; // PSI
+    float defaultMembranePressureTarget = 775.0; // PSI
     float highPressureMaximum = 950.0;           // PSI
     float flowrateMinimum = 100.0;               // LPH
     float flowrateMaximum = 300.0;               // LPH
