@@ -24,6 +24,8 @@ class ADCHelper
     ADCHelper();
     ADCHelper(float vref, uint8_t resolution);
 
+    bool requestReading(uint8_t channel);
+    bool isReady();
     unsigned int getReading();
     unsigned int getAverageReading();
     void addReading(unsigned int reading);
@@ -96,11 +98,13 @@ class ADS1115Helper : public ADCHelper
   public:
     ADS1115Helper();
     ADS1115Helper(float vref, uint8_t channel, ADS1115* adc);
+    bool requestReading(uint8_t channel);
+    bool isReady();
     unsigned int getReading();
     float toVoltage(unsigned int reading);
+    ADS1115* adc;
 
   private:
-    ADS1115* adc;
     uint8_t channel;
 };
 

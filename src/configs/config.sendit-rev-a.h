@@ -20,5 +20,7 @@
 #define YB_ADC_RESOLUTION                15 // positive only
 #define YB_CHANNEL_VOLTAGE_I2C_ADDRESS_1 0x49
 #define YB_CHANNEL_VOLTAGE_I2C_ADDRESS_2 0x48
+#define YB_ADS1115_READY_PIN_1           4
+#define YB_ADS1115_READY_PIN_2           5
 
 #endif // _CONFIG_SENDIT_REV_A

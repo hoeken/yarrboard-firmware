@@ -20,6 +20,10 @@ ADCHelper::ADCHelper(float vref, uint8_t resolution)
   this->resolution = resolution;
 }
 
+bool ADCHelper::requestReading(uint8_t channel) { return false; }
+
+bool ADCHelper::isReady() { return false; }
+
 unsigned int ADCHelper::getReading() { return 0; }
 
 void ADCHelper::addReading(unsigned int reading)
@@ -184,10 +188,18 @@ ADS1115Helper::ADS1115Helper(float vref, uint8_t channel, ADS1115* adc)
   this->adc = adc;
 }
 
+bool ADS1115Helper::requestReading(uint8_t channel)
+{
+  this->adc->requestADC(channel);
+  return true;
+}
+
+bool ADS1115Helper::isReady() { return this->adc->isReady(); }
+
 unsigned int ADS1115Helper::getReading()
 {
   int16_t reading;
-  reading = this->adc->readADC(this->channel);
+  reading = this->adc->getValue();
 
   // no negatives please.
   if (reading < 0)
