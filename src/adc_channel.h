@@ -23,7 +23,11 @@ class ADCChannel
     bool isEnabled = true;
     char name[YB_CHANNEL_NAME_LENGTH];
 
+  #ifdef YB_ADC_DRIVER_ADS1115
+    ADS1115Helper* adcHelper;
+  #elif YB_ADC_DRIVER_MCP3208
     MCP3208Helper* adcHelper;
+  #endif
 
     void setup();
     void update();

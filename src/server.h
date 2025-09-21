@@ -32,6 +32,7 @@
   #include "logo-brineomatic.png.gz.h"
 #else
   #include "logo-navico.png.gz.h"
+  #include "logo-yarrboard.png.gz.h"
 #endif
 
 #ifdef YB_HAS_PWM_CHANNELS

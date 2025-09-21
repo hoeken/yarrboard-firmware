@@ -475,32 +475,16 @@ const RGBEditCard = (ch) => `
 `;
 
 const ADCControlRow = (id, name) => `
-<tr id="adc${id}" class="adcRow" onclick="toggle_adc_details(${id})">
+<tr id="adc${id}" class="adcRow">
+  <td class="adcId align-middle">${id}</td>
   <td class="adcName align-middle">${name}</td>
+  <td class="adcReading" id="adcReading${id}"></td>
+  <td class="adcVoltage" id="adcVoltage${id}"></td>
+  <td class="adcActual" id="adcActual${id}">TODO</td>
   <td class="adcBar align-middle">
     <div id="adcBar${id}" class="progress" role="progressbar" aria-label="ADC ${id} Reading" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
       <div class="progress-bar" style="width: 0%"></div>
     </div>
-  </td>
-</tr>
-<tr id="adc${id}Details" style="display: none">
-  <td colspan="2">
-    <table style="width: 100%">
-      <thead>
-          <tr>
-              <th class="text-center" scope="col" style="width: 33%">Raw</th>
-              <th class="text-center" scope="col" style="width: 33%">Voltage</th>
-              <th class="text-center" scope="col" style="width: 33%">%</th>
-          </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="text-center" id="adcReading${id}"></td>
-          <td class="text-center" id="adcVoltage${id}"></td>
-          <td class="text-center" id="adcPercentage${id}"></td>
-        </tr>
-      </tbody>
-    </table>
   </td>
 </tr>
 `;
@@ -1683,7 +1667,7 @@ function start_websocket() {
 
             $("#adcReading" + ch.id).html(reading);
             $("#adcVoltage" + ch.id).html(voltage + "V")
-            $("#adcPercentage" + ch.id).html(percentage + "%")
+            //$("#adcPercentage" + ch.id).html(percentage + "%")
 
             $(`#adcBar${ch.id} div`).css("width", percentage + "%");
             $(`#adcBar${ch.id}`).attr("aria-valuenow", percentage);
@@ -2510,10 +2494,6 @@ function toggle_relay_state(id) {
     "id": id,
     "source": current_config.hostname
   }, true);
-}
-
-function toggle_adc_details(id) {
-  $(`#adc${id}Details`).toggle();
 }
 
 function toggle_duty_cycle(id) {

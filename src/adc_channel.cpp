@@ -15,13 +15,42 @@
 // the main star of the event
 ADCChannel adc_channels[YB_ADC_CHANNEL_COUNT];
 
-  #ifdef YB_ADC_DRIVER_MCP3208
+  #ifdef YB_ADC_DRIVER_ADS1115
+ADS1115 _adcVoltageADS1115_1(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_1);
+ADS1115 _adcVoltageADS1115_2(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_2);
+  #elif YB_ADC_DRIVER_MCP3208
 MCP3208 _adcAnalogMCP3208;
   #endif
 
 void adc_channels_setup()
 {
-  #ifdef YB_ADC_DRIVER_MCP3208
+  #ifdef YB_ADC_DRIVER_ADS1115
+    #if defined(YB_I2C_SDA_PIN) && defined(YB_I2C_SCL_PIN)
+  Wire.begin(YB_I2C_SDA_PIN, YB_I2C_SCL_PIN);
+    #else
+  Wire.begin(); // fallback to defaults
+    #endif
+  _adcVoltageADS1115_1.begin();
+  if (_adcVoltageADS1115_1.isConnected())
+    Serial.println("Voltage ADS115 #1 OK");
+  else
+    Serial.println("Voltage ADS115 #1 Not Found");
+
+  _adcVoltageADS1115_1.setMode(1); //  SINGLE SHOT MODE
+  _adcVoltageADS1115_1.setGain(1);
+  _adcVoltageADS1115_1.setDataRate(7);
+
+  _adcVoltageADS1115_2.begin();
+  if (_adcVoltageADS1115_2.isConnected())
+    Serial.println("Voltage ADS115 #2 OK");
+  else
+    Serial.println("Voltage ADS115 #2 Not Found");
+
+  _adcVoltageADS1115_2.setMode(1); //  SINGLE SHOT MODE
+  _adcVoltageADS1115_2.setGain(1);
+  _adcVoltageADS1115_2.setDataRate(7);
+
+  #elif YB_ADC_DRIVER_MCP3208
   _adcAnalogMCP3208.begin(YB_ADC_CS);
     //_adcAnalogMCP3208.begin(YB_ADC_CS, 23, 19, 18);
   #endif
@@ -66,7 +95,14 @@ void ADCChannel::setup()
   else
     this->isEnabled = true;
 
+  #ifdef YB_ADC_DRIVER_ADS1115
+  if (this->id < 4)
+    this->adcHelper = new ADS1115Helper(YB_ADS1115_VREF, this->id, &_adcVoltageADS1115_1);
+  else
+    this->adcHelper = new ADS1115Helper(YB_ADS1115_VREF, this->id - 4, &_adcVoltageADS1115_2);
+  #elif YB_ADC_DRIVER_MCP3208
   this->adcHelper = new MCP3208Helper(3.3, this->id, &_adcAnalogMCP3208);
+  #endif
 }
 
 void ADCChannel::update()

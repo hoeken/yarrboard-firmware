@@ -54,6 +54,10 @@ void ADCHelper::resetAverage()
 
 float ADCHelper::toVoltage(unsigned int reading)
 {
+  // DUMP(reading);
+  // DUMP(this->vref);
+  // DUMP(this->resolution);
+
   return (float)reading * this->vref / (float)(pow(2, this->resolution) - 1);
 }
 
@@ -174,7 +178,7 @@ unsigned int MCP3425Helper::getReading()
 
 ADS1115Helper::ADS1115Helper() : ADCHelper::ADCHelper() {}
 ADS1115Helper::ADS1115Helper(float vref, uint8_t channel, ADS1115* adc)
-    : ADCHelper::ADCHelper(vref, 24)
+    : ADCHelper::ADCHelper(vref, 15)
 {
   this->channel = channel;
   this->adc = adc;
