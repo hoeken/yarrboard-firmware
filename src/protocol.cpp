@@ -1750,15 +1750,19 @@ void generateUpdateJSON(JsonVariant output)
 
 // input / analog ADC channesl
 #ifdef YB_HAS_ADC_CHANNELS
+  byte idx = 0;
   for (byte i = 0; i < YB_ADC_CHANNEL_COUNT; i++) {
     if (adc_channels[i].adcHelper->readingCount > 0) {
-      output["adc"][i]["id"] = i;
-      output["adc"][i]["read_count"] = adc_channels[i].adcHelper->readingCount;
-      output["adc"][i]["voltage"] = adc_channels[i].getVoltage();
-      output["adc"][i]["reading"] = adc_channels[i].getReading();
-      output["adc"][i]["percentage"] = 100.0 *
-                                       (float)adc_channels[i].getReading() /
-                                       (pow(2, YB_ADC_RESOLUTION) - 1);
+
+      output["adc"][idx]["id"] = i;
+      output["adc"][idx]["read_count"] = adc_channels[i].adcHelper->readingCount;
+      output["adc"][idx]["voltage"] = adc_channels[i].getVoltage();
+      output["adc"][idx]["reading"] = adc_channels[i].getReading();
+      output["adc"][idx]["percentage"] = 100.0 *
+                                         (float)adc_channels[i].getReading() /
+                                         (pow(2, YB_ADC_RESOLUTION) - 1);
+
+      idx++;
       adc_channels[i].resetAverage();
     }
   }
