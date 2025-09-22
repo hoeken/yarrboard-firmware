@@ -23,4 +23,17 @@
 #define YB_ADS1115_READY_PIN_1           4
 #define YB_ADS1115_READY_PIN_2           5
 
+#define YB_SENDIT_420MA_R1        165.0
+#define YB_SENDIT_HIGH_DIVIDER_R1 13000.0
+#define YB_SENDIT_HIGH_DIVIDER_R2 1500.0
+#define YB_SENDIT_LOW_DIVIDER_R1  560.0
+#define YB_SENDIT_LOW_DIVIDER_R2  1000.0
+
+#define YB_HAS_SD_CARD
+#define YB_SD_SCK         36
+#define YB_SD_MOSI        35
+#define YB_SD_MISO        37
+#define YB_SD_CS          34
+#define YB_SD_CARD_DETECT 33
+
 #endif // _CONFIG_SENDIT_REV_A

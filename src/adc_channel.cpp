@@ -80,7 +80,6 @@ void adc_channels_loop()
 
     // next channel
     ads1_channel = (ads1_channel + 1) & 0x03; // 0..3
-
     adc_channels[ads1_channel].adcHelper->requestReading(ads1_channel);
   }
 
@@ -89,24 +88,8 @@ void adc_channels_loop()
 
     // next channel
     ads2_channel = (ads2_channel + 1) & 0x03; // 0..3
-
     adc_channels[ads2_channel + 4].adcHelper->requestReading(ads2_channel);
   }
-
-    // uint16_t value = 0;
-    // if (adc_channels[current_ads1115_channel].adcHelper->isReady() && adc_channels[current_ads1115_channel + 4].adcHelper->isReady()) {
-    //   adc_channels[current_ads1115_channel].update();
-    //   adc_channels[current_ads1115_channel + 4].update();
-
-    //   // update to our channel index
-    //   current_ads1115_channel++;
-    //   if (current_ads1115_channel == 4)
-    //     current_ads1115_channel = 0;
-
-    //   // request new conversion
-    //   adc_channels[current_ads1115_channel].adcHelper->requestReading(current_ads1115_channel);
-    //   adc_channels[current_ads1115_channel + 4].adcHelper->requestReading(current_ads1115_channel);
-    // }
 
   #else
   // maintenance on our channels.
@@ -169,6 +152,122 @@ float ADCChannel::getVoltage()
 void ADCChannel::resetAverage()
 {
   this->adcHelper->resetAverage();
+}
+
+float ADCChannel::getTypeValue()
+{
+  switch (this->type) {
+    case Type::RAW:
+      return this->getVoltage();
+
+    case Type::POSITIVE_SWITCHING:
+      if (this->getVoltage() >= YB_ADS1115_VREF * 0.7)
+        return 1.0;
+      else
+        return 0.0;
+
+    case Type::NEGATIVE_SWITCHING:
+      if (this->getVoltage() <= YB_ADS1115_VREF * 0.3)
+        return 1.0;
+      else
+        return 0.0;
+
+    case Type::THERMISTOR_1K:
+    case Type::THERMISTOR_10K: {
+      // what pullup?
+      float r_pullup = 1000.0;
+      if (this->type == Type::THERMISTOR_10K)
+        r_pullup = 10000.0;
+
+      float r_beta = 3950.0;
+      float r_thermistor = 10000.0;
+
+      // 2. Calculate thermistor resistance
+      // Voltage divider: Vadc = Vcc * (R_ntc / (R_ntc + R_PULLUP))
+      float r_ntc = (this->getVoltage() * r_pullup) / (YB_ADS1115_VREF - this->getVoltage());
+
+      // 3. Apply Beta equation to compute temperature in Kelvin
+      float inv_T = (1.0 / 298.15) + (1.0 / r_beta) * log(r_ntc / r_thermistor);
+      float tempK = 1.0 / inv_T;
+
+      // 4. Convert to Celsius
+      float tempC = tempK - 273.15;
+      return tempC;
+    }
+
+    case Type::FOUR_TWENTY_MA:
+      return (this->getVoltage() / YB_SENDIT_420MA_R1) * 1000;
+
+    case Type::TANK_SENDER: {
+      float amperage = (this->getVoltage() / YB_SENDIT_420MA_R1) * 1000;
+      return map_generic(amperage, 4.0, 20.0, 0.0, 100.0);
+    }
+
+    case Type::HIGH_VOLT_DIVIDER:
+      return this->getVoltage() * (YB_SENDIT_HIGH_DIVIDER_R1 + YB_SENDIT_HIGH_DIVIDER_R2) / YB_SENDIT_HIGH_DIVIDER_R2;
+
+    case Type::LOW_VOLT_DIVIDER:
+      return this->getVoltage() * (YB_SENDIT_LOW_DIVIDER_R1 + YB_SENDIT_LOW_DIVIDER_R2) / YB_SENDIT_LOW_DIVIDER_R2;
+
+    case Type::ONE_K_PULLUP:
+    case Type::TEN_K_PULLUP: {
+      float r1 = 1000.0;
+      if (this->type == Type::TEN_K_PULLUP)
+        r1 = 10000.0;
+
+      if (this->getVoltage() < 0)
+        return -1;
+      else if (this->getVoltage() >= YB_ADS1115_VREF)
+        return 0;
+      else
+        return (1000.0 * this->getVoltage()) / (YB_ADS1115_VREF - this->getVoltage());
+    }
+  }
+  return -2;
+}
+
+const char* ADCChannel::getTypeUnits()
+{
+  switch (this->type) {
+    case Type::RAW:
+      return "v";
+      break;
+
+    case Type::POSITIVE_SWITCHING:
+      return "bool";
+      break;
+
+    case Type::NEGATIVE_SWITCHING:
+      return "bool";
+      break;
+
+    case Type::THERMISTOR_1K:
+    case Type::THERMISTOR_10K:
+      return "C";
+      break;
+
+    case Type::FOUR_TWENTY_MA:
+      return "mA";
+      break;
+
+    case Type::TANK_SENDER:
+      return "%";
+      break;
+
+    case Type::HIGH_VOLT_DIVIDER:
+    case Type::LOW_VOLT_DIVIDER:
+      return "v";
+      break;
+
+    case Type::ONE_K_PULLUP:
+    case Type::TEN_K_PULLUP:
+      return "ohms";
+      break;
+
+    default:
+      return "";
+      break;
+  }
 }
 
 #endif
