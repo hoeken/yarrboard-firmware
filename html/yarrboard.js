@@ -480,7 +480,7 @@ const ADCControlRow = (id, name) => `
   <td class="adcName align-middle">${name}</td>
   <td class="adcReading" id="adcReading${id}"></td>
   <td class="adcVoltage" id="adcVoltage${id}"></td>
-  <td class="adcActual" id="adcActual${id}">TODO</td>
+  <td class="adcActual" id="adcActual${id}"><span id="adcOutput${id}"></span><span id="adcUnits${id}"></span></td>
   <td class="adcBar align-middle">
     <div id="adcBar${id}" class="progress" role="progressbar" aria-label="ADC ${id} Reading" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
       <div class="progress-bar" style="width: 0%"></div>
@@ -495,12 +495,28 @@ const ADCEditCard = (id) => `
     <h5>ADC #${ch.id}</h5>
     <div class="form-floating mb-3">
       <input type="text" class="form-control" id="fADCName${ch.id}" value="${ch.name}">
-      <label for="fRGBName${ch.id}">Name</label>
+      <label for="fADCName${ch.id}">Name</label>
       <div class="invalid-feedback">Must be 30 characters or less.</div>
     </div>
     <div class="form-check form-switch">
       <input class="form-check-input" type="checkbox" id="fADCEnabled${ch.id}">
       <label class="form-check-label" for="fADCEnabled${ch.id}">Enabled</label>
+    </div>
+    <div class="form-floating">
+      <select id="fADCType${ch.id}" class="form-select" aria-label="Input Type">
+        <option value="raw">Raw Output</option>
+        <option value="positive_switching">Positive Switching</option>
+        <option value="negative_switching">Negative Switching</option>
+        <option value="thermistor_1k">Thermistor - 1k Ohm</option>
+        <option value="thermistor_10k">Thermistor - 10k Ohm</option>
+        <option value="4-20ma">4-20mA Sensor</option>
+        <option value="tank_sensor">Tank Sensor</option>
+        <option value="high_volt_divider">0-32v Input</option>
+        <option value="low_volt_divider">0-5v Input</option>
+        <option value="one_k_pullup">1k Pullup</option>
+        <option value="ten_k_pullup">10k Pullup</option>
+      </select>
+      <label for="fADCType${ch.id}">Input Type</label>
     </div>
 </div>
 `;
@@ -1448,13 +1464,17 @@ function start_websocket() {
           for (ch of msg.adc) {
             $('#adcConfigForm').append(ADCEditCard(ch));
             $(`#fADCEnabled${ch.id}`).prop("checked", ch.enabled);
+            $(`#fADCType${ch.id}`).val(ch.type);
 
             //enable/disable other stuff.
             $(`#fADCName${ch.id}`).prop('disabled', !ch.enabled);
+            $(`#fADCType${ch.id}`).prop('disabled', !ch.enabled);
 
             //validate + save
             $(`#fADCEnabled${ch.id}`).change(validate_adc_enabled);
             $(`#fADCName${ch.id}`).change(validate_adc_name);
+            $(`#fADCType${ch.id}`).change(validate_adc_type);
+
           }
 
           $('#adcConfig').show();
@@ -1664,10 +1684,14 @@ function start_websocket() {
             let reading = Math.round(ch.reading);
             let voltage = ch.voltage.toFixed(2);
             let percentage = ch.percentage.toFixed(1);
+            let output = ch.output.toFixed(2);
 
             $("#adcReading" + ch.id).html(reading);
             $("#adcVoltage" + ch.id).html(voltage + "V")
             //$("#adcPercentage" + ch.id).html(percentage + "%")
+
+            $("#adcOutput" + ch.id).html(output);
+            $("#adcUnits" + ch.id).html(current_config.adc[ch.id].units);
 
             $(`#adcBar${ch.id} div`).css("width", percentage + "%");
             $(`#adcBar${ch.id}`).attr("aria-valuenow", percentage);
@@ -3116,6 +3140,28 @@ function validate_adc_enabled(e) {
     "id": id,
     "enabled": value
   });
+}
+
+function validate_adc_type(e) {
+  let ele = e.target;
+  let id = ele.id.match(/\d+/)[0];
+  let value = ele.value;
+
+  if (value.length <= 0 || value.length > 30) {
+    $(ele).removeClass("is-valid");
+    $(ele).addClass("is-invalid");
+  }
+  else {
+    $(ele).removeClass("is-invalid");
+    $(ele).addClass("is-valid");
+
+    //set our new pwm name!
+    client.send({
+      "cmd": "config_adc",
+      "id": id,
+      "type": value
+    });
+  }
 }
 
 function do_login(e) {

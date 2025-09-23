@@ -1424,6 +1424,25 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
     // give them the updated config
     return generateConfigJSON(output);
   }
+
+  // channel type
+  if (input["type"].is<String>()) {
+    // is it too long?
+    if (strlen(input["type"]) > YB_TYPE_LENGTH - 1) {
+      char error[50];
+      sprintf(error, "Maximum channel type length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
+      return generateErrorJSON(output, error);
+    }
+
+    // save to our storage
+    strlcpy(adc_channels[cid].type, input["type"] | "other", sizeof(adc_channels[cid].type));
+    sprintf(prefIndex, "adcType%d", cid);
+    preferences.putString(prefIndex, adc_channels[cid].type);
+
+    // give them the updated config
+    return generateConfigJSON(output);
+  }
+
 #else
   return generateErrorJSON(output, "Board does not have ADC channels.");
 #endif
@@ -1678,6 +1697,8 @@ void generateConfigJSON(JsonVariant output)
     output["adc"][i]["id"] = i;
     output["adc"][i]["name"] = adc_channels[i].name;
     output["adc"][i]["enabled"] = adc_channels[i].isEnabled;
+    output["adc"][i]["type"] = adc_channels[i].type;
+    output["adc"][i]["units"] = adc_channels[i].getTypeUnits();
   }
 #endif
 
@@ -1748,13 +1769,14 @@ void generateUpdateJSON(JsonVariant output)
   }
 #endif
 
-// input / analog ADC channesl
+// input / analog ADC channels
 #ifdef YB_HAS_ADC_CHANNELS
   byte idx = 0;
   for (byte i = 0; i < YB_ADC_CHANNEL_COUNT; i++) {
     if (adc_channels[i].adcHelper->readingCount > 0) {
 
       output["adc"][idx]["id"] = i;
+      output["adc"][idx]["output"] = adc_channels[i].getTypeValue();
       output["adc"][idx]["read_count"] = adc_channels[i].adcHelper->readingCount;
       output["adc"][idx]["voltage"] = adc_channels[i].getVoltage();
       output["adc"][idx]["reading"] = adc_channels[i].getReading();
@@ -1768,7 +1790,7 @@ void generateUpdateJSON(JsonVariant output)
   }
 #endif
 
-// input / analog ADC channesl
+// rgb channels
 #ifdef YB_HAS_RGB_CHANNELS
   for (byte i = 0; i < YB_RGB_CHANNEL_COUNT; i++) {
     output["rgb"][i]["id"] = i;

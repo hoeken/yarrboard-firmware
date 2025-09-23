@@ -124,6 +124,13 @@ void ADCChannel::setup()
   else
     this->isEnabled = true;
 
+  // what type are we?
+  sprintf(prefIndex, "adcType%d", this->id);
+  if (preferences.isKey(prefIndex))
+    strlcpy(this->type, preferences.getString(prefIndex).c_str(), sizeof(this->type));
+  else
+    sprintf(this->type, "raw");
+
   #ifdef YB_ADC_DRIVER_ADS1115
   if (this->id < 4)
     this->adcHelper = new ADS1115Helper(YB_ADS1115_VREF, this->id, &_adcVoltageADS1115_1);
@@ -156,118 +163,88 @@ void ADCChannel::resetAverage()
 
 float ADCChannel::getTypeValue()
 {
-  switch (this->type) {
-    case Type::RAW:
-      return this->getVoltage();
+  if (!strcmp(this->type, "raw"))
+    return this->getVoltage();
+  else if (!strcmp(this->type, "positive_switching")) {
+    if (this->getVoltage() >= YB_ADS1115_VREF * 0.7)
+      return 1.0;
+    else
+      return 0.0;
+  } else if (!strcmp(this->type, "negative_switching")) {
+    if (this->getVoltage() <= YB_ADS1115_VREF * 0.3)
+      return 1.0;
+    else
+      return 0.0;
+  } else if (!strcmp(this->type, "thermistor_1k") || !strcmp(this->type, "thermistor_10k")) {
+    // what pullup?
+    float r_pullup = 1000.0;
+    if (!strcmp(this->type, "thermistor_10k"))
+      r_pullup = 10000.0;
 
-    case Type::POSITIVE_SWITCHING:
-      if (this->getVoltage() >= YB_ADS1115_VREF * 0.7)
-        return 1.0;
-      else
-        return 0.0;
+    float r_beta = 3950.0;
+    float r_thermistor = 10000.0;
 
-    case Type::NEGATIVE_SWITCHING:
-      if (this->getVoltage() <= YB_ADS1115_VREF * 0.3)
-        return 1.0;
-      else
-        return 0.0;
+    // 2. Calculate thermistor resistance
+    // Voltage divider: Vadc = Vcc * (R_ntc / (R_ntc + R_PULLUP))
+    float r_ntc = (this->getVoltage() * r_pullup) / (YB_ADS1115_VREF - this->getVoltage());
 
-    case Type::THERMISTOR_1K:
-    case Type::THERMISTOR_10K: {
-      // what pullup?
-      float r_pullup = 1000.0;
-      if (this->type == Type::THERMISTOR_10K)
-        r_pullup = 10000.0;
+    // 3. Apply Beta equation to compute temperature in Kelvin
+    float inv_T = (1.0 / 298.15) + (1.0 / r_beta) * log(r_ntc / r_thermistor);
+    float tempK = 1.0 / inv_T;
 
-      float r_beta = 3950.0;
-      float r_thermistor = 10000.0;
+    // 4. Convert to Celsius
+    float tempC = tempK - 273.15;
+    return tempC;
+  } else if (!strcmp(this->type, "4-20ma"))
+    return (this->getVoltage() / YB_SENDIT_420MA_R1) * 1000;
+  else if (!strcmp(this->type, "tank_sensor")) {
+    float amperage = (this->getVoltage() / YB_SENDIT_420MA_R1) * 1000;
+    return map_generic(amperage, 4.0, 20.0, 0.0, 100.0);
+  } else if (!strcmp(this->type, "high_volt_divider"))
+    return this->getVoltage() * (YB_SENDIT_HIGH_DIVIDER_R1 + YB_SENDIT_HIGH_DIVIDER_R2) / YB_SENDIT_HIGH_DIVIDER_R2;
+  else if (!strcmp(this->type, "low_volt_divider"))
+    return this->getVoltage() * (YB_SENDIT_LOW_DIVIDER_R1 + YB_SENDIT_LOW_DIVIDER_R2) / YB_SENDIT_LOW_DIVIDER_R2;
+  else if (!strcmp(this->type, "one_k_pullup") || !strcmp(this->type, "ten_k_pullup")) {
+    float r1 = 1000.0;
+    if (!strcmp(this->type, "ten_k_pullup"))
+      r1 = 10000.0;
 
-      // 2. Calculate thermistor resistance
-      // Voltage divider: Vadc = Vcc * (R_ntc / (R_ntc + R_PULLUP))
-      float r_ntc = (this->getVoltage() * r_pullup) / (YB_ADS1115_VREF - this->getVoltage());
-
-      // 3. Apply Beta equation to compute temperature in Kelvin
-      float inv_T = (1.0 / 298.15) + (1.0 / r_beta) * log(r_ntc / r_thermistor);
-      float tempK = 1.0 / inv_T;
-
-      // 4. Convert to Celsius
-      float tempC = tempK - 273.15;
-      return tempC;
-    }
-
-    case Type::FOUR_TWENTY_MA:
-      return (this->getVoltage() / YB_SENDIT_420MA_R1) * 1000;
-
-    case Type::TANK_SENDER: {
-      float amperage = (this->getVoltage() / YB_SENDIT_420MA_R1) * 1000;
-      return map_generic(amperage, 4.0, 20.0, 0.0, 100.0);
-    }
-
-    case Type::HIGH_VOLT_DIVIDER:
-      return this->getVoltage() * (YB_SENDIT_HIGH_DIVIDER_R1 + YB_SENDIT_HIGH_DIVIDER_R2) / YB_SENDIT_HIGH_DIVIDER_R2;
-
-    case Type::LOW_VOLT_DIVIDER:
-      return this->getVoltage() * (YB_SENDIT_LOW_DIVIDER_R1 + YB_SENDIT_LOW_DIVIDER_R2) / YB_SENDIT_LOW_DIVIDER_R2;
-
-    case Type::ONE_K_PULLUP:
-    case Type::TEN_K_PULLUP: {
-      float r1 = 1000.0;
-      if (this->type == Type::TEN_K_PULLUP)
-        r1 = 10000.0;
-
-      if (this->getVoltage() < 0)
-        return -1;
-      else if (this->getVoltage() >= YB_ADS1115_VREF)
-        return 0;
-      else
-        return (1000.0 * this->getVoltage()) / (YB_ADS1115_VREF - this->getVoltage());
-    }
-  }
-  return -2;
+    if (this->getVoltage() < 0)
+      return -1;
+    else if (this->getVoltage() >= YB_ADS1115_VREF)
+      return 0;
+    else
+      return (r1 * this->getVoltage()) / (YB_ADS1115_VREF - this->getVoltage());
+  } else
+    return -1;
 }
 
 const char* ADCChannel::getTypeUnits()
 {
-  switch (this->type) {
-    case Type::RAW:
-      return "v";
-      break;
-
-    case Type::POSITIVE_SWITCHING:
-      return "bool";
-      break;
-
-    case Type::NEGATIVE_SWITCHING:
-      return "bool";
-      break;
-
-    case Type::THERMISTOR_1K:
-    case Type::THERMISTOR_10K:
-      return "C";
-      break;
-
-    case Type::FOUR_TWENTY_MA:
-      return "mA";
-      break;
-
-    case Type::TANK_SENDER:
-      return "%";
-      break;
-
-    case Type::HIGH_VOLT_DIVIDER:
-    case Type::LOW_VOLT_DIVIDER:
-      return "v";
-      break;
-
-    case Type::ONE_K_PULLUP:
-    case Type::TEN_K_PULLUP:
-      return "ohms";
-      break;
-
-    default:
-      return "";
-      break;
-  }
+  if (!strcmp(this->type, "raw"))
+    return "v";
+  else if (!strcmp(this->type, "positive_switching"))
+    return "bool";
+  else if (!strcmp(this->type, "negative_switching"))
+    return "bool";
+  else if (!strcmp(this->type, "thermistor_1k"))
+    return "C";
+  else if (!strcmp(this->type, "thermistor_10k"))
+    return "C";
+  else if (!strcmp(this->type, "4-20ma"))
+    return "mA";
+  else if (!strcmp(this->type, "tank_sensor"))
+    return "%";
+  else if (!strcmp(this->type, "high_volt_divider"))
+    return "v";
+  else if (!strcmp(this->type, "low_volt_divider"))
+    return "v";
+  else if (!strcmp(this->type, "one_k_pullup"))
+    return "Ω";
+  else if (!strcmp(this->type, "ten_k_pullup"))
+    return "Ω";
+  else
+    return "";
 }
 
 #endif

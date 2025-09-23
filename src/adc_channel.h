@@ -39,7 +39,7 @@ class ADCChannel
     byte id = 0;
     bool isEnabled = true;
     char name[YB_CHANNEL_NAME_LENGTH];
-    Type type = Type::RAW;
+    char type[30];
 
   #ifdef YB_ADC_DRIVER_ADS1115
     ADS1115Helper* adcHelper;
