@@ -211,10 +211,10 @@ float ADCChannel::getTypeValue()
 
     if (this->getVoltage() < 0)
       return -1;
-    else if (this->getVoltage() >= YB_ADS1115_VREF)
-      return 0;
+    else if (this->getVoltage() >= YB_ADC_VCC * 0.999)
+      return -2;
     else
-      return (r1 * this->getVoltage()) / (YB_ADS1115_VREF - this->getVoltage());
+      return (r1 * this->getVoltage()) / (YB_ADC_VCC - this->getVoltage());
   } else
     return -1;
 }

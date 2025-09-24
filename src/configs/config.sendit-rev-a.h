@@ -16,6 +16,7 @@
 #define YB_I2C_SDA_PIN                   2
 #define YB_I2C_SCL_PIN                   1
 #define YB_ADS1115_VREF                  4.096
+#define YB_ADC_VCC                       3.3
 #define YB_ADC_CHANNEL_COUNT             8
 #define YB_ADC_RESOLUTION                15 // positive only
 #define YB_CHANNEL_VOLTAGE_I2C_ADDRESS_1 0x49

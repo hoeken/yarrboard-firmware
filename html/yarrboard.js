@@ -480,7 +480,7 @@ const ADCControlRow = (id, name) => `
   <td class="adcName align-middle">${name}</td>
   <td class="adcReading" id="adcReading${id}"></td>
   <td class="adcVoltage" id="adcVoltage${id}"></td>
-  <td class="adcActual" id="adcActual${id}"><span id="adcOutput${id}"></span><span id="adcUnits${id}"></span></td>
+  <td class="adcOutput" id="adcOutput${id}"></td>
   <td class="adcBar align-middle">
     <div id="adcBar${id}" class="progress" role="progressbar" aria-label="ADC ${id} Reading" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
       <div class="progress-bar" style="width: 0%"></div>
@@ -1684,14 +1684,75 @@ function start_websocket() {
             let reading = Math.round(ch.reading);
             let voltage = ch.voltage.toFixed(2);
             let percentage = ch.percentage.toFixed(1);
-            let output = ch.output.toFixed(2);
+            let units = current_config.adc[ch.id].units;
 
             $("#adcReading" + ch.id).html(reading);
             $("#adcVoltage" + ch.id).html(voltage + "V")
-            //$("#adcPercentage" + ch.id).html(percentage + "%")
 
-            $("#adcOutput" + ch.id).html(output);
-            $("#adcUnits" + ch.id).html(current_config.adc[ch.id].units);
+            /*
+              raw - Raw Output
+              positive_switching - Positive Switching
+              negative_switching - Negative Switching
+              thermistor_1k - Thermistor - 1k Ohm
+              thermistor_10k - Thermistor - 10k Ohm
+              4-20ma - 4-20mA Sensor
+              tank_sensor - Tank Sensor
+              high_volt_divider - 0-32v Input
+              low_volt_divider - 0-5v Input
+              one_k_pullup - 1k Pullup
+              ten_k_pullup - 10k Pullup
+            */
+
+            //how should we format our output value?
+            let output = ch.output;
+            switch (current_config.adc[ch.id].type) {
+              case "thermistor_1k":
+              case "thermistor_10k":
+                output = output.toFixed(1);
+                break;
+              case "raw":
+              case "4-20ma":
+              case "high_volt_divider":
+              case "low_volt_divider":
+                output = output.toFixed(2);
+                break;
+              case "tank_sensor":
+              case "one_k_pullup":
+              case "ten_k_pullup":
+                output = Math.round(output);
+                break;
+            }
+
+            //how should we display our output?
+            switch (current_config.adc[ch.id].type) {
+              case "positive_switching":
+              case "negative_switching":
+                if (output)
+                  $("#adcOutput" + ch.id).html(`ON`);
+                else
+                  $("#adcOutput" + ch.id).html(`OFF`);
+                break;
+              case "4-20ma":
+                if (output == 0)
+                  $("#adcOutput" + ch.id).html(`<span class="text-danger">ERROR: No Signal</span>`);
+                else if (output < 4.0)
+                  $("#adcOutput" + ch.id).html(`<span class="text-danger">ERROR: ???</span>`);
+                else
+                  $("#adcOutput" + ch.id).html(`${output}${units}`);
+                break;
+              case "one_k_pullup":
+              case "ten_k_pullup":
+                if (output == -2)
+                  $("#adcOutput" + ch.id).html(`Infinite`);
+                else if (output == -1)
+                  $("#adcOutput" + ch.id).html(`<span class="text-danger">Error: Negative Voltage</span>`);
+                else
+                  $("#adcOutput" + ch.id).html(`${output}${units}`);
+                break;
+
+              default:
+                $("#adcOutput" + ch.id).html(`${output}${units}`);
+            }
 
             $(`#adcBar${ch.id} div`).css("width", percentage + "%");
             $(`#adcBar${ch.id}`).attr("aria-valuenow", percentage);
