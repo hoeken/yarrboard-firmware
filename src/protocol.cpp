@@ -1775,10 +1775,15 @@ void generateUpdateJSON(JsonVariant output)
   for (byte i = 0; i < YB_ADC_CHANNEL_COUNT; i++) {
     if (adc_channels[i].adcHelper->readingCount > 0) {
       output["adc"][idx]["id"] = i;
-      if (!strcmp(adc_channels[i].getTypeUnits(), "bool"))
-        output["adc"][idx]["output"] = adc_channels->getTypeValue() != 0;
-      else
-        output["adc"][idx]["output"] = adc_channels[i].getTypeValue();
+
+      // if (!strcmp(adc_channels[i].getTypeUnits(), "bool")) {
+      //   if (adc_channels->getTypeValue() == 1.0)
+      //     output["adc"][idx]["output"] = true;
+      //   else
+      //     output["adc"][idx]["output"] = false;
+      // } else
+      output["adc"][idx]["output"] = adc_channels[i].getTypeValue();
+
       output["adc"][idx]["read_count"] = adc_channels[i].adcHelper->readingCount;
       output["adc"][idx]["voltage"] = adc_channels[i].getVoltage();
       output["adc"][idx]["reading"] = adc_channels[i].getReading();

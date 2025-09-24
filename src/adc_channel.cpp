@@ -165,22 +165,16 @@ float ADCChannel::getTypeValue()
 {
   if (!strcmp(this->type, "raw"))
     return this->getVoltage();
-  else if (!strcmp(this->type, "positive_switching")) {
-    if (this->getVoltage() >= YB_ADS1115_VREF * 0.7)
+  else if (!strcmp(this->type, "digital_switch")) {
+    if (this->getVoltage() >= YB_ADC_VCC * 0.7)
       return 1.0;
-    else
+    else if (this->getVoltage() <= YB_ADC_VCC * 0.3)
       return 0.0;
-  } else if (!strcmp(this->type, "negative_switching")) {
-    if (this->getVoltage() <= YB_ADS1115_VREF * 0.3)
-      return 1.0;
     else
-      return 0.0;
-  } else if (!strcmp(this->type, "thermistor_1k") || !strcmp(this->type, "thermistor_10k")) {
+      return -1.0;
+  } else if (!strcmp(this->type, "thermistor")) {
     // what pullup?
-    float r_pullup = 1000.0;
-    if (!strcmp(this->type, "thermistor_10k"))
-      r_pullup = 10000.0;
-
+    float r_pullup = 10000.0;
     float r_beta = 3950.0;
     float r_thermistor = 10000.0;
 
@@ -204,11 +198,8 @@ float ADCChannel::getTypeValue()
     return this->getVoltage() * (YB_SENDIT_HIGH_DIVIDER_R1 + YB_SENDIT_HIGH_DIVIDER_R2) / YB_SENDIT_HIGH_DIVIDER_R2;
   else if (!strcmp(this->type, "low_volt_divider"))
     return this->getVoltage() * (YB_SENDIT_LOW_DIVIDER_R1 + YB_SENDIT_LOW_DIVIDER_R2) / YB_SENDIT_LOW_DIVIDER_R2;
-  else if (!strcmp(this->type, "one_k_pullup") || !strcmp(this->type, "ten_k_pullup")) {
-    float r1 = 1000.0;
-    if (!strcmp(this->type, "ten_k_pullup"))
-      r1 = 10000.0;
-
+  else if (!strcmp(this->type, "ten_k_pullup")) {
+    float r1 = 10000.0;
     if (this->getVoltage() < 0)
       return -1;
     else if (this->getVoltage() >= YB_ADC_VCC * 0.999)
@@ -223,13 +214,9 @@ const char* ADCChannel::getTypeUnits()
 {
   if (!strcmp(this->type, "raw"))
     return "v";
-  else if (!strcmp(this->type, "positive_switching"))
+  else if (!strcmp(this->type, "digital_switch"))
     return "bool";
-  else if (!strcmp(this->type, "negative_switching"))
-    return "bool";
-  else if (!strcmp(this->type, "thermistor_1k"))
-    return "C";
-  else if (!strcmp(this->type, "thermistor_10k"))
+  else if (!strcmp(this->type, "thermistor"))
     return "C";
   else if (!strcmp(this->type, "4-20ma"))
     return "mA";
@@ -239,8 +226,6 @@ const char* ADCChannel::getTypeUnits()
     return "v";
   else if (!strcmp(this->type, "low_volt_divider"))
     return "v";
-  else if (!strcmp(this->type, "one_k_pullup"))
-    return "Ω";
   else if (!strcmp(this->type, "ten_k_pullup"))
     return "Ω";
   else

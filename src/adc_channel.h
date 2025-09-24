@@ -19,26 +19,20 @@
 class ADCChannel
 {
   public:
-    /**
-     * @brief What type of sensor is it?
-     */
-    enum class Type {
-      RAW,
-      POSITIVE_SWITCHING,
-      NEGATIVE_SWITCHING,
-      TANK_SENDER,
-      THERMISTOR_1K,
-      THERMISTOR_10K,
-      FOUR_TWENTY_MA,
-      HIGH_VOLT_DIVIDER,
-      ONE_K_PULLUP,
-      TEN_K_PULLUP,
-      LOW_VOLT_DIVIDER
-    };
-
     byte id = 0;
     bool isEnabled = true;
     char name[YB_CHANNEL_NAME_LENGTH];
+
+    /*
+    raw - Raw Output
+    digital_switch - Digital Switch
+    thermistor - Thermistor
+    4-20ma - 4-20mA Sensor
+    tank_sensor - Tank Sensor
+    high_volt_divider - 0-32v Input
+    low_volt_divider - 0-5v Input
+    ten_k_pullup - 10k Pullup
+    */
     char type[30];
 
   #ifdef YB_ADC_DRIVER_ADS1115
