@@ -163,15 +163,17 @@ void ADCChannel::resetAverage()
 
 float ADCChannel::getTypeValue()
 {
+  float value = 0.0;
+
   if (!strcmp(this->type, "raw"))
-    return this->getVoltage();
+    value = this->getVoltage();
   else if (!strcmp(this->type, "digital_switch")) {
     if (this->getVoltage() >= YB_ADC_VCC * 0.7)
-      return 1.0;
+      value = 1.0;
     else if (this->getVoltage() <= YB_ADC_VCC * 0.3)
-      return 0.0;
+      value = 0.0;
     else
-      return -1.0;
+      value = this->lastValue;
   } else if (!strcmp(this->type, "thermistor")) {
     // what pullup?
     float r_pullup = 10000.0;
@@ -188,26 +190,27 @@ float ADCChannel::getTypeValue()
 
     // 4. Convert to Celsius
     float tempC = tempK - 273.15;
-    return tempC;
-  } else if (!strcmp(this->type, "4-20ma"))
-    return (this->getVoltage() / YB_SENDIT_420MA_R1) * 1000;
-  else if (!strcmp(this->type, "tank_sensor")) {
-    float amperage = (this->getVoltage() / YB_SENDIT_420MA_R1) * 1000;
-    return map_generic(amperage, 4.0, 20.0, 0.0, 100.0);
+    value = tempC;
+  } else if (!strcmp(this->type, "4-20ma")) {
+    value = (this->getVoltage() / YB_SENDIT_420MA_R1) * 1000;
   } else if (!strcmp(this->type, "high_volt_divider"))
-    return this->getVoltage() * (YB_SENDIT_HIGH_DIVIDER_R1 + YB_SENDIT_HIGH_DIVIDER_R2) / YB_SENDIT_HIGH_DIVIDER_R2;
+    value = this->getVoltage() * (YB_SENDIT_HIGH_DIVIDER_R1 + YB_SENDIT_HIGH_DIVIDER_R2) / YB_SENDIT_HIGH_DIVIDER_R2;
   else if (!strcmp(this->type, "low_volt_divider"))
-    return this->getVoltage() * (YB_SENDIT_LOW_DIVIDER_R1 + YB_SENDIT_LOW_DIVIDER_R2) / YB_SENDIT_LOW_DIVIDER_R2;
+    value = this->getVoltage() * (YB_SENDIT_LOW_DIVIDER_R1 + YB_SENDIT_LOW_DIVIDER_R2) / YB_SENDIT_LOW_DIVIDER_R2;
   else if (!strcmp(this->type, "ten_k_pullup")) {
     float r1 = 10000.0;
     if (this->getVoltage() < 0)
-      return -1;
+      value = -1;
     else if (this->getVoltage() >= YB_ADC_VCC * 0.999)
-      return -2;
+      value = -2;
     else
-      return (r1 * this->getVoltage()) / (YB_ADC_VCC - this->getVoltage());
+      value = (r1 * this->getVoltage()) / (YB_ADC_VCC - this->getVoltage());
   } else
-    return -1;
+    value = -1;
+
+  this->lastValue = value;
+
+  return value;
 }
 
 const char* ADCChannel::getTypeUnits()
@@ -220,8 +223,6 @@ const char* ADCChannel::getTypeUnits()
     return "C";
   else if (!strcmp(this->type, "4-20ma"))
     return "mA";
-  else if (!strcmp(this->type, "tank_sensor"))
-    return "%";
   else if (!strcmp(this->type, "high_volt_divider"))
     return "v";
   else if (!strcmp(this->type, "low_volt_divider"))

@@ -134,6 +134,16 @@ const brineomatic_gauge_setup = {
   }
 };
 
+const adc_types = {
+  "raw": "Raw Output",
+  "digital_switch": "Digital Switching",
+  "thermistor": "Thermistor",
+  "4-20ma": "4-20mA Sensor",
+  "high_volt_divider": "0-32v Input",
+  "low_volt_divider": "0-5v Input",
+  "ten_k_pullup": "10k Pullup"
+};
+
 function bom_set_data_color(name, value, ele) {
   // Check if the name exists in brineomatic_gauge_setup
   const setup = brineomatic_gauge_setup[name];
@@ -474,49 +484,49 @@ const RGBEditCard = (ch) => `
 </div>
 `;
 
-const ADCControlRow = (id, name) => `
+const ADCControlRow = (id, name, type) => `
 <tr id="adc${id}" class="adcRow">
   <td class="adcId align-middle">${id}</td>
   <td class="adcName align-middle">${name}</td>
-  <td class="adcReading" id="adcReading${id}"></td>
-  <td class="adcVoltage" id="adcVoltage${id}"></td>
-  <td class="adcOutput" id="adcOutput${id}"></td>
-  <td class="adcBar align-middle">
-    <div id="adcBar${id}" class="progress" role="progressbar" aria-label="ADC ${id} Reading" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+  <td class="adcType align-middle">${adc_types[type]}</td>
+  <td class="adcValue" id="adcValue${id}"></td>
+  <!-- <td class="adcBar align-middle">
+     <div id="adcBar${id}" class="progress" role="progressbar" aria-label="ADC ${id} Reading" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
       <div class="progress-bar" style="width: 0%"></div>
     </div>
-  </td>
+  </td> -->
 </tr>
 `;
 
-const ADCEditCard = (id) => `
-<div id="adcEditCard${ch.id}" class="col-xs-12 col-sm-6">
-  <div class="p-3 border border-secondary rounded">
-    <h5>ADC #${ch.id}</h5>
-    <div class="form-floating mb-3">
-      <input type="text" class="form-control" id="fADCName${ch.id}" value="${ch.name}">
-      <label for="fADCName${ch.id}">Name</label>
-      <div class="invalid-feedback">Must be 30 characters or less.</div>
+const ADCEditCard = (ch) => {
+  // Build options from adc_types
+  const options = Object.entries(adc_types)
+    .map(([key, label]) => `<option value="${key}">${label}</option>`)
+    .join("\n");
+
+  return `
+    <div id="adcEditCard${ch.id}" class="col-xs-12 col-sm-6">
+      <div class="p-3 border border-secondary rounded">
+        <h5>ADC #${ch.id}</h5>
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="fADCName${ch.id}" value="${ch.name}">
+          <label for="fADCName${ch.id}">Name</label>
+          <div class="invalid-feedback">Must be 30 characters or less.</div>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="fADCEnabled${ch.id}">
+          <label class="form-check-label" for="fADCEnabled${ch.id}">Enabled</label>
+        </div>
+        <div class="form-floating">
+          <select id="fADCType${ch.id}" class="form-select" aria-label="Input Type">
+            ${options}
+          </select>
+          <label for="fADCType${ch.id}">Input Type</label>
+        </div>
+      </div>
     </div>
-    <div class="form-check form-switch">
-      <input class="form-check-input" type="checkbox" id="fADCEnabled${ch.id}">
-      <label class="form-check-label" for="fADCEnabled${ch.id}">Enabled</label>
-    </div>
-    <div class="form-floating">
-      <select id="fADCType${ch.id}" class="form-select" aria-label="Input Type">
-        <option value="raw">Raw Output</option>
-        <option value="digital_switch">Digital Switch</option>
-        <option value="thermistor">Thermistor</option>
-        <option value="4-20ma">4-20mA Sensor</option>
-        <option value="tank_sensor">Tank Sensor</option>
-        <option value="high_volt_divider">0-32v Input</option>
-        <option value="low_volt_divider">0-5v Input</option>
-        <option value="ten_k_pullup">10k Pullup</option>
-      </select>
-      <label for="fADCType${ch.id}">Input Type</label>
-    </div>
-</div>
-`;
+  `;
+};
 
 const AlertBox = (message, type) => `
 <div>
@@ -895,7 +905,7 @@ function start_websocket() {
         $('#adcTableBody').html("");
         for (ch of msg.adc) {
           if (ch.enabled)
-            $('#adcTableBody').append(ADCControlRow(ch.id, ch.name));
+            $('#adcTableBody').append(ADCControlRow(ch.id, ch.name, ch.type));
         }
 
         $('#adcControlDiv').show();
@@ -1678,77 +1688,61 @@ function start_websocket() {
       if (msg.adc) {
         for (ch of msg.adc) {
           if (current_config.adc[ch.id].enabled) {
-            let reading = Math.round(ch.reading);
-            let voltage = ch.voltage.toFixed(2);
-            let percentage = ch.percentage.toFixed(1);
             let units = current_config.adc[ch.id].units;
 
-            $("#adcReading" + ch.id).html(reading);
-            $("#adcVoltage" + ch.id).html(voltage + "V")
+            // let adc_raw = Math.round(ch.adc_raw);
+            // let adc_voltage = ch.adc_voltage.toFixed(2);
+            // $("#adcRaw" + ch.id).html(adc_raw);
+            // $("#adcVoltage" + ch.id).html(adc_voltage + "V")
+            //let percentage = ch.percentage.toFixed(1);
+            // $(`#adcBar${ch.id} div`).css("width", percentage + "%");
+            // $(`#adcBar${ch.id}`).attr("aria-valuenow", percentage);
 
-            /*
-              raw - Raw Output
-              digital_switch - Digital Switching
-              thermistor - Thermistor
-              4-20ma - 4-20mA Sensor
-              tank_sensor - Tank Sensor
-              high_volt_divider - 0-32v Input
-              low_volt_divider - 0-5v Input
-              ten_k_pullup - 10k Pullup
-            */
-
-            //how should we format our output value?
-            let output = ch.output;
+            //how should we format our value?
+            let value = ch.value;
             switch (current_config.adc[ch.id].type) {
               case "thermistor":
-                output = output.toFixed(1);
+                value = value.toFixed(1);
                 break;
               case "raw":
               case "4-20ma":
               case "high_volt_divider":
               case "low_volt_divider":
-                output = output.toFixed(2);
+                value = value.toFixed(2);
                 break;
-              case "tank_sensor":
               case "ten_k_pullup":
-              case "digital_switch":
-                output = Math.round(output);
+                value = Math.round(value);
                 break;
             }
 
-            //how should we display our output?
+            //how should we display our value?
             switch (current_config.adc[ch.id].type) {
               case "digital_switch":
-                if (output == 1)
-                  $("#adcOutput" + ch.id).html(`HIGH`);
-                else if (output == 0)
-                  $("#adcOutput" + ch.id).html(`LOW`);
+                if (value)
+                  $("#adcValue" + ch.id).html(`HIGH`);
                 else
-                  $("#adcOutput" + ch.id).html(`<span class="text-danger">ERROR: Undefined</span>`);
+                  $("#adcValue" + ch.id).html(`LOW`);
                 break;
               case "4-20ma":
-                if (output == 0)
-                  $("#adcOutput" + ch.id).html(`<span class="text-danger">ERROR: No Signal</span>`);
-                else if (output < 4.0)
-                  $("#adcOutput" + ch.id).html(`<span class="text-danger">ERROR: ???</span>`);
+                if (value == 0)
+                  $("#adcValue" + ch.id).html(`<span class="text-danger">ERROR: No Signal</span>`);
+                else if (value < 4.0)
+                  $("#adcValue" + ch.id).html(`<span class="text-danger">ERROR: ???</span>`);
                 else
-                  $("#adcOutput" + ch.id).html(`${output}${units}`);
+                  $("#adcValue" + ch.id).html(`${value}${units}`);
                 break;
               case "ten_k_pullup":
-                if (output == -2)
-                  $("#adcOutput" + ch.id).html(`<span class="text-danger">Error: No Connection</span>`);
-                else if (output == -1)
-                  $("#adcOutput" + ch.id).html(`<span class="text-danger">Error: Negative Voltage</span>`);
+                if (value == -2)
+                  $("#adcValue" + ch.id).html(`<span class="text-danger">Error: No Connection</span>`);
+                else if (value == -1)
+                  $("#adcValue" + ch.id).html(`<span class="text-danger">Error: Negative Voltage</span>`);
                 else
-                  $("#adcOutput" + ch.id).html(`${output}${units}`);
+                  $("#adcValue" + ch.id).html(`${value}${units}`);
                 break;
 
               default:
-                $("#adcOutput" + ch.id).html(`${output}${units}`);
+                $("#adcValue" + ch.id).html(`${value}${units}`);
             }
-
-            $(`#adcBar${ch.id} div`).css("width", percentage + "%");
-            $(`#adcBar${ch.id}`).attr("aria-valuenow", percentage);
           }
         }
       }

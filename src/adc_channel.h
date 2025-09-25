@@ -22,13 +22,13 @@ class ADCChannel
     byte id = 0;
     bool isEnabled = true;
     char name[YB_CHANNEL_NAME_LENGTH];
+    float lastValue = 0.0;
 
     /*
     raw - Raw Output
     digital_switch - Digital Switch
     thermistor - Thermistor
     4-20ma - 4-20mA Sensor
-    tank_sensor - Tank Sensor
     high_volt_divider - 0-32v Input
     low_volt_divider - 0-5v Input
     ten_k_pullup - 10k Pullup

@@ -14,6 +14,7 @@
 #include <MCP3208.h>
 #include <MCP342x.h>
 #include <MCP3x6x.h>
+#include <RunningAverage.h>
 #include <Wire.h>
 
 #include "config.h"
@@ -27,19 +28,18 @@ class ADCHelper
     bool requestReading(uint8_t channel);
     bool isReady();
     unsigned int getReading();
-    unsigned int getAverageReading();
+    float getAverageReading();
     void addReading(unsigned int reading);
     float getVoltage();
     float getAverageVoltage();
     void resetAverage();
     float toVoltage(unsigned int reading);
 
-    unsigned int readingCount = 0;
-
   private:
     float vref = 0.0;
     uint8_t resolution;
-    unsigned long cumulativeReadings = 0;
+    RunningAverage runningAverage;
+    // unsigned long cumulativeReadings = 0;
 };
 
 class esp32Helper : public ADCHelper

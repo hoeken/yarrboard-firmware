@@ -1516,8 +1516,6 @@ void handleStartWatermaker(JsonVariantConst input, JsonVariant output)
 
 void handleFlushWatermaker(JsonVariantConst input, JsonVariant output)
 {
-  TRACE();
-
   if (!input["duration"].is<JsonVariantConst>())
     return generateErrorJSON(output, "'duration' is a required parameter");
 
@@ -1693,6 +1691,7 @@ void generateConfigJSON(JsonVariant output)
 
 // input / analog ADC channesl
 #ifdef YB_HAS_ADC_CHANNELS
+  output["adc_resolution"] = YB_ADC_RESOLUTION;
   for (byte i = 0; i < YB_ADC_CHANNEL_COUNT; i++) {
     output["adc"][i]["id"] = i;
     output["adc"][i]["name"] = adc_channels[i].name;
@@ -1773,27 +1772,26 @@ void generateUpdateJSON(JsonVariant output)
 #ifdef YB_HAS_ADC_CHANNELS
   byte idx = 0;
   for (byte i = 0; i < YB_ADC_CHANNEL_COUNT; i++) {
-    if (adc_channels[i].adcHelper->readingCount > 0) {
-      output["adc"][idx]["id"] = i;
+    output["adc"][idx]["id"] = i;
 
-      // if (!strcmp(adc_channels[i].getTypeUnits(), "bool")) {
-      //   if (adc_channels->getTypeValue() == 1.0)
-      //     output["adc"][idx]["output"] = true;
-      //   else
-      //     output["adc"][idx]["output"] = false;
-      // } else
-      output["adc"][idx]["output"] = adc_channels[i].getTypeValue();
+    // gotta convert from float to boolean here.
+    if (!strcmp(adc_channels[i].type, "digital_switch")) {
+      if (adc_channels[i].getTypeValue() == 1.0)
+        output["adc"][idx]["value"] = true;
+      else
+        output["adc"][idx]["value"] = false;
+      // or just the float.
+    } else
+      output["adc"][idx]["value"] = adc_channels[i].getTypeValue();
 
-      output["adc"][idx]["read_count"] = adc_channels[i].adcHelper->readingCount;
-      output["adc"][idx]["voltage"] = adc_channels[i].getVoltage();
-      output["adc"][idx]["reading"] = adc_channels[i].getReading();
-      output["adc"][idx]["percentage"] = 100.0 *
-                                         (float)adc_channels[i].getReading() /
-                                         (pow(2, YB_ADC_RESOLUTION) - 1);
+    output["adc"][idx]["adc_voltage"] = adc_channels[i].getVoltage();
+    output["adc"][idx]["adc_raw"] = adc_channels[i].getReading();
 
-      idx++;
-      adc_channels[i].resetAverage();
-    }
+    // output["adc"][idx]["percentage"] = 100.0 *
+    //                                    (float)adc_channels[i].getReading() /
+    //                                    (pow(2, YB_ADC_RESOLUTION) - 1);
+
+    idx++;
   }
 #endif
 
@@ -1872,8 +1870,6 @@ void generateFastUpdateJSON(JsonVariant output)
 #endif
 
   byte j;
-
-  TRACE();
 
 #ifdef YB_HAS_PWM_CHANNELS
   j = 0;

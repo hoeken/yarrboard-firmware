@@ -8,16 +8,12 @@
 
 #include "adchelper.h"
 
-ADCHelper::ADCHelper()
+ADCHelper::ADCHelper() : vref(3.3), resolution(12), runningAverage(10)
 {
-  this->vref = 3.3;
-  this->resolution = 12;
 }
 
-ADCHelper::ADCHelper(float vref, uint8_t resolution)
+ADCHelper::ADCHelper(float vref, uint8_t resolution) : vref(vref), resolution(resolution), runningAverage(10)
 {
-  this->vref = vref;
-  this->resolution = resolution;
 }
 
 bool ADCHelper::requestReading(uint8_t channel) { return false; }
@@ -28,21 +24,17 @@ unsigned int ADCHelper::getReading() { return 0; }
 
 void ADCHelper::addReading(unsigned int reading)
 {
-  this->cumulativeReadings += reading;
-  this->readingCount++;
+  this->runningAverage.add(reading);
 }
 
 float ADCHelper::getVoltage() { return this->toVoltage(this->getReading()); }
 
-unsigned int ADCHelper::getAverageReading()
+float ADCHelper::getAverageReading()
 {
   // Serial.printf("Reading Count: %d\n", this->readingCount);
   // Serial.printf("Cumulative Readings: %d\n", this->cumulativeReadings);
 
-  if (this->readingCount > 0)
-    return round((float)this->cumulativeReadings / (float)this->readingCount);
-  else
-    return 0;
+  return this->runningAverage.getAverage();
 }
 
 float ADCHelper::getAverageVoltage()
@@ -52,8 +44,7 @@ float ADCHelper::getAverageVoltage()
 
 void ADCHelper::resetAverage()
 {
-  this->readingCount = 0;
-  this->cumulativeReadings = 0;
+  this->runningAverage.clear();
 }
 
 float ADCHelper::toVoltage(unsigned int reading)
