@@ -1486,15 +1486,11 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
       float v = pair[0].as<float>();
       float y = pair[1].as<float>();
 
-      // Use std::isfinite(v) if <cmath> is available; otherwise isfinite(v) with <math.h>
-      if (!std::isfinite(v) || !std::isfinite(y))
-        return generateErrorJSON(output, "Non-finite number in table");
-
-      if (adc_channels[cid].calibrationTable.full())
-        return generateErrorJSON(output, "Calibration table capacity exceeded");
+      // add it in
+      if (!adc_channels[cid].addCalibrationValue({v, y}))
+        return generateErrorJSON(output, "Failed to add calibration entry");
 
       // now save it.
-      adc_channels[cid].calibrationTable.push_back({v, y});
       if (!adc_channels[cid].saveCalibrationTable())
         return generateErrorJSON(output, "Failed to save calibration table config.");
 
@@ -1881,8 +1877,13 @@ void generateUpdateJSON(JsonVariant output)
       else
         output["adc"][idx]["value"] = false;
       // or just the float.
-    } else
+    } else {
       output["adc"][idx]["value"] = adc_channels[i].getTypeValue();
+
+      // do we interpolate it?
+      if (adc_channels[i].useCalibrationTable)
+        output["adc"][idx]["calibrated_value"] = adc_channels[i].interpolateValue(adc_channels[i].getTypeValue());
+    }
 
     output["adc"][idx]["adc_voltage"] = adc_channels[i].getVoltage();
     output["adc"][idx]["adc_raw"] = adc_channels[i].getReading();

@@ -66,6 +66,7 @@ class ADCChannel
     bool parseCalibrationTableJson(JsonVariantConst root);
     float interpolateValue(float xv);
     bool saveCalibrationTable();
+    bool addCalibrationValue(CalibrationPoint cp);
 
   private:
     void _sortAndDedupeCalibrationTable();

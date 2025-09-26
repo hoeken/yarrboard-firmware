@@ -1555,6 +1555,7 @@ function start_websocket() {
         //edit controls for each rgb
         $('#adcConfig').hide();
         if (msg.adc) {
+          console.log("adc config");
           $('#adcConfigForm').html("");
           for (ch of msg.adc) {
             $('#adcConfigForm').append(ADCEditCard(ch));
@@ -1791,7 +1792,11 @@ function start_websocket() {
       if (msg.adc) {
         for (ch of msg.adc) {
           if (current_config.adc[ch.id].enabled) {
+
+            //load our defaults
             let units = current_config.adc[ch.id].units;
+            let value = ch.value;
+            let calibrated_value = value;
 
             // let adc_raw = Math.round(ch.adc_raw);
             // let adc_voltage = ch.adc_voltage.toFixed(2);
@@ -1801,21 +1806,32 @@ function start_websocket() {
             // $(`#adcBar${ch.id} div`).css("width", percentage + "%");
             // $(`#adcBar${ch.id}`).attr("aria-valuenow", percentage);
 
+            //are we using a calibration table?
+            if (current_config.adc[ch.id].useCalibrationTable) {
+              units = current_config.adc[ch.id].calibratedUnits;
+              calibrated_value = ch.calibrated_value;
+            }
+
             //how should we format our value?
-            let value = ch.value;
-            switch (current_config.adc[ch.id].type) {
-              case "thermistor":
-                value = value.toFixed(1);
-                break;
-              case "raw":
-              case "4-20ma":
-              case "high_volt_divider":
-              case "low_volt_divider":
-                value = value.toFixed(2);
-                break;
-              case "ten_k_pullup":
-                value = Math.round(value);
-                break;
+            if (current_config.adc[ch.id].hasOwnProperty("displayDecimals")) {
+              calibrated_value.toFixed(current_config.adc[ch.id].displayDecimals);
+            } else {
+              switch (current_config.adc[ch.id].type) {
+                case "thermistor":
+                  calibrated_value = calibrated_value.toFixed(1);
+                  break;
+                case "raw":
+                case "4-20ma":
+                case "high_volt_divider":
+                case "low_volt_divider":
+                  calibrated_value = calibrated_value.toFixed(2);
+                  break;
+                case "ten_k_pullup":
+                  calibrated_value = Math.round(calibrated_value);
+                  break;
+                default:
+                  calibrated_value.toFixed(3);
+              }
             }
 
             //how should we display our value?
@@ -1832,7 +1848,7 @@ function start_websocket() {
                 else if (value < 4.0)
                   $("#adcValue" + ch.id).html(`<span class="text-danger">ERROR: ???</span>`);
                 else
-                  $("#adcValue" + ch.id).html(`${value}${units}`);
+                  $("#adcValue" + ch.id).html(`${calibrated_value}${units}`);
                 break;
               case "ten_k_pullup":
                 if (value == -2)
@@ -1840,11 +1856,11 @@ function start_websocket() {
                 else if (value == -1)
                   $("#adcValue" + ch.id).html(`<span class="text-danger">Error: Negative Voltage</span>`);
                 else
-                  $("#adcValue" + ch.id).html(`${value}${units}`);
+                  $("#adcValue" + ch.id).html(`${calibrated_value}${units}`);
                 break;
 
               default:
-                $("#adcValue" + ch.id).html(`${value}${units}`);
+                $("#adcValue" + ch.id).html(`${calibrated_value}${units}`);
             }
           }
         }
@@ -2527,6 +2543,8 @@ function show_alert(message, type = 'danger') {
   //we only need one alert at a time.
   $('#liveAlertPlaceholder').html(AlertBox(message, type))
 
+  console.log(`show_alert: ${message}`);
+
   //make sure we can see it.
   $('html').animate({
     scrollTop: 0
@@ -2538,6 +2556,8 @@ function show_alert(message, type = 'danger') {
 function show_admin_alert(message, type = 'danger') {
   //we only need one alert at a time.
   $('#adminAlertPlaceholder').html(AlertBox(message, type))
+
+  console.log(`show_admin_alert: ${message}`);
 
   //make sure we can see it.
   $('html').animate({
@@ -3369,11 +3389,15 @@ function validate_adc_add_calibration(e) {
     });
 
     //re-initialize
-    $(`#fADCCalibrationTableOutput${id}`).value = "";
-    $(`#fADCCalibrationTableCalibrated${id}`).value = "";
+    $(`#fADCCalibrationTableOutput${id}`).val("");
+    $(`#fADCCalibrationTableCalibrated${id}`).val("");
 
-    //todo: add in a
+    //todo: add in a new row.
   }
+
+  e.preventDefault();  // stop scrolling/navigation
+  e.stopPropagation(); // optional, stops bubbling
+  console.log("validate_adc_add_calibration");
 }
 
 function validate_adc_remove_calibration(e) {
@@ -3404,6 +3428,8 @@ function validate_adc_remove_calibration(e) {
     //remove our row.
     $(`#fADCCalibrationTableRow${id}_${index}`).remove();
   }
+
+  e.preventDefault();  // stop scrolling/navigation
 }
 
 function validate_adc_type(e) {
@@ -3571,7 +3597,7 @@ function check_for_updates() {
           $("#firmware_bin").attr("href", `${data.url}`);
           $("#firmware_update_available").show();
 
-          show_alert(`There is a <a  onclick="open_page('system')" href="/#system">firmware update</a> available (${data.version}).`, "primary");
+          show_alert(`There is a <a onclick="open_page('system')" href="/#system">firmware update</a> available (${data.version}).`, "primary");
         }
         else
           $("#firmware_up_to_date").show();

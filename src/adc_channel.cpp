@@ -348,18 +348,8 @@ bool ADCChannel::parseCalibrationTableJson(JsonVariantConst root)
       float v = pair[0].as<float>();
       float y = pair[1].as<float>();
 
-      // Use std::isfinite(v) if <cmath> is available; otherwise isfinite(v) with <math.h>
-      if (!std::isfinite(v) || !std::isfinite(y)) {
-        Serial.println(F("Non-finite number in table"));
+      if (!this->addCalibrationValue({v, y}))
         return false;
-      }
-
-      if (this->calibrationTable.full()) {
-        Serial.println(F("Calibration table capacity exceeded"));
-        return false;
-      }
-
-      this->calibrationTable.push_back({v, y});
     }
 
     foundAny = true;
@@ -417,6 +407,9 @@ bool ADCChannel::saveCalibrationTable()
     return false;
   }
 
+  // cleanup
+  this->_sortAndDedupeCalibrationTable();
+
   // Build JSON
   JsonDocument doc;
   doc["version"] = 1;
@@ -439,6 +432,23 @@ bool ADCChannel::saveCalibrationTable()
 
   file.close();
   Serial.printf("Saved %d calibration points to %s\n", (int)calibrationTable.size(), path);
+  return true;
+}
+
+bool ADCChannel::addCalibrationValue(CalibrationPoint cp)
+{
+  // Use std::isfinite(v) if <cmath> is available; otherwise isfinite(v) with <math.h>
+  if (!std::isfinite(cp.voltage) || !std::isfinite(cp.calibrated)) {
+    Serial.println(F("Non-finite number in table"));
+    return false;
+  }
+
+  if (this->calibrationTable.full()) {
+    Serial.println(F("Calibration table capacity exceeded"));
+    return false;
+  }
+
+  this->calibrationTable.push_back({cp.voltage, cp.calibrated});
   return true;
 }
 
