@@ -572,7 +572,7 @@ const ADCEditCard = (ch) => {
             <div class="invalid-feedback">Must be 10 characters or less.</div>
           </div>
           <div class="form-floating mb-3">
-            <h6>Live Averaged Output</h6>
+            <h6>Live Averaged Output <span id="fADCAverageOutputCount${ch.id}" class="small"></span></h6>
             <div class="input-group">
               <input id="fADCAverageOutput${ch.id}" type="text" class="form-control" value="0">
               <span class="input-group-text ADCUnits0">mA</span>
@@ -1007,6 +1007,10 @@ function start_websocket() {
         }
 
         $('#adcControlDiv').show();
+
+        //start our update poller.
+        if (current_page == 'config')
+          get_update_data();
       }
 
       //UI for brineomatic
@@ -1830,12 +1834,13 @@ function start_websocket() {
             if (current_page == "config") {
               //manage our sliding window
               adc_running_averages[ch.id].push(value);
-              if (adc_running_averages[ch.id].length > 200)
+              if (adc_running_averages[ch.id].length > 1000)
                 adc_running_averages[ch.id].shift();
 
               //update our average
               const average = adc_running_averages[ch.id].reduce((accumulator, currentValue) => accumulator + currentValue, 0) / adc_running_averages[ch.id].length;
               $(`#fADCAverageOutput${ch.id}`).val(average.toFixed(4));
+              $(`#fADCAverageOutputCount${ch.id}`).html(`(${adc_running_averages[ch.id].length} points)`);
             } else
               adc_running_averages[ch.id] = [];
 
@@ -2745,8 +2750,12 @@ function open_page(page) {
   }
 
   //request our control updates.
-  if (page == "control" || (page == "config" && current_config?.hasOwnProperty("adc")))
+  if (page == "control")
     get_update_data();
+
+  //request our control updates... on a delay to prevent multiple 'threads'
+  if (page == "config" && current_config?.hasOwnProperty("adc"))
+    setTimeout(get_update_data, app_update_interval * 3);
 
   //hide all pages.
   $("div.pageContainer").hide();
