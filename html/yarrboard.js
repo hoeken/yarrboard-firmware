@@ -145,6 +145,8 @@ const adc_types = {
   "ten_k_pullup": "10k Pullup"
 };
 
+let adc_running_averages = {};
+
 function bom_set_data_color(name, value, ele) {
   // Check if the name exists in brineomatic_gauge_setup
   const setup = brineomatic_gauge_setup[name];
@@ -572,12 +574,12 @@ const ADCEditCard = (ch) => {
           <div class="form-floating mb-3">
             <h6>Live Averaged Output</h6>
             <div class="input-group">
-              <input type="text" class="form-control" id="fADCAverageOutput0" value="???">
+              <input id="fADCAverageOutput${ch.id}" type="text" class="form-control" value="0">
               <span class="input-group-text ADCUnits0">mA</span>
-              <button type="button" class="btn btn-sm btn-primary">
+              <button id="fADCAverageOutputCopy${ch.id}" type="button" class="btn btn-sm btn-primary">
                 Copy
               </button>
-              <button type="button" class="btn btn-sm btn-secondary">
+              <button id="fADCAverageOutputReset${ch.id}" type="button" class="btn btn-sm btn-secondary">
                 Reset
               </button>
             </div>
@@ -1563,7 +1565,6 @@ function start_websocket() {
         //edit controls for each rgb
         $('#adcConfig').hide();
         if (msg.adc) {
-          console.log("adc config");
           $('#adcConfigForm').html("");
           for (ch of msg.adc) {
             $('#adcConfigForm').append(ADCEditCard(ch));
@@ -1588,12 +1589,17 @@ function start_websocket() {
             $(`#fADCCalibratedUnits${ch.id}`).change(validate_adc_calibrated_units);
 
             //calibration table stuff.
+            $(`#fADCAverageOutputCopy${ch.id}`).click(adc_calibration_average_copy);
+            $(`#fADCAverageOutputReset${ch.id}`).click(adc_calibration_average_reset);
             $(`#fADCCalibrationTableAdd${ch.id}`).click(validate_adc_add_calibration);
             if (current_config.adc[ch.id].hasOwnProperty("calibrationTable")) {
               current_config.adc[ch.id].calibrationTable.map(([output, calibrated], index) => {
                 $(`#fADCCalibrationTableRemove${ch.id}_${index}`).click(validate_adc_remove_calibration);
               });
             }
+
+            //for our live averages on config page.
+            adc_running_averages[ch.id] = [];
           }
 
           $('#adcConfig').show();
@@ -1819,6 +1825,19 @@ function start_websocket() {
               units = current_config.adc[ch.id].calibratedUnits;
               calibrated_value = parseFloat(ch.calibrated_value);
             }
+
+            //save it to our running average.
+            if (current_page == "config") {
+              //manage our sliding window
+              adc_running_averages[ch.id].push(value);
+              if (adc_running_averages[ch.id].length > 200)
+                adc_running_averages[ch.id].shift();
+
+              //update our average
+              const average = adc_running_averages[ch.id].reduce((accumulator, currentValue) => accumulator + currentValue, 0) / adc_running_averages[ch.id].length;
+              $(`#fADCAverageOutput${ch.id}`).val(average.toFixed(4));
+            } else
+              adc_running_averages[ch.id] = [];
 
             //how should we format our value?
             if (current_config.adc[ch.id].hasOwnProperty("displayDecimals")) {
@@ -2707,16 +2726,11 @@ function toggle_duty_cycle(id) {
 }
 
 function open_page(page) {
-  // yarrboard_log(`opening ${page}`);
+  //yarrboard_log(`opening ${page}`);
 
   if (!page_permissions[app_role].includes(page)) {
     yarrboard_log(`${page} not allowed for ${app_role}`);
     return;
-  }
-
-  if (page == current_page) {
-    // yarrboard_log(`already on ${page}.`);
-    //return;
   }
 
   current_page = page;
@@ -2731,7 +2745,7 @@ function open_page(page) {
   }
 
   //request our control updates.
-  if (page == "control")
+  if (page == "control" || (page == "config" && current_config?.hasOwnProperty("adc")))
     get_update_data();
 
   //hide all pages.
@@ -2813,7 +2827,7 @@ function get_update_data() {
     client.getUpdate();
 
     //keep loading it while we are here.
-    if (current_page == "control" || current_page == "graphs")
+    if (current_page == "control" || current_page == "graphs" || (current_page == "config" && current_config?.hasOwnProperty("adc")))
       setTimeout(get_update_data, app_update_interval);
   }
 }
@@ -3375,6 +3389,23 @@ function validate_adc_calibrated_units(e) {
     //update places that use this.
     $(`.ADCCalibratedUnits${id}`).html(value);
   }
+}
+
+function adc_calibration_average_copy(e) {
+  let ele = e.currentTarget;
+  let id = ele.id.match(/\d+/)[0];
+
+  let output = parseFloat($(`#fADCAverageOutput${id}`).val());
+  $(`#fADCCalibrationTableOutput${id}`).val(output);
+  $(`#fADCCalibrationTableCalibrated${id}`).focus();
+}
+
+function adc_calibration_average_reset(e) {
+  let ele = e.currentTarget;
+  let id = ele.id.match(/\d+/)[0];
+
+  $(`#fADCAverageOutput${id}`).val(0.0);
+  adc_running_averages[id] = [];
 }
 
 function validate_adc_add_calibration(e) {
