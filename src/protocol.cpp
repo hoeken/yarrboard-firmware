@@ -1457,22 +1457,81 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
     return generateConfigJSON(output);
   }
 
-  // calibratedUnits
-  if (input["calibratedUnits"].is<String>()) {
-    // is it too long?
-    if (strlen(input["calibratedUnits"]) > YB_ADC_UNIT_LENGTH - 1) {
-      char error[50];
-      sprintf(error, "Maximum calibrated units length is %s characters.", YB_ADC_UNIT_LENGTH - 1);
-      return generateErrorJSON(output, error);
+  // are we using a calibration table?
+  if (adc_channels[cid].useCalibrationTable) {
+    // calibratedUnits
+    if (input["calibratedUnits"].is<String>()) {
+      // is it too long?
+      if (strlen(input["calibratedUnits"]) > YB_ADC_UNIT_LENGTH - 1) {
+        char error[50];
+        sprintf(error, "Maximum calibrated units length is %s characters.", YB_ADC_UNIT_LENGTH - 1);
+        return generateErrorJSON(output, error);
+      }
+
+      // save to our storage
+      strlcpy(adc_channels[cid].calibratedUnits, input["calibratedUnits"] | "", sizeof(adc_channels[cid].calibratedUnits));
+      sprintf(prefIndex, "adcCalUnits%d", cid);
+      preferences.putString(prefIndex, adc_channels[cid].calibratedUnits);
+
+      // give them the updated config
+      return generateConfigJSON(output);
     }
 
-    // save to our storage
-    strlcpy(adc_channels[cid].calibratedUnits, input["calibratedUnits"] | "", sizeof(adc_channels[cid].calibratedUnits));
-    sprintf(prefIndex, "adcCalUnits%d", cid);
-    preferences.putString(prefIndex, adc_channels[cid].calibratedUnits);
+    // calibratedUnits
+    if (input["add_calibration"].is<JsonArrayConst>()) {
+      JsonArrayConst pair = input["add_calibration"].as<JsonArrayConst>();
+      if (pair.size() != 2)
+        return generateErrorJSON(output, "Each calibration entry must have exactly 2 elements [v, y]");
 
-    // give them the updated config
-    return generateConfigJSON(output);
+      float v = pair[0].as<float>();
+      float y = pair[1].as<float>();
+
+      // Use std::isfinite(v) if <cmath> is available; otherwise isfinite(v) with <math.h>
+      if (!std::isfinite(v) || !std::isfinite(y))
+        return generateErrorJSON(output, "Non-finite number in table");
+
+      if (adc_channels[cid].calibrationTable.full())
+        return generateErrorJSON(output, "Calibration table capacity exceeded");
+
+      // now save it.
+      adc_channels[cid].calibrationTable.push_back({v, y});
+      if (!adc_channels[cid].saveCalibrationTable())
+        return generateErrorJSON(output, "Failed to save calibration table config.");
+
+      // give them the updated config
+      return generateConfigJSON(output);
+    }
+
+    // calibratedUnits
+    if (input["remove_calibration"].is<JsonArrayConst>()) {
+      JsonArrayConst pair = input["remove_calibration"].as<JsonArrayConst>();
+      if (pair.size() != 2)
+        return generateErrorJSON(output, "Each calibration entry must have exactly 2 elements [v, y]");
+
+      float v = pair[0].as<float>();
+      float y = pair[1].as<float>();
+
+      // Use std::isfinite(v) if <cmath> is available; otherwise isfinite(v) with <math.h>
+      if (!std::isfinite(v) || !std::isfinite(y))
+        return generateErrorJSON(output, "Non-finite number in table");
+
+      // remove any matching elements
+      for (auto it = adc_channels[cid].calibrationTable.begin(); it != adc_channels[cid].calibrationTable.end();) {
+        if (it->voltage == v && it->calibrated == y) {
+          // erase returns the next valid iterator
+          it = adc_channels[cid].calibrationTable.erase(it);
+        } else {
+          ++it;
+        }
+      }
+
+      // now save it.
+      if (!adc_channels[cid].saveCalibrationTable())
+        return generateErrorJSON(output, "Failed to save calibration table config.");
+
+      // give them the updated config
+      return generateConfigJSON(output);
+    }
   }
 
 #else
@@ -1732,6 +1791,13 @@ void generateConfigJSON(JsonVariant output)
     output["adc"][i]["units"] = adc_channels[i].getTypeUnits();
     output["adc"][i]["useCalibrationTable"] = adc_channels[i].useCalibrationTable;
     output["adc"][i]["calibratedUnits"] = adc_channels[i].calibratedUnits;
+
+    JsonArray table = output["adc"][i]["calibrationTable"].to<JsonArray>();
+    for (auto& cp : adc_channels[i].calibrationTable) {
+      JsonArray row = table.add<JsonArray>();
+      row.add(cp.voltage);
+      row.add(cp.calibrated);
+    }
   }
 #endif
 

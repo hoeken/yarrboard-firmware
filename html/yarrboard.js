@@ -504,6 +504,36 @@ const ADCEditCard = (ch) => {
     .map(([key, label]) => `<option value="${key}">${label}</option>`)
     .join("\n");
 
+  let calibrationTableHtml = "";
+  if (current_config.adc[ch.id].hasOwnProperty("calibrationTable")) {
+    calibrationTableHtml = current_config.adc[ch.id].calibrationTable
+      .map(([output, calibrated], index) => `
+      <tr id="fADCCalibrationTableRow${ch.id}_${index}">
+        <td>
+          <div class="input-group">
+            <input type="text" class="form-control" id="fADCCalibrationTableOutput${ch.id}_${index}" value="${output}" disabled>
+            <span class="input-group-text ADCUnits${ch.id}">${ch.units}</span>
+          </div>
+        </td>
+        <td>
+          <div class="input-group">
+            <input type="text" class="form-control" id="fADCCalibrationTableCalibrated${ch.id}_${index}" value="${calibrated}" disabled>
+            <span class="input-group-text ADCCalibratedUnits${ch.id}">${ch.calibratedUnits}</span>
+          </div>
+        </td>
+        <td>
+          <button type="button" class="btn btn-outline-danger" id="fADCCalibrationTableRemove${ch.id}_${index}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
+  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
+  </svg>
+          </button>
+        </td>
+      </tr>
+    `)
+      .join("\n");
+  }
+
   return `
     <div id="adcEditCard${ch.id}" class="col-xs-12 col-sm-6">
       <div class="p-3 border border-secondary rounded">
@@ -559,69 +589,25 @@ const ADCEditCard = (ch) => {
               <tr>
                 <td>
                   <div class="input-group">
-                    <input type="text" class="form-control" id="fADCCalibrationTableOutput${ch.id}_0" value="">
+                    <input type="text" class="form-control" id="fADCCalibrationTableOutput${ch.id}" value="">
                     <span class="input-group-text ADCUnits${ch.id}">${ch.units}</span>
                   </div>
                 </td>
                 <td>
                   <div class="input-group">
-                    <input type="text" class="form-control" id="fADCCalibrationTableCalibrated${ch.id}_0" value="">
+                    <input type="text" class="form-control" id="fADCCalibrationTableCalibrated${ch.id}" value="">
                     <span class="input-group-text ADCCalibratedUnits${ch.id}">${ch.calibratedUnits}</span>
                   </div>
                 </td>
                 <td>
-                  <button type="button" class="btn btn-outline-primary">
+                  <button id="fADCCalibrationTableAdd${ch.id}" type="button" class="btn btn-outline-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
   <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
 </svg>
                   </button>
                 </td>
               </tr>
-              <tr>
-                <td>
-                  <div class="input-group">
-                    <input type="text" class="form-control" id="fADCCalibrationTableOutput${ch.id}_0" value="1.0" disabled>
-                    <span class="input-group-text ADCUnits${ch.id}">${ch.units}</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="input-group">
-                    <input type="text" class="form-control" id="fADCCalibrationTableCalibrated${ch.id}_0" value="20" disabled>
-                    <span class="input-group-text ADCCalibratedUnits${ch.id}">${ch.calibratedUnits}</span>
-                  </div>
-                </td>
-                <td>
-                  <button type="button" class="btn btn-outline-danger">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
-  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
-</svg>
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="input-group">
-                    <input type="text" class="form-control" id="fADCCalibrationTableOutput${ch.id}_0" value="2.0" disabled>
-                    <span class="input-group-text ADCUnits${ch.id}">${ch.units}</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="input-group">
-                    <input type="text" class="form-control" id="fADCCalibrationTableCalibrated${ch.id}_0" value="40" disabled>
-                    <span class="input-group-text ADCCalibratedUnits${ch.id}">${ch.calibratedUnits}</span>
-                  </div>
-                </td>
-                <td>
-                  <button type="button" class="btn btn-outline-danger">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
-  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
-</svg>
-                  </button>
-                </td>
-              </tr>
-
+              ${calibrationTableHtml}
             </tbody>
           </table>
         </div>
@@ -1591,6 +1577,14 @@ function start_websocket() {
             $(`#fADCType${ch.id}`).change(validate_adc_type);
             $(`#fADCUseCalibrationTable${ch.id}`).change(validate_adc_use_calibration_table);
             $(`#fADCCalibratedUnits${ch.id}`).change(validate_adc_calibrated_units);
+
+            //calibration table stuff.
+            $(`#fADCCalibrationTableAdd${ch.id}`).click(validate_adc_add_calibration);
+            if (current_config.adc[ch.id].hasOwnProperty("calibrationTable")) {
+              current_config.adc[ch.id].calibrationTable.map(([output, calibrated], index) => {
+                $(`#fADCCalibrationTableRemove${ch.id}_${index}`).click(validate_adc_remove_calibration);
+              });
+            }
           }
 
           $('#adcConfig').show();
@@ -3352,6 +3346,66 @@ function validate_adc_calibrated_units(e) {
   }
 }
 
+function validate_adc_add_calibration(e) {
+  let ele = e.currentTarget;
+  let id = ele.id.match(/\d+/)[0];
+
+  let output = parseFloat($(`#fADCCalibrationTableOutput${id}`).val());
+  let calibrated = parseFloat($(`#fADCCalibrationTableCalibrated${id}`).val());
+
+  if (false) {
+    $(ele).removeClass("is-valid");
+    $(ele).addClass("is-invalid");
+  }
+  else {
+    // $(ele).removeClass("is-invalid");
+    // $(ele).addClass("is-valid");
+
+    //set our new pwm name!
+    client.send({
+      "cmd": "config_adc",
+      "id": id,
+      "add_calibration": [output, calibrated]
+    });
+
+    //re-initialize
+    $(`#fADCCalibrationTableOutput${id}`).value = "";
+    $(`#fADCCalibrationTableCalibrated${id}`).value = "";
+
+    //todo: add in a
+  }
+}
+
+function validate_adc_remove_calibration(e) {
+  let ele = e.currentTarget;
+
+  const match = ele.id.match(/(\d+)_(\d+)/);
+  const id = parseInt(match[1], 10);
+  const index = parseInt(match[2], 10);
+
+  const output = parseFloat($(`#fADCCalibrationTableOutput${id}_${index}`).val());
+  const calibrated = parseFloat($(`#fADCCalibrationTableCalibrated${id}_${index}`).val());
+
+  if (false) {
+    $(ele).removeClass("is-valid");
+    $(ele).addClass("is-invalid");
+  }
+  else {
+    // $(ele).removeClass("is-invalid");
+    // $(ele).addClass("is-valid");
+
+    //set our new pwm name!
+    client.send({
+      "cmd": "config_adc",
+      "id": id,
+      "remove_calibration": [output, calibrated]
+    });
+
+    //remove our row.
+    $(`#fADCCalibrationTableRow${id}_${index}`).remove();
+  }
+}
+
 function validate_adc_type(e) {
   let ele = e.target;
   let id = ele.id.match(/\d+/)[0];
@@ -3500,7 +3554,7 @@ function check_for_updates() {
             data = firmware;
 
         if (!data) {
-          show_alert(`Could not find a firmware for this hardware.`, "danger");
+          //show_alert(`Could not find a firmware for this hardware.`, "danger");
           return;
         }
 
