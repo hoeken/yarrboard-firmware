@@ -12,6 +12,7 @@ let default_app_role = "nobody";
 let app_update_interval = 500;
 let network_config;
 let app_config;
+let app_update_interval_id = null;
 
 let ota_started = false;
 
@@ -1010,7 +1011,7 @@ function start_websocket() {
 
         //start our update poller.
         if (current_page == 'config')
-          get_update_data();
+          start_update_data();
       }
 
       //UI for brineomatic
@@ -2393,7 +2394,7 @@ function start_websocket() {
         }
 
         //start getting updates too.
-        get_update_data();
+        start_update_data();
 
         page_ready.graphs = true;
       }
@@ -2751,11 +2752,11 @@ function open_page(page) {
 
   //request our control updates.
   if (page == "control")
-    get_update_data();
+    start_update_data();
 
-  //request our control updates... on a delay to prevent multiple 'threads'
+  //we need updates for adc config page.
   if (page == "config" && current_config?.hasOwnProperty("adc"))
-    setTimeout(get_update_data, app_update_interval * 3);
+    start_update_data();
 
   //hide all pages.
   $("div.pageContainer").hide();
@@ -2829,6 +2830,15 @@ function get_graph_data() {
   }
 }
 
+function start_update_data() {
+  if (!app_update_interval_id) {
+    yarrboard_log("starting updates");
+    app_update_interval_id = setInterval(get_update_data, app_update_interval);
+  } else {
+    yarrboard_log("updates already running");
+  }
+}
+
 function get_update_data() {
   if (client.isOpen() && (app_role == 'guest' || app_role == 'admin')) {
     //yarrboard_log("get_update");
@@ -2837,7 +2847,12 @@ function get_update_data() {
 
     //keep loading it while we are here.
     if (current_page == "control" || current_page == "graphs" || (current_page == "config" && current_config?.hasOwnProperty("adc")))
-      setTimeout(get_update_data, app_update_interval);
+      return;
+    else {
+      yarrboard_log("stopping updates");
+      clearInterval(app_update_interval_id);
+      app_update_interval_id = 0;
+    }
   }
 }
 
