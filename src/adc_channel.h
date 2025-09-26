@@ -9,12 +9,20 @@
 #ifndef YARR_ADC_CHANNEL_H
 #define YARR_ADC_CHANNEL_H
 
+#include "ArduinoJson.h"
 #include "adchelper.h"
 #include "config.h"
+#include "etl/vector.h"
 #include "prefs.h"
 #include <Arduino.h>
+#include <LittleFS.h>
 
 #ifdef YB_HAS_ADC_CHANNELS
+
+struct CalibrationPoint {
+    float voltage;
+    float calibrated;
+};
 
 class ADCChannel
 {
@@ -23,6 +31,10 @@ class ADCChannel
     bool isEnabled = true;
     char name[YB_CHANNEL_NAME_LENGTH];
     float lastValue = 0.0;
+
+    bool useCalibrationTable = false;
+    char calibratedUnits[YB_ADC_UNIT_LENGTH];
+    etl::vector<CalibrationPoint, YB_ADC_CALIBRATION_TABLE_MAX> calibrationTable;
 
     /*
     raw - Raw Output
@@ -49,6 +61,14 @@ class ADCChannel
 
     float getTypeValue();
     const char* getTypeUnits();
+
+    bool loadCalibrationTable();
+    bool parseCalibrationTableJson(JsonVariantConst root);
+    float interpolateValue(float xv);
+    bool saveCalibrationTable();
+
+  private:
+    void _sortAndDedupeCalibrationTable();
 };
 
 extern ADCChannel adc_channels[YB_ADC_CHANNEL_COUNT];

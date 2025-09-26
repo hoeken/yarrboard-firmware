@@ -12,8 +12,10 @@
 #define YB_STATUS_WS2818_PIN 21
 
 #define YB_HAS_ADC_CHANNELS
-#define YB_ADC_RUNNING_AVERAGE_SIZE 10
 #define YB_ADC_DRIVER_ADS1115
+#define YB_ADC_UNIT_LENGTH               8
+#define YB_ADC_RUNNING_AVERAGE_SIZE      10
+#define YB_ADC_CALIBRATION_TABLE_MAX     255
 #define YB_I2C_SDA_PIN                   2
 #define YB_I2C_SCL_PIN                   1
 #define YB_ADS1115_VREF                  4.096

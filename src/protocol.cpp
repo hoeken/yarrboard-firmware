@@ -1443,6 +1443,38 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
     return generateConfigJSON(output);
   }
 
+  // useCalibrationTable
+  if (input["useCalibrationTable"].is<bool>()) {
+    // save right nwo.
+    bool enabled = input["useCalibrationTable"];
+    adc_channels[cid].useCalibrationTable = enabled;
+
+    // save to our storage
+    sprintf(prefIndex, "adcUseCalTbl%d", cid);
+    preferences.putBool(prefIndex, enabled);
+
+    // give them the updated config
+    return generateConfigJSON(output);
+  }
+
+  // calibratedUnits
+  if (input["calibratedUnits"].is<String>()) {
+    // is it too long?
+    if (strlen(input["calibratedUnits"]) > YB_ADC_UNIT_LENGTH - 1) {
+      char error[50];
+      sprintf(error, "Maximum calibrated units length is %s characters.", YB_ADC_UNIT_LENGTH - 1);
+      return generateErrorJSON(output, error);
+    }
+
+    // save to our storage
+    strlcpy(adc_channels[cid].calibratedUnits, input["calibratedUnits"] | "", sizeof(adc_channels[cid].calibratedUnits));
+    sprintf(prefIndex, "adcCalUnits%d", cid);
+    preferences.putString(prefIndex, adc_channels[cid].calibratedUnits);
+
+    // give them the updated config
+    return generateConfigJSON(output);
+  }
+
 #else
   return generateErrorJSON(output, "Board does not have ADC channels.");
 #endif
@@ -1698,6 +1730,8 @@ void generateConfigJSON(JsonVariant output)
     output["adc"][i]["enabled"] = adc_channels[i].isEnabled;
     output["adc"][i]["type"] = adc_channels[i].type;
     output["adc"][i]["units"] = adc_channels[i].getTypeUnits();
+    output["adc"][i]["useCalibrationTable"] = adc_channels[i].useCalibrationTable;
+    output["adc"][i]["calibratedUnits"] = adc_channels[i].calibratedUnits;
   }
 #endif
 

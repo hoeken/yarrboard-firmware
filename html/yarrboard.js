@@ -513,15 +513,117 @@ const ADCEditCard = (ch) => {
           <label for="fADCName${ch.id}">Name</label>
           <div class="invalid-feedback">Must be 30 characters or less.</div>
         </div>
-        <div class="form-check form-switch">
+        <div class="form-check form-switch mb-3">
           <input class="form-check-input" type="checkbox" id="fADCEnabled${ch.id}">
           <label class="form-check-label" for="fADCEnabled${ch.id}">Enabled</label>
         </div>
-        <div class="form-floating">
+        <div class="form-floating mb-3">
           <select id="fADCType${ch.id}" class="form-select" aria-label="Input Type">
             ${options}
           </select>
           <label for="fADCType${ch.id}">Input Type</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="fADCUseCalibrationTable${ch.id}">
+          <label class="form-check-label" for="fADCUseCalibrationTable${ch.id}">Use Calibration Table</label>
+        </div>
+        <div id="fADCCalibrationTableUI${ch.id}" class="form-floating mt-3" style="display: none">
+          <h5>Calibration Setup</h5>
+          <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="fADCCalibratedUnits${ch.id}" value="${ch.calibratedUnits}">
+            <label for="fADCCalibratedUnits${ch.id}">Calibrated Units</label>
+            <div class="invalid-feedback">Must be 10 characters or less.</div>
+          </div>
+          <div class="form-floating mb-3">
+            <h6>Live Averaged Output</h6>
+            <div class="input-group">
+              <input type="text" class="form-control" id="fADCAverageOutput0" value="???">
+              <span class="input-group-text ADCUnits0">mA</span>
+              <button type="button" class="btn btn-sm btn-primary">
+                Copy
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary">
+                Reset
+              </button>
+            </div>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Output</th>
+                <th>Calibrated</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="fADCCalibrationTableOutput${ch.id}_0" value="">
+                    <span class="input-group-text ADCUnits${ch.id}">${ch.units}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="fADCCalibrationTableCalibrated${ch.id}_0" value="">
+                    <span class="input-group-text ADCCalibratedUnits${ch.id}">${ch.calibratedUnits}</span>
+                  </div>
+                </td>
+                <td>
+                  <button type="button" class="btn btn-outline-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+</svg>
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="fADCCalibrationTableOutput${ch.id}_0" value="1.0" disabled>
+                    <span class="input-group-text ADCUnits${ch.id}">${ch.units}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="fADCCalibrationTableCalibrated${ch.id}_0" value="20" disabled>
+                    <span class="input-group-text ADCCalibratedUnits${ch.id}">${ch.calibratedUnits}</span>
+                  </div>
+                </td>
+                <td>
+                  <button type="button" class="btn btn-outline-danger">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
+  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
+</svg>
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="fADCCalibrationTableOutput${ch.id}_0" value="2.0" disabled>
+                    <span class="input-group-text ADCUnits${ch.id}">${ch.units}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="fADCCalibrationTableCalibrated${ch.id}_0" value="40" disabled>
+                    <span class="input-group-text ADCCalibratedUnits${ch.id}">${ch.calibratedUnits}</span>
+                  </div>
+                </td>
+                <td>
+                  <button type="button" class="btn btn-outline-danger">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
+  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
+</svg>
+                  </button>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -1472,16 +1574,23 @@ function start_websocket() {
             $('#adcConfigForm').append(ADCEditCard(ch));
             $(`#fADCEnabled${ch.id}`).prop("checked", ch.enabled);
             $(`#fADCType${ch.id}`).val(ch.type);
+            $(`#fADCUseCalibrationTable${ch.id}`).prop("checked", ch.useCalibrationTable);
+            if (ch.useCalibrationTable)
+              $(`#fADCCalibrationTableUI${ch.id}`).show();
+            else
+              $(`#fADCCalibrationTableUI${ch.id}`).hide();
 
             //enable/disable other stuff.
             $(`#fADCName${ch.id}`).prop('disabled', !ch.enabled);
             $(`#fADCType${ch.id}`).prop('disabled', !ch.enabled);
+            $(`#fADCUseCalibrationTable${ch.id}`).prop('disabled', !ch.enabled);
 
             //validate + save
             $(`#fADCEnabled${ch.id}`).change(validate_adc_enabled);
             $(`#fADCName${ch.id}`).change(validate_adc_name);
             $(`#fADCType${ch.id}`).change(validate_adc_type);
-
+            $(`#fADCUseCalibrationTable${ch.id}`).change(validate_adc_use_calibration_table);
+            $(`#fADCCalibratedUnits${ch.id}`).change(validate_adc_calibrated_units);
           }
 
           $('#adcConfig').show();
@@ -3178,6 +3287,13 @@ function validate_adc_enabled(e) {
 
   //enable/disable other stuff.
   $(`#fADCName${id}`).prop('disabled', !value);
+  $(`#fADCType${id}`).prop('disabled', !value);
+  $(`#fADCUseCalibrationTable${id}`).prop('disabled', !value);
+  if (value)
+    $(`#fADCCalibrationTableUI${id}`).show();
+  else
+    $(`#fADCCalibrationTableUI${id}`).hide();
+
 
   //nothing really to validate here.
   $(ele).addClass("is-valid");
@@ -3188,6 +3304,52 @@ function validate_adc_enabled(e) {
     "id": id,
     "enabled": value
   });
+}
+
+function validate_adc_use_calibration_table(e) {
+  let ele = e.target;
+  let id = ele.id.match(/\d+/)[0];
+  let value = ele.checked;
+
+  //nothing really to validate here.
+  $(ele).addClass("is-valid");
+
+  if (value)
+    $(`#fADCCalibrationTableUI${id}`).show();
+  else
+    $(`#fADCCalibrationTableUI${id}`).hide();
+
+  //save it
+  client.send({
+    "cmd": "config_adc",
+    "id": id,
+    "useCalibrationTable": value
+  });
+}
+
+function validate_adc_calibrated_units(e) {
+  let ele = e.target;
+  let id = ele.id.match(/\d+/)[0];
+  let value = ele.value;
+
+  if (value.length <= 0 || value.length > 30) {
+    $(ele).removeClass("is-valid");
+    $(ele).addClass("is-invalid");
+  }
+  else {
+    $(ele).removeClass("is-invalid");
+    $(ele).addClass("is-valid");
+
+    //set our new pwm name!
+    client.send({
+      "cmd": "config_adc",
+      "id": id,
+      "calibratedUnits": value
+    });
+
+    //update places that use this.
+    $(`.ADCCalibratedUnits${id}`).html(value);
+  }
 }
 
 function validate_adc_type(e) {

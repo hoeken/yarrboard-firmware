@@ -73,6 +73,7 @@ void setup()
   if (!LittleFS.begin(true)) {
     Serial.println("ERROR: Unable to mount LittleFS");
   }
+  Serial.printf("LittleFS Storage: %d / %d\n", LittleFS.usedBytes(), LittleFS.totalBytes());
 
   Serial.println("Yarrboard");
   Serial.print("Hardware Version: ");
