@@ -561,6 +561,16 @@ const ADCEditCard = (ch) => {
           </select>
           <label for="fADCType${ch.id}">Input Type</label>
         </div>
+        <div class="form-floating mb-3">
+          <select id="fADCDisplayDecimals${ch.id}" class="form-select" aria-label="Display Format">
+            <option value="0">123,456</option>
+            <option value="1">123,456.1</option>
+            <option value="2">123,456.12</option>
+            <option value="3">123,456.123</option>
+            <option value="4">123,456.1234</option>
+          </select>
+          <label for="fADCDisplayDecimals${ch.id}">Display Format</label>
+        </div>
         <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="fADCUseCalibrationTable${ch.id}">
           <label class="form-check-label" for="fADCUseCalibrationTable${ch.id}">Use Calibration Table</label>
@@ -1584,6 +1594,7 @@ function start_websocket() {
             $('#adcConfigForm').append(ADCEditCard(ch));
             $(`#fADCEnabled${ch.id}`).prop("checked", ch.enabled);
             $(`#fADCType${ch.id}`).val(ch.type);
+            $(`#fADCDisplayDecimals${ch.id}`).val(ch.displayDecimals);
             $(`#fADCUseCalibrationTable${ch.id}`).prop("checked", ch.useCalibrationTable);
             if (ch.useCalibrationTable)
               $(`#fADCCalibrationTableUI${ch.id}`).show();
@@ -1593,12 +1604,14 @@ function start_websocket() {
             //enable/disable other stuff.
             $(`#fADCName${ch.id}`).prop('disabled', !ch.enabled);
             $(`#fADCType${ch.id}`).prop('disabled', !ch.enabled);
+            $(`#fADCDisplayDecimals${ch.id}`).prop('disabled', !ch.enabled);
             $(`#fADCUseCalibrationTable${ch.id}`).prop('disabled', !ch.enabled);
 
             //validate + save
             $(`#fADCEnabled${ch.id}`).change(validate_adc_enabled);
             $(`#fADCName${ch.id}`).change(validate_adc_name);
             $(`#fADCType${ch.id}`).change(validate_adc_type);
+            $(`#fADCDisplayDecimals${ch.id}`).change(validate_adc_display_decimals);
             $(`#fADCUseCalibrationTable${ch.id}`).change(validate_adc_use_calibration_table);
             $(`#fADCCalibratedUnits${ch.id}`).change(validate_adc_calibrated_units);
 
@@ -1855,24 +1868,24 @@ function start_websocket() {
               adc_running_averages[ch.id] = [];
 
             //how should we format our value?
-            if (current_config.adc[ch.id].hasOwnProperty("displayDecimals")) {
-              calibrated_value.toFixed(current_config.adc[ch.id].displayDecimals);
+            if (current_config.adc[ch.id].displayDecimals >= 0) {
+              calibrated_value = formatNumber(calibrated_value, current_config.adc[ch.id].displayDecimals);
             } else {
               switch (current_config.adc[ch.id].type) {
                 case "thermistor":
-                  calibrated_value = calibrated_value.toFixed(1);
+                  calibrated_value = formatNumber(calibrated_value, 1);
                   break;
                 case "raw":
                 case "4-20ma":
                 case "high_volt_divider":
                 case "low_volt_divider":
-                  calibrated_value = calibrated_value.toFixed(2);
+                  calibrated_value = formatNumber(calibrated_value, 2);
                   break;
                 case "ten_k_pullup":
-                  calibrated_value = Math.round(calibrated_value);
+                  calibrated_value = formatNumber(calibrated_value, 0);
                   break;
                 default:
-                  calibrated_value.toFixed(3);
+                  calibrated_value = formatNumber(calibrated_value, 3);
               }
             }
 
@@ -3528,6 +3541,31 @@ function validate_adc_type(e) {
   }
 }
 
+function validate_adc_display_decimals(e) {
+  let ele = e.target;
+  let id = ele.id.match(/\d+/)[0];
+  let value = parseInt(ele.value);
+
+  if (value.length <= 0 || value.length > 30) {
+    $(ele).removeClass("is-valid");
+    $(ele).addClass("is-invalid");
+  }
+  else {
+    $(ele).removeClass("is-invalid");
+    $(ele).addClass("is-valid");
+
+    //set our new pwm name!
+    client.send({
+      "cmd": "config_adc",
+      "id": id,
+      "display_decimals": value
+    });
+
+    //update our current config.
+    current_config.adc[id].displayDecimals = value;
+  }
+}
+
 function do_login(e) {
   app_username = $('#username').val();
   app_password = $('#password').val();
@@ -4061,6 +4099,13 @@ const pwm_type_images = {
       <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
     </svg>`
 };
+
+function formatNumber(num, decimals) {
+  return Number(num).toLocaleString("en-US", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  });
+}
 
 function pwm_get_type_image(ch) {
   if (ch.type == "")

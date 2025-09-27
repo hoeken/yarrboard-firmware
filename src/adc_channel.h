@@ -30,6 +30,7 @@ class ADCChannel
     byte id = 0;
     bool isEnabled = true;
     char name[YB_CHANNEL_NAME_LENGTH];
+    int8_t displayDecimals = -1;
     float lastValue = 0.0;
 
     bool useCalibrationTable = false;

@@ -131,6 +131,13 @@ void ADCChannel::setup()
   else
     sprintf(this->type, "raw");
 
+  // what type are we?
+  sprintf(prefIndex, "adcDisplay%d", this->id);
+  if (preferences.isKey(prefIndex))
+    this->displayDecimals = preferences.getChar(prefIndex);
+  else
+    this->displayDecimals = -1;
+
   // calibration table?
   sprintf(prefIndex, "adcUseCalTbl%d", this->id);
   if (preferences.isKey(prefIndex))

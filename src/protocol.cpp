@@ -1443,6 +1443,24 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
     return generateConfigJSON(output);
   }
 
+  // channel type
+  if (input["display_decimals"].is<int>()) {
+    int8_t display_decimals = input["display_decimals"];
+
+    if (display_decimals < 0 || display_decimals > 4)
+      return generateErrorJSON(output, "Must be between 0 and 4");
+
+    // change our channel.
+    adc_channels[cid].displayDecimals = display_decimals;
+
+    // save to our storage
+    sprintf(prefIndex, "adcDisplay%d", cid);
+    preferences.putChar(prefIndex, display_decimals);
+
+    // give them the updated config
+    return generateConfigJSON(output);
+  }
+
   // useCalibrationTable
   if (input["useCalibrationTable"].is<bool>()) {
     // save right nwo.
@@ -1784,6 +1802,7 @@ void generateConfigJSON(JsonVariant output)
     output["adc"][i]["name"] = adc_channels[i].name;
     output["adc"][i]["enabled"] = adc_channels[i].isEnabled;
     output["adc"][i]["type"] = adc_channels[i].type;
+    output["adc"][i]["displayDecimals"] = adc_channels[i].displayDecimals;
     output["adc"][i]["units"] = adc_channels[i].getTypeUnits();
     output["adc"][i]["useCalibrationTable"] = adc_channels[i].useCalibrationTable;
     output["adc"][i]["calibratedUnits"] = adc_channels[i].calibratedUnits;
