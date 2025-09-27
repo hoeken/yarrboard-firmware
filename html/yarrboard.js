@@ -576,7 +576,7 @@ const ADCEditCard = (ch) => {
             <h6>Live Averaged Output <span id="fADCAverageOutputCount${ch.id}" class="small"></span></h6>
             <div class="input-group">
               <input id="fADCAverageOutput${ch.id}" type="text" class="form-control" value="0">
-              <span class="input-group-text ADCUnits0">mA</span>
+              <span class="input-group-text ADCUnits${ch.id}">${ch.units}</span>
               <button id="fADCAverageOutputCopy${ch.id}" type="button" class="btn btn-sm btn-primary">
                 Copy
               </button>
