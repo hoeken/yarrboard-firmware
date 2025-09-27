@@ -16,8 +16,8 @@ let app_update_interval_id = null;
 
 let ota_started = false;
 
-const page_list = ["control", "config", "stats", "graphs", "network", "settings", "system"];
-const page_ready = {
+let page_list = ["control", "config", "stats", "graphs", "network", "settings", "system"];
+let page_ready = {
   "control": false,
   "config": false,
   "stats": false,
@@ -28,7 +28,7 @@ const page_ready = {
   "login": true
 };
 
-const page_permissions = {
+let page_permissions = {
   "nobody": [
     "login"
   ],
@@ -1018,12 +1018,12 @@ function start_websocket() {
       $('bomInformationDiv').hide();
       $('bomControlDiv').hide();
       $('#bomStatsDiv').hide();
+
       if (msg.brineomatic) {
         $('#bomInformationDiv').show();
         $('#bomControlDiv').show();
         $('#bomStatsDiv').show();
         $('#bomInterface').hide();
-
         $('#brightnessUI').hide();
 
         if (!isMFD()) {
@@ -1444,6 +1444,15 @@ function start_websocket() {
         //also hide our other stuff here...
         $('#relayControlDiv').hide();
         $('#servoControlDiv').hide();
+      }
+      else //non-brineomatic... no graphs
+      {
+        $(`#graphsNav`).remove(); //remove our graph element
+        page_list = page_list.filter(p => p !== "graphs");
+        delete page_ready.graphs;
+        for (const role in page_permissions) {
+          page_permissions[role] = page_permissions[role].filter(p => p !== "graphs");
+        }
       }
 
       //only do it as needed
@@ -2832,10 +2841,10 @@ function get_graph_data() {
 
 function start_update_data() {
   if (!app_update_interval_id) {
-    yarrboard_log("starting updates");
+    //yarrboard_log("starting updates");
     app_update_interval_id = setInterval(get_update_data, app_update_interval);
   } else {
-    yarrboard_log("updates already running");
+    //yarrboard_log("updates already running");
   }
 }
 
@@ -2849,7 +2858,7 @@ function get_update_data() {
     if (current_page == "control" || current_page == "graphs" || (current_page == "config" && current_config?.hasOwnProperty("adc")))
       return;
     else {
-      yarrboard_log("stopping updates");
+      //yarrboard_log("stopping updates");
       clearInterval(app_update_interval_id);
       app_update_interval_id = 0;
     }
@@ -3465,10 +3474,6 @@ function validate_adc_add_calibration(e) {
     $(`#fADCCalibrationTableRemove${id}_${index}`).click(validate_adc_remove_calibration);
     current_config.adc[id].calibrationTable.push([output, calibrated]); //temporarily save it.
   }
-
-  e.preventDefault();  // stop scrolling/navigation
-  e.stopPropagation(); // optional, stops bubbling
-  console.log("validate_adc_add_calibration");
 }
 
 function validate_adc_remove_calibration(e) {
@@ -3499,8 +3504,6 @@ function validate_adc_remove_calibration(e) {
     //remove our row.
     $(`#fADCCalibrationTableRow${id}_${index}`).remove();
   }
-
-  e.preventDefault();  // stop scrolling/navigation
 }
 
 function validate_adc_type(e) {
