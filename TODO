@@ -1,6 +1,19 @@
+# GENERAL
+
+* make sure adchelper changes dont break anything
+* rgb status should have its own .h/.cpp file
+    * we should do something interesting with it.
+    * wifi connection status?
+* upgrade to esp-idf 5.1.x and fix any issues
+* upgrade to PsychicHttp 2.0
+* clean up #includes and libraries
+* add wifi RSSI bars indicator
+* switch to 1 indexed channels instead of zero
+* add "keys" to each channel config 32 chars, ([A-Za-z0-9_]+ only) - allow passing that instead of id
+* refactor channels to have a BaseChannel class that can consolidate lots of extra code
+
 # BRINEOMATIC
 
-* update yarrboard-client
 * update signalk plugin
 * implement motor channels
     * add motor channels to valve control
@@ -33,22 +46,13 @@
 * PID calibration?
 * ntp server and next flush being an actual time that is stored in preferences (survive reboot)
 
-# FROTHFET REV D
+# FROTHFET
 
 * add inrush current to pwm / soft fuse checking - will need a stateChangeTime variable too...
 * double check that pwm is not getting set if isDimmable is false
-
 * convert ADC to continuous interrupt driven style
-* rgb status should have its own .h/.cpp file
-    * we should do something interesting with it.
-    * wifi connection status?
 * add temperature, vdd support to adc library
-* upgrade to esp-idf 5.1.x and fix any issues
-* upgrade to PsychicHttp 2.0
-* clean up #includes and libraries
-* add wifi RSSI bars indicator
 * update forms to be consistent style (float labels)
-* switch to 1 indexed channels instead of zero
 * update yarrboard client if any changes needed - probably for state
 * update signalk plugin - same
 * go through and re-adjust the various page sizes for our different viewports
@@ -66,3 +70,12 @@
 * other MFD integrations:
     * garmin?
     * raymarine?
+* change over to a single json file for configuration.  easy to backup / deploy
+    * store in littlefs
+    * we are already generating most of it with the various config_* json
+    * add parseJSONConfig() calls to each object
+* refactor yarrboard-firmware into something separate from frothfet / brineomatic / sendit:
+    * what is the structure?
+        * c++ code side: library with lots of callbacks?
+        * javascript side: javascript include with lots of callbacks?
+        * html???
