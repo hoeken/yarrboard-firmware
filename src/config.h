@@ -21,14 +21,20 @@
   #include "./configs/config.8ch-mosfet-revc.h"
 #elif defined YB_CONFIG_FROTHFET_REV_D
   #include "./configs/config.frothfet-rev-d.h"
+#elif defined YB_CONFIG_FROTHFET_REV_E
+  #include "./configs/config.frothfet-rev-e.h"
 #elif defined YB_CONFIG_RGB_INPUT_REV_A
   #include "./configs/config.rgb-input-reva.h"
 #elif defined YB_CONFIG_RGB_INPUT_REV_B
   #include "./configs/config.rgb-input-revb.h"
 #elif defined YB_CONFIG_BRINEOMATIC_REV_A
   #include "./configs/config.brineomatic-rev-a.h"
+#elif defined YB_CONFIG_BRINEOMATIC_REV_B
+  #include "./configs/config.brineomatic-rev-b.h"
 #elif defined YB_CONFIG_SENDIT_REV_A
   #include "./configs/config.sendit-rev-a.h"
+#elif defined YB_CONFIG_SENDIT_REV_B
+  #include "./configs/config.sendit-rev-b.h"
 #else
   #error "No board config has been defined"
 #endif
