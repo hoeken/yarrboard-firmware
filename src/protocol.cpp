@@ -1939,7 +1939,8 @@ void generateUpdateJSON(JsonVariant output)
   output["product_flowrate"] = wm.getProductFlowrate();
   output["brine_flowrate"] = wm.getBrineFlowrate();
   output["volume"] = wm.getVolume();
-  output["salinity"] = wm.getSalinity();
+  output["product_salinity"] = wm.getProductSalinity();
+  output["brine_salinity"] = wm.getBrineSalinity();
   output["filter_pressure"] = wm.getFilterPressure();
   output["membrane_pressure"] = wm.getMembranePressure();
   output["tank_level"] = wm.getTankLevel();
@@ -2140,8 +2141,12 @@ void generateGraphDataJSON(JsonVariant output)
   for (float value : membrane_pressure_data)
     data.add(value);
 
-  data = output["salinity"].to<JsonArray>();
-  for (float value : salinity_data)
+  data = output["product_salinity"].to<JsonArray>();
+  for (float value : product_salinity_data)
+    data.add(value);
+
+  data = output["brine_salinity"].to<JsonArray>();
+  for (float value : brine_salinity_data)
     data.add(value);
 
   data = output["product_flowrate"].to<JsonArray>();

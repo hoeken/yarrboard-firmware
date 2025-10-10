@@ -22,7 +22,8 @@ etl::deque<float, YB_BOM_DATA_SIZE> motor_temperature_data;
 etl::deque<float, YB_BOM_DATA_SIZE> water_temperature_data;
 etl::deque<float, YB_BOM_DATA_SIZE> filter_pressure_data;
 etl::deque<float, YB_BOM_DATA_SIZE> membrane_pressure_data;
-etl::deque<float, YB_BOM_DATA_SIZE> salinity_data;
+etl::deque<float, YB_BOM_DATA_SIZE> product_salinity_data;
+etl::deque<float, YB_BOM_DATA_SIZE> brine_salinity_data;
 etl::deque<float, YB_BOM_DATA_SIZE> product_flowrate_data;
 etl::deque<float, YB_BOM_DATA_SIZE> brine_flowrate_data;
 etl::deque<float, YB_BOM_DATA_SIZE> tank_level_data;
@@ -161,9 +162,9 @@ void brineomatic_loop()
 
     if (brineomatic_adc.getError() == ADS1X15_OK) {
       if (current_ads1115_channel == 0)
-        true; // thermistor channel - unused for now
+        measure_brine_salinity(value);
       else if (current_ads1115_channel == 1)
-        measure_salinity(value);
+        measure_product_salinity(value);
       else if (current_ads1115_channel == 2)
         measure_filter_pressure(value);
       else if (current_ads1115_channel == 3)
@@ -199,9 +200,13 @@ void brineomatic_loop()
       membrane_pressure_data.pop_front();
     membrane_pressure_data.push_back(wm.getMembranePressure());
 
-    if (salinity_data.full())
-      salinity_data.pop_front();
-    salinity_data.push_back(wm.getSalinity());
+    if (product_salinity_data.full())
+      product_salinity_data.pop_front();
+    product_salinity_data.push_back(wm.getProductSalinity());
+
+    if (brine_salinity_data.full())
+      brine_salinity_data.pop_front();
+    brine_salinity_data.push_back(wm.getBrineSalinity());
 
     if (product_flowrate_data.full())
       product_flowrate_data.pop_front();
@@ -307,12 +312,20 @@ void measure_temperature()
   }
 }
 
-void measure_salinity(int16_t reading)
+void measure_product_salinity(int16_t reading)
 {
   gravityTds.setTemperature(wm.getWaterTemperature()); // set the temperature and execute temperature compensation
   gravityTds.update(reading);                          // sample and calculate
   float tdsReading = gravityTds.getTdsValue();         // then get the value
-  wm.setSalinity(tdsReading);
+  wm.setProductSalinity(tdsReading);
+}
+
+void measure_brine_salinity(int16_t reading)
+{
+  gravityTds.setTemperature(wm.getWaterTemperature()); // set the temperature and execute temperature compensation
+  gravityTds.update(reading);                          // sample and calculate
+  float tdsReading = gravityTds.getTdsValue();         // then get the value
+  wm.setBrineSalinity(tdsReading);
 }
 
 void measure_filter_pressure(int16_t reading)
@@ -390,7 +403,8 @@ void Brineomatic::init()
   currentProductFlowrate = 0.0;
   currentBrineFlowrate = 0.0;
   currentVolume = 0.0;
-  currentSalinity = 0.0;
+  currentProductSalinity = 0.0;
+  currentBrineSalinity = 0.0;
   currentFilterPressure = 0.0;
   currentMembranePressure = 0.0;
   membranePressureTarget = -1;
@@ -482,9 +496,14 @@ void Brineomatic::setMotorTemperature(float temp)
   currentMotorTemperature = temp;
 }
 
-void Brineomatic::setSalinity(float salinity)
+void Brineomatic::setProductSalinity(float salinity)
 {
-  currentSalinity = salinity;
+  currentProductSalinity = salinity;
+}
+
+void Brineomatic::setBrineSalinity(float salinity)
+{
+  currentBrineSalinity = salinity;
 }
 
 void Brineomatic::idle()
@@ -827,14 +846,19 @@ float Brineomatic::getMotorTemperatureMaximum()
   return motorTemperatureMaximum;
 }
 
-float Brineomatic::getSalinity()
+float Brineomatic::getProductSalinity()
 {
-  return currentSalinity;
+  return currentProductSalinity;
 }
 
-float Brineomatic::getSalinityMaximum()
+float Brineomatic::getBrineSalinity()
 {
-  return salinityMaximum;
+  return currentBrineSalinity;
+}
+
+float Brineomatic::getProductSalinityMaximum()
+{
+  return productSalinityMaximum;
 }
 
 float Brineomatic::getTankLevel()
@@ -1179,7 +1203,7 @@ void Brineomatic::runStateMachine()
 
       if (waitForProductFlowrate())
         return;
-      if (waitForSalinity())
+      if (waitForProductSalinity())
         return;
 
       // sendDebug("Closing Diverter Valve.");
@@ -1188,10 +1212,10 @@ void Brineomatic::runStateMachine()
       // opening the valve sometimes causes a small blip in either, let it stabilize again
       if (waitForProductFlowrate())
         return;
-      if (waitForSalinity())
+      if (waitForProductSalinity())
         return;
 
-      // sendDebug("Flow and Salinity OK");
+      // sendDebug("Product Flow and Salinity OK");
 
       uint64_t productionStart = esp_timer_get_time();
       while (true) {
@@ -1211,7 +1235,7 @@ void Brineomatic::runStateMachine()
         if (checkProductFlowrateLow())
           return;
 
-        if (checkSalinityHigh())
+        if (checkProductSalinityHigh())
           return;
 
         if (checkStopFlag())
@@ -1521,14 +1545,14 @@ bool Brineomatic::checkProductFlowrateLow()
   return false;
 }
 
-bool Brineomatic::checkSalinityHigh()
+bool Brineomatic::checkProductSalinityHigh()
 {
-  if (getSalinity() > getSalinityMaximum())
-    salinityHighErrorCount++;
+  if (getProductSalinity() > getProductSalinityMaximum())
+    productSalinityHighErrorCount++;
   else
-    salinityHighErrorCount = 0;
+    productSalinityHighErrorCount = 0;
 
-  if (salinityHighErrorCount > 10) {
+  if (productSalinityHighErrorCount > 10) {
     currentStatus = Status::STOPPING;
     runResult = Result::ERR_SALINITY_HIGH;
     return true;
@@ -1581,7 +1605,7 @@ bool Brineomatic::waitForProductFlowrate()
   return false;
 }
 
-bool Brineomatic::waitForSalinity()
+bool Brineomatic::waitForProductSalinity()
 {
   int salinityReady = 0;
   uint64_t salinityCheckStart = esp_timer_get_time();
@@ -1591,12 +1615,12 @@ bool Brineomatic::waitForSalinity()
     if (checkStopFlag())
       return false;
 
-    if (getSalinity() < getSalinityMaximum())
+    if (getProductSalinity() < getProductSalinityMaximum())
       salinityReady++;
     else
       salinityReady = 0;
 
-    if (esp_timer_get_time() - salinityCheckStart > salinityTimeout) {
+    if (esp_timer_get_time() - salinityCheckStart > productSalinityTimeout) {
       currentStatus = Status::STOPPING;
       runResult = Result::ERR_SALINITY_TIMEOUT;
       return true;

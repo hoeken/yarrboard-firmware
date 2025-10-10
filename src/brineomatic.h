@@ -21,7 +21,8 @@ extern etl::deque<float, YB_BOM_DATA_SIZE> motor_temperature_data;
 extern etl::deque<float, YB_BOM_DATA_SIZE> water_temperature_data;
 extern etl::deque<float, YB_BOM_DATA_SIZE> filter_pressure_data;
 extern etl::deque<float, YB_BOM_DATA_SIZE> membrane_pressure_data;
-extern etl::deque<float, YB_BOM_DATA_SIZE> salinity_data;
+extern etl::deque<float, YB_BOM_DATA_SIZE> product_salinity_data;
+extern etl::deque<float, YB_BOM_DATA_SIZE> brine_salinity_data;
 extern etl::deque<float, YB_BOM_DATA_SIZE> product_flowrate_data;
 extern etl::deque<float, YB_BOM_DATA_SIZE> brine_flowrate_data;
 extern etl::deque<float, YB_BOM_DATA_SIZE> tank_level_data;
@@ -34,7 +35,8 @@ void brineomatic_state_machine(void* pvParameters);
 void measure_product_flowmeter();
 void measure_brine_flowmeter();
 void measure_temperature();
-void measure_salinity(int16_t reading);
+void measure_product_salinity(int16_t reading);
+void measure_brine_salinity(int16_t reading);
 void measure_filter_pressure(int16_t reading);
 void measure_membrane_pressure(int16_t reading);
 
@@ -121,7 +123,8 @@ class Brineomatic
     void setBrineFlowrate(float flowrate);
     void setMotorTemperature(float temp);
     void setWaterTemperature(float temp);
-    void setSalinity(float salinity);
+    void setProductSalinity(float salinity);
+    void setBrineSalinity(float salinity);
     void setTankLevel(float level);
 
     void idle();
@@ -198,8 +201,9 @@ class Brineomatic
     uint64_t getTotalRuntime();
     float getMotorTemperature();
     float getWaterTemperature();
-    float getSalinity();
-    float getSalinityMaximum();
+    float getProductSalinity();
+    float getProductSalinityMaximum();
+    float getBrineSalinity();
     float getTankLevel();
     float getTankCapacity();
     float getMotorTemperatureMaximum();
@@ -241,7 +245,8 @@ class Brineomatic
     float currentMotorTemperature;
     float currentProductFlowrate;
     float currentBrineFlowrate;
-    float currentSalinity;
+    float currentProductSalinity;
+    float currentBrineSalinity;
     float currentFilterPressure;
     float currentMembranePressure;
 
@@ -258,7 +263,7 @@ class Brineomatic
     float productFlowrateMaximum = 300.0;        // LPH
     float brineFlowrateMinimum = 0.0;            // LPH
     float brineFlowrateMaximum = 500.0;          // LPH
-    float salinityMaximum = 500.0;               // PPM
+    float productSalinityMaximum = 500.0;               // PPM
     float motorTemperatureMaximum = 65.0;        // Celcius
     float tankLevelFull = 0.99;                  // 0 = empty, 1 = full
     float tankCapacity = 780;                    // Liters
@@ -271,7 +276,7 @@ class Brineomatic
     uint8_t filterPressureLowErrorCount = 0;
     uint8_t productFlowrateLowErrorCount = 0;
     uint8_t brineFlowrateLowErrorCount = 0;
-    uint8_t salinityHighErrorCount = 0;
+    uint8_t productSalinityHighErrorCount = 0;
     uint8_t motorTemperatureErrorCount = 0;
 
     uint64_t flushValveTimeout = 1ULL * 60 * 1000000;       // 1 minute default, in microseconds
@@ -279,7 +284,7 @@ class Brineomatic
     uint64_t membranePressureTimeout = 1ULL * 60 * 1000000; // 1 minute default, in microseconds
     uint64_t productFlowRateTimeout = 2ULL * 60 * 1000000;  // 2 minute default, in microseconds
     uint64_t brineFlowRateTimeout = 2ULL * 60 * 1000000;    // 2 minute default, in microseconds
-    uint64_t salinityTimeout = 5ULL * 60 * 1000000;         // 5 minute default, in microseconds
+    uint64_t productSalinityTimeout = 5ULL * 60 * 1000000;         // 5 minute default, in microseconds
     uint64_t productionTimeout = 12ULL * 60 * 60 * 1000000; // 12 hour default, in microseconds
 
     bool checkStopFlag();
@@ -289,9 +294,9 @@ class Brineomatic
     bool checkFilterPressureLow();
     bool checkProductFlowrateLow();
     bool checkBrineFlowrateLow();
-    bool checkSalinityHigh();
+    bool checkProductSalinityHigh();
     bool waitForProductFlowrate();
-    bool waitForSalinity();
+    bool waitForProductSalinity();
     bool checkTankLevel();
     bool checkMotorTemperature();
 };

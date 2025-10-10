@@ -42,7 +42,7 @@
 #define YB_I2C_SCL_PIN         12
 #define YB_ADS1115_VREF        4.096
 #define YB_ADS1115_ADDRESS     0x49
-#define YB_BRINE_TDS_CHANNEL   1
+#define YB_BRINE_TDS_CHANNEL   0
 #define YB_PRODUCT_TDS_CHANNEL 1
 #define YB_LP_SENSOR_CHANNEL   2
 #define YB_HP_SENSOR_CHANNEL   3
