@@ -1936,7 +1936,8 @@ void generateUpdateJSON(JsonVariant output)
   output["depickle_result"] = wm.resultToString(wm.getDepickleResult());
   output["motor_temperature"] = wm.getMotorTemperature();
   output["water_temperature"] = wm.getWaterTemperature();
-  output["flowrate"] = wm.getFlowrate();
+  output["product_flowrate"] = wm.getProductFlowrate();
+  output["brine_flowrate"] = wm.getBrineFlowrate();
   output["volume"] = wm.getVolume();
   output["salinity"] = wm.getSalinity();
   output["filter_pressure"] = wm.getFilterPressure();
@@ -2143,8 +2144,12 @@ void generateGraphDataJSON(JsonVariant output)
   for (float value : salinity_data)
     data.add(value);
 
-  data = output["flowrate"].to<JsonArray>();
-  for (float value : flowrate_data)
+  data = output["product_flowrate"].to<JsonArray>();
+  for (float value : product_flowrate_data)
+    data.add(value);
+
+  data = output["brine_flowrate"].to<JsonArray>();
+  for (float value : brine_flowrate_data)
     data.add(value);
 
   data = output["tank_level"].to<JsonArray>();

@@ -23,29 +23,40 @@ etl::deque<float, YB_BOM_DATA_SIZE> water_temperature_data;
 etl::deque<float, YB_BOM_DATA_SIZE> filter_pressure_data;
 etl::deque<float, YB_BOM_DATA_SIZE> membrane_pressure_data;
 etl::deque<float, YB_BOM_DATA_SIZE> salinity_data;
-etl::deque<float, YB_BOM_DATA_SIZE> flowrate_data;
+etl::deque<float, YB_BOM_DATA_SIZE> product_flowrate_data;
+etl::deque<float, YB_BOM_DATA_SIZE> brine_flowrate_data;
 etl::deque<float, YB_BOM_DATA_SIZE> tank_level_data;
 
 uint64_t lastDataStore = 0;
 
 Brineomatic wm;
 
-byte motor_a_pins[YB_DC_MOTOR_CHANNEL_COUNT] = YB_DC_MOTOR_A_PINS;
-byte motor_b_pins[YB_DC_MOTOR_CHANNEL_COUNT] = YB_DC_MOTOR_B_PINS;
-
 // Setup a oneWire instance to communicate with any OneWire devices
 OneWire oneWire(YB_DS18B20_PIN);
 DallasTemperature ds18b20(&oneWire);
 DeviceAddress motorThermometer;
 
-static volatile uint16_t pulse_counter = 0;
-uint64_t lastFlowmeterCheckMicros = 0;
-float flowmeterPulsesPerLiter = YB_FLOWMETER_DEFAULT_PPL;
+  #ifdef YB_PRODUCT_FLOWMETER_PIN
+static volatile uint16_t product_flowmeter_pulse_counter = 0;
+uint64_t lastProductFlowmeterCheckMicros = 0;
+float productFlowmeterPulsesPerLiter = YB_PRODUCT_FLOWMETER_DEFAULT_PPL;
 
-void IRAM_ATTR flowmeter_interrupt()
+void IRAM_ATTR product_flowmeter_interrupt()
 {
-  pulse_counter++;
+  product_flowmeter_pulse_counter++;
 }
+  #endif
+
+  #ifdef YB_BRINE_FLOWMETER_PIN
+static volatile uint16_t brine_flowmeter_pulse_counter = 0;
+uint64_t lastBrineFlowmeterCheckMicros = 0;
+float brineFlowmeterPulsesPerLiter = YB_BRINE_FLOWMETER_DEFAULT_PPL;
+
+void IRAM_ATTR brine_flowmeter_interrupt()
+{
+  brine_flowmeter_pulse_counter++;
+}
+  #endif
 
 ADS1115 brineomatic_adc(YB_ADS1115_ADDRESS);
 byte current_ads1115_channel = 0;
@@ -56,21 +67,21 @@ void brineomatic_setup()
 {
   wm.init();
 
-  byte motor_a_pins[YB_DC_MOTOR_CHANNEL_COUNT] = YB_DC_MOTOR_A_PINS;
-  byte motor_b_pins[YB_DC_MOTOR_CHANNEL_COUNT] = YB_DC_MOTOR_B_PINS;
+  // do our init for our product flowmeter
+  #ifdef YB_PRODUCT_FLOWMETER_PIN
+  pinMode(YB_PRODUCT_FLOWMETER_PIN, INPUT);
+  product_flowmeter_pulse_counter = 0;
+  lastProductFlowmeterCheckMicros = 0;
+  attachInterrupt(digitalPinToInterrupt(YB_PRODUCT_FLOWMETER_PIN), product_flowmeter_interrupt, FALLING);
+  #endif
 
-  for (byte i = 0; i < YB_DC_MOTOR_CHANNEL_COUNT; i++) {
-    pinMode(motor_a_pins[i], OUTPUT);
-    pinMode(motor_b_pins[i], OUTPUT);
-    digitalWrite(motor_a_pins[i], LOW);
-    digitalWrite(motor_a_pins[i], LOW);
-  }
-
-  // do our init for our flowmeter
-  pinMode(YB_FLOWMETER_PIN, INPUT);
-  pulse_counter = 0;
-  lastFlowmeterCheckMicros = 0;
-  attachInterrupt(digitalPinToInterrupt(YB_FLOWMETER_PIN), flowmeter_interrupt, FALLING);
+  // do our init for our brine flowmeter
+  #ifdef YB_PRODUCT_FLOWMETER_PIN
+  pinMode(YB_PRODUCT_FLOWMETER_PIN, INPUT);
+  brine_flowmeter_pulse_counter = 0;
+  lastBrineFlowmeterCheckMicros = 0;
+  attachInterrupt(digitalPinToInterrupt(YB_BRINE_FLOWMETER_PIN), brine_flowmeter_interrupt, FALLING);
+  #endif
 
   // DS18B20 Sensor
   ds18b20.begin();
@@ -141,7 +152,8 @@ void brineomatic_loop()
     lastOutput = millis();
   }
 
-  measure_flowmeter();
+  measure_product_flowmeter();
+  measure_brine_flowmeter();
   measure_temperature();
 
   if (brineomatic_adc.isReady()) {
@@ -191,9 +203,13 @@ void brineomatic_loop()
       salinity_data.pop_front();
     salinity_data.push_back(wm.getSalinity());
 
-    if (flowrate_data.full())
-      flowrate_data.pop_front();
-    flowrate_data.push_back(wm.getFlowrate());
+    if (product_flowrate_data.full())
+      product_flowrate_data.pop_front();
+    product_flowrate_data.push_back(wm.getProductFlowrate());
+
+    if (brine_flowrate_data.full())
+      brine_flowrate_data.pop_front();
+    brine_flowrate_data.push_back(wm.getBrineFlowrate());
 
     if (tank_level_data.full())
       tank_level_data.pop_front();
@@ -215,34 +231,65 @@ void brineomatic_state_machine(void* pvParameters)
   }
 }
 
-void measure_flowmeter()
+void measure_product_flowmeter()
 {
   // check roughly every second
-  uint64_t elapsed = esp_timer_get_time() - lastFlowmeterCheckMicros;
+  uint64_t elapsed = esp_timer_get_time() - lastProductFlowmeterCheckMicros;
   if (elapsed >= 1000000) {
     // calculate flowrate
     float elapsed_seconds = elapsed / 1e6;
 
     // Calculate liters per second
-    float liters_per_second = (pulse_counter / flowmeterPulsesPerLiter) / elapsed_seconds;
+    float liters_per_second = (product_flowmeter_pulse_counter / productFlowmeterPulsesPerLiter) / elapsed_seconds;
 
     // Convert to liters per hour
     float flowrate = liters_per_second * 3600;
 
     // update our volume
     if ((wm.hasDiverterValve() && !wm.isDiverterValveOpen()) || !wm.hasDiverterValve()) {
-      wm.currentVolume += pulse_counter / flowmeterPulsesPerLiter;
-      wm.totalVolume += pulse_counter / flowmeterPulsesPerLiter;
+      wm.currentVolume += product_flowmeter_pulse_counter / productFlowmeterPulsesPerLiter;
+      wm.totalVolume += product_flowmeter_pulse_counter / productFlowmeterPulsesPerLiter;
     }
 
     // reset counter
-    pulse_counter = 0;
+    product_flowmeter_pulse_counter = 0;
 
     // store microseconds when tacho was measured the last time
-    lastFlowmeterCheckMicros = esp_timer_get_time();
+    lastProductFlowmeterCheckMicros = esp_timer_get_time();
 
     // update our model
-    wm.setFlowrate(flowrate);
+    wm.setProductFlowrate(flowrate);
+  }
+}
+
+void measure_brine_flowmeter()
+{
+  // check roughly every second
+  uint64_t elapsed = esp_timer_get_time() - lastBrineFlowmeterCheckMicros;
+  if (elapsed >= 1000000) {
+    // calculate flowrate
+    float elapsed_seconds = elapsed / 1e6;
+
+    // Calculate liters per second
+    float liters_per_second = (brine_flowmeter_pulse_counter / brineFlowmeterPulsesPerLiter) / elapsed_seconds;
+
+    // Convert to liters per hour
+    float flowrate = liters_per_second * 3600;
+
+    // // update our volume
+    // if ((wm.hasDiverterValve() && !wm.isDiverterValveOpen()) || !wm.hasDiverterValve()) {
+    //   wm.currentVolume += pulse_counter / flowmeterPulsesPerLiter;
+    //   wm.totalVolume += pulse_counter / flowmeterPulsesPerLiter;
+    // }
+
+    // reset counter
+    brine_flowmeter_pulse_counter = 0;
+
+    // store microseconds when tacho was measured the last time
+    lastBrineFlowmeterCheckMicros = esp_timer_get_time();
+
+    // update our model
+    wm.setBrineFlowrate(flowrate);
   }
 }
 
@@ -340,7 +387,8 @@ void Brineomatic::init()
   currentTankLevel = -1;
   currentWaterTemperature = 25.0;
   currentMotorTemperature = 0.0;
-  currentFlowrate = 0.0;
+  currentProductFlowrate = 0.0;
+  currentBrineFlowrate = 0.0;
   currentVolume = 0.0;
   currentSalinity = 0.0;
   currentFilterPressure = 0.0;
@@ -419,9 +467,14 @@ void Brineomatic::setMembranePressureTarget(float pressure)
   }
 }
 
-void Brineomatic::setFlowrate(float flowrate)
+void Brineomatic::setProductFlowrate(float flowrate)
 {
-  currentFlowrate = flowrate;
+  currentProductFlowrate = flowrate;
+}
+
+void Brineomatic::setBrineFlowrate(float flowrate)
+{
+  currentBrineFlowrate = flowrate;
 }
 
 void Brineomatic::setMotorTemperature(float temp)
@@ -714,14 +767,19 @@ float Brineomatic::getMembranePressureMinimum()
   return highPressureMinimum;
 }
 
-float Brineomatic::getFlowrate()
+float Brineomatic::getProductFlowrate()
 {
-  return currentFlowrate;
+  return currentProductFlowrate;
 }
 
-float Brineomatic::getFlowrateMinimum()
+float Brineomatic::getBrineFlowrate()
 {
-  return flowrateMinimum;
+  return currentBrineFlowrate;
+}
+
+float Brineomatic::getProductFlowrateMinimum()
+{
+  return productFlowrateMinimum;
 }
 
 float Brineomatic::getVolume()
@@ -906,9 +964,9 @@ int64_t Brineomatic::getFinishCountdown()
         return countdown;
     }
     // if we have tank capacity and a flowrate, we can estimate.
-    else if (getTankCapacity() > 0 && getFlowrate() > 0) {
+    else if (getTankCapacity() > 0 && getProductFlowrate() > 0) {
       float remainingVolume = getTankCapacity() * (1.0 - getTankLevel());
-      int64_t remainingMicros = (remainingVolume / getFlowrate()) * 3600 * 1e6;
+      int64_t remainingMicros = (remainingVolume / getProductFlowrate()) * 3600 * 1e6;
       return remainingMicros;
     }
   }
@@ -1119,7 +1177,7 @@ void Brineomatic::runStateMachine()
 
       // sendDebug("High Pressure Pump OK");
 
-      if (waitForFlowrate())
+      if (waitForProductFlowrate())
         return;
       if (waitForSalinity())
         return;
@@ -1128,7 +1186,7 @@ void Brineomatic::runStateMachine()
       closeDiverterValve();
 
       // opening the valve sometimes causes a small blip in either, let it stabilize again
-      if (waitForFlowrate())
+      if (waitForProductFlowrate())
         return;
       if (waitForSalinity())
         return;
@@ -1150,7 +1208,7 @@ void Brineomatic::runStateMachine()
         if (checkMembranePressureHigh())
           return;
 
-        if (checkFlowrateLow())
+        if (checkProductFlowrateLow())
           return;
 
         if (checkSalinityHigh())
@@ -1447,14 +1505,14 @@ bool Brineomatic::checkFilterPressureLow()
   return false;
 }
 
-bool Brineomatic::checkFlowrateLow()
+bool Brineomatic::checkProductFlowrateLow()
 {
-  if (getFlowrate() < getFlowrateMinimum())
-    flowrateLowErrorCount++;
+  if (getProductFlowrate() < getProductFlowrateMinimum())
+    productFlowrateLowErrorCount++;
   else
-    flowrateLowErrorCount = 0;
+    productFlowrateLowErrorCount = 0;
 
-  if (flowrateLowErrorCount > 10) {
+  if (productFlowrateLowErrorCount > 10) {
     currentStatus = Status::STOPPING;
     runResult = Result::ERR_FLOWRATE_LOW;
     return true;
@@ -1495,7 +1553,7 @@ bool Brineomatic::checkMotorTemperature()
   return false;
 }
 
-bool Brineomatic::waitForFlowrate()
+bool Brineomatic::waitForProductFlowrate()
 {
   int flowReady = 0;
   uint64_t flowCheckStart = esp_timer_get_time();
@@ -1506,12 +1564,12 @@ bool Brineomatic::waitForFlowrate()
     if (checkStopFlag())
       return false;
 
-    if (getFlowrate() > getFlowrateMinimum())
+    if (getProductFlowrate() > getProductFlowrateMinimum())
       flowReady++;
     else
       flowReady = 0;
 
-    if (esp_timer_get_time() - flowCheckStart > flowRateTimeout) {
+    if (esp_timer_get_time() - flowCheckStart > productFlowRateTimeout) {
       currentStatus = Status::STOPPING;
       runResult = Result::ERR_FLOWRATE_TIMEOUT;
       return true;

@@ -22,7 +22,8 @@ extern etl::deque<float, YB_BOM_DATA_SIZE> water_temperature_data;
 extern etl::deque<float, YB_BOM_DATA_SIZE> filter_pressure_data;
 extern etl::deque<float, YB_BOM_DATA_SIZE> membrane_pressure_data;
 extern etl::deque<float, YB_BOM_DATA_SIZE> salinity_data;
-extern etl::deque<float, YB_BOM_DATA_SIZE> flowrate_data;
+extern etl::deque<float, YB_BOM_DATA_SIZE> product_flowrate_data;
+extern etl::deque<float, YB_BOM_DATA_SIZE> brine_flowrate_data;
 extern etl::deque<float, YB_BOM_DATA_SIZE> tank_level_data;
 
 void brineomatic_setup();
@@ -30,7 +31,8 @@ void brineomatic_loop();
 
 void brineomatic_state_machine(void* pvParameters);
 
-void measure_flowmeter();
+void measure_product_flowmeter();
+void measure_brine_flowmeter();
 void measure_temperature();
 void measure_salinity(int16_t reading);
 void measure_filter_pressure(int16_t reading);
@@ -115,7 +117,8 @@ class Brineomatic
     void setFilterPressure(float pressure);
     void setMembranePressure(float pressure);
     void setMembranePressureTarget(float pressure);
-    void setFlowrate(float flowrate);
+    void setProductFlowrate(float flowrate);
+    void setBrineFlowrate(float flowrate);
     void setMotorTemperature(float temp);
     void setWaterTemperature(float temp);
     void setSalinity(float salinity);
@@ -183,10 +186,14 @@ class Brineomatic
     float getFilterPressureMinimum();
     float getMembranePressure();
     float getMembranePressureMinimum();
-    float getFlowrate();
-    float getFlowrateMinimum();
-    float getVolume();
+    float getProductFlowrate();
+    float getProductFlowrateMinimum();
+    float getBrineFlowrate();
+    float getBrineFlowrateMinimum();
+    float getTotalFlowrate();
+    float getTotalFlowrateMinimum();
     uint32_t getTotalCycles();
+    float getVolume();
     float getTotalVolume();
     uint64_t getTotalRuntime();
     float getMotorTemperature();
@@ -232,7 +239,8 @@ class Brineomatic
     float currentTankLevel;
     float currentWaterTemperature;
     float currentMotorTemperature;
-    float currentFlowrate;
+    float currentProductFlowrate;
+    float currentBrineFlowrate;
     float currentSalinity;
     float currentFilterPressure;
     float currentMembranePressure;
@@ -246,8 +254,10 @@ class Brineomatic
     float highPressureMinimum = 600.0;           // PSI
     float defaultMembranePressureTarget = 775.0; // PSI
     float highPressureMaximum = 950.0;           // PSI
-    float flowrateMinimum = 100.0;               // LPH
-    float flowrateMaximum = 300.0;               // LPH
+    float productFlowrateMinimum = 100.0;        // LPH
+    float productFlowrateMaximum = 300.0;        // LPH
+    float brineFlowrateMinimum = 0.0;            // LPH
+    float brineFlowrateMaximum = 500.0;          // LPH
     float salinityMaximum = 500.0;               // PPM
     float motorTemperatureMaximum = 65.0;        // Celcius
     float tankLevelFull = 0.99;                  // 0 = empty, 1 = full
@@ -259,14 +269,16 @@ class Brineomatic
     uint8_t membranePressureLowErrorCount = 0;
     uint8_t filterPressureHighErrorCount = 0;
     uint8_t filterPressureLowErrorCount = 0;
-    uint8_t flowrateLowErrorCount = 0;
+    uint8_t productFlowrateLowErrorCount = 0;
+    uint8_t brineFlowrateLowErrorCount = 0;
     uint8_t salinityHighErrorCount = 0;
     uint8_t motorTemperatureErrorCount = 0;
 
     uint64_t flushValveTimeout = 1ULL * 60 * 1000000;       // 1 minute default, in microseconds
     uint64_t filterPressureTimeout = 1ULL * 60 * 1000000;   // 1 minute default, in microseconds
     uint64_t membranePressureTimeout = 1ULL * 60 * 1000000; // 1 minute default, in microseconds
-    uint64_t flowRateTimeout = 2ULL * 60 * 1000000;         // 2 minute default, in microseconds
+    uint64_t productFlowRateTimeout = 2ULL * 60 * 1000000;  // 2 minute default, in microseconds
+    uint64_t brineFlowRateTimeout = 2ULL * 60 * 1000000;    // 2 minute default, in microseconds
     uint64_t salinityTimeout = 5ULL * 60 * 1000000;         // 5 minute default, in microseconds
     uint64_t productionTimeout = 12ULL * 60 * 60 * 1000000; // 12 hour default, in microseconds
 
@@ -275,9 +287,10 @@ class Brineomatic
     bool checkMembranePressureLow();
     bool checkFilterPressureHigh();
     bool checkFilterPressureLow();
-    bool checkFlowrateLow();
+    bool checkProductFlowrateLow();
+    bool checkBrineFlowrateLow();
     bool checkSalinityHigh();
-    bool waitForFlowrate();
+    bool waitForProductFlowrate();
     bool waitForSalinity();
     bool checkTankLevel();
     bool checkMotorTemperature();
