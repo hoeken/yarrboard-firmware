@@ -11,13 +11,32 @@
 * switch to 1 indexed channels instead of zero
 * add "keys" to each channel config 32 chars, ([A-Za-z0-9_]+ only) - allow passing that instead of id
 * refactor channels to have a BaseChannel class that can consolidate lots of extra code
+* change over to a single json file for configuration.  easy to backup / deploy
+    * store in littlefs
+    * we are already generating most of it with the various config_* json
+    * add parseJSONConfig() calls to each object
+    * download file -> generate and send
+    * upload file -> parse and if no error then write to littlefs + reboot
+* generic piezo buzzer support
+    * on / off / frequency? / preset tones or songs?
 
 # BRINEOMATIC
 
-* update signalk plugin
-* implement motor channels
-    * add motor channels to valve control
-    * will probably need to make a generic Valve class.
+* update code for new Rev B board:
+    * flowmeter and salinity rename to product_flowmeter and product_salinity
+    * add support for brine_flowmeter and brine_salinity
+    * what new stuff can we do with brine_flowmeter and brine_salinity?
+        * verify the main pump is working based on brine flow
+        * verify the diverter valve is working based on brine vs product flow
+        * add total_flow variable and verify it during runtime in addition to product flow
+        * use brine_salinity to flush until seawater is gone
+    * add stepper motor support
+        * pid control output becomes stepper motor angle set point.
+        * might allow us to use the PID tuning code
+        * need to redesign high pressure valve attachment
+    * add support for the piezo on error or success.
+        * can we play tunes?
+    * turn off diverter valve servo after ~10 seconds after command to prevent overheating
 * add mid-level commands to set_watermaker
     * boost_pump
     * high_pressure_pump
@@ -30,8 +49,9 @@
     * diverter valve
     * flush valve
     * fan
+    * advanced manual mode to set servos, stepper, etc.
 * add configuration options for:
-    * flowmeter
+    * flowmeters
     * tds (can we autodetect - whats this look like?)
     * diverter valve
     * hp valve servo
@@ -60,7 +80,21 @@
 * wifi improvements:
     * wifi connection fail should default to AP mode
     * wifi should reconnect on failure
-    
+* add mppt support:
+    * homeassistant "light" for consolidated dashboard control
+    * option to receive json commands over mppt?
+* Rev E: add LED color support to new ws2818b channel leds.
+* add buzzer support - enable alarms for tripped or bypassed on a per-channel basis
+* update fan control to simple on/off and remove any old pwm code for that
+* update current adc define for new chip
+
+# SENDIT
+
+* change adc driver to MCP3564
+* remove 1k pullup option, change to passthru
+* add piezo buzzer support?
+    * probaby best to do in node red
+
 # LONG TERM:
 
 * Look into turning yarrboard UI/framework into a library for use in other projects (brineomatic)
@@ -70,10 +104,6 @@
 * other MFD integrations:
     * garmin?
     * raymarine?
-* change over to a single json file for configuration.  easy to backup / deploy
-    * store in littlefs
-    * we are already generating most of it with the various config_* json
-    * add parseJSONConfig() calls to each object
 * refactor yarrboard-firmware into something separate from frothfet / brineomatic / sendit:
     * what is the structure?
         * c++ code side: library with lots of callbacks?
