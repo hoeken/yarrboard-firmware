@@ -4,12 +4,19 @@
 * rgb status should have its own .h/.cpp file
     * we should do something interesting with it.
     * wifi connection status?
+    * expose the main object
+    * #defines for other board aka frothfet with offsets for their particular leds
+* generic piezo buzzer support
+    * on / off / frequency? / preset tones or songs?
+* frothfet changes
+* brineomatic changes
+* sendit changes
+* switch to 1 indexed channels instead of zero
+* add "keys" to each channel config 32 chars, ([A-Za-z0-9_]+ only) - allow passing that instead of id
 * upgrade to esp-idf 5.1.x and fix any issues
 * upgrade to PsychicHttp 2.0
 * clean up #includes and libraries
 * add wifi RSSI bars indicator
-* switch to 1 indexed channels instead of zero
-* add "keys" to each channel config 32 chars, ([A-Za-z0-9_]+ only) - allow passing that instead of id
 * refactor channels to have a BaseChannel class that can consolidate lots of extra code
 * change over to a single json file for configuration.  easy to backup / deploy
     * store in littlefs
@@ -17,8 +24,6 @@
     * add parseJSONConfig() calls to each object
     * download file -> generate and send
     * upload file -> parse and if no error then write to littlefs + reboot
-* generic piezo buzzer support
-    * on / off / frequency? / preset tones or songs?
 
 # BRINEOMATIC
 
@@ -97,6 +102,7 @@
 
 # LONG TERM:
 
+* espwebtools?  https://esphome.github.io/esp-web-tools/
 * Look into turning yarrboard UI/framework into a library for use in other projects (brineomatic)
 * Integrations with other automation frameworks?
     * Home Assistant

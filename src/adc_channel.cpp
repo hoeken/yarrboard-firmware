@@ -16,12 +16,12 @@
 ADCChannel adc_channels[YB_ADC_CHANNEL_COUNT];
 
   #ifdef YB_ADC_DRIVER_ADS1115
-
 byte ads1_channel = 0;
 byte ads2_channel = 0;
-
 ADS1115 _adcVoltageADS1115_1(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_1);
 ADS1115 _adcVoltageADS1115_2(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_2);
+  #elif defined YB_ADC_DRIVER_MCP3564
+MCP3564 _adcAnalogMCP3564(YB_ADC_CS, &SPI, YB_ADC_MOSI, YB_ADC_MISO, YB_ADC_SCK);
   #elif YB_ADC_DRIVER_MCP3208
 MCP3208 _adcAnalogMCP3208;
   #endif
@@ -58,6 +58,12 @@ void adc_channels_setup()
   _adcVoltageADS1115_2.setGain(1);
   _adcVoltageADS1115_2.setDataRate(5);
   _adcVoltageADS1115_2.requestADC(0); // trigger first read
+
+  #elif defined(YB_ADC_DRIVER_MCP3564)
+
+  _adcAnalogMCP3564.singleEndedMode();
+  _adcAnalogMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
+  _adcAnalogMCP3564.setAveraging(MCP3x6x::osr::OSR_1024);
 
   #elif YB_ADC_DRIVER_MCP3208
   _adcAnalogMCP3208.begin(YB_ADC_CS);
@@ -206,7 +212,7 @@ float ADCChannel::getTypeValue()
 
     // 2. Calculate thermistor resistance
     // Voltage divider: Vadc = Vcc * (R_ntc / (R_ntc + R_PULLUP))
-    float r_ntc = (this->getVoltage() * r_pullup) / (YB_ADS1115_VREF - this->getVoltage());
+    float r_ntc = (this->getVoltage() * r_pullup) / (YB_ADC_VREF - this->getVoltage());
 
     // 3. Apply Beta equation to compute temperature in Kelvin
     float inv_T = (1.0 / 298.15) + (1.0 / r_beta) * log(r_ntc / r_thermistor);
