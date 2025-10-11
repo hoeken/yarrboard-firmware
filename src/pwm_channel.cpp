@@ -28,8 +28,6 @@ const unsigned int MAX_DUTY_CYCLE = (int)(pow(2, YB_PWM_CHANNEL_RESOLUTION));
 
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
 MCP3564 _adcCurrentMCP3564(YB_PWM_CHANNEL_CURRENT_ADC_CS, &SPI, YB_PWM_CHANNEL_CURRENT_ADC_MOSI, YB_PWM_CHANNEL_CURRENT_ADC_MISO, YB_PWM_CHANNEL_CURRENT_ADC_SCK);
-  #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
-MCP3208 _adcCurrentMCP3208;
   #endif
 
   #ifdef YB_HAS_CHANNEL_VOLTAGE
@@ -91,10 +89,6 @@ void pwm_channels_setup()
 
   Serial.print("TEMP: ");
   Serial.println(_adcCurrentMCP3564.analogRead(MCP_TEMP));
-
-  #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
-
-  _adcCurrentMCP3208.begin(YB_PWM_CHANNEL_ADC_CS);
   #endif
 
   #ifdef YB_HAS_CHANNEL_VOLTAGE
@@ -145,10 +139,6 @@ void pwm_channels_setup()
 
   Serial.print("TEMP: ");
   Serial.println(_adcVoltageMCP3564.analogRead(MCP_TEMP));
-
-    #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
-
-  _adcCurrentMCP3208.begin(YB_PWM_CHANNEL_ADC_CS);
     #endif
 
   #endif
@@ -272,8 +262,6 @@ void PWMChannel::setup()
 
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
   this->amperageHelper = new MCP3564Helper(3.3, this->id, &_adcCurrentMCP3564);
-  #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
-  this->amperageHelper = new MCP3208Helper(3.3, this->id, &_adcCurrentMCP3208);
   #endif
 
   #ifdef YB_HAS_CHANNEL_VOLTAGE

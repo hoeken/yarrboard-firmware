@@ -61,8 +61,6 @@ class PWMChannel
 
 #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
     MCP3564Helper* amperageHelper;
-#elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
-    MCP3208Helper* amperageHelper;
 #endif
 
 #ifdef YB_HAS_CHANNEL_VOLTAGE
