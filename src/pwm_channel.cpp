@@ -11,6 +11,7 @@
 #ifdef YB_HAS_PWM_CHANNELS
 
   #include "pwm_channel.h"
+  #include "rgb.h"
 
 // the main star of the event
 PWMChannel pwm_channels[YB_PWM_CHANNEL_COUNT];
@@ -25,8 +26,8 @@ static volatile bool isChannelFading[YB_FAN_COUNT];
 // 1);
 const unsigned int MAX_DUTY_CYCLE = (int)(pow(2, YB_PWM_CHANNEL_RESOLUTION));
 
-  #ifdef YB_PWM_CHANNEL_ADC_DRIVER_MCP3564
-MCP3564 _adcCurrentMCP3564(YB_PWM_CHANNEL_ADC_CS, &SPI, YB_PWM_CHANNEL_ADC_MOSI, YB_PWM_CHANNEL_ADC_MISO, YB_PWM_CHANNEL_ADC_SCK);
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
+MCP3564 _adcCurrentMCP3564(YB_PWM_CHANNEL_CURRENT_ADC_CS, &SPI, YB_PWM_CHANNEL_CURRENT_ADC_MOSI, YB_PWM_CHANNEL_CURRENT_ADC_MISO, YB_PWM_CHANNEL_CURRENT_ADC_SCK);
   #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
 MCP3208 _adcCurrentMCP3208;
   #endif
@@ -35,6 +36,8 @@ MCP3208 _adcCurrentMCP3208;
     #ifdef YB_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
 ADS1115 _adcVoltageADS1115_1(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_1);
 ADS1115 _adcVoltageADS1115_2(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_2);
+    #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
+MCP3564 _adcVoltageMCP3564(YB_PWM_CHANNEL_VOLTAGE_ADC_CS, &SPI, YB_PWM_CHANNEL_VOLTAGE_ADC_MOSI, YB_PWM_CHANNEL_VOLTAGE_ADC_MISO, YB_PWM_CHANNEL_VOLTAGE_ADC_SCK);
     #endif
   #endif
 
@@ -59,41 +62,27 @@ void mcp_wrapper()
 {
   Serial.print(".");
   _adcCurrentMCP3564.IRQ_handler();
+  _adcVoltageMCP3564.IRQ_handler();
 }
 
 void pwm_channels_setup()
 {
-  #ifdef YB_PWM_CHANNEL_ADC_DRIVER_MCP3564
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
 
   // turn on our pullup on the IRQ pin.
-  pinMode(YB_PWM_CHANNEL_ADC_IRQ, INPUT_PULLUP);
+  pinMode(YB_PWM_CHANNEL_CURRENT_ADC_IRQ, INPUT_PULLUP);
 
   // start up our SPI and ADC objects
-  SPI.begin(YB_PWM_CHANNEL_ADC_SCK, YB_PWM_CHANNEL_ADC_MISO, YB_PWM_CHANNEL_ADC_MOSI, YB_PWM_CHANNEL_ADC_CS);
+  SPI.begin(YB_PWM_CHANNEL_CURRENT_ADC_SCK, YB_PWM_CHANNEL_CURRENT_ADC_MISO, YB_PWM_CHANNEL_CURRENT_ADC_MOSI, YB_PWM_CHANNEL_CURRENT_ADC_CS);
   if (!_adcCurrentMCP3564.begin(0, 3.3)) {
-    Serial.println("failed to initialize MCP3564");
+    Serial.println("failed to initialize current MCP3564");
   } else {
     Serial.println("MCP3564 ok.");
   }
 
-  //   #ifdef _CONFIG_H_FROTHFET_REV_D
-  // // required since REV D board does not have IRQ connected!!!
-  // _adcCurrentMCP3564.settings.irq.irq_mode = 1;
-  // _adcCurrentMCP3564.write(_adcCurrentMCP3564.settings.irq);
-  //   #endif
-
   _adcCurrentMCP3564.singleEndedMode();
   _adcCurrentMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
   _adcCurrentMCP3564.setAveraging(MCP3x6x::osr::OSR_1024);
-
-  // _adcCurrentMCP3564.enableScanChannel(MCP_CH0);
-  // _adcCurrentMCP3564.enableScanChannel(MCP_CH1);
-  // _adcCurrentMCP3564.enableScanChannel(MCP_CH2);
-  // _adcCurrentMCP3564.enableScanChannel(MCP_CH3);
-  // _adcCurrentMCP3564.enableScanChannel(MCP_CH4);
-  // _adcCurrentMCP3564.enableScanChannel(MCP_CH5);
-  // _adcCurrentMCP3564.enableScanChannel(MCP_CH6);
-  // _adcCurrentMCP3564.startContinuous();
 
   _adcCurrentMCP3564.printConfig();
 
@@ -132,7 +121,36 @@ void pwm_channels_setup()
   _adcVoltageADS1115_2.setGain(1);
   _adcVoltageADS1115_2.setDataRate(7);
 
+    #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
+
+  // turn on our pullup on the IRQ pin.
+  pinMode(YB_PWM_CHANNEL_VOLTAGE_ADC_IRQ, INPUT_PULLUP);
+
+  // start up our SPI and ADC objects
+  SPI.begin(YB_PWM_CHANNEL_VOLTAGE_ADC_SCK, YB_PWM_CHANNEL_VOLTAGE_ADC_MISO, YB_PWM_CHANNEL_VOLTAGE_ADC_MOSI, YB_PWM_CHANNEL_VOLTAGE_ADC_CS);
+  if (!_adcVoltageMCP3564.begin(0, 3.3)) {
+    Serial.println("failed to initialize voltage MCP3564");
+  } else {
+    Serial.println("MCP3564 ok.");
+  }
+
+  _adcVoltageMCP3564.singleEndedMode();
+  _adcVoltageMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
+  _adcVoltageMCP3564.setAveraging(MCP3x6x::osr::OSR_1024);
+
+  _adcVoltageMCP3564.printConfig();
+
+  Serial.print("VDD: ");
+  Serial.println(_adcVoltageMCP3564.analogRead(MCP_AVDD));
+
+  Serial.print("TEMP: ");
+  Serial.println(_adcVoltageMCP3564.analogRead(MCP_TEMP));
+
+    #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
+
+  _adcCurrentMCP3208.begin(YB_PWM_CHANNEL_ADC_CS);
     #endif
+
   #endif
 
   // the init here needs to be done in a specific way, otherwise it will hang or
@@ -167,6 +185,8 @@ void pwm_channels_loop()
     pwm_channels[id].checkStatus();
     pwm_channels[id].saveThrottledDutyCycle();
     pwm_channels[id].checkIfFadeOver();
+
+    pwm_channels[id].updateOutputLED();
 
     // flag for update?
     if (pwm_channels[id].sendFastUpdate)
@@ -396,7 +416,7 @@ void PWMChannel::checkAmperage()
 
 float PWMChannel::toVoltage(float adcVoltage)
 {
-  float v = adcVoltage / (YB_CHANNEL_VOLTAGE_R2 / (YB_CHANNEL_VOLTAGE_R2 + YB_CHANNEL_VOLTAGE_R1));
+  float v = adcVoltage / (YB_PWM_CHANNEL_VOLTAGE_R2 / (YB_PWM_CHANNEL_VOLTAGE_R2 + YB_PWM_CHANNEL_VOLTAGE_R1));
   v = v - this->voltageOffset;
 
   // our floor is zero volts
@@ -413,6 +433,24 @@ void PWMChannel::checkStatus()
   this->checkSoftFuse();
   this->checkFuseBlown();
   this->checkFuseBypassed();
+}
+
+void PWMChannel::updateOutputLED()
+{
+  #if (YB_STATUS_WS2818_COUNT > 1)
+  if (this->status == Status::ON)
+    rgb_set_pixel_color(this->id + 1, 0, 255, 0); // green
+  else if (this->status == Status::OFF)
+    rgb_set_pixel_color(this->id + 1, 0, 0, 0); // off
+  else if (this->status == Status::TRIPPED)
+    rgb_set_pixel_color(this->id + 1, 255, 255, 0); // yellow
+  else if (this->status == Status::BLOWN)
+    rgb_set_pixel_color(this->id + 1, 255, 0, 0); // red
+  else if (this->status == Status::BYPASSED)
+    rgb_set_pixel_color(this->id + 1, 0, 0, 255); // blue
+  else
+    rgb_set_pixel_color(this->id + 1, 0, 0, 0); // off
+  #endif
 }
 
 float PWMChannel::getVoltage()

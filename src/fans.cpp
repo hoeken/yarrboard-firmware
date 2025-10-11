@@ -17,7 +17,6 @@
 // Lots of code borrowed from: https://github.com/KlausMu/esp32-fan-controller
 
 // use the pwm channel directly after our PWM channels
-byte fan_pwm_channel = YB_PWM_CHANNEL_COUNT;
 byte fan_mosfet_pins[YB_FAN_COUNT] = YB_FAN_MOSFET_PINS;
 byte fan_tach_pins[YB_FAN_COUNT] = YB_FAN_TACH_PINS;
 

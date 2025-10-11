@@ -19,5 +19,6 @@ void rgb_setup();
 void rgb_loop();
 
 void rgb_set_status_color(uint8_t r, uint8_t g, uint8_t b);
+void rgb_set_pixel_color(uint8_t c, uint8_t r, uint8_t g, uint8_t b);
 
 #endif /* !YARR_RGB_H */

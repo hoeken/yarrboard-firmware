@@ -59,7 +59,7 @@ class PWMChannel
     float fadeDutyCycleStart = 0;
     float fadeDutyCycleEnd = 0;
 
-#ifdef YB_PWM_CHANNEL_ADC_DRIVER_MCP3564
+#ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
     MCP3564Helper* amperageHelper;
 #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
     MCP3208Helper* amperageHelper;
@@ -68,6 +68,8 @@ class PWMChannel
 #ifdef YB_HAS_CHANNEL_VOLTAGE
   #ifdef YB_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
     ADS1115Helper* voltageHelper;
+  #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
+    MCP3425Helper* voltageHelper;
   #endif
 #endif
 
@@ -111,6 +113,8 @@ class PWMChannel
     void setDuty(float duty);
     void calculateAverages(unsigned int delta);
     const char* getStatus();
+
+    void updateOutputLED();
 };
 
 extern PWMChannel pwm_channels[YB_PWM_CHANNEL_COUNT];
