@@ -160,9 +160,9 @@ void ADCChannel::setup()
 
   #ifdef YB_ADC_DRIVER_ADS1115
   if (this->id < 4)
-    this->adcHelper = new ADS1115Helper(YB_ADS1115_VREF, this->id, &_adcVoltageADS1115_1);
+    this->adcHelper = new ADS1115Helper(YB_ADC_VREF, this->id, &_adcVoltageADS1115_1);
   else
-    this->adcHelper = new ADS1115Helper(YB_ADS1115_VREF, this->id - 4, &_adcVoltageADS1115_2);
+    this->adcHelper = new ADS1115Helper(YB_ADC_VREF, this->id - 4, &_adcVoltageADS1115_2);
   #elif YB_ADC_DRIVER_MCP3208
   this->adcHelper = new MCP3208Helper(3.3, this->id, &_adcAnalogMCP3208);
   #endif

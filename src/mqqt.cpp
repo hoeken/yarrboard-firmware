@@ -23,6 +23,13 @@ void mqqt_setup()
   mqttClient.onTopic(mqqt_path, 0, mqqt_receive_message);
 
   mqttClient.connect();
+
+  /**
+   * Wait blocking until the connection is established
+   */
+  while (!mqttClient.connected()) {
+    delay(500);
+  }
 }
 
 void mqqt_loop()
@@ -30,9 +37,9 @@ void mqqt_loop()
   unsigned int messageDelta = millis() - previousMQQTMillis;
   if (messageDelta >= 1000) {
 
-    char mqqt_message[128];
-    sprintf(mqqt_message, "millis: %d", previousMQQTMillis);
-    mqqt_publish("test", mqqt_message);
+    JsonDocument output;
+    generateUpdateJSON(output);
+    mqqt_traverse_json(output);
 
     previousMQQTMillis = millis();
   }
@@ -44,12 +51,179 @@ void mqqt_publish(const char* topic, const char* payload)
   char mqqt_path[256];
   sprintf(mqqt_path, "yarrboard/%s/%s", local_hostname, topic);
 
+  // Serial.printf("mqqt publish: %s: %s\n", mqqt_path, payload);
+
   // send it off!
-  mqttClient.publish(mqqt_path, 0, 0, payload);
+  mqttClient.publish(mqqt_path, 0, 0, payload, strlen(payload), false);
 }
 
 void mqqt_receive_message(const char* topic, const char* payload, int retain, int qos, bool dup)
 {
   Serial.printf("Received Topic: %s\r\n", topic);
   Serial.printf("Received Payload: %s\r\n", payload);
+}
+
+// ---- Internal helpers -------------------------------------------------------
+
+static inline void append_to_topic(char* buf, size_t& len, size_t cap,
+  const char* piece)
+{
+  if (!piece || !piece[0])
+    return;
+  // Add separator if we already have content
+  if (len > 0 && buf[len - 1] != '/' && len + 1 < cap) {
+    buf[len++] = '/';
+  }
+  // Append piece (truncate safely if needed)
+  while (*piece && len + 1 < cap) {
+    buf[len++] = *piece++;
+  }
+  buf[len] = '\0';
+}
+
+static inline void append_index_to_topic(char* buf, size_t& len, size_t cap,
+  size_t index)
+{
+  char ibuf[16];
+  // Enough for size_t up to 64-bit
+  int n = snprintf(ibuf, sizeof(ibuf), "%u", static_cast<unsigned>(index));
+  (void)n; // silence -Wunused-result
+  append_to_topic(buf, len, cap, ibuf);
+}
+
+// Convert a primitive JsonVariant to char* payload without String
+static inline const char* to_payload(JsonVariant v, char* out, size_t outcap)
+{
+  if (v.isNull()) {
+    // Publish literal "null"
+    if (outcap > 0) {
+      strncpy(out, "null", outcap - 1);
+      out[outcap - 1] = '\0';
+      return out;
+    }
+    return "";
+  }
+
+  // Strings: publish raw C-string (no extra quotes)
+  if (v.is<const char*>()) {
+    const char* s = v.as<const char*>();
+    if (!s)
+      return "";
+    // Copy into out so caller owns stable storage
+    if (outcap > 0) {
+      strncpy(out, s, outcap - 1);
+      out[outcap - 1] = '\0';
+      return out;
+    }
+    return "";
+  }
+
+  // Booleans
+  if (v.is<bool>()) {
+    const char* s = v.as<bool>() ? "true" : "false";
+    if (outcap > 0) {
+      strncpy(out, s, outcap - 1);
+      out[outcap - 1] = '\0';
+      return out;
+    }
+    return "";
+  }
+
+  // Integers (prefer widest to avoid overflow)
+  if (v.is<long long>()) {
+    (void)snprintf(out, outcap, "%lld", v.as<long long>());
+    return out;
+  }
+  if (v.is<unsigned long long>()) {
+    (void)snprintf(out, outcap, "%llu", v.as<unsigned long long>());
+    return out;
+  }
+  if (v.is<long>()) {
+    (void)snprintf(out, outcap, "%ld", v.as<long>());
+    return out;
+  }
+  if (v.is<unsigned long>()) {
+    (void)snprintf(out, outcap, "%lu", v.as<unsigned long>());
+    return out;
+  }
+  if (v.is<int>()) {
+    (void)snprintf(out, outcap, "%d", v.as<int>());
+    return out;
+  }
+  if (v.is<unsigned int>()) {
+    (void)snprintf(out, outcap, "%u", v.as<unsigned int>());
+    return out;
+  }
+
+  // Floating point
+  if (v.is<double>()) {
+    // %.9g gives compact form while preserving good precision
+    (void)snprintf(out, outcap, "%.9g", v.as<double>());
+    return out;
+  }
+  if (v.is<float>()) {
+    (void)snprintf(out, outcap, "%.7g", v.as<float>());
+    return out;
+  }
+
+  // Fallback: serialize JSON representation into out (covers other primitive-ish cases)
+  // (This will include quotes for strings, but we already handled strings above.)
+  serializeJson(v, out, outcap);
+  return out;
+}
+
+// Depth-first traversal with an in-place topic buffer
+static void traverse_impl(JsonVariant node, char* topicBuf, size_t cap, size_t curLen)
+{
+  // Serial.printf("traverse_impl: %s\n", topicBuf);
+
+  // Objects
+  if (node.is<JsonObject>()) {
+    JsonObject obj = node.as<JsonObject>();
+    for (JsonPair kv : obj) { // ArduinoJson v7-compatible
+      // Save current length so we can restore after recursion
+      size_t savedLen = curLen;
+
+      // Append key
+      append_to_topic(topicBuf, curLen, cap, kv.key().c_str());
+
+      // Recurse
+      traverse_impl(kv.value(), topicBuf, cap, curLen);
+
+      // Restore topic
+      curLen = savedLen;
+      topicBuf[curLen] = '\0';
+    }
+    return;
+  }
+
+  // Arrays
+  if (node.is<JsonArray>()) {
+    JsonArray arr = node.as<JsonArray>();
+    size_t idx = 0;
+    for (JsonVariant v : arr) {
+      size_t savedLen = curLen;
+      append_index_to_topic(topicBuf, curLen, cap, idx++);
+      traverse_impl(v, topicBuf, cap, curLen);
+      curLen = savedLen;
+      topicBuf[curLen] = '\0';
+    }
+    return;
+  }
+
+  // Primitive leaf -> publish
+  char payload[256];
+  const char* data = to_payload(node, payload, sizeof(payload));
+  // Ensure non-null topic string (can be empty if caller passed "")
+  mqqt_publish(topicBuf, data);
+}
+
+void mqqt_traverse_json(JsonVariant node)
+{
+  // Fixed topic buffer (max 128 incl. NUL)
+  static constexpr size_t TOPIC_CAP = 128;
+  char topicBuf[TOPIC_CAP] = "";
+  size_t len = 0;
+
+  traverse_impl(node, topicBuf, TOPIC_CAP, len);
 }
