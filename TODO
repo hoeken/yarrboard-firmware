@@ -1,6 +1,5 @@
 # GENERAL
 
-* make sure adchelper changes dont break anything
 * rgb status should have its own .h/.cpp file
     * wifi connection status?
     * expose the main object

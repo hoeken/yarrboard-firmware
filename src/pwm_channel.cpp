@@ -451,7 +451,18 @@ void PWMChannel::updateOutputLED()
 
 float PWMChannel::getVoltage()
 {
+  // queue up our voltage reading.
+  if (this->id < 4)
+    this->voltageHelper->requestReading(this->id);
+  else
+    this->voltageHelper->requestReading(this->id - 4);
+
+  // get our latest voltage reading.
+  while (!this->voltageHelper->isReady())
+    vTaskDelay(1);
+
   float voltage = this->toVoltage(this->voltageHelper->toVoltage(this->voltageHelper->getReading()));
+
   return voltage;
 }
 
@@ -463,7 +474,7 @@ void PWMChannel::checkFuseBlown()
 {
   if (this->status == Status::ON) {
     // try to "debounce" the on state
-    for (byte i = 0; i < 10; i++) {
+    for (byte i = 0; i < 25; i++) {
       if (i > 0) {
         DUMP(i);
         DUMP(this->voltage);
@@ -471,7 +482,7 @@ void PWMChannel::checkFuseBlown()
       if (this->voltage > 8.0)
         return;
 
-      delay(1);
+      vTaskDelay(1);
       this->voltage = this->getVoltage();
     }
 
@@ -480,12 +491,6 @@ void PWMChannel::checkFuseBlown()
     this->status = Status::BLOWN;
     this->outputState = false;
     this->updateOutput(false);
-    // } else if (this->status == Status::BLOWN) {
-    //   if (this->voltage > 8.0) {
-    //     this->status = Status::OFF;
-    //     this->outputState = false;
-    //     this->updateOutput(false);
-    //   }
   }
 }
 
@@ -502,7 +507,7 @@ void PWMChannel::checkFuseBypassed()
       if (this->voltage < busVoltage * 0.90)
         return;
 
-      delay(1);
+      vTaskDelay(1);
       this->voltage = this->getVoltage();
     }
 
