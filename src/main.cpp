@@ -12,6 +12,7 @@
 #include "navico.h"
 #include "network.h"
 #include "ota.h"
+#include "piezo.h"
 #include "prefs.h"
 #include "rgb.h"
 #include "server.h"
@@ -80,7 +81,9 @@ void setup()
   debug_setup();
   Serial.println("Debug ok");
 
+  // audio visual notifications
   rgb_setup();
+  piezo_setup();
 
   // ntp_setup();
   prefs_setup();

@@ -1,0 +1,26 @@
+/*
+  Yarrboard
+
+  Author: Zach Hoeken <hoeken@gmail.com>
+  Website: https://github.com/hoeken/yarrboard
+  License: GPLv3
+*/
+
+#ifndef YARR_PIEZO_H
+#define YARR_PIEZO_H
+
+#include "config.h"
+
+struct Note {
+    uint16_t freqHz;
+    uint16_t ms;
+}; // freq=0 => rest
+
+void piezo_setup();
+
+void playMelody(const Note* seq, size_t len, bool repeat = false);
+static inline void buzzerMute();
+static inline void buzzerTone(uint16_t freqHz);
+void BuzzerTask(void* /*pv*/);
+
+#endif /* !YARR_PIEZO_H */
