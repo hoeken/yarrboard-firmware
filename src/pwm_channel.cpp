@@ -270,7 +270,7 @@ void PWMChannel::setup()
   else
     sprintf(this->defaultState, "OFF", this->id);
 
-  #ifdef YB_PWM_CHANNEL_ADC_DRIVER_MCP3564
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
   this->amperageHelper = new MCP3564Helper(3.3, this->id, &_adcCurrentMCP3564);
   #elif YB_PWM_CHANNEL_ADC_DRIVER_MCP3208
   this->amperageHelper = new MCP3208Helper(3.3, this->id, &_adcCurrentMCP3208);
@@ -282,6 +282,8 @@ void PWMChannel::setup()
     this->voltageHelper = new ADS1115Helper(3.3, this->id, &_adcVoltageADS1115_1);
   else
     this->voltageHelper = new ADS1115Helper(3.3, this->id - 4, &_adcVoltageADS1115_2);
+    #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
+  this->voltageHelper = new MCP3564Helper(3.3, this->id, &_adcVoltageMCP3564);
     #endif
   #endif
 }
@@ -394,7 +396,7 @@ void PWMChannel::updateOutput(bool check_status)
 
 float PWMChannel::toAmperage(float voltage)
 {
-  float amps = (voltage - (3.3 * 0.1)) / (0.132); // ACS725LLCTR-20AU
+  float amps = (voltage - (3.3 * 0.1)) / (YB_PWM_CHANNEL_V_PER_AMP);
 
   amps = amps - this->amperageOffset;
 
