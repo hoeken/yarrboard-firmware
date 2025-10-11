@@ -944,14 +944,18 @@ const char* Brineomatic::resultToString(Result result)
       return "ERR_MEMBRANE_PRESSURE_LOW";
     case Result::ERR_MEMBRANE_PRESSURE_HIGH:
       return "ERR_MEMBRANE_PRESSURE_HIGH";
-    case Result::ERR_FLOWRATE_TIMEOUT:
-      return "ERR_FLOWRATE_TIMEOUT";
-    case Result::ERR_FLOWRATE_LOW:
-      return "ERR_FLOWRATE_LOW";
-    case Result::ERR_SALINITY_TIMEOUT:
-      return "ERR_SALINITY_TIMEOUT";
-    case Result::ERR_SALINITY_HIGH:
-      return "ERR_SALINITY_HIGH";
+    case Result::ERR_PRODUCT_FLOWRATE_TIMEOUT:
+      return "ERR_PRODUCT_FLOWRATE_TIMEOUT";
+    case Result::ERR_PRODUCT_FLOWRATE_LOW:
+      return "ERR_PRODUCT_FLOWRATE_LOW";
+    case Result::ERR_BRINE_FLOWRATE_TIMEOUT:
+      return "ERR_BRINE_FLOWRATE_TIMEOUT";
+    case Result::ERR_BRINE_FLOWRATE_LOW:
+      return "ERR_BRINE_FLOWRATE_LOW";
+    case Result::ERR_PRODUCT_SALINITY_TIMEOUT:
+      return "ERR_PRODUCT_SALINITY_TIMEOUT";
+    case Result::ERR_PRODUCT_SALINITY_HIGH:
+      return "ERR_PRODUCT_SALINITY_HIGH";
     case Result::ERR_PRODUCTION_TIMEOUT:
       return "ERR_PRODUCTION_TIMEOUT";
     case Result::ERR_MOTOR_TEMPERATURE_HIGH:
@@ -1538,7 +1542,7 @@ bool Brineomatic::checkProductFlowrateLow()
 
   if (productFlowrateLowErrorCount > 10) {
     currentStatus = Status::STOPPING;
-    runResult = Result::ERR_FLOWRATE_LOW;
+    runResult = Result::ERR_PRODUCT_FLOWRATE_LOW;
     return true;
   }
 
@@ -1554,7 +1558,7 @@ bool Brineomatic::checkProductSalinityHigh()
 
   if (productSalinityHighErrorCount > 10) {
     currentStatus = Status::STOPPING;
-    runResult = Result::ERR_SALINITY_HIGH;
+    runResult = Result::ERR_PRODUCT_SALINITY_HIGH;
     return true;
   }
 
@@ -1595,7 +1599,7 @@ bool Brineomatic::waitForProductFlowrate()
 
     if (esp_timer_get_time() - flowCheckStart > productFlowRateTimeout) {
       currentStatus = Status::STOPPING;
-      runResult = Result::ERR_FLOWRATE_TIMEOUT;
+      runResult = Result::ERR_PRODUCT_FLOWRATE_TIMEOUT;
       return true;
     }
 
@@ -1622,7 +1626,7 @@ bool Brineomatic::waitForProductSalinity()
 
     if (esp_timer_get_time() - salinityCheckStart > productSalinityTimeout) {
       currentStatus = Status::STOPPING;
-      runResult = Result::ERR_SALINITY_TIMEOUT;
+      runResult = Result::ERR_PRODUCT_SALINITY_TIMEOUT;
       return true;
     }
 

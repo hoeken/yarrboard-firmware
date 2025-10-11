@@ -108,10 +108,12 @@ class Brineomatic
       ERR_MEMBRANE_PRESSURE_TIMEOUT,
       ERR_MEMBRANE_PRESSURE_LOW,
       ERR_MEMBRANE_PRESSURE_HIGH,
-      ERR_FLOWRATE_TIMEOUT,
-      ERR_FLOWRATE_LOW,
-      ERR_SALINITY_TIMEOUT,
-      ERR_SALINITY_HIGH,
+      ERR_PRODUCT_FLOWRATE_TIMEOUT,
+      ERR_PRODUCT_FLOWRATE_LOW,
+      ERR_BRINE_FLOWRATE_TIMEOUT,
+      ERR_BRINE_FLOWRATE_LOW,
+      ERR_PRODUCT_SALINITY_TIMEOUT,
+      ERR_PRODUCT_SALINITY_HIGH,
       ERR_PRODUCTION_TIMEOUT,
       ERR_MOTOR_TEMPERATURE_HIGH
     };
@@ -263,7 +265,7 @@ class Brineomatic
     float productFlowrateMaximum = 300.0;        // LPH
     float brineFlowrateMinimum = 0.0;            // LPH
     float brineFlowrateMaximum = 500.0;          // LPH
-    float productSalinityMaximum = 500.0;               // PPM
+    float productSalinityMaximum = 500.0;        // PPM
     float motorTemperatureMaximum = 65.0;        // Celcius
     float tankLevelFull = 0.99;                  // 0 = empty, 1 = full
     float tankCapacity = 780;                    // Liters
@@ -284,7 +286,7 @@ class Brineomatic
     uint64_t membranePressureTimeout = 1ULL * 60 * 1000000; // 1 minute default, in microseconds
     uint64_t productFlowRateTimeout = 2ULL * 60 * 1000000;  // 2 minute default, in microseconds
     uint64_t brineFlowRateTimeout = 2ULL * 60 * 1000000;    // 2 minute default, in microseconds
-    uint64_t productSalinityTimeout = 5ULL * 60 * 1000000;         // 5 minute default, in microseconds
+    uint64_t productSalinityTimeout = 5ULL * 60 * 1000000;  // 5 minute default, in microseconds
     uint64_t productionTimeout = 12ULL * 60 * 60 * 1000000; // 12 hour default, in microseconds
 
     bool checkStopFlag();
