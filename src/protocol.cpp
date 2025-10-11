@@ -1938,6 +1938,7 @@ void generateUpdateJSON(JsonVariant output)
   output["water_temperature"] = wm.getWaterTemperature();
   output["product_flowrate"] = wm.getProductFlowrate();
   output["brine_flowrate"] = wm.getBrineFlowrate();
+  output["total_flowrate"] = wm.getTotalFlowrate();
   output["volume"] = wm.getVolume();
   output["product_salinity"] = wm.getProductSalinity();
   output["brine_salinity"] = wm.getBrineSalinity();

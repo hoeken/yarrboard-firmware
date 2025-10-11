@@ -54,6 +54,13 @@
 // time before saving fade pwm to preserve flash
 #define YB_DUTY_SAVE_TIMEOUT 5000
 
+// if we have a status led, default it to one.
+#ifdef YB_HAS_STATUS_WS2818
+  #ifndef YB_STATUS_WS2818_COUNT
+    #define YB_STATUS_WS2818_COUNT 1
+  #endif
+#endif
+
 // bytes for sending json
 #define YB_LARGE_JSON_SIZE 4096
 #define YB_CLIENT_LIMIT    12

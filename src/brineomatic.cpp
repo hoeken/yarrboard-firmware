@@ -801,6 +801,11 @@ float Brineomatic::getProductFlowrateMinimum()
   return productFlowrateMinimum;
 }
 
+float Brineomatic::getTotalFlowrate()
+{
+  return getProductFlowrate() + getBrineFlowrate();
+}
+
 float Brineomatic::getVolume()
 {
   return currentVolume;
