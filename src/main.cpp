@@ -9,6 +9,7 @@
 #include "adchelper.h"
 #include "config.h"
 #include "debug.h"
+#include "mqqt.h"
 #include "navico.h"
 #include "network.h"
 #include "ota.h"
@@ -94,6 +95,9 @@ void setup()
 
   server_setup();
   Serial.println("Server ok");
+
+  mqqt_setup();
+  Serial.println("MQQT ok");
 
   protocol_setup();
   Serial.println("Protocol ok");
@@ -191,6 +195,7 @@ void loop()
   network_loop();
   server_loop();
   protocol_loop();
+  mqqt_loop();
   ota_loop();
 
   if (app_enable_mfd)
