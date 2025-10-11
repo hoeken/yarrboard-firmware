@@ -64,7 +64,7 @@ class PWMChannel
 #endif
 
 #ifdef YB_HAS_CHANNEL_VOLTAGE
-  #ifdef YB_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
+  #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
     ADS1115Helper* voltageHelper;
   #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
     MCP3564Helper* voltageHelper;

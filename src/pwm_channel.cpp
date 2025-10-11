@@ -31,9 +31,9 @@ MCP3564 _adcCurrentMCP3564(YB_PWM_CHANNEL_CURRENT_ADC_CS, &SPI, YB_PWM_CHANNEL_C
   #endif
 
   #ifdef YB_HAS_CHANNEL_VOLTAGE
-    #ifdef YB_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
-ADS1115 _adcVoltageADS1115_1(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_1);
-ADS1115 _adcVoltageADS1115_2(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_2);
+    #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
+ADS1115 _adcVoltageADS1115_1(YB_PWM_CHANNEL_VOLTAGE_I2C_ADDRESS_1);
+ADS1115 _adcVoltageADS1115_2(YB_PWM_CHANNEL_VOLTAGE_I2C_ADDRESS_2);
     #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
 MCP3564 _adcVoltageMCP3564(YB_PWM_CHANNEL_VOLTAGE_ADC_CS, &SPI, YB_PWM_CHANNEL_VOLTAGE_ADC_MOSI, YB_PWM_CHANNEL_VOLTAGE_ADC_MISO, YB_PWM_CHANNEL_VOLTAGE_ADC_SCK);
     #endif
@@ -59,8 +59,14 @@ static bool cb_ledc_fade_end_event(const ledc_cb_param_t* param,
 void mcp_wrapper()
 {
   Serial.print(".");
+
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
   _adcCurrentMCP3564.IRQ_handler();
+  #endif
+
+  #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
   _adcVoltageMCP3564.IRQ_handler();
+  #endif
 }
 
 void pwm_channels_setup()
@@ -92,7 +98,7 @@ void pwm_channels_setup()
   #endif
 
   #ifdef YB_HAS_CHANNEL_VOLTAGE
-    #ifdef YB_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
+    #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
 
   Wire.begin();
   _adcVoltageADS1115_1.begin();
@@ -265,7 +271,7 @@ void PWMChannel::setup()
   #endif
 
   #ifdef YB_HAS_CHANNEL_VOLTAGE
-    #ifdef YB_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
+    #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
   if (this->id < 4)
     this->voltageHelper = new ADS1115Helper(3.3, this->id, &_adcVoltageADS1115_1);
   else

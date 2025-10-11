@@ -2,7 +2,6 @@
 
 * make sure adchelper changes dont break anything
 * rgb status should have its own .h/.cpp file
-    * we should do something interesting with it.
     * wifi connection status?
     * expose the main object
     * #defines for other board aka frothfet with offsets for their particular leds
@@ -24,6 +23,9 @@
     * add parseJSONConfig() calls to each object
     * download file -> generate and send
     * upload file -> parse and if no error then write to littlefs + reboot
+* wifi improvements:
+    * wifi connection fail should default to AP mode
+    * wifi should reconnect on failure
 
 # BRINEOMATIC
 
@@ -82,9 +84,6 @@
 * update signalk plugin - same
 * go through and re-adjust the various page sizes for our different viewports
 * protocol documentation
-* wifi improvements:
-    * wifi connection fail should default to AP mode
-    * wifi should reconnect on failure
 * add mppt support:
     * homeassistant "light" for consolidated dashboard control
     * option to receive json commands over mppt?
