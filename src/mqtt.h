@@ -6,8 +6,8 @@
   License: GPLv3
 */
 
-#ifndef YARR_MQQT_H
-#define YARR_MQQT_H
+#ifndef YARR_MQTT_H
+#define YARR_MQTT_H
 
 #include "config.h"
 #include "network.h"
@@ -17,15 +17,15 @@
 
 extern PsychicMqttClient mqttClient;
 
-void mqqt_setup();
-void mqqt_loop();
+void mqtt_setup();
+void mqtt_loop();
 
 void onMqttConnect(bool sessionPresent);
 
-void mqqt_publish(const char* topic, const char* payload);
-void mqqt_traverse_json(JsonVariant node);
-void mqqt_ha_discovery();
+void mqtt_publish(const char* topic, const char* payload);
+void mqtt_traverse_json(JsonVariant node);
+void mqtt_ha_discovery();
 
-void mqqt_receive_message(const char* topic, const char* payload, int retain, int qos, bool dup);
+void mqtt_receive_message(const char* topic, const char* payload, int retain, int qos, bool dup);
 
-#endif /* !YARR_MQQT_H */
+#endif /* !YARR_MQTT_H */

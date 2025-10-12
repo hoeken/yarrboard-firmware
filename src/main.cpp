@@ -9,7 +9,7 @@
 #include "adchelper.h"
 #include "config.h"
 #include "debug.h"
-#include "mqqt.h"
+#include "mqtt.h"
 #include "navico.h"
 #include "network.h"
 #include "ota.h"
@@ -148,7 +148,7 @@ void setup()
 #endif
 
   // we need to do this last so that all our channels, etc are fully configured.
-  mqqt_setup();
+  mqtt_setup();
   Serial.println("MQQT ok");
 
   rgb_set_status_color(0, 255, 0);
@@ -196,7 +196,7 @@ void loop()
   network_loop();
   server_loop();
   protocol_loop();
-  mqqt_loop();
+  mqtt_loop();
   ota_loop();
 
   if (app_enable_mfd)

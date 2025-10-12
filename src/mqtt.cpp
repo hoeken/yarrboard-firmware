@@ -6,17 +6,17 @@
   License: GPLv3
 */
 
-#include "mqqt.h"
+#include "mqtt.h"
 
 PsychicMqttClient mqttClient;
-const char* mqqt_server = "mqtt://192.168.2.246";
+const char* mqtt_server = "mqtt://192.168.2.246";
 
 unsigned long previousMQQTMillis = 0;
 
-void mqqt_setup()
+void mqtt_setup()
 {
-  mqttClient.setServer(mqqt_server);
-  mqttClient.setCredentials("mqqt", "Trunk-View-Repeat-Saucer-6");
+  mqttClient.setServer(mqtt_server);
+  mqttClient.setCredentials("mqtt", "Trunk-View-Repeat-Saucer-6");
 
   // on connect home assistant discovery hook
   mqttClient.onConnect(onMqttConnect);
@@ -24,7 +24,7 @@ void mqqt_setup()
   // home assistant connection discovery hook.
   mqttClient.onTopic("homeassistant/status", 0, [&](const char* topic, const char* payload, int retain, int qos, bool dup) {
     if (!strcmp(payload, "online"))
-      mqqt_ha_discovery();
+      mqtt_ha_discovery();
   });
 
   mqttClient.connect();
@@ -44,19 +44,19 @@ void mqqt_setup()
   }
 
   // look for json messages on this path...
-  char mqqt_path[128];
-  sprintf(mqqt_path, "yarrboard/%s/message", local_hostname);
-  mqttClient.onTopic(mqqt_path, 0, mqqt_receive_message);
+  char mqtt_path[128];
+  sprintf(mqtt_path, "yarrboard/%s/message", local_hostname);
+  mqttClient.onTopic(mqtt_path, 0, mqtt_receive_message);
 }
 
-void mqqt_loop()
+void mqtt_loop()
 {
   unsigned int messageDelta = millis() - previousMQQTMillis;
   if (messageDelta >= 1000) {
 
     JsonDocument output;
     generateUpdateJSON(output);
-    mqqt_traverse_json(output);
+    mqtt_traverse_json(output);
 
 #ifdef YB_HAS_PWM_CHANNELS
 
@@ -66,19 +66,19 @@ void mqqt_loop()
   }
 }
 
-void mqqt_publish(const char* topic, const char* payload)
+void mqtt_publish(const char* topic, const char* payload)
 {
   // prepare our path
-  char mqqt_path[256];
-  sprintf(mqqt_path, "yarrboard/%s/%s", local_hostname, topic);
+  char mqtt_path[256];
+  sprintf(mqtt_path, "yarrboard/%s/%s", local_hostname, topic);
 
-  // Serial.printf("mqqt publish: %s: %s\n", mqqt_path, payload);
+  // Serial.printf("mqtt publish: %s: %s\n", mqtt_path, payload);
 
   // send it off!
-  mqttClient.publish(mqqt_path, 0, 0, payload, strlen(payload), false);
+  mqttClient.publish(mqtt_path, 0, 0, payload, strlen(payload), false);
 }
 
-void mqqt_receive_message(const char* topic, const char* payload, int retain, int qos, bool dup)
+void mqtt_receive_message(const char* topic, const char* payload, int retain, int qos, bool dup)
 {
   Serial.printf("Received Topic: %s\r\n", topic);
   Serial.printf("Received Payload: %s\r\n", payload);
@@ -90,10 +90,10 @@ void onMqttConnect(bool sessionPresent)
   Serial.print("Session present: ");
   Serial.println(sessionPresent);
 
-  mqqt_ha_discovery();
+  mqtt_ha_discovery();
 }
 
-void mqqt_ha_discovery()
+void mqtt_ha_discovery()
 {
   char ha_dev_uuid[128];
   sprintf(ha_dev_uuid, "%s_%s", YB_HARDWARE_VERSION, uuid);
@@ -298,10 +298,10 @@ static void traverse_impl(JsonVariant node, char* topicBuf, size_t cap, size_t c
   char payload[256];
   const char* data = to_payload(node, payload, sizeof(payload));
   // Ensure non-null topic string (can be empty if caller passed "")
-  mqqt_publish(topicBuf, data);
+  mqtt_publish(topicBuf, data);
 }
 
-void mqqt_traverse_json(JsonVariant node)
+void mqtt_traverse_json(JsonVariant node)
 {
   // Fixed topic buffer (max 128 incl. NUL)
   static constexpr size_t TOPIC_CAP = 128;
