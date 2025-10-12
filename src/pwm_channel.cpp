@@ -19,7 +19,7 @@ unsigned long previousHAUpdateMillis = 0;
 PWMChannel pwm_channels[YB_PWM_CHANNEL_COUNT];
 
 // flag for hardware fade status
-static volatile bool isChannelFading[YB_FAN_COUNT];
+static volatile bool isChannelFading[YB_PWM_CHANNEL_COUNT];
 
 /* Setting PWM Properties */
 // ledc library range is a little bit quirky:
@@ -112,6 +112,7 @@ void pwm_channels_setup()
   _adcVoltageADS1115_1.setMode(1); //  SINGLE SHOT MODE
   _adcVoltageADS1115_1.setGain(1);
   _adcVoltageADS1115_1.setDataRate(7);
+  _adcVoltageADS1115_1.requestADC(0); // trigger first read
 
   _adcVoltageADS1115_2.begin();
   if (_adcVoltageADS1115_2.isConnected())
@@ -122,6 +123,7 @@ void pwm_channels_setup()
   _adcVoltageADS1115_2.setMode(1); //  SINGLE SHOT MODE
   _adcVoltageADS1115_2.setGain(1);
   _adcVoltageADS1115_2.setDataRate(7);
+  _adcVoltageADS1115_2.requestADC(0); // trigger first read
 
     #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
 
@@ -197,8 +199,6 @@ void pwm_channels_loop()
 
   // let the client know immediately.
   if (doSendFastUpdate) {
-    TRACE();
-    DUMP(pwm_channels[0].getStatus());
     sendFastUpdate();
   }
 
@@ -397,8 +397,9 @@ void PWMChannel::updateOutput(bool check_status)
   }
 
   // okay, set our pin state.
-  if (!isChannelFading[this->id])
+  if (!isChannelFading[this->id]) {
     ledcWrite(this->id, pwm);
+  }
 
   // see what we're working with.
   if (check_status)
@@ -492,10 +493,6 @@ void PWMChannel::checkFuseBlown()
   if (this->status == Status::ON) {
     // try to "debounce" the on state
     for (byte i = 0; i < 25; i++) {
-      if (i > 0) {
-        DUMP(i);
-        DUMP(this->voltage);
-      }
       if (this->voltage > 8.0)
         return;
 
@@ -503,8 +500,6 @@ void PWMChannel::checkFuseBlown()
       this->voltage = this->getVoltage();
     }
 
-    TRACE();
-    DUMP(this->voltage);
     this->status = Status::BLOWN;
     this->outputState = false;
     this->updateOutput(false);
@@ -515,10 +510,6 @@ void PWMChannel::checkFuseBypassed()
 {
   if (this->status != Status::ON && this->status != Status::BYPASSED) {
     for (byte i = 0; i < 10; i++) {
-      // if (i > 0) {
-      //   DUMP(i);
-      //   DUMP(this->voltage);
-      // }
 
       // voltage needs to be over 90%... otherwise we get false readings when shutting off motors as the voltage collapses
       if (this->voltage < busVoltage * 0.90)
@@ -544,8 +535,6 @@ void PWMChannel::checkSoftFuse()
     // Check our soft fuse, and our max limit for the board.
     if (abs(this->amperage) >= this->softFuseAmperage ||
         abs(this->amperage) >= YB_PWM_CHANNEL_MAX_AMPS) {
-      DUMP("TRIPPED");
-      DUMP(this->amperage);
 
       // record some variables
       this->status = Status::TRIPPED;
@@ -580,8 +569,6 @@ void PWMChannel::setFade(float duty, int max_fade_time_ms)
       this->fadeDutyCycleStart = this->dutyCycle;
     else
       this->fadeDutyCycleStart = 0.0;
-
-    TRACE();
 
     // fading turns on the channel.
     this->outputState = true;
@@ -629,7 +616,6 @@ void PWMChannel::checkIfFadeOver()
       } else {
         this->outputState = true;
         this->status = Status::ON;
-        TRACE();
       }
     }
     // okay, update our duty cycle as we go for good UI
@@ -650,7 +636,6 @@ void PWMChannel::checkIfFadeOver()
       } else {
         this->outputState = true;
         this->status = Status::ON;
-        TRACE();
       }
     }
   }
@@ -728,9 +713,6 @@ void PWMChannel::setState(const char* state)
 void PWMChannel::setState(bool newState)
 {
   if (newState != outputState) {
-    DUMP(this->getStatus());
-    DUMP(newState);
-
     // save our output state
     this->outputState = newState;
 
