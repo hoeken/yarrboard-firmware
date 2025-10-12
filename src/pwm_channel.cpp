@@ -855,7 +855,16 @@ void PWMChannel::haPublishState()
 
   if (this->isDimmable) {
     char b[8];
-    snprintf(b, sizeof(b), "%u", round(255 * this->dutyCycle));
+    int brightness = (int)roundf(255.0f * this->dutyCycle);
+    if (brightness < 0)
+      brightness = 0;
+    if (brightness > 255)
+      brightness = 255;
+    snprintf(b, sizeof(b), "%u", brightness);
+    if (this->id == 0) {
+      DUMP(brightness);
+      DUMP(b);
+    }
     mqttClient.publish(ha_topic_state_brightness, 0, false, b, 0, false);
   }
 }
@@ -876,8 +885,26 @@ void PWMChannel::haHandleCommand(const char* topic, const char* payload)
       this->setState(false);
   }
 
+  // set our brightness
   if (!strcmp(ha_topic_cmd_brightness, topic)) {
-    DUMP(payload);
+    // Parse payload into integer (0–255)
+    int value = atoi(payload);
+    if (value < 0)
+      value = 0;
+    if (value > 255)
+      value = 255;
+
+    // Convert to float (0.0–1.0)
+    float duty = (float)value / 255.0f;
+
+    if (this->id == 0)
+      DUMP(duty);
+
+    // Set duty cycle
+    this->setDuty(duty);
+
+    // turn it on
+    this->updateOutput(true);
   }
 }
 
