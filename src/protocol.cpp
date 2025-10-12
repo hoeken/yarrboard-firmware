@@ -716,7 +716,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
 
     // save to our storage
     strlcpy(pwm_channels[idx].name, input["name"] | "Channel ?", sizeof(pwm_channels[idx].name));
-    sprintf(prefIndex, "pwmName%d", idx);
+    sprintf(prefIndex, "pwmName%d", cid);
     preferences.putString(prefIndex, pwm_channels[idx].name);
 
     // give them the updated config
@@ -734,7 +734,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
 
     // save to our storage
     strlcpy(pwm_channels[idx].type, input["type"] | "other", sizeof(pwm_channels[idx].type));
-    sprintf(prefIndex, "pwmType%d", idx);
+    sprintf(prefIndex, "pwmType%d", cid);
     preferences.putString(prefIndex, pwm_channels[idx].type);
 
     // give them the updated config
@@ -753,7 +753,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
 
     // save to our storage
     strlcpy(pwm_channels[idx].defaultState, input["defaultState"] | "OFF", sizeof(pwm_channels[idx].defaultState));
-    sprintf(prefIndex, "pwmDefault%d", idx);
+    sprintf(prefIndex, "pwmDefault%d", cid);
     preferences.putString(prefIndex, pwm_channels[idx].defaultState);
 
     // give them the updated config
@@ -766,7 +766,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
     pwm_channels[idx].isDimmable = isDimmable;
 
     // save to our storage
-    sprintf(prefIndex, "pwmDimmable%d", idx);
+    sprintf(prefIndex, "pwmDimmable%d", cid);
     preferences.putBool(prefIndex, isDimmable);
 
     // give them the updated config
@@ -780,7 +780,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
     pwm_channels[idx].isEnabled = enabled;
 
     // save to our storage
-    sprintf(prefIndex, "pwmEnabled%d", idx);
+    sprintf(prefIndex, "pwmEnabled%d", cid);
     preferences.putBool(prefIndex, enabled);
 
     // give them the updated config
@@ -797,7 +797,7 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
     pwm_channels[idx].softFuseAmperage = softFuse;
 
     // save to our storage
-    sprintf(prefIndex, "pwmSoftFuse%d", idx);
+    sprintf(prefIndex, "pwmSoftFuse%d", cid);
     preferences.putFloat(prefIndex, softFuse);
 
     // give them the updated config

@@ -1,7 +1,24 @@
 # GENERAL
 
 * switch to 1 indexed channels instead of zero
-* add "keys" to each channel config 32 chars, ([A-Za-z0-9_]+ only) - allow passing that instead of id
+    * relay_channel
+    * servo_channel
+    * adc_channel
+
+* refactor channels to have a BaseChannel class that can consolidate some code
+    * id
+    * key
+    * isValidKey()
+    * isValidId()
+    * setup()
+    * generateConfigJSON()
+    * parseConfigJSON()
+
+* add "keys" to each channel config 32 chars, ([A-Za-z0-9_]+ only)
+    * allow passing that instead of id
+    * use that in place of ids in most places
+    * no more arrays, use key => object in json generation
+
 * change over to a single json file for configuration.  easy to backup / deploy
     * stop using the prefs object for configuration information
     * store in littlefs
@@ -17,7 +34,6 @@
 * upgrade to PsychicHttp 2.0
 * clean up #includes and libraries
 * add wifi RSSI bars indicator
-* refactor channels to have a BaseChannel class that can consolidate lots of extra code
 * wifi improvements:
     * wifi connection fail should default to AP mode
     * wifi should reconnect on failure
