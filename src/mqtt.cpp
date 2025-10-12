@@ -58,10 +58,6 @@ void mqtt_loop()
     generateUpdateJSON(output);
     mqtt_traverse_json(output);
 
-#ifdef YB_HAS_PWM_CHANNELS
-
-#endif
-
     previousMQQTMillis = millis();
   }
 }
@@ -125,8 +121,8 @@ void mqtt_ha_discovery()
 
   // let each individual channel create its own config
   for (short i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
-    // if (pwm_channels[i].isEnabled)
-    pwm_channels[i].haPublishDiscovery(components);
+    if (pwm_channels[i].isEnabled)
+      pwm_channels[i].haPublishDiscovery(components);
   }
 
   // dynamically allocate our buffer
@@ -281,7 +277,7 @@ static void traverse_impl(JsonVariant node, char* topicBuf, size_t cap, size_t c
   // Arrays
   if (node.is<JsonArray>()) {
     JsonArray arr = node.as<JsonArray>();
-    size_t idx = 0;
+    size_t idx = 1;
     for (JsonVariant v : arr) {
       size_t savedLen = curLen;
       append_index_to_topic(topicBuf, curLen, cap, idx++);

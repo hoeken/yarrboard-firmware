@@ -1686,7 +1686,7 @@ function start_websocket() {
       //our pwm info
       if (msg.pwm) {
         for (ch of msg.pwm) {
-          if (current_config.pwm[ch.id].enabled) {
+          if (current_config.pwm[ch.id - 1].enabled) {
             if (ch.state == "ON") {
               $('#pwmState' + ch.id).addClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-primary");
@@ -1733,7 +1733,7 @@ function start_websocket() {
 
             //duty is a bit of a special case.
             let duty = Math.round(ch.duty * 100);
-            if (current_config.pwm[ch.id].isDimmable) {
+            if (current_config.pwm[ch.id - 1].isDimmable) {
               if (currentPWMSliderID != ch.id) {
                 $('#pwmDutySlider' + ch.id).val(duty);
                 $('#pwmDutyCycle' + ch.id).html(`${duty}%`);
@@ -2301,7 +2301,7 @@ function start_websocket() {
         let total_trip_count = 0;
 
         for (ch of msg.pwm) {
-          if (current_config.pwm[ch.id].enabled) {
+          if (current_config.pwm[ch.id - 1].enabled) {
             $('#pwmAmpHours' + ch.id).html(formatAmpHours(ch.aH));
             $('#pwmWattHours' + ch.id).html(formatWattHours(ch.wH));
             $('#pwmOnCount' + ch.id).html(ch.state_change_count.toLocaleString("en-US"));

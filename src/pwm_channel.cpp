@@ -159,7 +159,7 @@ void pwm_channels_setup()
 
   // intitialize our channel
   for (short i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
-    pwm_channels[i].id = i;
+    pwm_channels[i].id = i + 1;
     pwm_channels[i].setup();
     pwm_channels[i].setupLedc();
   }
@@ -216,7 +216,7 @@ void pwm_channels_loop()
 
 bool isValidPWMChannel(byte cid)
 {
-  if (cid < 0 || cid >= YB_PWM_CHANNEL_COUNT)
+  if (cid < 1 || cid > YB_PWM_CHANNEL_COUNT)
     return false;
   else
     return true;
@@ -274,47 +274,49 @@ void PWMChannel::setup()
   if (preferences.isKey(prefIndex))
     strlcpy(this->type, preferences.getString(prefIndex).c_str(), sizeof(this->type));
   else
-    sprintf(this->type, "other", this->id);
+    sprintf(this->type, "other");
 
   // default state
   sprintf(prefIndex, "pwmDefault%d", this->id);
   if (preferences.isKey(prefIndex))
     strlcpy(this->defaultState, preferences.getString(prefIndex).c_str(), sizeof(this->defaultState));
   else
-    sprintf(this->defaultState, "OFF", this->id);
+    sprintf(this->defaultState, "OFF");
 
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
-  this->amperageHelper = new MCP3564Helper(3.3, this->id, &_adcCurrentMCP3564);
+  this->amperageHelper = new MCP3564Helper(3.3, this->id - 1, &_adcCurrentMCP3564);
   #endif
 
   #ifdef YB_HAS_CHANNEL_VOLTAGE
     #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
-  if (this->id < 4)
-    this->voltageHelper = new ADS1115Helper(3.3, this->id, &_adcVoltageADS1115_1);
+  if (this->id <= 4)
+    this->voltageHelper = new ADS1115Helper(3.3, this->id - 1, &_adcVoltageADS1115_1);
   else
-    this->voltageHelper = new ADS1115Helper(3.3, this->id - 4, &_adcVoltageADS1115_2);
+    this->voltageHelper = new ADS1115Helper(3.3, this->id - 5, &_adcVoltageADS1115_2);
     #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
-  this->voltageHelper = new MCP3564Helper(3.3, this->id, &_adcVoltageMCP3564);
+  this->voltageHelper = new MCP3564Helper(3.3, this->id - 1, &_adcVoltageMCP3564);
     #endif
   #endif
 }
 
 void PWMChannel::setupLedc()
 {
+  int idx = this->id - 1;
+
   // deinitialize our pin.
   // ledc_fade_func_uninstall();
-  ledcDetachPin(this->_pins[this->id]);
+  ledcDetachPin(this->_pins[idx]);
 
   // initialize our PWM channels
-  ledcSetup(this->id, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION);
-  ledcAttachPin(this->_pins[this->id], this->id);
-  ledcWrite(this->id, 0);
+  ledcSetup(idx, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION);
+  ledcAttachPin(this->_pins[idx], idx);
+  ledcWrite(idx, 0);
 }
 
 void PWMChannel::setupInterrupt()
 {
-  int channel = this->id;
-  isChannelFading[this->id] = false;
+  int channel = this->id - 1;
+  isChannelFading[channel] = false;
 
   ledc_cbs_t callbacks = {.fade_cb = cb_ledc_fade_end_event};
 
@@ -329,21 +331,17 @@ void PWMChannel::setupOffset()
   this->status = Status::OFF;
   this->updateOutput(false);
 
-  Serial.print("s");
-
   // voltage zero state
   this->voltageOffset = 0.0;
   float v = this->getVoltage();
   if (v < (30.0 * 0.05))
     this->voltageOffset = v;
-  Serial.print("v");
 
   // amperage zero state
   this->amperageOffset = 0.0;
   float a = this->getAmperage();
   if (a < (20.0 * 0.05))
     this->amperageOffset = a;
-  Serial.print("a");
 
   Serial.printf("CH%d Voltage Offset: %0.3f / Amperage Offset: %0.3f\n", this->id, this->voltageOffset, this->amperageOffset);
 }
@@ -397,8 +395,8 @@ void PWMChannel::updateOutput(bool check_status)
   }
 
   // okay, set our pin state.
-  if (!isChannelFading[this->id]) {
-    ledcWrite(this->id, pwm);
+  if (!isChannelFading[this->id - 1]) {
+    ledcWrite(this->id - 1, pwm);
   }
 
   // see what we're working with.
@@ -453,27 +451,27 @@ void PWMChannel::updateOutputLED()
 {
   #if (YB_STATUS_WS2818_COUNT > 1)
   if (this->status == Status::ON)
-    rgb_set_pixel_color(this->id + 1, 0, 255, 0); // green
+    rgb_set_pixel_color(this->id, 0, 255, 0); // green
   else if (this->status == Status::OFF)
-    rgb_set_pixel_color(this->id + 1, 0, 0, 0); // off
+    rgb_set_pixel_color(this->id, 0, 0, 0); // off
   else if (this->status == Status::TRIPPED)
-    rgb_set_pixel_color(this->id + 1, 255, 255, 0); // yellow
+    rgb_set_pixel_color(this->id, 255, 255, 0); // yellow
   else if (this->status == Status::BLOWN)
-    rgb_set_pixel_color(this->id + 1, 255, 0, 0); // red
+    rgb_set_pixel_color(this->id, 255, 0, 0); // red
   else if (this->status == Status::BYPASSED)
-    rgb_set_pixel_color(this->id + 1, 0, 0, 255); // blue
+    rgb_set_pixel_color(this->id, 0, 0, 255); // blue
   else
-    rgb_set_pixel_color(this->id + 1, 0, 0, 0); // off
+    rgb_set_pixel_color(this->id, 0, 0, 0); // off
   #endif
 }
 
 float PWMChannel::getVoltage()
 {
   // queue up our voltage reading.
-  if (this->id < 4)
-    this->voltageHelper->requestReading(this->id);
+  if (this->id <= 4)
+    this->voltageHelper->requestReading(this->id - 1);
   else
-    this->voltageHelper->requestReading(this->id - 4);
+    this->voltageHelper->requestReading(this->id - 5);
 
   // get our latest voltage reading.
   while (!this->voltageHelper->isReady())
@@ -563,7 +561,7 @@ void PWMChannel::checkSoftFuse()
 void PWMChannel::setFade(float duty, int max_fade_time_ms)
 {
   // is our earlier hardware fade over yet?
-  if (!isChannelFading[this->id]) {
+  if (!isChannelFading[this->id - 1]) {
     // dutyCycle is a default - will be non-zero when state is off
     if (this->outputState)
       this->fadeDutyCycleStart = this->dutyCycle;
@@ -575,7 +573,7 @@ void PWMChannel::setFade(float duty, int max_fade_time_ms)
     this->status = Status::ON;
 
     // some vars for tracking.
-    isChannelFading[this->id] = true;
+    isChannelFading[this->id - 1] = true;
     this->fadeRequested = true;
 
     this->fadeDutyCycleEnd = duty;
@@ -584,7 +582,7 @@ void PWMChannel::setFade(float duty, int max_fade_time_ms)
 
     // call our hardware fader
     int target_duty = duty * MAX_DUTY_CYCLE;
-    ledc_set_fade_time_and_start(LEDC_LOW_SPEED_MODE, (ledc_channel_t)this->id, target_duty, max_fade_time_ms, LEDC_FADE_NO_WAIT);
+    ledc_set_fade_time_and_start(LEDC_LOW_SPEED_MODE, (ledc_channel_t)(this->id - 1), target_duty, max_fade_time_ms, LEDC_FADE_NO_WAIT);
   }
 }
 
@@ -597,8 +595,8 @@ void PWMChannel::checkIfFadeOver()
       // this is a potential bug fix.. had the board "lock" into a fade.
       // it was responsive but wouldnt toggle some pins.  I think it was this
       // flag not getting cleared
-      if (isChannelFading[this->id]) {
-        isChannelFading[this->id];
+      if (isChannelFading[this->id - 1]) {
+        isChannelFading[this->id - 1];
         Serial.println("error fading");
       }
 
@@ -861,10 +859,6 @@ void PWMChannel::haPublishState()
     if (brightness > 255)
       brightness = 255;
     snprintf(b, sizeof(b), "%u", brightness);
-    if (this->id == 0) {
-      DUMP(brightness);
-      DUMP(b);
-    }
     mqttClient.publish(ha_topic_state_brightness, 0, false, b, 0, false);
   }
 }
@@ -896,9 +890,6 @@ void PWMChannel::haHandleCommand(const char* topic, const char* payload)
 
     // Convert to float (0.0–1.0)
     float duty = (float)value / 255.0f;
-
-    if (this->id == 0)
-      DUMP(duty);
 
     // Set duty cycle
     this->setDuty(duty);

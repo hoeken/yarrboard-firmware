@@ -636,14 +636,17 @@ void handleSetPWMChannel(JsonVariantConst input, JsonVariant output)
   if (!isValidPWMChannel(cid))
     return generateErrorJSON(output, "Invalid channel id");
 
+  // make up for our offset
+  byte idx = cid - 1;
+
   // is it enabled?
-  if (!pwm_channels[cid].isEnabled)
+  if (!pwm_channels[idx].isEnabled)
     return generateErrorJSON(output, "Channel is not enabled.");
 
   // our duty cycle
   if (input["duty"].is<float>()) {
     // is it enabled?
-    if (!pwm_channels[cid].isEnabled)
+    if (!pwm_channels[idx].isEnabled)
       return generateErrorJSON(output, "Channel is not enabled.");
 
     float duty = input["duty"];
@@ -655,10 +658,10 @@ void handleSetPWMChannel(JsonVariantConst input, JsonVariant output)
       return generateErrorJSON(output, "Duty cycle must be <= 1");
 
     // okay, we're good.
-    pwm_channels[cid].setDuty(duty);
+    pwm_channels[idx].setDuty(duty);
 
     // change our output pin to reflect
-    pwm_channels[cid].updateOutput(true);
+    pwm_channels[idx].updateOutput(true);
   }
 
   // change state
@@ -675,17 +678,17 @@ void handleSetPWMChannel(JsonVariantConst input, JsonVariant output)
     }
 
     // get our data
-    strlcpy(pwm_channels[cid].source, input["source"] | local_hostname, sizeof(pwm_channels[cid].source));
+    strlcpy(pwm_channels[idx].source, input["source"] | local_hostname, sizeof(pwm_channels[idx].source));
 
     // okay, set our state
     char state[10];
     strlcpy(state, input["state"] | "OFF", sizeof(state));
 
     // update our pwm channel
-    pwm_channels[cid].setState(state);
+    pwm_channels[idx].setState(state);
 
     // get that update out ASAP... if its our own update
-    if (!strcmp(pwm_channels[cid].source, local_hostname))
+    if (!strcmp(pwm_channels[idx].source, local_hostname))
       sendFastUpdate();
   }
 #else
@@ -707,6 +710,9 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
   if (!isValidPWMChannel(cid))
     return generateErrorJSON(output, "Invalid channel id");
 
+  // make up for our offset
+  byte idx = cid - 1;
+
   // channel name
   if (input["name"].is<String>()) {
     // is it too long?
@@ -717,9 +723,9 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
     }
 
     // save to our storage
-    strlcpy(pwm_channels[cid].name, input["name"] | "Channel ?", sizeof(pwm_channels[cid].name));
-    sprintf(prefIndex, "pwmName%d", cid);
-    preferences.putString(prefIndex, pwm_channels[cid].name);
+    strlcpy(pwm_channels[idx].name, input["name"] | "Channel ?", sizeof(pwm_channels[idx].name));
+    sprintf(prefIndex, "pwmName%d", idx);
+    preferences.putString(prefIndex, pwm_channels[idx].name);
 
     // give them the updated config
     return generateConfigJSON(output);
@@ -735,9 +741,9 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
     }
 
     // save to our storage
-    strlcpy(pwm_channels[cid].type, input["type"] | "other", sizeof(pwm_channels[cid].type));
-    sprintf(prefIndex, "pwmType%d", cid);
-    preferences.putString(prefIndex, pwm_channels[cid].type);
+    strlcpy(pwm_channels[idx].type, input["type"] | "other", sizeof(pwm_channels[idx].type));
+    sprintf(prefIndex, "pwmType%d", idx);
+    preferences.putString(prefIndex, pwm_channels[idx].type);
 
     // give them the updated config
     return generateConfigJSON(output);
@@ -747,16 +753,16 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
   if (input["defaultState"].is<String>()) {
     // is it too long?
     if (strlen(input["defaultState"]) >
-        sizeof(pwm_channels[cid].defaultState) - 1) {
+        sizeof(pwm_channels[idx].defaultState) - 1) {
       char error[50];
-      sprintf(error, "Maximum default state length is %s characters.", sizeof(pwm_channels[cid].defaultState) - 1);
+      sprintf(error, "Maximum default state length is %s characters.", sizeof(pwm_channels[idx].defaultState) - 1);
       return generateErrorJSON(output, error);
     }
 
     // save to our storage
-    strlcpy(pwm_channels[cid].defaultState, input["defaultState"] | "OFF", sizeof(pwm_channels[cid].defaultState));
-    sprintf(prefIndex, "pwmDefault%d", cid);
-    preferences.putString(prefIndex, pwm_channels[cid].defaultState);
+    strlcpy(pwm_channels[idx].defaultState, input["defaultState"] | "OFF", sizeof(pwm_channels[idx].defaultState));
+    sprintf(prefIndex, "pwmDefault%d", idx);
+    preferences.putString(prefIndex, pwm_channels[idx].defaultState);
 
     // give them the updated config
     return generateConfigJSON(output);
@@ -765,10 +771,10 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
   // dimmability
   if (input["isDimmable"].is<bool>()) {
     bool isDimmable = input["isDimmable"];
-    pwm_channels[cid].isDimmable = isDimmable;
+    pwm_channels[idx].isDimmable = isDimmable;
 
     // save to our storage
-    sprintf(prefIndex, "pwmDimmable%d", cid);
+    sprintf(prefIndex, "pwmDimmable%d", idx);
     preferences.putBool(prefIndex, isDimmable);
 
     // give them the updated config
@@ -779,10 +785,10 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
   if (input["enabled"].is<bool>()) {
     // save right nwo.
     bool enabled = input["enabled"];
-    pwm_channels[cid].isEnabled = enabled;
+    pwm_channels[idx].isEnabled = enabled;
 
     // save to our storage
-    sprintf(prefIndex, "pwmEnabled%d", cid);
+    sprintf(prefIndex, "pwmEnabled%d", idx);
     preferences.putBool(prefIndex, enabled);
 
     // give them the updated config
@@ -796,10 +802,10 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
     softFuse = constrain(softFuse, 0.01, 20.0);
 
     // save right nwo.
-    pwm_channels[cid].softFuseAmperage = softFuse;
+    pwm_channels[idx].softFuseAmperage = softFuse;
 
     // save to our storage
-    sprintf(prefIndex, "pwmSoftFuse%d", cid);
+    sprintf(prefIndex, "pwmSoftFuse%d", idx);
     preferences.putFloat(prefIndex, softFuse);
 
     // give them the updated config
@@ -822,6 +828,9 @@ void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output)
   if (!isValidPWMChannel(cid))
     return generateErrorJSON(output, "Invalid channel id");
 
+  // make up for our offset
+  byte idx = cid - 1;
+
   // source is required
   if (!input["source"].is<String>())
     return generateErrorJSON(output, "'source' is a required parameter");
@@ -834,14 +843,14 @@ void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output)
   }
 
   // save our source
-  strlcpy(pwm_channels[cid].source, input["source"] | local_hostname, sizeof(pwm_channels[cid].source));
+  strlcpy(pwm_channels[idx].source, input["source"] | local_hostname, sizeof(pwm_channels[idx].source));
 
   // these states should all change to off
-  if (!strcmp(pwm_channels[cid].getStatus(), "ON") || !strcmp(pwm_channels[cid].getStatus(), "TRIPPED") || !strcmp(pwm_channels[cid].getStatus(), "BLOWN"))
-    pwm_channels[cid].setState("OFF");
+  if (!strcmp(pwm_channels[idx].getStatus(), "ON") || !strcmp(pwm_channels[idx].getStatus(), "TRIPPED") || !strcmp(pwm_channels[idx].getStatus(), "BLOWN"))
+    pwm_channels[idx].setState("OFF");
   // OFF and BYPASS can be turned on.
   else
-    pwm_channels[cid].setState("ON");
+    pwm_channels[idx].setState("ON");
 #else
   return generateErrorJSON(output, "Board does not have output channels.");
 #endif
@@ -866,6 +875,9 @@ void handleFadePWMChannel(JsonVariantConst input, JsonVariant output)
   if (!isValidPWMChannel(cid))
     return generateErrorJSON(output, "Invalid channel id");
 
+  // make up for our offset
+  byte idx = cid - 1;
+
   float duty = input["duty"];
 
   // what do we hate?  va-li-date!
@@ -879,7 +891,7 @@ void handleFadePWMChannel(JsonVariantConst input, JsonVariant output)
 
   int fadeDelay = input["millis"] | 0;
 
-  pwm_channels[cid].setFade(duty, fadeDelay);
+  pwm_channels[idx].setFade(duty, fadeDelay);
 
   t3 = micros();
 
@@ -1753,7 +1765,7 @@ void generateConfigJSON(JsonVariant output)
 // output / pwm channels
 #ifdef YB_HAS_PWM_CHANNELS
   for (byte i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
-    output["pwm"][i]["id"] = i;
+    output["pwm"][i]["id"] = pwm_channels[i].id;
     output["pwm"][i]["name"] = pwm_channels[i].name;
     output["pwm"][i]["type"] = pwm_channels[i].type;
     output["pwm"][i]["enabled"] = pwm_channels[i].isEnabled;
@@ -1847,7 +1859,7 @@ void generateUpdateJSON(JsonVariant output)
 
 #ifdef YB_HAS_PWM_CHANNELS
   for (byte i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
-    output["pwm"][i]["id"] = i;
+    output["pwm"][i]["id"] = pwm_channels[i].id;
     output["pwm"][i]["state"] = pwm_channels[i].getStatus();
     output["pwm"][i]["source"] = pwm_channels[i].source;
     if (pwm_channels[i].isDimmable)
@@ -1998,7 +2010,7 @@ void generateFastUpdateJSON(JsonVariant output)
   j = 0;
   for (byte i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
     if (pwm_channels[i].sendFastUpdate) {
-      output["pwm"][j]["id"] = i;
+      output["pwm"][j]["id"] = pwm_channels[i].id;
       output["pwm"][j]["state"] = pwm_channels[i].getStatus();
       output["pwm"][j]["source"] = pwm_channels[i].source;
       if (pwm_channels[i].isDimmable)
@@ -2069,7 +2081,7 @@ void generateStatsJSON(JsonVariant output)
 #ifdef YB_HAS_PWM_CHANNELS
   // info about each of our channels
   for (byte i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
-    output["pwm"][i]["id"] = i;
+    output["pwm"][i]["id"] = pwm_channels[i].id;
     output["pwm"][i]["name"] = pwm_channels[i].name;
     output["pwm"][i]["aH"] = pwm_channels[i].ampHours;
     output["pwm"][i]["wH"] = pwm_channels[i].wattHours;
@@ -2113,7 +2125,7 @@ void generateGraphDataJSON(JsonVariant output)
 #ifdef YB_HAS_PWM_CHANNELS
   // // info about each of our channels
   // for (byte i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
-  //   output["pwm"][i]["id"] = i;
+  //   output["pwm"][i]["id"] = pwm_channels[i].id;
   //   output["pwm"][i]["name"] = pwm_channels[i].name;
   //   output["pwm"][i]["aH"] = pwm_channels[i].ampHours;
   //   output["pwm"][i]["wH"] = pwm_channels[i].wattHours;
