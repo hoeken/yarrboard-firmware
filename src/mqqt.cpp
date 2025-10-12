@@ -78,8 +78,6 @@ void mqqt_ha_discovery()
   char topic[128];
   sprintf(topic, "homeassistant/device/%s/config", ha_dev_uuid);
 
-  DUMP(topic);
-
   // this is our device information.
   JsonDocument doc;
   JsonObject device = doc["dev"].to<JsonObject>();
@@ -119,7 +117,7 @@ void mqqt_ha_discovery()
     mqttClient.publish(topic, 2, true, jsonBuffer, strlen(jsonBuffer), false);
   }
 
-  DUMP(jsonBuffer);
+  // DUMP(jsonBuffer);
 
   // no leaks
   free(jsonBuffer);

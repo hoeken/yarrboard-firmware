@@ -803,26 +803,24 @@ void PWMChannel::haPublishDiscovery(JsonVariant doc)
   JsonArray availability = obj["availability"].to<JsonArray>();
   JsonObject avail = availability.add<JsonObject>();
   avail["topic"] = ha_topic_avail;
-  // avail["payload_available"] = "online";
-  // avail["payload_not_available"] = "offline";
 }
 
 void PWMChannel::haPublishAvailable()
 {
-  mqttClient.publish(ha_topic_avail, 1, 0, "online", 0, false);
+  mqttClient.publish(ha_topic_avail, 1, false, "online", 0, false);
 }
 
 void PWMChannel::haPublishState()
 {
   if (this->status == Status::ON)
-    mqttClient.publish(ha_topic_state_state, 0, 0, "ON", 0, false);
+    mqttClient.publish(ha_topic_state_state, 0, false, "ON", 0, false);
   else
-    mqttClient.publish(ha_topic_state_state, 0, 0, "OFF", 0, false);
+    mqttClient.publish(ha_topic_state_state, 0, false, "OFF", 0, false);
 
   if (this->isDimmable) {
     char b[8];
     snprintf(b, sizeof(b), "%u", round(255 * this->dutyCycle));
-    mqttClient.publish(ha_topic_state_brightness, 0, 0, b, 0, false);
+    mqttClient.publish(ha_topic_state_brightness, 0, false, b, 0, false);
   }
 }
 
