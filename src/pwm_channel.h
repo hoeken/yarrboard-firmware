@@ -13,6 +13,8 @@
 #include "bus_voltage.h"
 #include "config.h"
 #include "driver/ledc.h"
+#include "mqqt.h"
+#include "network.h"
 #include "prefs.h"
 #include "protocol.h"
 #include <Arduino.h>
@@ -20,6 +22,14 @@
 
 class PWMChannel
 {
+  private:
+    char ha_uuid[64];
+    char ha_topic_cmd_state[128];
+    char ha_topic_cmd_brightness[128];
+    char ha_topic_state_state[128];
+    char ha_topic_state_brightness[128];
+    char ha_topic_avail[128];
+
   protected:
     byte _pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_PINS;
 
@@ -113,6 +123,12 @@ class PWMChannel
     const char* getStatus();
 
     void updateOutputLED();
+
+    void haPublishDiscovery();
+    void haPublishDiscoveryLight();
+    void haPublishAvailable();
+    void haPublishState();
+    void haHandleCommand(const char* topic, const char* payload);
 };
 
 extern PWMChannel pwm_channels[YB_PWM_CHANNEL_COUNT];
@@ -120,5 +136,7 @@ extern PWMChannel pwm_channels[YB_PWM_CHANNEL_COUNT];
 void pwm_channels_setup();
 void pwm_channels_loop();
 bool isValidPWMChannel(byte cid);
+
+void pwm_handle_ha_command(const char* topic, const char* payload, int retain, int qos, bool dup);
 
 #endif /* !YARR_PWM_CHANNEL_H */

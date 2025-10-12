@@ -13,6 +13,8 @@
   #include "pwm_channel.h"
   #include "rgb.h"
 
+unsigned long previousHAUpdateMillis = 0;
+
 // the main star of the event
 PWMChannel pwm_channels[YB_PWM_CHANNEL_COUNT];
 
@@ -168,6 +170,9 @@ void pwm_channels_setup()
     pwm_channels[i].setupInterrupt(); // intitialize our interrupts for fading
     pwm_channels[i].setupOffset();
     pwm_channels[i].setupDefaultState();
+
+    if (pwm_channels[i].isEnabled)
+      pwm_channels[i].haPublishDiscovery();
   }
 }
 
@@ -185,8 +190,13 @@ void pwm_channels_loop()
     pwm_channels[id].updateOutputLED();
 
     // flag for update?
-    if (pwm_channels[id].sendFastUpdate)
+    if (pwm_channels[id].sendFastUpdate) {
       doSendFastUpdate = true;
+
+      // publish our home assistant status
+      pwm_channels[id].haPublishAvailable();
+      pwm_channels[id].haPublishState();
+    }
   }
 
   // let the client know immediately.
@@ -194,6 +204,17 @@ void pwm_channels_loop()
     TRACE();
     DUMP(pwm_channels[0].getStatus());
     sendFastUpdate();
+  }
+
+  // periodically update our HomeAssistant status
+  unsigned int messageDelta = millis() - previousHAUpdateMillis;
+  if (messageDelta >= 1000) {
+    for (byte id = 0; id < YB_PWM_CHANNEL_COUNT; id++) {
+      pwm_channels[id].haPublishAvailable();
+      pwm_channels[id].haPublishState();
+
+      previousHAUpdateMillis = millis();
+    }
   }
 }
 
@@ -688,8 +709,6 @@ void PWMChannel::calculateAverages(unsigned int delta)
 
 void PWMChannel::setState(const char* state)
 {
-  DUMP(state);
-
   if (!strcmp(state, "ON"))
     this->status = Status::ON;
   else if (!strcmp(state, "OFF"))
@@ -750,6 +769,99 @@ const char* PWMChannel::getStatus()
     return "BYPASSED";
   else
     return "OFF";
+}
+
+void PWMChannel::haPublishDiscovery()
+{
+  sprintf(ha_uuid, "yarrboard_%s_pwm_%d", local_hostname, this->id);
+  sprintf(ha_topic_cmd_state, "yarrboard/%s/%d/set", local_hostname, this->id);
+  sprintf(ha_topic_state_state, "yarrboard/%s/%d/state", local_hostname, this->id);
+  sprintf(ha_topic_avail, "yarrboard/%s/%d/availability", local_hostname, this->id);
+
+  if (this->isDimmable) {
+    sprintf(ha_topic_cmd_brightness, "yarrboard/%s/%d/brightness/set", local_hostname, this->id);
+    sprintf(ha_topic_state_brightness, "yarrboard/%s/%d/brightness/state", local_hostname, this->id);
+  }
+
+  mqttClient.onTopic(ha_topic_cmd_state, 0, pwm_handle_ha_command);
+  mqttClient.onTopic(ha_topic_cmd_brightness, 0, pwm_handle_ha_command);
+
+  haPublishDiscoveryLight();
+  // publishHADiscoveryStatusEnum();
+  //  publishHADiscoveryTrip();
+  //  pubDiscovery_BinBlown();
+  //  pubDiscovery_ModeSelect();
+}
+
+void PWMChannel::haPublishDiscoveryLight()
+{
+  char topic[128];
+  sprintf(topic, "homeassistant/light/%s/config", ha_uuid);
+
+  JsonDocument doc;
+  doc["name"] = this->name;
+  doc["unique_id"] = ha_uuid;
+  doc["command_topic"] = ha_topic_cmd_state;
+  doc["state_topic"] = ha_topic_state_state;
+  doc["payload_on"] = "ON";
+  doc["payload_off"] = "OFF";
+
+  if (this->isDimmable) {
+    doc["brightness_command_topic"] = ha_topic_cmd_brightness;
+    doc["brightness_state_topic"] = ha_topic_state_brightness;
+  }
+
+  // availability is an array of objects
+  JsonArray availability = doc["availability"].to<JsonArray>();
+  JsonObject avail = availability.add<JsonObject>();
+  avail["topic"] = ha_topic_avail;
+
+  // serialize it.
+  char payload[800];
+  serializeJson(doc, payload, sizeof(payload));
+
+  // publish it.
+  mqttClient.publish(topic, 0, 0, payload, strlen(payload), false);
+}
+
+void PWMChannel::haPublishAvailable()
+{
+  mqttClient.publish(ha_topic_avail, 0, true, "online", 0, false);
+}
+
+void PWMChannel::haPublishState()
+{
+  if (this->status == Status::ON)
+    mqttClient.publish(ha_topic_state_state, 0, 0, "ON", 0, false);
+  else
+    mqttClient.publish(ha_topic_state_state, 0, 0, "OFF", 0, false);
+
+  if (this->isDimmable) {
+    char b[8];
+    snprintf(b, sizeof(b), "%u", round(255 * this->dutyCycle));
+    mqttClient.publish(ha_topic_state_brightness, 0, 0, b, 0, false);
+  }
+}
+
+void pwm_handle_ha_command(const char* topic, const char* payload, int retain, int qos, bool dup)
+{
+  for (short i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
+    pwm_channels[i].haHandleCommand(topic, payload);
+  }
+}
+
+void PWMChannel::haHandleCommand(const char* topic, const char* payload)
+{
+  if (!strcmp(ha_topic_cmd_state, topic)) {
+    if (!strcmp(payload, "ON"))
+      this->setState(true);
+    else
+      this->setState(false);
+  }
+
+  if (!strcmp(ha_topic_cmd_brightness, topic)) {
+    DUMP(payload);
+  }
 }
 
 #endif

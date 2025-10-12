@@ -9,13 +9,14 @@
 #include "mqqt.h"
 
 PsychicMqttClient mqttClient;
-const char* mqqt_server = "mqtt://192.168.2.42";
+const char* mqqt_server = "mqtt://192.168.2.246";
 
 unsigned long previousMQQTMillis = 0;
 
 void mqqt_setup()
 {
   mqttClient.setServer(mqqt_server);
+  mqttClient.setCredentials("mqqt", "");
 
   // look for json messages on this path...
   char mqqt_path[128];
@@ -40,6 +41,10 @@ void mqqt_loop()
     JsonDocument output;
     generateUpdateJSON(output);
     mqqt_traverse_json(output);
+
+#ifdef YB_HAS_PWM_CHANNELS
+
+#endif
 
     previousMQQTMillis = millis();
   }
