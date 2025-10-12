@@ -170,9 +170,6 @@ void pwm_channels_setup()
     pwm_channels[i].setupInterrupt(); // intitialize our interrupts for fading
     pwm_channels[i].setupOffset();
     pwm_channels[i].setupDefaultState();
-
-    if (pwm_channels[i].isEnabled)
-      pwm_channels[i].haPublishDiscovery();
   }
 }
 
@@ -193,8 +190,7 @@ void pwm_channels_loop()
     if (pwm_channels[id].sendFastUpdate) {
       doSendFastUpdate = true;
 
-      // publish our home assistant status
-      pwm_channels[id].haPublishAvailable();
+      // publish our home assistant state
       pwm_channels[id].haPublishState();
     }
   }
@@ -771,62 +767,49 @@ const char* PWMChannel::getStatus()
     return "OFF";
 }
 
-void PWMChannel::haPublishDiscovery()
+void PWMChannel::haPublishDiscovery(JsonVariant doc)
 {
-  sprintf(ha_uuid, "yarrboard_%s_pwm_%d", local_hostname, this->id);
-  sprintf(ha_topic_cmd_state, "yarrboard/%s/%d/set", local_hostname, this->id);
-  sprintf(ha_topic_state_state, "yarrboard/%s/%d/state", local_hostname, this->id);
-  sprintf(ha_topic_avail, "yarrboard/%s/%d/availability", local_hostname, this->id);
+  // generate our id / topics
+  sprintf(ha_uuid, "%s_pwm_%d", uuid, this->id);
+  sprintf(ha_topic_cmd_state, "yarrboard/%s/pwm/%d/ha_set", local_hostname, this->id);
+  sprintf(ha_topic_state_state, "yarrboard/%s/pwm/%d/ha_state", local_hostname, this->id);
+  sprintf(ha_topic_avail, "yarrboard/%s/pwm/%d/ha_availability", local_hostname, this->id);
 
   if (this->isDimmable) {
-    sprintf(ha_topic_cmd_brightness, "yarrboard/%s/%d/brightness/set", local_hostname, this->id);
-    sprintf(ha_topic_state_brightness, "yarrboard/%s/%d/brightness/state", local_hostname, this->id);
+    sprintf(ha_topic_cmd_brightness, "yarrboard/%s/pwm/%d/ha_brightness/set", local_hostname, this->id);
+    sprintf(ha_topic_state_brightness, "yarrboard/%s/pwm/%d/ha_brightness/state", local_hostname, this->id);
   }
 
+  // our callbacks to the command topics
   mqttClient.onTopic(ha_topic_cmd_state, 0, pwm_handle_ha_command);
   mqttClient.onTopic(ha_topic_cmd_brightness, 0, pwm_handle_ha_command);
 
-  haPublishDiscoveryLight();
-  // publishHADiscoveryStatusEnum();
-  //  publishHADiscoveryTrip();
-  //  pubDiscovery_BinBlown();
-  //  pubDiscovery_ModeSelect();
-}
-
-void PWMChannel::haPublishDiscoveryLight()
-{
-  char topic[128];
-  sprintf(topic, "homeassistant/light/%s/config", ha_uuid);
-
-  JsonDocument doc;
-  doc["name"] = this->name;
-  doc["unique_id"] = ha_uuid;
-  doc["command_topic"] = ha_topic_cmd_state;
-  doc["state_topic"] = ha_topic_state_state;
-  doc["payload_on"] = "ON";
-  doc["payload_off"] = "OFF";
+  // configuration object for the individual channel
+  JsonObject obj = doc[ha_uuid].to<JsonObject>();
+  obj["p"] = "light";
+  obj["name"] = this->name;
+  obj["unique_id"] = ha_uuid;
+  obj["command_topic"] = ha_topic_cmd_state;
+  obj["state_topic"] = ha_topic_state_state;
+  obj["payload_on"] = "ON";
+  obj["payload_off"] = "OFF";
 
   if (this->isDimmable) {
-    doc["brightness_command_topic"] = ha_topic_cmd_brightness;
-    doc["brightness_state_topic"] = ha_topic_state_brightness;
+    obj["brightness_command_topic"] = ha_topic_cmd_brightness;
+    obj["brightness_state_topic"] = ha_topic_state_brightness;
   }
 
   // availability is an array of objects
-  JsonArray availability = doc["availability"].to<JsonArray>();
+  JsonArray availability = obj["availability"].to<JsonArray>();
   JsonObject avail = availability.add<JsonObject>();
   avail["topic"] = ha_topic_avail;
-
-  // serialize it.
-  char payload[800];
-  serializeJson(doc, payload, sizeof(payload));
-
-  // publish it.
-  mqttClient.publish(topic, 0, 0, payload, strlen(payload), false);
+  // avail["payload_available"] = "online";
+  // avail["payload_not_available"] = "offline";
 }
 
 void PWMChannel::haPublishAvailable()
 {
-  mqttClient.publish(ha_topic_avail, 0, true, "online", 0, false);
+  mqttClient.publish(ha_topic_avail, 1, 0, "online", 0, false);
 }
 
 void PWMChannel::haPublishState()

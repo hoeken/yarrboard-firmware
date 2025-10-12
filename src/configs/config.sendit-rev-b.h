@@ -2,6 +2,7 @@
 #define _CONFIG_H_SENDIT_REV_B
 
 #define YB_HARDWARE_VERSION "SENDIT_REV_B"
+#define YB_MANUFACTURER     "Yarrboard"
 
 #define YB_IS_SENDIT
 

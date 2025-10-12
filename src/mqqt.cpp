@@ -16,7 +16,7 @@ unsigned long previousMQQTMillis = 0;
 void mqqt_setup()
 {
   mqttClient.setServer(mqqt_server);
-  mqttClient.setCredentials("mqqt", "");
+  mqttClient.setCredentials("mqqt", "Trunk-View-Repeat-Saucer-6");
 
   // look for json messages on this path...
   char mqqt_path[128];
@@ -31,6 +31,8 @@ void mqqt_setup()
   while (!mqttClient.connected()) {
     delay(500);
   }
+
+  mqqt_ha_discovery();
 }
 
 void mqqt_loop()
@@ -66,6 +68,61 @@ void mqqt_receive_message(const char* topic, const char* payload, int retain, in
 {
   Serial.printf("Received Topic: %s\r\n", topic);
   Serial.printf("Received Payload: %s\r\n", payload);
+}
+
+void mqqt_ha_discovery()
+{
+  char ha_dev_uuid[128];
+  sprintf(ha_dev_uuid, "%s_%s", YB_HARDWARE_VERSION, uuid);
+
+  char topic[128];
+  sprintf(topic, "homeassistant/device/%s/config", ha_dev_uuid);
+
+  DUMP(topic);
+
+  // this is our device information.
+  JsonDocument doc;
+  JsonObject device = doc["dev"].to<JsonObject>();
+  device["ids"] = ha_dev_uuid;
+  device["name"] = board_name;
+  device["mf"] = YB_MANUFACTURER;
+  device["mdl"] = YB_HARDWARE_VERSION;
+  device["sw"] = YB_FIRMWARE_VERSION;
+  device["sn"] = uuid;
+  char config_url[128];
+  sprintf(config_url, "http://%s.local", local_hostname);
+  device["configuration_url"] = config_url;
+
+  // our origin to let HA know where it came from.
+  JsonObject origin = doc["o"].to<JsonObject>();
+  origin["name"] = "yarrboard";
+  origin["sw"] = YB_FIRMWARE_VERSION;
+  origin["url"] = "https://github.com/hoeken/yarrboard-firmware";
+
+  // our components array
+  JsonObject components = doc["cmps"].to<JsonObject>();
+
+  // let each individual channel create its own config
+  for (short i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
+    // if (pwm_channels[i].isEnabled)
+    pwm_channels[i].haPublishDiscovery(components);
+  }
+
+  // dynamically allocate our buffer
+  size_t jsonSize = measureJson(doc);
+  char* jsonBuffer = (char*)malloc(jsonSize + 1);
+  jsonBuffer[jsonSize] = '\0'; // null terminate
+
+  // did we get anything?
+  if (jsonBuffer != NULL) {
+    serializeJson(doc, jsonBuffer, jsonSize + 1);
+    mqttClient.publish(topic, 2, true, jsonBuffer, strlen(jsonBuffer), false);
+  }
+
+  DUMP(jsonBuffer);
+
+  // no leaks
+  free(jsonBuffer);
 }
 
 // ---- Internal helpers -------------------------------------------------------

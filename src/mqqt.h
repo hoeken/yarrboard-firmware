@@ -22,6 +22,7 @@ void mqqt_loop();
 
 void mqqt_publish(const char* topic, const char* payload);
 void mqqt_traverse_json(JsonVariant node);
+void mqqt_ha_discovery();
 
 void mqqt_receive_message(const char* topic, const char* payload, int retain, int qos, bool dup);
 

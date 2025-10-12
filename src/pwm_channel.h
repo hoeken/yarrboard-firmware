@@ -124,8 +124,8 @@ class PWMChannel
 
     void updateOutputLED();
 
-    void haPublishDiscovery();
-    void haPublishDiscoveryLight();
+    void haPublishDiscovery(JsonVariant doc);
+    void haPublishDiscoveryLight(JsonVariant doc);
     void haPublishAvailable();
     void haPublishState();
     void haHandleCommand(const char* topic, const char* payload);

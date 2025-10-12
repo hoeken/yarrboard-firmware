@@ -2,6 +2,7 @@
 #define _CONFIG_H_BRINEOMATIC_REV_A
 
 #define YB_HARDWARE_VERSION "BRINEOMATIC_REV_A"
+#define YB_MANUFACTURER     "Yarrboard"
 
 #define YB_IS_BRINEOMATIC
 

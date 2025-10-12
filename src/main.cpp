@@ -96,9 +96,6 @@ void setup()
   server_setup();
   Serial.println("Server ok");
 
-  mqqt_setup();
-  Serial.println("MQQT ok");
-
   protocol_setup();
   Serial.println("Protocol ok");
 
@@ -149,6 +146,10 @@ void setup()
 #ifdef YB_IS_BRINEOMATIC
   brineomatic_setup();
 #endif
+
+  // we need to do this last so that all our channels, etc are fully configured.
+  mqqt_setup();
+  Serial.println("MQQT ok");
 
   rgb_set_status_color(0, 255, 0);
 }
