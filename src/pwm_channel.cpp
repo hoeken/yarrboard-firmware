@@ -756,11 +756,8 @@ void PWMChannel::haPublishDiscovery(JsonVariant doc)
   sprintf(ha_topic_cmd_state, "yarrboard/%s/pwm/%d/ha_set", local_hostname, this->id);
   sprintf(ha_topic_state_state, "yarrboard/%s/pwm/%d/ha_state", local_hostname, this->id);
   sprintf(ha_topic_avail, "yarrboard/%s/pwm/%d/ha_availability", local_hostname, this->id);
-
-  if (this->isDimmable) {
-    sprintf(ha_topic_cmd_brightness, "yarrboard/%s/pwm/%d/ha_brightness/set", local_hostname, this->id);
-    sprintf(ha_topic_state_brightness, "yarrboard/%s/pwm/%d/ha_brightness/state", local_hostname, this->id);
-  }
+  sprintf(ha_topic_cmd_brightness, "yarrboard/%s/pwm/%d/ha_brightness/set", local_hostname, this->id);
+  sprintf(ha_topic_state_brightness, "yarrboard/%s/pwm/%d/ha_brightness/state", local_hostname, this->id);
 
   // our callbacks to the command topics
   mqttClient.onTopic(ha_topic_cmd_state, 0, pwm_handle_ha_command);

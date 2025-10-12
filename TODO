@@ -1,16 +1,14 @@
 # GENERAL
 
-* rgb status should have its own .h/.cpp file
-    * wifi connection status?
-    * expose the main object
-    * #defines for other board aka frothfet with offsets for their particular leds
-* generic piezo buzzer support
-    * on / off / frequency? / preset tones or songs?
-* frothfet changes
-* brineomatic changes
-* sendit changes
-* switch to 1 indexed channels instead of zero
+* config should be stored as a json file in littlefs
+    * stop using the prefs object for configuration information
+    * instead load from the prefs json
+    * allow upload/download of the file
+    * possibly even editing it in the browser?
+    * use existing generateConfig() functions to create the json for writing
+        * do this whenever we would save to prefs
 * add "keys" to each channel config 32 chars, ([A-Za-z0-9_]+ only) - allow passing that instead of id
+* switch to 1 indexed channels instead of zero
 * upgrade to esp-idf 5.1.x and fix any issues
 * upgrade to PsychicHttp 2.0
 * clean up #includes and libraries
@@ -25,6 +23,10 @@
 * wifi improvements:
     * wifi connection fail should default to AP mode
     * wifi should reconnect on failure
+* rgb status should have its own .h/.cpp file
+    * wifi connection status?
+* generic piezo buzzer support
+    * on / off / frequency? / preset tones or songs?
 
 # BRINEOMATIC
 

@@ -18,21 +18,35 @@ void mqqt_setup()
   mqttClient.setServer(mqqt_server);
   mqttClient.setCredentials("mqqt", "Trunk-View-Repeat-Saucer-6");
 
-  // look for json messages on this path...
-  char mqqt_path[128];
-  sprintf(mqqt_path, "yarrboard/%s/message", local_hostname);
-  mqttClient.onTopic(mqqt_path, 0, mqqt_receive_message);
+  // on connect home assistant discovery hook
+  mqttClient.onConnect(onMqttConnect);
+
+  // home assistant connection discovery hook.
+  mqttClient.onTopic("homeassistant/status", 0, [&](const char* topic, const char* payload, int retain, int qos, bool dup) {
+    if (!strcmp(payload, "online"))
+      mqqt_ha_discovery();
+  });
 
   mqttClient.connect();
 
   /**
    * Wait blocking until the connection is established
    */
+  int tries = 0;
   while (!mqttClient.connected()) {
-    delay(500);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    tries++;
+
+    if (tries > 20) {
+      Serial.println("MQTT failed to connect.");
+      return;
+    }
   }
 
-  mqqt_ha_discovery();
+  // look for json messages on this path...
+  char mqqt_path[128];
+  sprintf(mqqt_path, "yarrboard/%s/message", local_hostname);
+  mqttClient.onTopic(mqqt_path, 0, mqqt_receive_message);
 }
 
 void mqqt_loop()
@@ -68,6 +82,15 @@ void mqqt_receive_message(const char* topic, const char* payload, int retain, in
 {
   Serial.printf("Received Topic: %s\r\n", topic);
   Serial.printf("Received Payload: %s\r\n", payload);
+}
+
+void onMqttConnect(bool sessionPresent)
+{
+  Serial.println("Connected to MQTT.");
+  Serial.print("Session present: ");
+  Serial.println(sessionPresent);
+
+  mqqt_ha_discovery();
 }
 
 void mqqt_ha_discovery()
@@ -114,7 +137,7 @@ void mqqt_ha_discovery()
   // did we get anything?
   if (jsonBuffer != NULL) {
     serializeJson(doc, jsonBuffer, jsonSize + 1);
-    mqttClient.publish(topic, 2, true, jsonBuffer, strlen(jsonBuffer), false);
+    mqttClient.publish(topic, 2, false, jsonBuffer, strlen(jsonBuffer), false);
   }
 
   // DUMP(jsonBuffer);
