@@ -758,11 +758,20 @@ void PWMChannel::haPublishDiscovery(JsonVariant doc)
   sprintf(ha_topic_avail, "yarrboard/%s/pwm/%d/ha_availability", local_hostname, this->id);
   sprintf(ha_topic_cmd_brightness, "yarrboard/%s/pwm/%d/ha_brightness/set", local_hostname, this->id);
   sprintf(ha_topic_state_brightness, "yarrboard/%s/pwm/%d/ha_brightness/state", local_hostname, this->id);
+  sprintf(ha_topic_voltage, "yarrboard/%s/pwm/%d/voltage", local_hostname, this->id);
+  sprintf(ha_topic_current, "yarrboard/%s/pwm/%d/current", local_hostname, this->id);
 
   // our callbacks to the command topics
   mqttClient.onTopic(ha_topic_cmd_state, 0, pwm_handle_ha_command);
   mqttClient.onTopic(ha_topic_cmd_brightness, 0, pwm_handle_ha_command);
 
+  this->haGenerateLightDiscovery(doc);
+  this->haGenerateVoltageDiscovery(doc);
+  this->haGenerateAmperageDiscovery(doc);
+}
+
+void PWMChannel::haGenerateLightDiscovery(JsonVariant doc)
+{
   // configuration object for the individual channel
   JsonObject obj = doc[ha_uuid].to<JsonObject>();
   obj["p"] = "light";
@@ -777,6 +786,54 @@ void PWMChannel::haPublishDiscovery(JsonVariant doc)
     obj["brightness_command_topic"] = ha_topic_cmd_brightness;
     obj["brightness_state_topic"] = ha_topic_state_brightness;
   }
+
+  // availability is an array of objects
+  JsonArray availability = obj["availability"].to<JsonArray>();
+  JsonObject avail = availability.add<JsonObject>();
+  avail["topic"] = ha_topic_avail;
+}
+
+void PWMChannel::haGenerateVoltageDiscovery(JsonVariant doc)
+{
+  // configuration object for the channel voltage
+  char ha_uuid_voltage[128];
+  sprintf(ha_uuid_voltage, "%s_voltage", ha_uuid);
+  char ha_voltage_name[128];
+  sprintf(ha_voltage_name, "%s Volts", this->name);
+
+  JsonObject obj = doc[ha_uuid_voltage].to<JsonObject>();
+  obj["p"] = "sensor";
+  obj["name"] = ha_voltage_name;
+  obj["unique_id"] = ha_uuid_voltage;
+  obj["state_topic"] = ha_topic_voltage;
+  obj["unit_of_measurement"] = "V";
+  obj["device_class"] = "voltage";
+  obj["state_class"] = "measurement";
+  obj["entity_category"] = "diagnostic";
+
+  // availability is an array of objects
+  JsonArray availability = obj["availability"].to<JsonArray>();
+  JsonObject avail = availability.add<JsonObject>();
+  avail["topic"] = ha_topic_avail;
+}
+
+void PWMChannel::haGenerateAmperageDiscovery(JsonVariant doc)
+{
+  // configuration object for the channel voltage
+  char ha_uuid_amperage[128];
+  sprintf(ha_uuid_amperage, "%s_amperage", ha_uuid);
+  char ha_amperage_name[128];
+  sprintf(ha_amperage_name, "%s Amps", this->name);
+
+  JsonObject obj = doc[ha_uuid_amperage].to<JsonObject>();
+  obj["p"] = "sensor";
+  obj["name"] = ha_amperage_name;
+  obj["unique_id"] = ha_uuid_amperage;
+  obj["state_topic"] = ha_topic_current;
+  obj["unit_of_measurement"] = "A";
+  obj["device_class"] = "current";
+  obj["state_class"] = "measurement";
+  obj["entity_category"] = "diagnostic";
 
   // availability is an array of objects
   JsonArray availability = obj["availability"].to<JsonArray>();

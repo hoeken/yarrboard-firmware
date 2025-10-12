@@ -29,6 +29,8 @@ class PWMChannel
     char ha_topic_state_state[128];
     char ha_topic_state_brightness[128];
     char ha_topic_avail[128];
+    char ha_topic_voltage[128];
+    char ha_topic_current[128];
 
   protected:
     byte _pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_PINS;
@@ -125,7 +127,9 @@ class PWMChannel
     void updateOutputLED();
 
     void haPublishDiscovery(JsonVariant doc);
-    void haPublishDiscoveryLight(JsonVariant doc);
+    void haGenerateLightDiscovery(JsonVariant doc);
+    void haGenerateVoltageDiscovery(JsonVariant doc);
+    void haGenerateAmperageDiscovery(JsonVariant doc);
     void haPublishAvailable();
     void haPublishState();
     void haHandleCommand(const char* topic, const char* payload);

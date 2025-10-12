@@ -16,7 +16,7 @@ unsigned long previousMQQTMillis = 0;
 void mqtt_setup()
 {
   mqttClient.setServer(mqtt_server);
-  mqttClient.setCredentials("mqtt", "Trunk-View-Repeat-Saucer-6");
+  mqttClient.setCredentials("yarrboard", "Trunk-View-Repeat-Saucer-6");
 
   // on connect home assistant discovery hook
   mqttClient.onConnect(onMqttConnect);
@@ -139,8 +139,6 @@ void mqtt_ha_discovery()
     serializeJson(doc, jsonBuffer, jsonSize + 1);
     mqttClient.publish(topic, 2, false, jsonBuffer, strlen(jsonBuffer), false);
   }
-
-  // DUMP(jsonBuffer);
 
   // no leaks
   free(jsonBuffer);
