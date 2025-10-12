@@ -13,20 +13,10 @@
 
 #define YB_FIRMWARE_VERSION "1.3.0"
 
-#if defined YB_CONFIG_8CH_MOSFET_REV_A
-  #include "./configs/config.8ch-mosfet-reva.h"
-#elif defined YB_CONFIG_8CH_MOSFET_REV_B
-  #include "./configs/config.8ch-mosfet-revb.h"
-#elif defined YB_CONFIG_8CH_MOSFET_REV_C
-  #include "./configs/config.8ch-mosfet-revc.h"
-#elif defined YB_CONFIG_FROTHFET_REV_D
+#if defined YB_CONFIG_FROTHFET_REV_D
   #include "./configs/config.frothfet-rev-d.h"
 #elif defined YB_CONFIG_FROTHFET_REV_E
   #include "./configs/config.frothfet-rev-e.h"
-#elif defined YB_CONFIG_RGB_INPUT_REV_A
-  #include "./configs/config.rgb-input-reva.h"
-#elif defined YB_CONFIG_RGB_INPUT_REV_B
-  #include "./configs/config.rgb-input-revb.h"
 #elif defined YB_CONFIG_BRINEOMATIC_REV_A
   #include "./configs/config.brineomatic-rev-a.h"
 #elif defined YB_CONFIG_BRINEOMATIC_REV_B

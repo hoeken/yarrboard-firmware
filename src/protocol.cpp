@@ -214,10 +214,6 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleToggleRelayChannel(input, output);
     else if (!strcmp(cmd, "set_servo_channel"))
       return handleSetServoChannel(input, output);
-    else if (!strcmp(cmd, "set_switch"))
-      return handleSetSwitch(input, output);
-    else if (!strcmp(cmd, "set_rgb"))
-      return handleSetRGB(input, output);
     else if (!strcmp(cmd, "set_theme"))
       return handleSetTheme(input, output);
     else if (!strcmp(cmd, "set_brightness"))
@@ -268,12 +264,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleConfigRelayChannel(input, output);
     else if (!strcmp(cmd, "config_servo_channel"))
       return handleConfigServoChannel(input, output);
-    else if (!strcmp(cmd, "config_switch"))
-      return handleConfigSwitch(input, output);
     else if (!strcmp(cmd, "config_adc"))
       return handleConfigADC(input, output);
-    else if (!strcmp(cmd, "config_rgb"))
-      return handleConfigRGB(input, output);
   }
 
   // if we got here, no bueno.
@@ -1174,223 +1166,6 @@ void handleSetServoChannel(JsonVariantConst input, JsonVariant output)
 #endif
 }
 
-void handleSetSwitch(JsonVariantConst input, JsonVariant output)
-{
-#ifdef YB_HAS_INPUT_CHANNELS
-  // id is required
-  if (!input["id"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'id' is a required parameter");
-
-  // is it a valid channel?
-  byte cid = input["id"];
-  if (!isValidInputChannel(cid))
-    return generateErrorJSON(output, "Invalid channel id");
-
-  // state is required
-  if (!input["state"].is<String>())
-    return generateErrorJSON(output, "'state' is a required parameter");
-
-  // source is required
-  if (!input["source"].is<String>())
-    return generateErrorJSON(output, "'source' is a required parameter");
-
-  // check the length
-  char error[50];
-  if (strlen(input["source"]) > YB_HOSTNAME_LENGTH - 1) {
-    sprintf(error, "Maximum source length is %s characters.", YB_HOSTNAME_LENGTH - 1);
-    return generateErrorJSON(output, error);
-  }
-
-  // get our data
-  strlcpy(input_channels[cid].source, input["source"] | local_hostname, sizeof(local_hostname));
-
-  // okay, set our state
-  char state[10];
-  strlcpy(state, input["state"] | "OFF", sizeof(state));
-
-  // update our pwm channel
-  input_channels[cid].setState(state);
-#else
-  return generateErrorJSON(output, "Board does not have RGB channels.");
-#endif
-}
-
-void handleConfigSwitch(JsonVariantConst input, JsonVariant output)
-{
-#ifdef YB_HAS_INPUT_CHANNELS
-  char prefIndex[YB_PREF_KEY_LENGTH];
-
-  // id is required
-  if (!input["id"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'id' is a required parameter");
-
-  // is it a valid channel?
-  byte cid = input["id"];
-  if (!isValidInputChannel(cid))
-    return generateErrorJSON(output, "Invalid channel id");
-
-  // channel name
-  if (input["name"].is<String>()) {
-    // is it too long?
-    if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
-      char error[50];
-      sprintf(error, "Maximum channel name length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
-      return generateErrorJSON(output, error);
-    }
-
-    // save the name
-    strlcpy(input_channels[cid].name, input["name"] | "Input ?", sizeof(input_channels[cid].name));
-    sprintf(prefIndex, "iptName%d", cid);
-    preferences.putString(prefIndex, input_channels[cid].name);
-  }
-
-  // switch mode
-  if (input["mode"].is<String>()) {
-    String tempMode = input["mode"] | "DIRECT";
-    input_channels[cid].mode = InputChannel::getMode(tempMode);
-    sprintf(prefIndex, "iptMode%d", cid);
-    preferences.putUChar(prefIndex, input_channels[cid].mode);
-  }
-
-  // enabled
-  if (input["enabled"].is<bool>()) {
-    // save right nwo.
-    bool enabled = input["enabled"];
-    input_channels[cid].isEnabled = enabled;
-
-    // save to our storage
-    sprintf(prefIndex, "iptEnabled%d", cid);
-    preferences.putBool(prefIndex, enabled);
-  }
-
-  // default state
-  if (input["defaultState"].is<String>()) {
-    // is it too long?
-    if (strlen(input["defaultState"]) >
-        sizeof(input_channels[cid].defaultState) - 1) {
-      char error[50];
-      sprintf(error, "Maximum default state length is %s characters.", sizeof(input_channels[cid].defaultState) - 1);
-      return generateErrorJSON(output, error);
-    }
-
-    // save to our storage
-    strlcpy(input_channels[cid].defaultState, input["defaultState"] | "OFF", sizeof(input_channels[cid].defaultState));
-    sprintf(prefIndex, "iptDefault%d", cid);
-    preferences.putString(prefIndex, input_channels[cid].defaultState);
-  }
-
-  // give them the updated config
-  return generateConfigJSON(output);
-#else
-  return generateErrorJSON(output, "Board does not have input channels.");
-#endif
-}
-
-void handleConfigRGB(JsonVariantConst input, JsonVariant output)
-{
-#ifdef YB_HAS_RGB_CHANNELS
-  char prefIndex[YB_PREF_KEY_LENGTH];
-
-  // id is required
-  if (!input["id"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'id' is a required parameter");
-
-  // is it a valid channel?
-  byte cid = input["id"];
-  if (!isValidRGBChannel(cid))
-    return generateErrorJSON(output, "Invalid channel id");
-
-  // channel name
-  if (input["name"].is<String>()) {
-    // is it too long?
-    if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
-      char error[50];
-      sprintf(error, "Maximum channel name length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
-      return generateErrorJSON(output, error);
-    }
-
-    // save to our storage
-    strlcpy(rgb_channels[cid].name, input["name"] | "RGB ?", sizeof(rgb_channels[cid].name));
-    sprintf(prefIndex, "rgbName%d", cid);
-    preferences.putString(prefIndex, rgb_channels[cid].name);
-
-    // give them the updated config
-    return generateConfigJSON(output);
-  }
-
-  // enabled
-  if (input["enabled"].is<bool>()) {
-    // save right nwo.
-    bool enabled = input["enabled"];
-    rgb_channels[cid].isEnabled = enabled;
-
-    // save to our storage
-    sprintf(prefIndex, "rgbEnabled%d", cid);
-    preferences.putBool(prefIndex, enabled);
-
-    // give them the updated config
-    return generateConfigJSON(output);
-  }
-#else
-  return generateErrorJSON(output, "Board does not have RGB channels.");
-#endif
-}
-
-void handleSetRGB(JsonVariantConst input, JsonVariant output)
-{
-#ifdef YB_HAS_RGB_CHANNELS
-  char prefIndex[YB_PREF_KEY_LENGTH];
-
-  // id is required
-  if (!input["id"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'id' is a required parameter");
-
-  // is it a valid channel?
-  byte cid = input["id"];
-  if (!isValidRGBChannel(cid))
-    return generateErrorJSON(output, "Invalid channel id");
-
-  // new color?
-  if (input["red"].is<float>() || input["green"].is<float>() ||
-      input["blue"].is<float>()) {
-    float red = rgb_channels[cid].red;
-    float green = rgb_channels[cid].green;
-    float blue = rgb_channels[cid].blue;
-
-    // what do we hate?  va-li-date!
-    if (input["red"].is<float>()) {
-      red = input["red"];
-      if (red < 0)
-        return generateErrorJSON(output, "Red must be >= 0");
-      else if (red > 1)
-        return generateErrorJSON(output, "Red must be <= 1");
-    }
-
-    // what do we hate?  va-li-date!
-    if (input["green"].is<float>()) {
-      green = input["green"];
-      if (green < 0)
-        return generateErrorJSON(output, "Green must be >= 0");
-      else if (green > 1)
-        return generateErrorJSON(output, "Green must be <= 1");
-    }
-
-    // what do we hate?  va-li-date!
-    if (input["blue"].is<float>()) {
-      blue = input["blue"];
-      if (blue < 0)
-        return generateErrorJSON(output, "Blue must be >= 0");
-      else if (blue > 1)
-        return generateErrorJSON(output, "Blue must be <= 1");
-    }
-
-    rgb_channels[cid].setRGB(red, green, blue);
-  }
-#else
-  return generateErrorJSON(output, "Board does not have RGB channels.");
-#endif
-}
-
 void handleConfigADC(JsonVariantConst input, JsonVariant output)
 {
 #ifdef YB_HAS_ADC_CHANNELS
@@ -1604,11 +1379,6 @@ void handleSetBrightness(JsonVariantConst input, JsonVariant output)
     }
 #endif
 
-#ifdef YB_HAS_RGB_CHANNELS
-    for (byte i = 0; i < YB_RGB_CHANNEL_COUNT; i++)
-      rgb_channels[i].updateOutput();
-#endif
-
     sendBrightnessUpdate();
   } else
     return generateErrorJSON(output, "'brightness' is a required parameter.");
@@ -1794,18 +1564,6 @@ void generateConfigJSON(JsonVariant output)
   }
 #endif
 
-// input / digital IO channels
-#ifdef YB_HAS_INPUT_CHANNELS
-  for (byte i = 0; i < YB_INPUT_CHANNEL_COUNT; i++) {
-    output["switches"][i]["id"] = i;
-    output["switches"][i]["name"] = input_channels[i].name;
-    output["switches"][i]["enabled"] = input_channels[i].isEnabled;
-    output["switches"][i]["mode"] =
-      InputChannel::getModeName(input_channels[i].mode);
-    output["switches"][i]["defaultState"] = input_channels[i].defaultState;
-  }
-#endif
-
 // input / analog ADC channesl
 #ifdef YB_HAS_ADC_CHANNELS
   output["adc_resolution"] = YB_ADC_RESOLUTION;
@@ -1825,15 +1583,6 @@ void generateConfigJSON(JsonVariant output)
       row.add(cp.voltage);
       row.add(cp.calibrated);
     }
-  }
-#endif
-
-// input / analog ADC channesl
-#ifdef YB_HAS_RGB_CHANNELS
-  for (byte i = 0; i < YB_RGB_CHANNEL_COUNT; i++) {
-    output["rgb"][i]["id"] = i;
-    output["rgb"][i]["name"] = rgb_channels[i].name;
-    output["rgb"][i]["enabled"] = rgb_channels[i].isEnabled;
   }
 #endif
 
@@ -1886,15 +1635,6 @@ void generateUpdateJSON(JsonVariant output)
   }
 #endif
 
-#ifdef YB_HAS_INPUT_CHANNELS
-  for (byte i = 0; i < YB_INPUT_CHANNEL_COUNT; i++) {
-    output["switches"][i]["id"] = i;
-    output["switches"][i]["raw"] = input_channels[i].raw;
-    output["switches"][i]["state"] = input_channels[i].getState();
-    output["switches"][i]["source"] = input_channels[i].source;
-  }
-#endif
-
 // input / analog ADC channels
 #ifdef YB_HAS_ADC_CHANNELS
   byte idx = 0;
@@ -1924,16 +1664,6 @@ void generateUpdateJSON(JsonVariant output)
     //                                    (pow(2, YB_ADC_RESOLUTION) - 1);
 
     idx++;
-  }
-#endif
-
-// rgb channels
-#ifdef YB_HAS_RGB_CHANNELS
-  for (byte i = 0; i < YB_RGB_CHANNEL_COUNT; i++) {
-    output["rgb"][i]["id"] = i;
-    output["rgb"][i]["red"] = rgb_channels[i].red;
-    output["rgb"][i]["green"] = rgb_channels[i].green;
-    output["rgb"][i]["blue"] = rgb_channels[i].blue;
   }
 #endif
 
@@ -2026,19 +1756,6 @@ void generateFastUpdateJSON(JsonVariant output)
     }
   }
 #endif
-
-#ifdef YB_HAS_INPUT_CHANNELS
-  j = 0;
-  for (byte i = 0; i < YB_INPUT_CHANNEL_COUNT; i++) {
-    if (input_channels[i].sendFastUpdate) {
-      output["switches"][j]["id"] = i;
-      output["switches"][j]["state"] = input_channels[i].getState();
-      output["switches"][j]["source"] = input_channels[i].source;
-      input_channels[i].sendFastUpdate = false;
-      j++;
-    }
-  }
-#endif
 }
 
 void generateStatsJSON(JsonVariant output)
@@ -2068,14 +1785,6 @@ void generateStatsJSON(JsonVariant output)
 
 #ifdef YB_HAS_BUS_VOLTAGE
   output["bus_voltage"] = busVoltage;
-#endif
-
-#ifdef YB_HAS_INPUT_CHANNELS
-  for (byte i = 0; i < YB_INPUT_CHANNEL_COUNT; i++) {
-    output["switches"][i]["id"] = i;
-    output["switches"][i]["state_change_count"] =
-      input_channels[i].stateChangeCount;
-  }
 #endif
 
 #ifdef YB_HAS_PWM_CHANNELS
@@ -2112,14 +1821,6 @@ void generateGraphDataJSON(JsonVariant output)
 
 #ifdef YB_HAS_BUS_VOLTAGE
   // output["bus_voltage"] = busVoltage;
-#endif
-
-#ifdef YB_HAS_INPUT_CHANNELS
-  // for (byte i = 0; i < YB_INPUT_CHANNEL_COUNT; i++) {
-  //   output["switches"][i]["id"] = i;
-  //   output["switches"][i]["state_change_count"] =
-  //     input_channels[i].stateChangeCount;
-  // }
 #endif
 
 #ifdef YB_HAS_PWM_CHANNELS

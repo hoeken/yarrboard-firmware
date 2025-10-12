@@ -36,11 +36,6 @@ void network_setup()
     strlcpy(pwm_channels[i].source, local_hostname, sizeof(local_hostname));
 #endif
 
-#ifdef YB_HAS_INPUT_CHANNELS
-  for (byte i = 0; i < YB_INPUT_CHANNEL_COUNT; i++)
-    strlcpy(input_channels[i].source, local_hostname, sizeof(local_hostname));
-#endif
-
   // wifi login info.
   if (preferences.isKey("wifi_mode")) {
     is_first_boot = false;

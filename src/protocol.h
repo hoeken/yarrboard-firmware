@@ -22,16 +22,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#ifdef YB_HAS_INPUT_CHANNELS
-  #include "input_channel.h"
-#endif
-
 #ifdef YB_HAS_ADC_CHANNELS
   #include "adc_channel.h"
-#endif
-
-#ifdef YB_HAS_RGB_CHANNELS
-  #include "rgb_channel.h"
 #endif
 
 #ifdef YB_HAS_PWM_CHANNELS

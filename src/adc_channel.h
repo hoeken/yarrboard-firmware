@@ -89,4 +89,4 @@ X map_generic(X x, M in_min, N in_max, O out_min, Q out_max)
 
 #endif
 
-#endif /* !YARR_INPUT_CHANNEL_H */
+#endif /* !YARR_ADC_CHANNEL_H */

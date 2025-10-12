@@ -1,25 +1,23 @@
 # GENERAL
 
-* config should be stored as a json file in littlefs
-    * stop using the prefs object for configuration information
-    * instead load from the prefs json
-    * allow upload/download of the file
-    * possibly even editing it in the browser?
-    * use existing generateConfig() functions to create the json for writing
-        * do this whenever we would save to prefs
-* add "keys" to each channel config 32 chars, ([A-Za-z0-9_]+ only) - allow passing that instead of id
 * switch to 1 indexed channels instead of zero
-* upgrade to esp-idf 5.1.x and fix any issues
-* upgrade to PsychicHttp 2.0
-* clean up #includes and libraries
-* add wifi RSSI bars indicator
-* refactor channels to have a BaseChannel class that can consolidate lots of extra code
+* add "keys" to each channel config 32 chars, ([A-Za-z0-9_]+ only) - allow passing that instead of id
 * change over to a single json file for configuration.  easy to backup / deploy
+    * stop using the prefs object for configuration information
     * store in littlefs
     * we are already generating most of it with the various config_* json
     * add parseJSONConfig() calls to each object
     * download file -> generate and send
     * upload file -> parse and if no error then write to littlefs + reboot
+    * possibly even editing it in the browser?
+    * use existing generateConfig() functions to create the json for writing
+    * do this whenever we would save to prefs
+
+* upgrade to esp-idf 5.1.x and fix any issues
+* upgrade to PsychicHttp 2.0
+* clean up #includes and libraries
+* add wifi RSSI bars indicator
+* refactor channels to have a BaseChannel class that can consolidate lots of extra code
 * wifi improvements:
     * wifi connection fail should default to AP mode
     * wifi should reconnect on failure

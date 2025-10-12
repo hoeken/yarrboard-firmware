@@ -420,74 +420,6 @@ const ServoEditCard = (ch) => `
 </div>
 `;
 
-const SwitchControlRow = (id, name) => `
-<tr id="switch${id}" class="switchRow">
-  <td class="text-center"><button id="switchState${id}" type="button" class="btn btn-sm" style="width: 80px"></button></td>
-  <td class="switchName align-middle">${name}</td>
-</tr>
-`;
-
-const SwitchEditCard = (ch) => `
-<div id="switchEditCard${ch.id}" class="col-xs-12 col-sm-6">
-  <div class="p-3 border border-secondary rounded">
-    <h5>Switch Input #${ch.id}</h5>
-    <div class="form-floating mb-3">
-      <input type="text" class="form-control" id="fSwitchName${ch.id}" value="${ch.name}">
-      <label for="fSwitchName${ch.id}">Name</label>
-      <div class="invalid-feedback">Must be 30 characters or less.</div>
-    </div>
-    <div class="mb-3">
-      <div class="form-check form-switch">
-        <input class="form-check-input" type="checkbox" id="fSwitchEnabled${ch.id}">
-        <label class="form-check-label" for="fSwitchEnabled${ch.id}">Enabled</label>
-      </div>
-    </div>
-    <div class="mb-3">
-      <div class="form-floating">
-        <select id="fSwitchMode${ch.id}" class="form-select" aria-label="Switch Mode">
-          <option value="direct">Direct</option>
-          <option value="inverting">Inverting</option>
-          <option value="toggle_rising">Toggle Rising</option>
-          <option value="toggle_falling">Toggle Falling</option>
-        </select>
-        <label for="fSwitchMode${ch.id}">Switch Mode</label>
-      </div>
-    </div>
-    <div class="form-floating">
-      <select id="fSwitchDefaultState${ch.id}" class="form-select" aria-label="Default State">
-        <option value="ON">ON</option>
-        <option value="OFF">OFF</option>
-      </select>
-      <label for="fSwitchDefaultState${ch.id}">Default State (on boot)</label>
-    </div>
-  </div>
-</div>
-`;
-
-const RGBControlRow = (id, name) => `
-<tr id="rgb${id}" class="rgbRow">
-  <td class="text-center"><input id="rgbPicker${id}" type="text"></td>
-  <td class="rgbName align-middle">${name}</td>
-</tr>
-`;
-
-const RGBEditCard = (ch) => `
-<div id="rgbEditCard${ch.id}" class="col-xs-12 col-sm-6">
-  <div class="p-3 border border-secondary rounded">
-    <h5>RGB #${ch.id}</h5>
-    <div class="form-floating mb-3">
-      <input type="text" class="form-control" id="fRGBName${ch.id}" value="${ch.name}">
-      <label for="fRGBName${ch.id}">Name</label>
-      <div class="invalid-feedback">Must be 30 characters or less.</div>
-    </div>
-    <div class="form-check form-switch">
-      <input class="form-check-input" type="checkbox" id="fRGBEnabled${ch.id}">
-      <label class="form-check-label" for="fRGBEnabled${ch.id}">Enabled</label>
-    </div>
-  </div>
-</div>
-`;
-
 const ADCControlRow = (id, name, type) => `
 <tr id="adc${id}" class="adcRow">
   <td class="adcId align-middle">${id}</td>
@@ -647,7 +579,6 @@ const AlertBox = (message, type) => `
 
 let currentPWMSliderID = -1;
 let currentServoSliderID = -1;
-let currentRGBPickerID = -1;
 let currentlyPickingBrightness = false;
 
 function start_yarrboard() {
@@ -936,76 +867,6 @@ function start_websocket() {
 
         $('#servoControlDiv').show();
         $('#servoStatsDiv').show();
-      }
-
-      //populate our switch control table
-      $('#switchControlDiv').hide();
-      $('#switchStatsDiv').hide();
-      if (msg.switches) {
-        $('#switchTableBody').html("");
-        for (ch of msg.switches) {
-          if (ch.enabled)
-            $('#switchTableBody').append(SwitchControlRow(ch.id, ch.name));
-        }
-
-        $('#switchStatsTableBody').html("");
-        for (ch of msg.switches) {
-          if (ch.enabled) {
-            $('#switchStatsTableBody').append(`<tr id="switchStats${ch.id}"></tr>`);
-            $('#switchStats' + ch.id).append(`<td class="switchName">${ch.name}</td>`);
-            $('#switchStats' + ch.id).append(`<td id="switchOnCount${ch.id}" class="text-end"></td>`);
-          }
-        }
-
-        $('#switchControlDiv').show();
-        $('#switchStatsDiv').show();
-      }
-
-      //populate our rgb control table
-      $('#rgbControlDiv').hide();
-      if (msg.rgb) {
-        $('#rgbTableBody').html("");
-        for (ch of msg.rgb) {
-          if (ch.enabled) {
-            $('#rgbTableBody').append(RGBControlRow(ch.id, ch.name));
-
-            //init our color picker
-            $('#rgbPicker' + ch.id).spectrum({
-              color: "#000",
-              showPalette: true,
-              palette: [
-                ["#000", "#444", "#666", "#999", "#ccc", "#eee", "#f3f3f3", "#fff"],
-                ["#f00", "#f90", "#ff0", "#0f0", "#0ff", "#00f", "#90f", "#f0f"],
-                ["#f4cccc", "#fce5cd", "#fff2cc", "#d9ead3", "#d0e0e3", "#cfe2f3", "#d9d2e9", "#ead1dc"],
-                ["#ea9999", "#f9cb9c", "#ffe599", "#b6d7a8", "#a2c4c9", "#9fc5e8", "#b4a7d6", "#d5a6bd"],
-                ["#e06666", "#f6b26b", "#ffd966", "#93c47d", "#76a5af", "#6fa8dc", "#8e7cc3", "#c27ba0"],
-                ["#c00", "#e69138", "#f1c232", "#6aa84f", "#45818e", "#3d85c6", "#674ea7", "#a64d79"],
-                ["#900", "#b45f06", "#bf9000", "#38761d", "#134f5c", "#0b5394", "#351c75", "#741b47"],
-                ["#600", "#783f04", "#7f6000", "#274e13", "#0c343d", "#073763", "#20124d", "#4c1130"]
-              ]
-            });
-
-            //update our color on change
-            $('#rgbPicker' + ch.id).change(set_rgb_color);
-
-            //update our color when we move
-            $('#rgbPicker' + ch.id).on("move.spectrum", set_rgb_color);
-
-            //stop updating the UI when we are choosing a color
-            $('#rgbPicker' + ch.id).on('show.spectrum', function (e) {
-              let ele = e.target;
-              let id = ele.id.match(/\d+/)[0];
-              currentRGBPickerID = id;
-            });
-
-            //restart the UI updates when picker is closed
-            $('#rgbPicker' + ch.id).on("hide.spectrum", function (e) {
-              currentRGBPickerID = -1;
-            });
-          }
-        }
-
-        $('#rgbControlDiv').show();
       }
 
       //populate our adc control table
@@ -1544,49 +1405,7 @@ function start_websocket() {
           $('#servoConfig').show();
         }
 
-        //edit controls for each switch
-        $('#switchConfig').hide();
-        if (msg.switches) {
-          $('#switchConfigForm').html("");
-          for (ch of msg.switches) {
-            $('#switchConfigForm').append(SwitchEditCard(ch));
-            $(`#fSwitchEnabled${ch.id}`).prop("checked", ch.enabled);
-            $(`#fSwitchMode${ch.id}`).val(ch.mode.toLowerCase());
-            $(`#fSwitchDefaultState${ch.id}`).val(ch.defaultState);
-
-            //enable/disable other stuff.
-            $(`#fSwitchName${ch.id}`).prop('disabled', !ch.enabled);
-            $(`#fSwitchMode${ch.id}`).prop('disabled', !ch.enabled);
-            $(`#fSwitchDefaultState${ch.id}`).prop('disabled', !ch.enabled);
-
-            //validate + save
-            $(`#fSwitchEnabled${ch.id}`).change(validate_switch_enabled);
-            $(`#fSwitchName${ch.id}`).change(validate_switch_name);
-            $(`#fSwitchMode${ch.id}`).change(validate_switch_mode);
-            $(`#fSwitchDefaultState${ch.id}`).change(validate_switch_default_state);
-          }
-          $('#switchConfig').show();
-        }
-
-        //edit controls for each rgb
-        $('#rgbConfig').hide();
-        if (msg.rgb) {
-          $('#rgbConfigForm').html("");
-          for (ch of msg.rgb) {
-            $('#rgbConfigForm').append(RGBEditCard(ch));
-            $(`#fRGBEnabled${ch.id}`).prop("checked", ch.enabled);
-
-            //enable/disable other stuff.
-            $(`#fRGBName${ch.id}`).prop('disabled', !ch.enabled);
-
-            //validate + save
-            $(`#fRGBEnabled${ch.id}`).change(validate_rgb_enabled);
-            $(`#fRGBName${ch.id}`).change(validate_rgb_name);
-          }
-          $('#rgbConfig').show();
-        }
-
-        //edit controls for each rgb
+        //edit controls for each adc
         $('#adcConfig').hide();
         if (msg.adc) {
           $('#adcConfigForm').html("");
@@ -1794,37 +1613,6 @@ function start_websocket() {
               $('#servoSlider' + ch.id).val(ch.angle);
               $('#servoAngle' + ch.id).html(`${ch.angle}°`);
             }
-          }
-        }
-      }
-
-      //our switch info
-      if (msg.switches) {
-        for (ch of msg.switches) {
-          if (current_config.switches[ch.id].enabled) {
-            if (ch.state == "ON") {
-              $('#switchState' + ch.id).html("ON");
-              $('#switchState' + ch.id).removeClass("btn-secondary");
-              $('#switchState' + ch.id).addClass("btn-success");
-            }
-            else if (ch.state == "OFF") {
-              $('#switchState' + ch.id).html("OFF");
-              $('#switchState' + ch.id).removeClass("btn-success");
-              $('#switchState' + ch.id).addClass("btn-secondary");
-            }
-          }
-        }
-      }
-
-      //our rgb info
-      if (msg.rgb) {
-        for (ch of msg.rgb) {
-          if (current_config.rgb[ch.id].enabled && currentRGBPickerID != ch.id) {
-            let _red = Math.round(255 * ch.red);
-            let _green = Math.round(255 * ch.green);
-            let _blue = Math.round(255 * ch.blue);
-
-            $("#rgbPicker" + ch.id).spectrum("set", `rgb(${_red}, ${_green}, ${_blue}`);
           }
         }
       }
@@ -2318,14 +2106,6 @@ function start_websocket() {
         $('#pwmWattHoursTotal').html(formatWattHours(total_wh));
         $('#pwmOnCountTotal').html(total_on_count.toLocaleString("en-US"));
         $('#pwmTripCountTotal').html(total_trip_count.toLocaleString("en-US"));
-      }
-
-      if (msg.switches) {
-        for (ch of msg.switches) {
-          if (current_config.switches[ch.id].enabled) {
-            $('#switchOnCount' + ch.id).html(ch.state_change_count.toLocaleString("en-US"));
-          }
-        }
       }
 
       if (msg.brineomatic) {
@@ -3202,142 +2982,6 @@ function validate_servo_enabled(e) {
 
   client.send({
     "cmd": "config_servo_channel",
-    "id": id,
-    "enabled": value
-  });
-}
-
-function validate_switch_name(e) {
-  let ele = e.target;
-  let id = ele.id.match(/\d+/)[0];
-  let value = ele.value;
-
-  if (value.length <= 0 || value.length > 30) {
-    $(ele).removeClass("is-valid");
-    $(ele).addClass("is-invalid");
-  }
-  else {
-    $(ele).removeClass("is-invalid");
-    $(ele).addClass("is-valid");
-
-    //set our new pwm name!
-    client.send({
-      "cmd": "config_switch",
-      "id": id,
-      "name": value
-    });
-  }
-}
-
-function validate_switch_mode(e) {
-  let ele = e.target;
-  let id = ele.id.match(/\d+/)[0];
-  //let value = ele.value;
-  let value = this.value;
-
-  //$(ele).removeClass("is-invalid");
-  $(ele).addClass("is-valid");
-
-  //set our new pwm name!
-  client.send({
-    "cmd": "config_switch",
-    "id": id,
-    "mode": value.toUpperCase()
-  });
-}
-
-function validate_switch_default_state(e) {
-  let ele = e.target;
-  let id = ele.id.match(/\d+/)[0];
-  let value = ele.value;
-
-  if (value.length <= 0 || value.length > 10) {
-    $(ele).removeClass("is-valid");
-    $(ele).addClass("is-invalid");
-  }
-  else {
-    $(ele).removeClass("is-invalid");
-    $(ele).addClass("is-valid");
-
-    //set our new pwm name!
-    client.send({
-      "cmd": "config_switch",
-      "id": id,
-      "defaultState": value
-    });
-  }
-}
-
-function validate_switch_enabled(e) {
-  let ele = e.target;
-  let id = ele.id.match(/\d+/)[0];
-  let value = ele.checked;
-
-  //enable/disable other stuff.
-  $(`#fSwitchName${id}`).prop('disabled', !value);
-  $(`#fSwitchMode${id}`).prop('disabled', !value);
-  $(`#fSwitchDefaultState${id}`).prop('disabled', !value);
-
-  //nothing really to validate here.
-  $(ele).addClass("is-valid");
-
-  //save it
-  client.send({
-    "cmd": "config_switch",
-    "id": id,
-    "enabled": value
-  });
-}
-
-function set_rgb_color(e, color) {
-  let ele = e.target;
-  let id = ele.id.match(/\d+/)[0];
-
-  let rgb = color.toRgb();
-
-  let red = rgb.r / 255;
-  let green = rgb.g / 255;
-  let blue = rgb.b / 255;
-
-  client.setRGB(id, red.toFixed(4), green.toFixed(4), blue.toFixed(4), false);
-}
-
-function validate_rgb_name(e) {
-  let ele = e.target;
-  let id = ele.id.match(/\d+/)[0];
-  let value = ele.value;
-
-  if (value.length <= 0 || value.length > 30) {
-    $(ele).removeClass("is-valid");
-    $(ele).addClass("is-invalid");
-  }
-  else {
-    $(ele).removeClass("is-invalid");
-    $(ele).addClass("is-valid");
-
-    //set our new pwm name!
-    client.send({
-      "cmd": "config_rgb",
-      "id": id,
-      "name": value
-    });
-  }
-}
-
-function validate_rgb_enabled(e) {
-  let ele = e.target;
-  let id = ele.id.match(/\d+/)[0];
-  let value = ele.checked;
-
-  //enable/disable other stuff.
-  $(`#fRGBName${id}`).prop('disabled', !value);
-
-  //nothing really to validate here.
-  $(ele).addClass("is-valid");
-
-  //save it
-  client.send({
-    "cmd": "config_rgb",
     "id": id,
     "enabled": value
   });

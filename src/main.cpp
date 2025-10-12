@@ -32,16 +32,8 @@
   #include "servo_channel.h"
 #endif
 
-#ifdef YB_HAS_INPUT_CHANNELS
-  #include "input_channel.h"
-#endif
-
 #ifdef YB_HAS_ADC_CHANNELS
   #include "adc_channel.h"
-#endif
-
-#ifdef YB_HAS_RGB_CHANNELS
-  #include "rgb_channel.h"
 #endif
 
 #ifdef YB_HAS_FANS
@@ -107,17 +99,6 @@ void setup()
   Serial.println("ADC channels ok");
 #endif
 
-#ifdef YB_HAS_RGB_CHANNELS
-  rgb_channels_setup();
-  Serial.println("RGB channels ok");
-#endif
-
-// should be after RGB for default state to show up
-#ifdef YB_HAS_INPUT_CHANNELS
-  input_channels_setup();
-  Serial.println("Input channels ok");
-#endif
-
 #ifdef YB_HAS_PWM_CHANNELS
   pwm_channels_setup();
   Serial.println("PWM channels ok");
@@ -156,17 +137,8 @@ void setup()
 
 void loop()
 {
-// should be before RGB for fastest response
-#ifdef YB_HAS_INPUT_CHANNELS
-  input_channels_loop();
-#endif
-
 #ifdef YB_HAS_ADC_CHANNELS
   adc_channels_loop();
-#endif
-
-#ifdef YB_HAS_RGB_CHANNELS
-  rgb_channels_loop();
 #endif
 
 #ifdef YB_HAS_PWM_CHANNELS
