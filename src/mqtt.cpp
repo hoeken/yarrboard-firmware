@@ -83,9 +83,6 @@ void mqtt_receive_message(const char* topic, const char* payload, int retain, in
 void onMqttConnect(bool sessionPresent)
 {
   Serial.println("Connected to MQTT.");
-  Serial.print("Session present: ");
-  Serial.println(sessionPresent);
-
   mqtt_ha_discovery();
 }
 
@@ -119,11 +116,13 @@ void mqtt_ha_discovery()
   // our components array
   JsonObject components = doc["cmps"].to<JsonObject>();
 
-  // let each individual channel create its own config
+// let each individual channel create its own config
+#ifdef YB_HAS_PWM_CHANNELS
   for (short i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
     if (pwm_channels[i].isEnabled)
       pwm_channels[i].haPublishDiscovery(components);
   }
+#endif
 
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(doc);
