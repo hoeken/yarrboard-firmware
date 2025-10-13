@@ -2635,7 +2635,7 @@ function open_page(page) {
     start_update_data();
 
   //we need updates for adc config page.
-  if (page == "config" && current_config?.hasOwnProperty("adc"))
+  if (page == "config" && current_config && current_config.hasOwnProperty("adc"))
     start_update_data();
 
   //hide all pages.
@@ -2726,7 +2726,7 @@ function get_update_data() {
     client.getUpdate();
 
     //keep loading it while we are here.
-    if (current_page == "control" || current_page == "graphs" || (current_page == "config" && current_config?.hasOwnProperty("adc")))
+    if (current_page == "control" || current_page == "graphs" || (current_page == "config" && current_config && current_config.hasOwnProperty("adc")))
       return;
     else {
       //yarrboard_log("stopping updates");
