@@ -13,7 +13,10 @@
 #include "adchelper.h"
 #include "config.h"
 #include "etl/vector.h"
+#include "mqtt.h"
+#include "network.h"
 #include "prefs.h"
+#include "protocol.h"
 #include <Arduino.h>
 #include <LittleFS.h>
 
@@ -71,7 +74,15 @@ class ADCChannel
     bool saveCalibrationTable();
     bool addCalibrationValue(CalibrationPoint cp);
 
+    void haGenerateDiscovery(JsonVariant doc);
+    void haGenerateSensorDiscovery(JsonVariant doc);
+    void haPublishAvailable();
+
   private:
+    char ha_uuid[64];
+    char ha_topic_value[128];
+    char ha_topic_avail[128];
+
     void _sortAndDedupeCalibrationTable();
 };
 

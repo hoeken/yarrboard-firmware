@@ -643,30 +643,6 @@
                         <h4 class="text-center">Servos</h4>
                         <div id="servoCards" class="row g-3"></div>
                     </div>
-                    <div id="switchControlDiv" style="display:none" class="col-md-4">
-                        <h4 class="text-center">I/O Switches</h4>
-                        <table id="switchTable" class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th class="text-center" scope="col">State</th>
-                                    <th scope="col">Name</th>
-                                </tr>
-                            </thead>
-                            <tbody id="switchTableBody" class="table-group-divider"></tbody>
-                        </table>
-                    </div>
-                    <div id="rgbControlDiv" style="display:none" class="col-md-4">
-                        <h4 class="text-center">RGB LEDs</h4>
-                        <table id="rgbTable" class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th class="text-center" scope="col">LED</th>
-                                    <th scope="col">Name</th>
-                                </tr>
-                            </thead>
-                            <tbody id="rgbTableBody" class="table-group-divider"></tbody>
-                        </table>
-                    </div>
                     <div id="adcControlDiv" style="display:none" class="col-md-12">
                         <h4 class="text-center">Analog Inputs</h4>
                         <table id="adcTable" class="table table-hover">
@@ -688,14 +664,6 @@
                         <div id="pwmConfig" style="display:none" class="col-md-12">
                             <h4>Output Configuration</h4>
                             <div id="pwmConfigForm" class="row g-3"></div>
-                        </div>
-                        <div id="switchConfig" style="display:none" class="col-md-12">
-                            <h4>Switch Configuration</h4>
-                            <div id="switchConfigForm" class="row g-3"></div>
-                        </div>
-                        <div id="rgbConfig" style="display:none" class="col-md-12">
-                            <h4>RGB LED Configuration</h4>
-                            <div id="rgbConfigForm" class="row g-3"></div>
                         </div>
                         <div id="adcConfig" style="display:none" class="col-md-12">
                             <h4>ADC Configuration</h4>
@@ -794,18 +762,6 @@
                                         </tr>
                                     </thead>
                                     <tbody id="pwmStatsTableBody" class="table-group-divider"></tbody>
-                                </table>
-                            </div>
-                            <div id="switchStatsDiv">
-                                <h5>Switch Statistics</h5>
-                                <table id="switchStatsTable" class="table table-striped table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">Name</th>
-                                            <th class="text-end" scope="col">On/Off Cycles</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="switchStatsTableBody" class="table-group-divider"></tbody>
                                 </table>
                             </div>
                             <div id="bomStatsDiv">

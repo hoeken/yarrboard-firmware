@@ -126,7 +126,7 @@ class PWMChannel
 
     void updateOutputLED();
 
-    void haPublishDiscovery(JsonVariant doc);
+    void haGenerateDiscovery(JsonVariant doc);
     void haGenerateLightDiscovery(JsonVariant doc);
     void haGenerateVoltageDiscovery(JsonVariant doc);
     void haGenerateAmperageDiscovery(JsonVariant doc);

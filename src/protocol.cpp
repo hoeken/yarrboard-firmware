@@ -1180,6 +1180,9 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
   if (!isValidADCChannel(cid))
     return generateErrorJSON(output, "Invalid channel id");
 
+  // make up for our offset
+  byte idx = cid - 1;
+
   // channel name
   if (input["name"].is<String>()) {
     // is it too long?
@@ -1190,9 +1193,9 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
     }
 
     // save to our storage
-    strlcpy(adc_channels[cid].name, input["name"] | "ADC ?", sizeof(adc_channels[cid].name));
+    strlcpy(adc_channels[idx].name, input["name"] | "ADC ?", sizeof(adc_channels[idx].name));
     sprintf(prefIndex, "adcName%d", cid);
-    preferences.putString(prefIndex, adc_channels[cid].name);
+    preferences.putString(prefIndex, adc_channels[idx].name);
 
     // give them the updated config
     return generateConfigJSON(output);
@@ -1202,7 +1205,7 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
   if (input["enabled"].is<bool>()) {
     // save right nwo.
     bool enabled = input["enabled"];
-    adc_channels[cid].isEnabled = enabled;
+    adc_channels[idx].isEnabled = enabled;
 
     // save to our storage
     sprintf(prefIndex, "adcEnabled%d", cid);
@@ -1222,9 +1225,9 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
     }
 
     // save to our storage
-    strlcpy(adc_channels[cid].type, input["type"] | "other", sizeof(adc_channels[cid].type));
+    strlcpy(adc_channels[idx].type, input["type"] | "other", sizeof(adc_channels[idx].type));
     sprintf(prefIndex, "adcType%d", cid);
-    preferences.putString(prefIndex, adc_channels[cid].type);
+    preferences.putString(prefIndex, adc_channels[idx].type);
 
     // give them the updated config
     return generateConfigJSON(output);
@@ -1238,7 +1241,7 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
       return generateErrorJSON(output, "Must be between 0 and 4");
 
     // change our channel.
-    adc_channels[cid].displayDecimals = display_decimals;
+    adc_channels[idx].displayDecimals = display_decimals;
 
     // save to our storage
     sprintf(prefIndex, "adcDisplay%d", cid);
@@ -1252,7 +1255,7 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
   if (input["useCalibrationTable"].is<bool>()) {
     // save right nwo.
     bool enabled = input["useCalibrationTable"];
-    adc_channels[cid].useCalibrationTable = enabled;
+    adc_channels[idx].useCalibrationTable = enabled;
 
     // save to our storage
     sprintf(prefIndex, "adcUseCalTbl%d", cid);
@@ -1263,7 +1266,7 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
   }
 
   // are we using a calibration table?
-  if (adc_channels[cid].useCalibrationTable) {
+  if (adc_channels[idx].useCalibrationTable) {
     // calibratedUnits
     if (input["calibratedUnits"].is<String>()) {
       // is it too long?
@@ -1274,9 +1277,9 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
       }
 
       // save to our storage
-      strlcpy(adc_channels[cid].calibratedUnits, input["calibratedUnits"] | "", sizeof(adc_channels[cid].calibratedUnits));
+      strlcpy(adc_channels[idx].calibratedUnits, input["calibratedUnits"] | "", sizeof(adc_channels[idx].calibratedUnits));
       sprintf(prefIndex, "adcCalUnits%d", cid);
-      preferences.putString(prefIndex, adc_channels[cid].calibratedUnits);
+      preferences.putString(prefIndex, adc_channels[idx].calibratedUnits);
 
       // give them the updated config
       return generateConfigJSON(output);
@@ -1292,11 +1295,11 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
       float y = pair[1].as<float>();
 
       // add it in
-      if (!adc_channels[cid].addCalibrationValue({v, y}))
+      if (!adc_channels[idx].addCalibrationValue({v, y}))
         return generateErrorJSON(output, "Failed to add calibration entry");
 
       // now save it.
-      if (!adc_channels[cid].saveCalibrationTable())
+      if (!adc_channels[idx].saveCalibrationTable())
         return generateErrorJSON(output, "Failed to save calibration table config.");
 
       // give them the updated config
@@ -1317,17 +1320,17 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
         return generateErrorJSON(output, "Non-finite number in table");
 
       // remove any matching elements
-      for (auto it = adc_channels[cid].calibrationTable.begin(); it != adc_channels[cid].calibrationTable.end();) {
+      for (auto it = adc_channels[idx].calibrationTable.begin(); it != adc_channels[idx].calibrationTable.end();) {
         if (it->voltage == v && it->calibrated == y) {
           // erase returns the next valid iterator
-          it = adc_channels[cid].calibrationTable.erase(it);
+          it = adc_channels[idx].calibrationTable.erase(it);
         } else {
           ++it;
         }
       }
 
       // now save it.
-      if (!adc_channels[cid].saveCalibrationTable())
+      if (!adc_channels[idx].saveCalibrationTable())
         return generateErrorJSON(output, "Failed to save calibration table config.");
 
       // give them the updated config
@@ -1568,7 +1571,7 @@ void generateConfigJSON(JsonVariant output)
 #ifdef YB_HAS_ADC_CHANNELS
   output["adc_resolution"] = YB_ADC_RESOLUTION;
   for (byte i = 0; i < YB_ADC_CHANNEL_COUNT; i++) {
-    output["adc"][i]["id"] = i;
+    output["adc"][i]["id"] = adc_channels[i].id;
     output["adc"][i]["name"] = adc_channels[i].name;
     output["adc"][i]["enabled"] = adc_channels[i].isEnabled;
     output["adc"][i]["type"] = adc_channels[i].type;
@@ -1639,7 +1642,7 @@ void generateUpdateJSON(JsonVariant output)
 #ifdef YB_HAS_ADC_CHANNELS
   byte idx = 0;
   for (byte i = 0; i < YB_ADC_CHANNEL_COUNT; i++) {
-    output["adc"][idx]["id"] = i;
+    output["adc"][idx]["id"] = adc_channels[i].id;
 
     // gotta convert from float to boolean here.
     if (!strcmp(adc_channels[i].type, "digital_switch")) {

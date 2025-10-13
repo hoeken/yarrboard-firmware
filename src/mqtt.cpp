@@ -116,11 +116,19 @@ void mqtt_ha_discovery()
   // our components array
   JsonObject components = doc["cmps"].to<JsonObject>();
 
-// let each individual channel create its own config
+// let each pwm channel create its own config
 #ifdef YB_HAS_PWM_CHANNELS
   for (short i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
     if (pwm_channels[i].isEnabled)
-      pwm_channels[i].haPublishDiscovery(components);
+      pwm_channels[i].haGenerateDiscovery(components);
+  }
+#endif
+
+// let each pwm channel create its own config
+#ifdef YB_HAS_ADC_CHANNELS
+  for (short i = 0; i < YB_ADC_CHANNEL_COUNT; i++) {
+    if (adc_channels[i].isEnabled)
+      adc_channels[i].haGenerateDiscovery(components);
   }
 #endif
 

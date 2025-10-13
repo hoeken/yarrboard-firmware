@@ -747,7 +747,7 @@ const char* PWMChannel::getStatus()
     return "OFF";
 }
 
-void PWMChannel::haPublishDiscovery(JsonVariant doc)
+void PWMChannel::haGenerateDiscovery(JsonVariant doc)
 {
   // generate our id / topics
   sprintf(ha_uuid, "%s_pwm_%d", uuid, this->id);

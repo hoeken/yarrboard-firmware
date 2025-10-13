@@ -3,7 +3,6 @@
 * switch to 1 indexed channels instead of zero
     * relay_channel
     * servo_channel
-    * adc_channel
 
 * refactor channels to have a BaseChannel class that can consolidate some code
     * id
@@ -21,7 +20,7 @@
 
 * change over to a single json file for configuration.  easy to backup / deploy
     * stop using the prefs object for configuration information
-    * store in littlefs
+    * store in littlefs.
     * we are already generating most of it with the various config_* json
     * add parseJSONConfig() calls to each object
     * download file -> generate and send
@@ -29,6 +28,11 @@
     * possibly even editing it in the browser?
     * use existing generateConfig() functions to create the json for writing
     * do this whenever we would save to prefs
+
+* mqtt
+    * add config to enable mqqt
+    * add config to enable HA discovery
+    * add per-channel flag to include in HA?
 
 * upgrade to esp-idf 5.1.x and fix any issues
 * upgrade to PsychicHttp 2.0
@@ -41,6 +45,7 @@
     * wifi connection status?
 * generic piezo buzzer support
     * on / off / frequency? / preset tones or songs?
+    * add a #define to boards to set passive vs active piezo mode
 
 # BRINEOMATIC
 
@@ -106,6 +111,7 @@
 * add buzzer support - enable alarms for tripped or bypassed on a per-channel basis
 * update fan control to simple on/off and remove any old pwm code for that
 * update current adc define for new chip
+* voltage reading average during pwm / fuse blown detection is broken during that time...
 
 # SENDIT
 

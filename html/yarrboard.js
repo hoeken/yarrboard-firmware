@@ -468,8 +468,8 @@ const ADCEditCard = (ch) => {
     .join("\n");
 
   let calibrationTableHtml = "";
-  if (current_config.adc[ch.id].hasOwnProperty("calibrationTable")) {
-    calibrationTableHtml = current_config.adc[ch.id].calibrationTable
+  if (current_config.adc[ch.id - 1].hasOwnProperty("calibrationTable")) {
+    calibrationTableHtml = current_config.adc[ch.id - 1].calibrationTable
       .map(([output, calibrated], index) => ADCCalibrationTableRow(ch, output, calibrated, index))
       .join("\n");
   }
@@ -1438,8 +1438,8 @@ function start_websocket() {
             $(`#fADCAverageOutputCopy${ch.id}`).click(adc_calibration_average_copy);
             $(`#fADCAverageOutputReset${ch.id}`).click(adc_calibration_average_reset);
             $(`#fADCCalibrationTableAdd${ch.id}`).click(validate_adc_add_calibration);
-            if (current_config.adc[ch.id].hasOwnProperty("calibrationTable")) {
-              current_config.adc[ch.id].calibrationTable.map(([output, calibrated], index) => {
+            if (current_config.adc[ch.id - 1].hasOwnProperty("calibrationTable")) {
+              current_config.adc[ch.id - 1].calibrationTable.map(([output, calibrated], index) => {
                 $(`#fADCCalibrationTableRemove${ch.id}_${index}`).click(validate_adc_remove_calibration);
               });
             }
@@ -1620,10 +1620,10 @@ function start_websocket() {
       //our adc info
       if (msg.adc) {
         for (ch of msg.adc) {
-          if (current_config.adc[ch.id].enabled) {
+          if (current_config.adc[ch.id - 1].enabled) {
 
             //load our defaults
-            let units = current_config.adc[ch.id].units;
+            let units = current_config.adc[ch.id - 1].units;
             let value = parseFloat(ch.value);
             let calibrated_value = value;
 
@@ -1636,8 +1636,8 @@ function start_websocket() {
             // $(`#adcBar${ch.id}`).attr("aria-valuenow", percentage);
 
             //are we using a calibration table?
-            if (current_config.adc[ch.id].useCalibrationTable) {
-              units = current_config.adc[ch.id].calibratedUnits;
+            if (current_config.adc[ch.id - 1].useCalibrationTable) {
+              units = current_config.adc[ch.id - 1].calibratedUnits;
               calibrated_value = parseFloat(ch.calibrated_value);
             }
 
@@ -1656,10 +1656,10 @@ function start_websocket() {
               adc_running_averages[ch.id] = [];
 
             //how should we format our value?
-            if (current_config.adc[ch.id].displayDecimals >= 0) {
-              calibrated_value = formatNumber(calibrated_value, current_config.adc[ch.id].displayDecimals);
+            if (current_config.adc[ch.id - 1].displayDecimals >= 0) {
+              calibrated_value = formatNumber(calibrated_value, current_config.adc[ch.id - 1].displayDecimals);
             } else {
-              switch (current_config.adc[ch.id].type) {
+              switch (current_config.adc[ch.id - 1].type) {
                 case "thermistor":
                   calibrated_value = formatNumber(calibrated_value, 1);
                   break;
@@ -1678,7 +1678,7 @@ function start_websocket() {
             }
 
             //how should we display our value?
-            switch (current_config.adc[ch.id].type) {
+            switch (current_config.adc[ch.id - 1].type) {
               case "digital_switch":
                 if (value)
                   $("#adcValue" + ch.id).html(`HIGH`);
@@ -3125,11 +3125,11 @@ function validate_adc_add_calibration(e) {
     $(`#fADCCalibrationTableCalibrated${id}`).val("");
 
     //new row for the ui
-    let index = current_config.adc[id].calibrationTable.length ?? 0;
-    let newRow = ADCCalibrationTableRow(current_config.adc[id], output, calibrated, index);
+    let index = current_config.adc[id - 1].calibrationTable.length ?? 0;
+    let newRow = ADCCalibrationTableRow(current_config.adc[id - 1], output, calibrated, index);
     $(`#ADCCalibrationTableBody${id}`).append(newRow);
     $(`#fADCCalibrationTableRemove${id}_${index}`).click(validate_adc_remove_calibration);
-    current_config.adc[id].calibrationTable.push([output, calibrated]); //temporarily save it.
+    current_config.adc[id - 1].calibrationTable.push([output, calibrated]); //temporarily save it.
   }
 }
 
@@ -3206,7 +3206,7 @@ function validate_adc_display_decimals(e) {
     });
 
     //update our current config.
-    current_config.adc[id].displayDecimals = value;
+    current_config.adc[id - 1].displayDecimals = value;
   }
 }
 

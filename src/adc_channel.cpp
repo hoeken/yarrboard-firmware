@@ -26,6 +26,8 @@ MCP3564 _adcAnalogMCP3564(YB_ADC_CS, &SPI, YB_ADC_MOSI, YB_ADC_MISO, YB_ADC_SCK)
 MCP3208 _adcAnalogMCP3208;
   #endif
 
+unsigned long previousHAUpdateMillis = 0;
+
 void adc_channels_setup()
 {
   #ifdef YB_ADC_DRIVER_ADS1115
@@ -72,7 +74,7 @@ void adc_channels_setup()
 
   // intitialize our channel
   for (short i = 0; i < YB_ADC_CHANNEL_COUNT; i++) {
-    adc_channels[i].id = i;
+    adc_channels[i].id = i + 1;
     adc_channels[i].setup();
   }
 }
@@ -102,11 +104,20 @@ void adc_channels_loop()
   for (byte id = 0; id < YB_ADC_CHANNEL_COUNT; id++)
     adc_channels[id].update();
   #endif
+
+  // periodically update our HomeAssistant status
+  unsigned int messageDelta = millis() - previousHAUpdateMillis;
+  if (messageDelta >= 1000) {
+    for (byte id = 0; id < YB_ADC_CHANNEL_COUNT; id++) {
+      adc_channels[id].haPublishAvailable();
+      previousHAUpdateMillis = millis();
+    }
+  }
 }
 
 bool isValidADCChannel(byte cid)
 {
-  if (cid < 0 || cid >= YB_ADC_CHANNEL_COUNT)
+  if (cid < 1 || cid > YB_ADC_CHANNEL_COUNT)
     return false;
   else
     return true;
@@ -159,12 +170,12 @@ void ADCChannel::setup()
     sprintf(this->calibratedUnits, this->getTypeUnits(), this->id);
 
   #ifdef YB_ADC_DRIVER_ADS1115
-  if (this->id < 4)
-    this->adcHelper = new ADS1115Helper(YB_ADC_VREF, this->id, &_adcVoltageADS1115_1);
+  if (this->id <= 4)
+    this->adcHelper = new ADS1115Helper(YB_ADC_VREF, this->id - 1, &_adcVoltageADS1115_1);
   else
-    this->adcHelper = new ADS1115Helper(YB_ADC_VREF, this->id - 4, &_adcVoltageADS1115_2);
+    this->adcHelper = new ADS1115Helper(YB_ADC_VREF, this->id - 5, &_adcVoltageADS1115_2);
   #elif YB_ADC_DRIVER_MCP3208
-  this->adcHelper = new MCP3208Helper(3.3, this->id, &_adcAnalogMCP3208);
+  this->adcHelper = new MCP3208Helper(3.3, this->id - 1, &_adcAnalogMCP3208);
   #endif
 
   if (this->useCalibrationTable)
@@ -463,6 +474,40 @@ bool ADCChannel::addCalibrationValue(CalibrationPoint cp)
 
   this->calibrationTable.push_back({cp.voltage, cp.calibrated});
   return true;
+}
+
+void ADCChannel::haGenerateDiscovery(JsonVariant doc)
+{
+  // generate our id / topics
+  sprintf(ha_uuid, "%s_adc_%d", uuid, this->id);
+  sprintf(ha_topic_value, "yarrboard/%s/adc/%d/value", local_hostname, this->id);
+  sprintf(ha_topic_avail, "yarrboard/%s/pwm/%d/ha_availability", local_hostname, this->id);
+
+  this->haGenerateSensorDiscovery(doc);
+}
+
+void ADCChannel::haGenerateSensorDiscovery(JsonVariant doc)
+{
+  JsonObject obj = doc[ha_uuid].to<JsonObject>();
+  obj["p"] = "sensor";
+  obj["name"] = this->name;
+  obj["unique_id"] = ha_uuid;
+  obj["state_topic"] = ha_topic_value;
+  obj["unit_of_measurement"] = this->getTypeUnits();
+  obj["device_class"] = "voltage";
+  obj["state_class"] = "measurement";
+  obj["entity_category"] = "diagnostic";
+  obj["suggested_display_precision"] = this->displayDecimals;
+
+  // availability is an array of objects
+  JsonArray availability = obj["availability"].to<JsonArray>();
+  JsonObject avail = availability.add<JsonObject>();
+  avail["topic"] = ha_topic_avail;
+}
+
+void ADCChannel::haPublishAvailable()
+{
+  mqttClient.publish(ha_topic_avail, 1, false, "online", 0, false);
 }
 
 #endif
