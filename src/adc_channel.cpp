@@ -13,7 +13,8 @@
   #include "adc_channel.h"
 
 // the main star of the event
-ADCChannel adc_channels[YB_ADC_CHANNEL_COUNT];
+// ADCChannel adc_channels[YB_ADC_CHANNEL_COUNT];
+etl::array<ADCChannel, YB_ADC_CHANNEL_COUNT> adc_channels;
 
   #ifdef YB_ADC_DRIVER_ADS1115
 byte ads1_channel = 0;
@@ -72,11 +73,9 @@ void adc_channels_setup()
     //_adcAnalogMCP3208.begin(YB_ADC_CS, 23, 19, 18);
   #endif
 
-  // intitialize our channel
-  for (short i = 0; i < YB_ADC_CHANNEL_COUNT; i++) {
-    adc_channels[i].id = i + 1;
-    adc_channels[i].setup();
-  }
+  // setup our channels
+  for (auto& ch : adc_channels)
+    ch.setup();
 }
 
 void adc_channels_loop()
@@ -304,6 +303,21 @@ float ADCChannel::interpolateValue(float xv)
 
   const float t = (xv - lo->voltage) / dx;
   return lo->calibrated + t * (hi->calibrated - lo->calibrated);
+}
+
+bool ADCChannel::loadConfigFromJSON(JsonVariantConst config, char* error)
+{
+  const char* value;
+
+  if (config["id"])
+    this->id = config["id"];
+
+  this->isEnabled = config["enabled"];
+
+  value = config["name"].as<const char*>();
+  snprintf(this->name, YB_CHANNEL_NAME_LENGTH, "%s", (value && *value) ? value : YB_DEFAULT_HOSTNAME);
+
+  return true;
 }
 
 bool ADCChannel::loadCalibrationTable()

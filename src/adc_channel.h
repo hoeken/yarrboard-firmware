@@ -11,6 +11,7 @@
 
 #include "ArduinoJson.h"
 #include "adchelper.h"
+#include "base_channel.h"
 #include "config.h"
 #include "etl/vector.h"
 #include "mqtt.h"
@@ -27,7 +28,7 @@ struct CalibrationPoint {
     float calibrated;
 };
 
-class ADCChannel
+class ADCChannel : public BaseChannel
 {
   public:
     byte id = 0;
@@ -68,6 +69,7 @@ class ADCChannel
     float getTypeValue();
     const char* getTypeUnits();
 
+    bool loadConfigFromJSON(JsonVariantConst config, char* error);
     bool loadCalibrationTable();
     bool parseCalibrationTableJson(JsonVariantConst root);
     float interpolateValue(float xv);
@@ -86,7 +88,7 @@ class ADCChannel
     void _sortAndDedupeCalibrationTable();
 };
 
-extern ADCChannel adc_channels[YB_ADC_CHANNEL_COUNT];
+extern etl::array<ADCChannel, YB_ADC_CHANNEL_COUNT> adc_channels;
 
 void adc_channels_setup();
 void adc_channels_loop();

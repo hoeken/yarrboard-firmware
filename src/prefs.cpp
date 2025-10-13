@@ -209,5 +209,10 @@ bool loadBoardConfigFromJSON(JsonVariantConst config, char* error)
   value = config["name"].as<const char*>();
   snprintf(board_name, YB_BOARD_NAME_LENGTH, "%s", (value && *value) ? value : "Yarrboard");
 
+#ifdef YB_HAS_ADC_CHANNELS
+  if (!loadChannelsConfigFromJSON("adc", adc_channels, config, error, YB_ERROR_LENGTH))
+    return false;
+#endif
+
   return true;
 }
