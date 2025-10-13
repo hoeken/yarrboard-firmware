@@ -969,7 +969,7 @@
                 </div>
             </div>
             <div id="settingsPage" class="pageContainer" style="display:none">
-                <div class="row justify-content-center">
+                <div class="row">
                     <div class="col-md-10 col-lg-9 mb-3">
                         <h5>App Configuration</h5>
                         <div class="mb-3">
@@ -1162,12 +1162,18 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <h5>Miscellaneous</h5>
-                            <button class="btn btn-primary mb-3" type="button" onclick="restart_board()">Restart
-                                Board</button>
-                            <button class="btn btn-danger" type="button" onclick="reset_to_factory()">Reset to
-                                Factory Defaults</button>
+                        <div class="row mt-3">
+                            <h5 class="mb-3">Danger Zone</h5>
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-primary btn-lg w-50 me-2" type="button"
+                                    onclick="restart_board()">
+                                    Restart Board
+                                </button>
+                                <button class="btn btn-danger btn-lg w-50 ms-2" type="button"
+                                    onclick="reset_to_factory()">
+                                    Reset to Factory Defaults
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
