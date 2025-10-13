@@ -3203,8 +3203,11 @@ function validate_adc_add_calibration(e) {
     $(`#fADCCalibrationTableCalibrated${id}`).val("");
 
     //new row for the ui
-    let index = current_config.adc[id - 1].calibrationTable.length ?? 0;
-    let newRow = ADCCalibrationTableRow(current_config.adc[id - 1], output, calibrated, index);
+    let index = 0;
+    if (Array.isArray(current_config.adc[id - 1].calibrationTable)) {
+      index = current_config.adc[id - 1].calibrationTable.length;
+    }
+    let newRow = ADCCalibrationTableRow(current_config.adc[id], output, calibrated, index);
     $(`#ADCCalibrationTableBody${id}`).append(newRow);
     $(`#fADCCalibrationTableRemove${id}_${index}`).click(validate_adc_remove_calibration);
     current_config.adc[id - 1].calibrationTable.push([output, calibrated]); //temporarily save it.
