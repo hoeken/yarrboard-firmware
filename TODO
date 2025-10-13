@@ -4,30 +4,25 @@
     * relay_channel
     * servo_channel
 
-* refactor channels to have a BaseChannel class that can consolidate some code
-    * id
-    * key
-    * isValidKey()
-    * isValidId()
-    * setup()
-    * generateConfigJSON()
-    * parseConfigJSON()
+* change over to a single json file for configuration.  easy to backup / deploy
+    * download file -> generate and send (need for migration)
+    * upload file -> parse and if no error then write to littlefs + reboot
+    * switch app_config parsing to json
+    * switch network_config parsing to json
+    * add parseJSONConfig() calls to each object
+    * move to BaseChannel generateJSONConfig()
+    * store in littlefs -- writeConfigJSON() - call the entire function anytime something changes.
+
+* port to new BaseChannel class
+    * pwm channel
+    * adc channel
+    * relay channel
+    * servo channel
 
 * add "keys" to each channel config 32 chars, ([A-Za-z0-9_]+ only)
     * allow passing that instead of id
     * use that in place of ids in most places
     * no more arrays, use key => object in json generation
-
-* change over to a single json file for configuration.  easy to backup / deploy
-    * stop using the prefs object for configuration information
-    * store in littlefs.
-    * we are already generating most of it with the various config_* json
-    * add parseJSONConfig() calls to each object
-    * download file -> generate and send
-    * upload file -> parse and if no error then write to littlefs + reboot
-    * possibly even editing it in the browser?
-    * use existing generateConfig() functions to create the json for writing
-    * do this whenever we would save to prefs
 
 * mqtt
     * add config to enable mqqt
@@ -119,6 +114,7 @@
 * remove 1k pullup option, change to passthru
 * add piezo buzzer support?
     * probaby best to do in node red
+* set the device_type a bit more intelligently based on our config.  
 
 # LONG TERM:
 
