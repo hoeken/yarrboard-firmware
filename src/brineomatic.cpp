@@ -37,7 +37,6 @@ OneWire oneWire(YB_DS18B20_PIN);
 DallasTemperature ds18b20(&oneWire);
 DeviceAddress motorThermometer;
 
-  #ifdef YB_PRODUCT_FLOWMETER_PIN
 static volatile uint16_t product_flowmeter_pulse_counter = 0;
 uint64_t lastProductFlowmeterCheckMicros = 0;
 float productFlowmeterPulsesPerLiter = YB_PRODUCT_FLOWMETER_DEFAULT_PPL;
@@ -46,9 +45,7 @@ void IRAM_ATTR product_flowmeter_interrupt()
 {
   product_flowmeter_pulse_counter++;
 }
-  #endif
 
-  #ifdef YB_BRINE_FLOWMETER_PIN
 static volatile uint16_t brine_flowmeter_pulse_counter = 0;
 uint64_t lastBrineFlowmeterCheckMicros = 0;
 float brineFlowmeterPulsesPerLiter = YB_BRINE_FLOWMETER_DEFAULT_PPL;
@@ -57,7 +54,6 @@ void IRAM_ATTR brine_flowmeter_interrupt()
 {
   brine_flowmeter_pulse_counter++;
 }
-  #endif
 
 ADS1115 brineomatic_adc(YB_ADS1115_ADDRESS);
 byte current_ads1115_channel = 0;
@@ -69,18 +65,18 @@ void brineomatic_setup()
   wm.init();
 
   // do our init for our product flowmeter
-  #ifdef YB_PRODUCT_FLOWMETER_PIN
-  pinMode(YB_PRODUCT_FLOWMETER_PIN, INPUT);
   product_flowmeter_pulse_counter = 0;
   lastProductFlowmeterCheckMicros = 0;
+  #ifdef YB_PRODUCT_FLOWMETER_PIN
+  pinMode(YB_PRODUCT_FLOWMETER_PIN, INPUT);
   attachInterrupt(digitalPinToInterrupt(YB_PRODUCT_FLOWMETER_PIN), product_flowmeter_interrupt, FALLING);
   #endif
 
   // do our init for our brine flowmeter
-  #ifdef YB_PRODUCT_FLOWMETER_PIN
-  pinMode(YB_PRODUCT_FLOWMETER_PIN, INPUT);
   brine_flowmeter_pulse_counter = 0;
   lastBrineFlowmeterCheckMicros = 0;
+  #ifdef YB_BRINE_FLOWMETER_PIN
+  pinMode(YB_BRINE_FLOWMETER_PIN, INPUT);
   attachInterrupt(digitalPinToInterrupt(YB_BRINE_FLOWMETER_PIN), brine_flowmeter_interrupt, FALLING);
   #endif
 

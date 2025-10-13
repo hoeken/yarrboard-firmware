@@ -562,12 +562,12 @@
                                 <div id="membranePressureGauge"></div>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
-                                <h6 class="my-0 text-center">Salinity</h6>
-                                <div id="salinityGauge"></div>
+                                <h6 class="my-0 text-center">Product Salinity</h6>
+                                <div id="productSalinityGauge"></div>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
-                                <h6 class="my-0 text-center">Flowrate</h6>
-                                <div id="flowrateGauge"></div>
+                                <h6 class="my-0 text-center">Product Flowrate</h6>
+                                <div id="productFlowrateGauge"></div>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0 text-center">Motor Temperature</h6>
@@ -600,14 +600,14 @@
                                 <h5 id="membranePressureUnits" class="text-body-tertiary">PSI</h5>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
-                                <h6 class="my-0">Salinity</h6>
-                                <h1 id="salinityData" class="my-0"></h1>
-                                <h5 id="salinityUnits" class="text-body-tertiary">PPM</h5>
+                                <h6 class="my-0">Product Salinity</h6>
+                                <h1 id="productSalinityData" class="my-0"></h1>
+                                <h5 id="productSalinityUnits" class="text-body-tertiary">PPM</h5>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
-                                <h6 class="my-0">Flowrate</h6>
-                                <h1 id="flowrateData" class="my-0"></h1>
-                                <h5 id="flowrateUnits" class="text-body-tertiary">LPH</h5>
+                                <h6 class="my-0">Product Flowrate</h6>
+                                <h1 id="productFlowrateData" class="my-0"></h1>
+                                <h5 id="productFlowrateUnits" class="text-body-tertiary">LPH</h5>
                             </div>
                             <div class="col-md-3 col-sm-4 col-6">
                                 <h6 class="my-0">Motor Temperature</h6>
@@ -699,14 +699,16 @@
                                     aria-controls="bomPressureGraphPanel" aria-selected="false">Pressure</button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="bomSalinityGraphTab" data-bs-toggle="tab"
-                                    data-bs-target="#bomSalinityGraphPanel" type="button" role="tab"
-                                    aria-controls="bomSalinityGraphPanel" aria-selected="false">Salinity</button>
+                                <button class="nav-link" id="bomProductSalinityGraphTab" data-bs-toggle="tab"
+                                    data-bs-target="#bomProductSalinityGraphPanel" type="button" role="tab"
+                                    aria-controls="bomProductSalinityGraphPanel" aria-selected="false">Product
+                                    Salinity</button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="bomFlowrateGraphTab" data-bs-toggle="tab"
-                                    data-bs-target="#bomFlowrateGraphPanel" type="button" role="tab"
-                                    aria-controls="bomFlowrateGraphPanel" aria-selected="false">Flowrate</button>
+                                <button class="nav-link" id="bomProductFlowrateGraphTab" data-bs-toggle="tab"
+                                    data-bs-target="#bomProductFlowrateGraphPanel" type="button" role="tab"
+                                    aria-controls="bomProductFlowrateGraphPanel" aria-selected="false">Product
+                                    Flowrate</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="bomTankLevelGraphTab" data-bs-toggle="tab"
@@ -728,15 +730,15 @@
                                 <h4>Pressures</h4>
                                 <div id="pressureChart" class="row"></div>
                             </div>
-                            <div class="tab-pane fade" id="bomSalinityGraphPanel" role="tabpanel"
-                                aria-labelledby="bomSalinityGraphPanel">
-                                <h4>Salinity</h4>
-                                <div id="salinityChart" class="row"></div>
+                            <div class="tab-pane fade" id="bomProductSalinityGraphPanel" role="tabpanel"
+                                aria-labelledby="bomProductSalinityGraphPanel">
+                                <h4>Product Salinity</h4>
+                                <div id="productSalinityChart" class="row"></div>
                             </div>
-                            <div class="tab-pane fade" id="bomFlowrateGraphPanel" role="tabpanel"
-                                aria-labelledby="bomFlowrateGraphPanel">
-                                <h4>Flowrate</h4>
-                                <div id="flowrateChart" class="row"></div>
+                            <div class="tab-pane fade" id="bomProductFlowrateGraphPanel" role="tabpanel"
+                                aria-labelledby="bomProductFlowrateGraphPanel">
+                                <h4>Product Flowrate</h4>
+                                <div id="productFlowrateChart" class="row"></div>
                             </div>
                             <div class="tab-pane fade" id="bomTankLevelGraphPanel" role="tabpanel"
                                 aria-labelledby="bomTankLevelGraphPanel">

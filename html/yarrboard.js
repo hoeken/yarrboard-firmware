@@ -93,10 +93,10 @@ const brineomatic_result_text = {
   "ERR_MEMBRANE_PRESSURE_TIMEOUT": "Membrane Pressure Timeout",
   "ERR_MEMBRANE_PRESSURE_LOW": "Membrane Pressure Low",
   "ERR_MEMBRANE_PRESSURE_HIGH": "Membrane Pressure High",
-  "ERR_FLOWRATE_TIMEOUT": "Flowrate Timeout",
-  "ERR_FLOWRATE_LOW": "Flowrate Low",
-  "ERR_SALINITY_TIMEOUT": "Salinity Timeout",
-  "ERR_SALINITY_HIGH": "Salinity High",
+  "ERR_FLOWRATE_TIMEOUT": "Product Flowrate Timeout",
+  "ERR_FLOWRATE_LOW": "Product Flowrate Low",
+  "ERR_SALINITY_TIMEOUT": "Product Salinity Timeout",
+  "ERR_SALINITY_HIGH": "Product Salinity High",
   "ERR_PRODUCTION_TIMEOUT": "Production Timeout",
   "ERR_MOTOR_TEMPERATURE_HIGH": "Motor Temperature High",
 }
@@ -118,11 +118,11 @@ const brineomatic_gauge_setup = {
     "thresholds": [0, 600, 700, 900, 1000],
     "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.primary, bootstrapColors.success, bootstrapColors.danger]
   },
-  "salinity": {
+  "product_salinity": {
     "thresholds": [300, 400, 1500],
     "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
   },
-  "flowrate": {
+  "product_flowrate": {
     "thresholds": [20, 100, 180, 200, 250],
     "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
   },
@@ -180,14 +180,14 @@ let motorTemperatureGauge;
 let waterTemperatureGauge;
 let filterPressureGauge;
 let membranePressureGauge;
-let salinityGauge;
-let flowrateGauge;
+let productSalinityGauge;
+let productFlowrateGauge;
 let tankLevelGauge;
 
 let temperatureChart;
 let pressureChart;
-let salinityChart;
-let flowrateChart;
+let productSalinityChart;
+let productFlowrateChart;
 let tankLevelChart;
 
 let lastChartUpdate = Date.now();
@@ -196,8 +196,8 @@ let motorTemperatureData;
 let waterTemperatureData;
 let filterPressureData;
 let membranePressureData;
-let salinityData;
-let flowrateData;
+let productSalinityData;
+let productFlowrateData;
 let tankLevelData;
 
 const BoardNameEdit = (name) => `
@@ -1028,11 +1028,11 @@ function start_websocket() {
             legend: { hide: true }
           });
 
-          salinityGauge = c3.generate({
-            bindto: '#salinityGauge',
+          productSalinityGauge = c3.generate({
+            bindto: '#productSalinityGauge',
             data: {
               columns: [
-                ['Salinity', 0]
+                ['Product Salinity', 0]
               ],
               type: 'gauge',
             },
@@ -1047,10 +1047,10 @@ function start_websocket() {
               max: 1500,
             },
             color: {
-              pattern: brineomatic_gauge_setup.salinity.colors,
+              pattern: brineomatic_gauge_setup.product_salinity.colors,
               threshold: {
                 unit: 'value',
-                values: brineomatic_gauge_setup.salinity.thresholds
+                values: brineomatic_gauge_setup.product_salinity.thresholds
               }
             },
             size: { height: 130 },
@@ -1059,11 +1059,11 @@ function start_websocket() {
             legend: { hide: true }
           });
 
-          flowrateGauge = c3.generate({
-            bindto: '#flowrateGauge',
+          productFlowrateGauge = c3.generate({
+            bindto: '#productFlowrateGauge',
             data: {
               columns: [
-                ['Flowrate', 0]
+                ['Product Flowrate', 0]
               ],
               type: 'gauge',
             },
@@ -1078,10 +1078,10 @@ function start_websocket() {
               max: 250,
             },
             color: {
-              pattern: brineomatic_gauge_setup.flowrate.colors,
+              pattern: brineomatic_gauge_setup.product_flowrate.colors,
               threshold: {
                 unit: 'value',
-                values: brineomatic_gauge_setup.flowrate.thresholds
+                values: brineomatic_gauge_setup.product_flowrate.thresholds
               }
             },
             size: { height: 130 },
@@ -1158,8 +1158,8 @@ function start_websocket() {
           waterTemperatureData = ['Water Temperature'];
           filterPressureData = ['Filter Pressure'];
           membranePressureData = ['Membrane Pressure'];
-          salinityData = ['Salinity'];
-          flowrateData = ['Flowrate'];
+          productSalinityData = ['Product Salinity'];
+          productFlowrateData = ['Product Flowrate'];
           tankLevelData = ['Tank Level'];
 
           temperatureChart = c3.generate({
@@ -1226,14 +1226,14 @@ function start_websocket() {
             transition: { duration: 0 }
           });
 
-          salinityChart = c3.generate({
-            bindto: '#salinityChart',
+          productSalinityChart = c3.generate({
+            bindto: '#productSalinityChart',
             data: {
               x: 'x', // Define the x-axis data identifier
               xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
               columns: [
                 timeData,
-                salinityData
+                productSalinityData
               ],
               type: 'line' // Line chart
             },
@@ -1246,7 +1246,7 @@ function start_websocket() {
                 }
               },
               y: {
-                label: 'Salinity (PPM))',
+                label: 'Product Salinity (PPM))',
                 min: 0,
                 max: 1500
               }
@@ -1256,14 +1256,14 @@ function start_websocket() {
             transition: { duration: 0 }
           });
 
-          flowrateChart = c3.generate({
-            bindto: '#flowrateChart',
+          productFlowrateChart = c3.generate({
+            bindto: '#productFlowrateChart',
             data: {
               x: 'x', // Define the x-axis data identifier
               xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
               columns: [
                 timeData,
-                flowrateData
+                productFlowrateData
               ],
               type: 'line' // Line chart
             },
@@ -1276,7 +1276,7 @@ function start_websocket() {
                 }
               },
               y: {
-                label: 'Flowrate (LPH))',
+                label: 'Product Flowrate (LPH))',
                 min: 0,
                 max: 200
               }
@@ -1717,11 +1717,11 @@ function start_websocket() {
       if (msg.brineomatic) {
         let motor_temperature = Math.round(msg.motor_temperature);
         let water_temperature = Math.round(msg.water_temperature);
-        let flowrate = Math.round(msg.flowrate);
+        let product_flowrate = Math.round(msg.product_flowrate);
         let volume = msg.volume.toFixed(1);
         if (volume >= 100)
           volume = Math.round(volume);
-        let salinity = Math.round(msg.salinity);
+        let product_salinity = Math.round(msg.product_salinity);
         let filter_pressure = Math.round(msg.filter_pressure);
         if (filter_pressure < 0 && filter_pressure > -10)
           filter_pressure = 0;
@@ -1737,8 +1737,8 @@ function start_websocket() {
             waterTemperatureGauge.load({ columns: [['Water Temperature', water_temperature]] });
             filterPressureGauge.load({ columns: [['Filter Pressure', filter_pressure]] });
             membranePressureGauge.load({ columns: [['Membrane Pressure', membrane_pressure]] });
-            salinityGauge.load({ columns: [['Salinity', salinity]] });
-            flowrateGauge.load({ columns: [['Flowrate', flowrate]] });
+            productSalinityGauge.load({ columns: [['Product Salinity', product_salinity]] });
+            productFlowrateGauge.load({ columns: [['Product Flowrate', product_flowrate]] });
             tankLevelGauge.load({ columns: [['Tank Level', tank_level]] });
             volumeGauge.load({ columns: [['Volume', volume]] });
           }
@@ -1768,17 +1768,17 @@ function start_websocket() {
                 ]
               });
 
-              salinityChart.flow({
+              productSalinityChart.flow({
                 columns: [
                   ['x', formattedTime],
-                  ['Salinity', salinity]
+                  ['Product Salinity', product_salinity]
                 ]
               });
 
-              flowrateChart.flow({
+              productFlowrateChart.flow({
                 columns: [
                   ['x', formattedTime],
-                  ['Flowrate', flowrate]
+                  ['Product Flowrate', product_flowrate]
                 ]
               });
 
@@ -1797,11 +1797,11 @@ function start_websocket() {
           $("#membranePressureData").html(membrane_pressure);
           bom_set_data_color("membrane_pressure", membrane_pressure, $("#membranePressureData"));
 
-          $("#salinityData").html(salinity);
-          bom_set_data_color("salinity", salinity, $("#salinityData"));
+          $("#productSalinityData").html(product_salinity);
+          bom_set_data_color("product_salinity", product_salinity, $("#productSalinityData"));
 
-          $("#flowrateData").html(flowrate);
-          bom_set_data_color("flowrate", flowrate, $("#flowrateData"));
+          $("#productFlowrateData").html(product_flowrate);
+          bom_set_data_color("product_flowrate", product_flowrate, $("#productFlowrateData"));
 
           $("#motorTemperatureData").html(motor_temperature);
           bom_set_data_color("motor_temperature", motor_temperature, $("#motorTemperatureData"));
@@ -2166,25 +2166,25 @@ function start_websocket() {
           });
         }
 
-        if (msg.salinity) {
-          salinityData = [salinityData[0]].concat(msg.salinity);
+        if (msg.product_salinity) {
+          productSalinityData = [productSalinityData[0]].concat(msg.product_salinity);
 
-          salinityChart.load({
+          productSalinityChart.load({
             columns: [
               timeData,
-              salinityData
+              productSalinityData
             ]
           });
 
         }
 
-        if (msg.flowrate) {
-          flowrateData = [flowrateData[0]].concat(msg.flowrate);
+        if (msg.product_flowrate) {
+          productFlowrateData = [productFlowrateData[0]].concat(msg.product_flowrate);
 
-          flowrateChart.load({
+          productFlowrateChart.load({
             columns: [
               timeData,
-              flowrateData
+              productFlowrateData
             ]
           });
         }
