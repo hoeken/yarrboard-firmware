@@ -244,6 +244,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
   if (role == ADMIN) {
     if (!strcmp(cmd, "set_boardname"))
       return handleSetBoardName(input, output);
+    else if (!strcmp(cmd, "get_full_config"))
+      return generateFullConfigJSON(output);
     else if (!strcmp(cmd, "get_network_config"))
       return generateNetworkConfigJSON(output);
     else if (!strcmp(cmd, "set_network_config"))
@@ -1505,6 +1507,41 @@ void handleSetWatermaker(JsonVariantConst input, JsonVariant output)
 }
 
 #endif
+
+void generateFullConfigJSON(JsonVariant output)
+{
+  // build our message
+  output["msg"] = "full_config";
+  JsonObject config = output["config"].to<JsonObject>();
+
+  // our board specific configuration
+  JsonObject board = config["board"].to<JsonObject>();
+  generateConfigJSON(board);
+
+  // lots of cleanup on this one.
+  board.remove("msg");
+  board.remove("hostname");
+  board.remove("use_ssl");
+  board.remove("enable_ota");
+  board.remove("default_role");
+  board.remove("last_restart_reason");
+  board.remove("adc_resolution");
+  board.remove("has_coredump");
+  board.remove("bus_voltage");
+  board.remove("brineomatic");
+  board.remove("brightness");
+  board.remove("uuid");
+
+  // yarrboard application specific configuration
+  JsonObject app = config["app"].to<JsonObject>();
+  generateAppConfigJSON(app);
+  app.remove("msg");
+
+  // network connection specific configuration
+  JsonObject network = config["network"].to<JsonObject>();
+  generateNetworkConfigJSON(network);
+  network.remove("msg");
+}
 
 void generateConfigJSON(JsonVariant output)
 {

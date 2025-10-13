@@ -5,7 +5,10 @@
     * servo_channel
 
 * change over to a single json file for configuration.  easy to backup / deploy
-    * download file -> generate and send (need for migration)
+    * ui in admin:
+        * config header
+            * textarea for json to load in - needs to prettify
+            * update / copy / download buttons
     * upload file -> parse and if no error then write to littlefs + reboot
     * switch app_config parsing to json
     * switch network_config parsing to json

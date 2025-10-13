@@ -34,6 +34,7 @@ void server_setup()
 
   server.config.max_open_sockets = YB_CLIENT_LIMIT;
   server.config.lru_purge_enable = true;
+  server.config.stack_size = 8192;
 
   // Populate the last modification date based on build datetime
   sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
@@ -156,6 +157,7 @@ void server_setup()
 
     String body = request->body();
     DeserializationError err = deserializeJson(json, body);
+
     return handleWebServerRequest(json, request); });
 
   // send config json
@@ -274,9 +276,10 @@ esp_err_t handleWebServerRequest(JsonVariant input, PsychicRequest* request)
   if (request->hasParam("pass"))
     input["pass"] = request->getParam("pass")->value();
 
-  if (app_enable_api)
+  if (app_enable_api) {
+    isApiClientLoggedIn(input);
     handleReceivedJSON(input, output, YBP_MODE_HTTP);
-  else
+  } else
     generateErrorJSON(output, "Web API is disabled.");
 
   // we can have empty messages
