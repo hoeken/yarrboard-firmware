@@ -39,12 +39,6 @@ void server_setup()
   // Populate the last modification date based on build datetime
   sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
 
-  // do we want https?
-  if (preferences.isKey("appEnableSSL"))
-    app_enable_ssl = preferences.getBool("appEnableSSL");
-  else
-    app_enable_ssl = false;
-
   if (app_enable_ssl)
     Serial.println("SSL enabled");
   else

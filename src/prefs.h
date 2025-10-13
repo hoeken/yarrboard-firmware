@@ -11,6 +11,7 @@
 
 #include "config.h"
 #include "network.h"
+#include "protocol.h"
 #include <ArduinoJson.h>
 #include <LittleFS.h>
 #include <Preferences.h>

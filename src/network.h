@@ -19,12 +19,11 @@ extern char wifi_ssid[YB_WIFI_SSID_LENGTH];
 extern char wifi_pass[YB_WIFI_PASSWORD_LENGTH];
 extern char wifi_mode[YB_WIFI_MODE_LENGTH];
 extern char local_hostname[YB_HOSTNAME_LENGTH];
-extern char uuid[13];
+extern char uuid[YB_UUID_LENGTH];
 extern bool is_first_boot;
 
 void network_setup();
 void network_loop();
-
 
 void setupWifi();
 bool connectToWifi(const char* ssid, const char* pass);

@@ -7,6 +7,7 @@
 */
 
 #include "prefs.h"
+#include "protocol.h"
 
 Preferences preferences;
 
@@ -150,17 +151,63 @@ bool loadNetworkConfigFromJSON(JsonVariantConst config, char* error)
   value = config["wifi_mode"].as<const char*>();
   snprintf(wifi_mode, YB_WIFI_MODE_LENGTH, "%s", (value && *value) ? value : "ap");
 
+  value = config["uuid"].as<const char*>();
+  snprintf(uuid, YB_UUID_LENGTH, "%s", (value && *value) ? value : "");
+
   return true;
 }
 
 bool loadAppConfigFromJSON(JsonVariantConst config, char* error)
 {
-  TRACE();
+  const char* value;
+
+  value = config["admin_user"].as<const char*>();
+  snprintf(admin_user, YB_USERNAME_LENGTH, "%s", (value && *value) ? value : "admin");
+
+  value = config["admin_pass"].as<const char*>();
+  snprintf(admin_pass, YB_PASSWORD_LENGTH, "%s", (value && *value) ? value : "admin");
+
+  value = config["guest_user"].as<const char*>();
+  snprintf(guest_user, YB_USERNAME_LENGTH, "%s", (value && *value) ? value : "admin");
+
+  value = config["guest_pass"].as<const char*>();
+  snprintf(guest_pass, YB_PASSWORD_LENGTH, "%s", (value && *value) ? value : "admin");
+
+  if (config["app_update_interval"].is<unsigned int>()) {
+    app_update_interval = config["app_update_interval"] | 1000;
+    app_update_interval = max(100u, app_update_interval);
+    app_update_interval = min(10000u, app_update_interval);
+  } else {
+    app_update_interval = 1000;
+  }
+
+  // what is our default role?
+  app_default_role = NOBODY;
+  value = config["default_role"].as<const char*>();
+  if (value && *value) {
+    if (!strcmp(value, "admin"))
+      app_default_role = ADMIN;
+    else if (strcmp(value, "guest"))
+      app_default_role = GUEST;
+  }
+  serial_role = app_default_role;
+  api_role = app_default_role;
+
+  app_enable_mfd = config["app_enable_mfd"];
+  app_enable_api = config["app_enable_api"];
+  app_enable_serial = config["app_enable_serial"];
+  app_enable_ota = config["app_enable_ota"];
+  app_enable_ssl = config["app_enable_ssl"];
+
   return true;
 }
 
 bool loadBoardConfigFromJSON(JsonVariantConst config, char* error)
 {
-  TRACE();
+  const char* value;
+
+  value = config["name"].as<const char*>();
+  snprintf(board_name, YB_BOARD_NAME_LENGTH, "%s", (value && *value) ? value : "Yarrboard");
+
   return true;
 }

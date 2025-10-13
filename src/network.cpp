@@ -23,7 +23,7 @@ char wifi_mode[YB_WIFI_MODE_LENGTH] = "ap";
 char local_hostname[YB_HOSTNAME_LENGTH] = YB_DEFAULT_HOSTNAME;
 
 // identify yourself!
-char uuid[13];
+char uuid[YB_UUID_LENGTH];
 bool is_first_boot = true;
 
 void network_setup()
@@ -33,10 +33,12 @@ void network_setup()
     strlcpy(pwm_channels[i].source, local_hostname, sizeof(local_hostname));
 #endif
 
-  // get a unique ID for us
-  byte mac[6];
-  WiFi.macAddress(mac);
-  sprintf(uuid, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  //  get a unique ID for us
+  if (!strlen(uuid)) {
+    byte mac[6];
+    WiFi.macAddress(mac);
+    sprintf(uuid, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  }
   Serial.print("UUID: ");
   Serial.println(uuid);
 

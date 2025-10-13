@@ -45,45 +45,6 @@ String arduino_version = String(ESP_ARDUINO_VERSION_MAJOR) + "." +
 
 void protocol_setup()
 {
-  // look up our board name
-  if (preferences.isKey("boardName"))
-    strlcpy(board_name, preferences.getString("boardName").c_str(), sizeof(board_name));
-
-  // look up our username/password
-  if (preferences.isKey("admin_user"))
-    strlcpy(admin_user, preferences.getString("admin_user").c_str(), sizeof(admin_user));
-  if (preferences.isKey("admin_pass"))
-    strlcpy(admin_pass, preferences.getString("admin_pass").c_str(), sizeof(admin_pass));
-  if (preferences.isKey("guest_user"))
-    strlcpy(guest_user, preferences.getString("guest_user").c_str(), sizeof(guest_user));
-  if (preferences.isKey("guest_pass"))
-    strlcpy(guest_pass, preferences.getString("guest_pass").c_str(), sizeof(guest_pass));
-  if (preferences.isKey("appUpdateInter"))
-    app_update_interval = preferences.getUInt("appUpdateInter");
-  if (preferences.isKey("appDefaultRole")) {
-    String role = preferences.getString("appDefaultRole");
-    if (role == "admin")
-      app_default_role = ADMIN;
-    else if (role == "guest")
-      app_default_role = GUEST;
-    else
-      app_default_role = NOBODY;
-
-    serial_role = app_default_role;
-    api_role = app_default_role;
-  }
-  if (preferences.isKey("appEnableMFD"))
-    app_enable_mfd = preferences.getBool("appEnableMFD");
-  if (preferences.isKey("appEnableApi"))
-    app_enable_api = preferences.getBool("appEnableApi");
-  if (preferences.isKey("appEnableSerial"))
-    app_enable_serial = preferences.getBool("appEnableSerial");
-  if (preferences.isKey("appEnableOTA"))
-    app_enable_ota = preferences.getBool("appEnableOTA");
-
-  // if (preferences.isKey("brightness"))
-  //   globalBrightness = preferences.getFloat("brightness");
-
   // send serial a config off the bat
   if (app_enable_serial) {
     JsonDocument output;

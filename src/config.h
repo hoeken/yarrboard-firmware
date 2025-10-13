@@ -75,6 +75,7 @@
 #define YB_WIFI_MODE_LENGTH            16
 #define YB_HOSTNAME_LENGTH             64
 #define YB_ERROR_LENGTH                128
+#define YB_UUID_LENGTH                 13
 #define YB_VALIDATE_FIRMWARE_SIGNATURE true
 #define YB_BOARD_CONFIG_PATH           "/board_config.json"
 

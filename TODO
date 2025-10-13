@@ -5,10 +5,9 @@
     * servo_channel
 
 * change over to a single json file for configuration.  easy to backup / deploy
-    * switch app_config parsing to json
-    * switch network_config parsing to json
+    * check for server_cert and server_key in config.json
     * add parseJSONConfig() calls to each object
-    * move to BaseChannel generateJSONConfig()
+    * move to BaseChannel generateJSONConfig() and parseJSONConfig()
     * store in littlefs -- writeConfigJSON() - call the entire function anytime something changes.
 
 * port to new BaseChannel class
