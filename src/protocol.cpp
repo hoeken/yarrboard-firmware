@@ -244,8 +244,10 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
   if (role == ADMIN) {
     if (!strcmp(cmd, "set_boardname"))
       return handleSetBoardName(input, output);
+    else if (!strcmp(cmd, "save_config"))
+      return handleSaveConfig(input, output);
     else if (!strcmp(cmd, "get_full_config"))
-      return generateFullConfigJSON(output);
+      return generateFullConfigJSONMessage(output);
     else if (!strcmp(cmd, "get_network_config"))
       return generateNetworkConfigJSON(output);
     else if (!strcmp(cmd, "set_network_config"))
@@ -516,6 +518,76 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   // restart the board.
   if (old_app_enable_ssl != app_enable_ssl)
     ESP.restart();
+}
+
+void handleSaveConfig(JsonVariantConst input, JsonVariant output)
+{
+  // get the config object specifically.
+  JsonDocument config;
+
+  // we need one thing...
+  if (!input["config"].is<String>())
+    return generateErrorJSON(output, "'config' is a required parameter");
+
+  // was there a problem, officer?
+  DeserializationError err = deserializeJson(config, input["config"]);
+  if (err) {
+    char error[64];
+    sprintf(error, "deserializeJson() failed with code %s", err.c_str());
+    return generateErrorJSON(output, error);
+  }
+
+  // dynamically allocate our buffer
+  size_t jsonSize = measureJson(config);
+  char* jsonBuffer = (char*)malloc(jsonSize + 1);
+  jsonBuffer[jsonSize] = '\0'; // null terminate
+
+  // did we get anything?
+  if (jsonBuffer != NULL) {
+    serializeJson(config, jsonBuffer, jsonSize + 1);
+  } else {
+    free(jsonBuffer);
+
+    char error[64];
+    sprintf(error, "serializeJson() failed to create buffer of size %d", jsonSize);
+    return generateErrorJSON(output, error);
+  }
+
+  // write our config to local storage
+  File fp = LittleFS.open("/board_config.json", "w");
+  if (!fp) {
+    return generateErrorJSON(output, "Failed to open /board_config.json for writing");
+  }
+
+  // check write result
+  size_t bytesWritten = fp.print((char*)jsonBuffer);
+  if (bytesWritten == 0) {
+    fp.close();
+    return generateErrorJSON(output, "Failed to write JSON data to file");
+  }
+
+  // flush data (no return value, but still good to call)
+  fp.flush();
+  fp.close();
+
+  // confirm file exists and has non-zero length
+  if (!LittleFS.exists("/board_config.json")) {
+    return generateErrorJSON(output, "File not found after write");
+  }
+
+  File verify = LittleFS.open("/board_config.json", "r");
+  if (!verify || verify.size() == 0) {
+    verify.close();
+    return generateErrorJSON(output, "Wrote file but it appears empty or unreadable");
+  }
+  verify.close();
+
+  // free up our memory
+  free(jsonBuffer);
+
+  // // restart the board.
+  // if (old_app_enable_ssl != app_enable_ssl)
+  //   ESP.restart();
 }
 
 void handleLogin(JsonVariantConst input, JsonVariant output, YBMode mode,
@@ -1508,14 +1580,20 @@ void handleSetWatermaker(JsonVariantConst input, JsonVariant output)
 
 #endif
 
-void generateFullConfigJSON(JsonVariant output)
+void generateFullConfigJSONMessage(JsonVariant output)
 {
   // build our message
   output["msg"] = "full_config";
   JsonObject config = output["config"].to<JsonObject>();
 
+  // separate call to make a clean config.
+  generateFullConfigJSON(config);
+}
+
+void generateFullConfigJSON(JsonVariant output)
+{
   // our board specific configuration
-  JsonObject board = config["board"].to<JsonObject>();
+  JsonObject board = output["board"].to<JsonObject>();
   generateConfigJSON(board);
 
   // lots of cleanup on this one.
@@ -1533,12 +1611,12 @@ void generateFullConfigJSON(JsonVariant output)
   board.remove("uuid");
 
   // yarrboard application specific configuration
-  JsonObject app = config["app"].to<JsonObject>();
+  JsonObject app = output["app"].to<JsonObject>();
   generateAppConfigJSON(app);
   app.remove("msg");
 
   // network connection specific configuration
-  JsonObject network = config["network"].to<JsonObject>();
+  JsonObject network = output["network"].to<JsonObject>();
   generateNetworkConfigJSON(network);
   network.remove("msg");
 }

@@ -81,6 +81,7 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
 void handleSetBoardName(JsonVariantConst input, JsonVariant output);
 void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output);
 void handleSetAppConfig(JsonVariantConst input, JsonVariant output);
+void handleSaveConfig(JsonVariantConst input, JsonVariant output);
 void handleLogin(JsonVariantConst input, JsonVariant output, YBMode mode, PsychicWebSocketClient* connection = NULL);
 void handleLogout(JsonVariantConst input, JsonVariant output, YBMode mode, PsychicWebSocketClient* connection = NULL);
 void handleRestart(JsonVariantConst input, JsonVariant output);
@@ -119,6 +120,7 @@ void generateUpdateJSON(JsonVariant output);
 void generateUpdateJSON(JsonVariant output);
 void generateFastUpdateJSON(JsonVariant output);
 void generateFullConfigJSON(JsonVariant output);
+void generateFullConfigJSONMessage(JsonVariant output);
 void generateConfigJSON(JsonVariant output);
 void generateStatsJSON(JsonVariant output);
 void generateGraphDataJSON(JsonVariant output);

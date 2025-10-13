@@ -633,6 +633,11 @@ function load_configs() {
   if (app_role == "admin") {
     client.getNetworkConfig();
     client.getAppConfig();
+
+    client.send({
+      "cmd": "get_full_config"
+    });
+
     check_for_updates();
   }
 
@@ -2200,6 +2205,79 @@ function start_websocket() {
 
         page_ready.graphs = true;
       }
+    }
+    //load up our network config.
+    else if (msg.msg == "full_config") {
+      //yarrboard_log("network config");
+
+      //load our config
+      const textarea = document.getElementById('configurationTextarea');
+      const prettyJSON = JSON.stringify(msg.config, null, 2); // 2-space indentation
+      textarea.value = prettyJSON;
+
+      //save handler
+      document.getElementById('configurationSave').addEventListener('click', () => {
+        const configText = document.getElementById('configurationTextarea').value;
+
+        try {
+          // Try to parse the JSON
+          const parsed = JSON.parse(configText);
+
+          // Re-serialize it compactly (no whitespace)
+          const compact = JSON.stringify(parsed);
+
+          //send it off for saving.
+          client.send({
+            "cmd": "save_config",
+            "config": compact
+          }, true);
+
+          //let them know.
+          $("#saveIndicator").html("Saved!");
+
+        } catch (err) {
+          //show an error
+          $("#invalidConfigurationJSON").show();
+
+          //highlight the textarea for feedback
+          textarea.style.border = "2px solid red";
+          setTimeout(() => textarea.style.border = "", 2000);
+        }
+      });
+
+      //copy handler
+      document.getElementById('configurationCopy').addEventListener('click', () => {
+        const text = document.getElementById('configurationTextarea').value;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text)
+            .then(() => $("#copyIndicator").html("Copied!"))
+            .catch(err => console.error("Clipboard write failed:", err));
+        } else {
+          // Fallback for insecure contexts aka locally hosted non-secure esp32 pages... or old browsers
+          textarea.select();
+          try {
+            document.execCommand("copy");
+            $("#copyIndicator").html("Copied!");
+          } catch (err) {
+            console.error("Fallback copy failed:", err);
+          }
+        }
+      });
+
+      //download handler
+      document.getElementById('configurationDownload').addEventListener('click', () => {
+        const text = document.getElementById('configurationTextarea').value;
+        const blob = new Blob([text], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'board_config.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url); // cleanup
+      });
     }
     //load up our network config.
     else if (msg.msg == "network_config") {
