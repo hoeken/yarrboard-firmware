@@ -19,7 +19,7 @@ DNSServer dnsServer;
 // default config info for our wifi
 char wifi_ssid[YB_WIFI_SSID_LENGTH] = YB_DEFAULT_AP_SSID;
 char wifi_pass[YB_WIFI_PASSWORD_LENGTH] = YB_DEFAULT_AP_PASS;
-char wifi_mode[16] = "ap";
+char wifi_mode[YB_WIFI_MODE_LENGTH] = "ap";
 char local_hostname[YB_HOSTNAME_LENGTH] = YB_DEFAULT_HOSTNAME;
 
 // identify yourself!
@@ -28,22 +28,10 @@ bool is_first_boot = true;
 
 void network_setup()
 {
-  if (preferences.isKey("local_hostname"))
-    strlcpy(local_hostname, preferences.getString("local_hostname").c_str(), sizeof(local_hostname));
-
 #ifdef YB_HAS_PWM_CHANNELS
   for (byte i = 0; i < YB_PWM_CHANNEL_COUNT; i++)
     strlcpy(pwm_channels[i].source, local_hostname, sizeof(local_hostname));
 #endif
-
-  // wifi login info.
-  if (preferences.isKey("wifi_mode")) {
-    is_first_boot = false;
-    strlcpy(wifi_mode, preferences.getString("wifi_mode").c_str(), sizeof(wifi_mode));
-    strlcpy(wifi_ssid, preferences.getString("wifi_ssid").c_str(), sizeof(wifi_ssid));
-    strlcpy(wifi_pass, preferences.getString("wifi_pass").c_str(), sizeof(wifi_pass));
-  } else
-    is_first_boot = true;
 
   // get a unique ID for us
   byte mac[6];

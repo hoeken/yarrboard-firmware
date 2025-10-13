@@ -71,6 +71,10 @@ void setup()
   Serial.print("Firmware Version: ");
   Serial.println(YB_FIRMWARE_VERSION);
 
+  // get our prefs early on.
+  prefs_setup();
+  Serial.println("Prefs ok");
+
   debug_setup();
   Serial.println("Debug ok");
 
@@ -78,12 +82,11 @@ void setup()
   rgb_setup();
   piezo_setup();
 
-  // ntp_setup();
-  prefs_setup();
-  Serial.println("Prefs ok");
-
   network_setup();
   Serial.println("Network ok");
+
+  // ntp_setup();
+  // Serial.println("NTP ok");
 
   server_setup();
   Serial.println("Server ok");

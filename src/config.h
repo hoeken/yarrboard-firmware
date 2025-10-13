@@ -64,16 +64,19 @@
 #define YB_ADC_SAMPLES      1
 
 #define YB_PREF_KEY_LENGTH             16
-#define YB_BOARD_NAME_LENGTH           31
-#define YB_USERNAME_LENGTH             31
-#define YB_PASSWORD_LENGTH             31
-#define YB_CHANNEL_NAME_LENGTH         31
-#define YB_CHANNEL_KEY_LENGTH          31
-#define YB_TYPE_LENGTH                 31
-#define YB_WIFI_SSID_LENGTH            33
+#define YB_BOARD_NAME_LENGTH           32
+#define YB_USERNAME_LENGTH             32
+#define YB_PASSWORD_LENGTH             32
+#define YB_CHANNEL_NAME_LENGTH         32
+#define YB_CHANNEL_KEY_LENGTH          32
+#define YB_TYPE_LENGTH                 32
+#define YB_WIFI_SSID_LENGTH            64
 #define YB_WIFI_PASSWORD_LENGTH        64
+#define YB_WIFI_MODE_LENGTH            16
 #define YB_HOSTNAME_LENGTH             64
+#define YB_ERROR_LENGTH                128
 #define YB_VALIDATE_FIRMWARE_SIGNATURE true
+#define YB_BOARD_CONFIG_PATH           "/board_config.json"
 
 #define YB_FPS_SAMPLES 256
 

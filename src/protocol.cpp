@@ -537,6 +537,10 @@ void handleSaveConfig(JsonVariantConst input, JsonVariant output)
     return generateErrorJSON(output, error);
   }
 
+  char error[128] = "Unknown";
+  if (!loadConfigFromJSON(config, error))
+    return generateErrorJSON(output, error);
+
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(config);
   char* jsonBuffer = (char*)malloc(jsonSize + 1);
@@ -585,9 +589,8 @@ void handleSaveConfig(JsonVariantConst input, JsonVariant output)
   // free up our memory
   free(jsonBuffer);
 
-  // // restart the board.
-  // if (old_app_enable_ssl != app_enable_ssl)
-  //   ESP.restart();
+  // restart the board.
+  ESP.restart();
 }
 
 void handleLogin(JsonVariantConst input, JsonVariant output, YBMode mode,
