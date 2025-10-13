@@ -24,6 +24,8 @@
     * no more arrays, use key => object in json generation
 
 * mqtt
+    * move all mqqt calls to mqqt.cpp, channels just create their json payloads
+    * test when host is unreachable... shouldnt keep sending
     * add config to enable mqqt
     * add config to enable HA discovery
     * add per-channel flag to include in HA?

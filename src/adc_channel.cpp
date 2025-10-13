@@ -481,7 +481,7 @@ void ADCChannel::haGenerateDiscovery(JsonVariant doc)
   // generate our id / topics
   sprintf(ha_uuid, "%s_adc_%d", uuid, this->id);
   sprintf(ha_topic_value, "yarrboard/%s/adc/%d/value", local_hostname, this->id);
-  sprintf(ha_topic_avail, "yarrboard/%s/pwm/%d/ha_availability", local_hostname, this->id);
+  sprintf(ha_topic_avail, "yarrboard/%s/adc/%d/ha_availability", local_hostname, this->id);
 
   this->haGenerateSensorDiscovery(doc);
 }

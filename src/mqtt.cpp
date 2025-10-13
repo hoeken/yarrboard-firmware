@@ -42,11 +42,6 @@ void mqtt_setup()
       return;
     }
   }
-
-  // look for json messages on this path...
-  char mqtt_path[128];
-  sprintf(mqtt_path, "yarrboard/%s/message", local_hostname);
-  mqttClient.onTopic(mqtt_path, 0, mqtt_receive_message);
 }
 
 void mqtt_loop()
@@ -54,9 +49,11 @@ void mqtt_loop()
   unsigned int messageDelta = millis() - previousMQQTMillis;
   if (messageDelta >= 1000) {
 
-    JsonDocument output;
-    generateUpdateJSON(output);
-    mqtt_traverse_json(output);
+    if (mqttClient.connected()) {
+      JsonDocument output;
+      generateUpdateJSON(output);
+      mqtt_traverse_json(output);
+    }
 
     previousMQQTMillis = millis();
   }
@@ -71,7 +68,8 @@ void mqtt_publish(const char* topic, const char* payload)
   // Serial.printf("mqtt publish: %s: %s\n", mqtt_path, payload);
 
   // send it off!
-  mqttClient.publish(mqtt_path, 0, 0, payload, strlen(payload), false);
+  if (mqttClient.connected())
+    mqttClient.publish(mqtt_path, 0, 0, payload, strlen(payload), false);
 }
 
 void mqtt_receive_message(const char* topic, const char* payload, int retain, int qos, bool dup)
@@ -84,6 +82,11 @@ void onMqttConnect(bool sessionPresent)
 {
   Serial.println("Connected to MQTT.");
   mqtt_ha_discovery();
+
+  // look for json messages on this path...
+  char mqtt_path[128];
+  sprintf(mqtt_path, "yarrboard/%s/command", local_hostname);
+  mqttClient.onTopic(mqtt_path, 0, mqtt_receive_message);
 }
 
 void mqtt_ha_discovery()

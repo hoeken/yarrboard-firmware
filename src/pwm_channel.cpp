@@ -841,11 +841,17 @@ void PWMChannel::haGenerateAmperageDiscovery(JsonVariant doc)
 
 void PWMChannel::haPublishAvailable()
 {
+  if (!mqttClient.connected())
+    return;
+
   mqttClient.publish(ha_topic_avail, 1, false, "online", 0, false);
 }
 
 void PWMChannel::haPublishState()
 {
+  if (!mqttClient.connected())
+    return;
+
   if (this->status == Status::ON)
     mqttClient.publish(ha_topic_state_state, 0, false, "ON", 0, false);
   else
