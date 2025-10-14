@@ -67,14 +67,25 @@ bool BaseChannel::loadConfig(JsonVariantConst config, char* error, size_t err_si
     strlcpy(this->name, config["name"], sizeof(this->name));
   }
 
-  // optional key
-  strlcpy(this->key, "", sizeof(this->key));
-  if (config["key"]) {
+  // optional key - must not be an empty string.
+  snprintf(this->key, sizeof(this->key), "%d", this->id);
+  const char* val = config["key"].as<const char*>();
+  if (val && *val) {
     if (strlen(config["key"]) >= sizeof(this->key)) {
       snprintf(error, err_size, "Channel key max length %d characters", sizeof(this->key) - 1);
       return false;
     }
-    strlcpy(this->key, config["key"], sizeof(this->key));
+
+    // gotta be alphanumeric plus dash or underscore
+    for (const char* p = val; *p; p++) {
+      if (!(isalnum((unsigned char)*p) || *p == '-' || *p == '_')) {
+        snprintf(error, err_size, "Channel key contains invalid character: '%c'", *p);
+        return false;
+      }
+    }
+
+    // okay save it to our object
+    strlcpy(this->key, val, sizeof(this->key));
   }
 
   return true;

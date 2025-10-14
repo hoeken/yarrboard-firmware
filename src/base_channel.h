@@ -47,17 +47,17 @@ Channel* getChannelById(uint8_t id, etl::array<Channel, N>& channels)
   return nullptr;
 }
 
-// template <typename Channel, size_t N>
-// Channel* getChannelByKey(uint8_t id, etl::array<Channel, N>& channels)
-// {
-//   static_assert(std::is_base_of<BaseChannel, Channel>::value,
-//     "Channel must derive from BaseChannel");
+template <typename Channel, size_t N>
+Channel* getChannelByKey(const char* key, etl::array<Channel, N>& channels)
+{
+  static_assert(std::is_base_of<BaseChannel, Channel>::value,
+    "Channel must derive from BaseChannel");
 
-//   for (auto& ch : channels) {
-//     if (!strcmp(key, ch.key))
-//       return &ch;
-//   }
-//   return nullptr;
-// }
+  for (auto& ch : channels) {
+    if (!strcmp(key, ch.key))
+      return &ch;
+  }
+  return nullptr;
+}
 
 #endif /* !YARR_BASE_CHANNEL_H */
