@@ -856,22 +856,11 @@ void PWMChannel::haHandleCommand(const char* topic, const char* payload)
   }
 }
 
-bool PWMChannel::loadConfigFromJSON(JsonVariantConst config, char* error)
+bool PWMChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
 {
-  const char* value;
-
-  if (config["id"])
-    this->id = config["id"];
-  else {
-    // todo: error
-  }
-
-  // enabled.  missing defaults to true
-  this->isEnabled = config["enabled"] | true;
-
-  snprintf(this->name, sizeof(this->name), "Channel %d", this->id);
-  if (config["name"])
-    strlcpy(this->name, config["name"], sizeof(this->name));
+  // make our parent do the work.
+  if (!BaseChannel::loadConfig(config, error, err_size))
+    return false;
 
   isDimmable = config["isDimmable"] | true;
 
@@ -883,6 +872,31 @@ bool PWMChannel::loadConfigFromJSON(JsonVariantConst config, char* error)
   strlcpy(this->defaultState, config["defaultState"] | "OFF", sizeof(this->defaultState));
 
   return true;
+}
+
+void PWMChannel::generateConfig(JsonVariant config)
+{
+  BaseChannel::generateConfig(config);
+
+  config["type"] = this->type;
+  config["hasCurrent"] = true;
+  config["softFuse"] = round2(this->softFuseAmperage);
+  config["isDimmable"] = this->isDimmable;
+  config["defaultState"] = this->defaultState;
+}
+
+void PWMChannel::generateUpdate(JsonVariant config)
+{
+  BaseChannel::generateUpdate(config);
+
+  config["state"] = this->getStatus();
+  config["source"] = this->source;
+  if (this->isDimmable)
+    config["duty"] = round2(this->dutyCycle);
+  config["voltage"] = round2(this->voltage);
+  config["current"] = round2(this->amperage);
+  config["aH"] = round3(this->ampHours);
+  config["wH"] = round3(this->wattHours);
 }
 
 #endif

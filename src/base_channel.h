@@ -22,12 +22,13 @@ class BaseChannel
     char name[YB_CHANNEL_NAME_LENGTH];
     char key[YB_CHANNEL_KEY_LENGTH];
 
-    void setup(byte newId, JsonVariant config);
+    void setup();
     bool isValidId(unsigned int testId);
     bool isValidKey(const char* testKey);
 
-    void generateConfigJSON(JsonVariant config);
-    bool parseConfigJSON(JsonVariant config);
+    virtual bool loadConfig(JsonVariantConst config, char* error, size_t err_size);
+    virtual void generateConfig(JsonVariant config);
+    virtual void generateUpdate(JsonVariant config);
 };
 
 template <typename Channel, size_t N>

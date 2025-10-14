@@ -31,9 +31,6 @@ struct CalibrationPoint {
 class ADCChannel : public BaseChannel
 {
   public:
-    byte id = 0;
-    bool isEnabled = true;
-    char name[YB_CHANNEL_NAME_LENGTH];
     int8_t displayDecimals = -1;
     float lastValue = 0.0;
 
@@ -69,7 +66,10 @@ class ADCChannel : public BaseChannel
     float getTypeValue();
     const char* getTypeUnits();
 
-    bool loadConfigFromJSON(JsonVariantConst config, char* error);
+    bool loadConfig(JsonVariantConst config, char* error, size_t err_size) override;
+    void generateConfig(JsonVariant config) override;
+    void generateUpdate(JsonVariant config) override;
+
     bool parseCalibrationTableJson(JsonVariantConst root);
     float interpolateValue(float xv);
     bool addCalibrationValue(CalibrationPoint cp);

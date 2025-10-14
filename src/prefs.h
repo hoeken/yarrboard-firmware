@@ -13,9 +13,12 @@
 #include "etl/array.h"
 #include "network.h"
 #include "protocol.h"
+#include <Arduino.h>
 #include <ArduinoJson.h>
 #include <LittleFS.h>
 #include <Preferences.h>
+
+extern String arduino_version;
 
 // storage for more permanent stuff.
 extern Preferences preferences;
@@ -23,6 +26,9 @@ extern Preferences preferences;
 bool prefs_setup();
 
 void generateFullConfigJSON(JsonVariant output);
+void generateBoardConfigJSON(JsonVariant output);
+void generateAppConfigJSON(JsonVariant output);
+void generateNetworkConfigJSON(JsonVariant output);
 
 bool saveConfig(char* error, size_t err_size);
 
@@ -45,7 +51,7 @@ bool loadChannelsConfigFromJSON(const char* channel_key,
       bool found = false;
       for (JsonVariantConst ch_config : config[channel_key].as<JsonArrayConst>()) {
         if (ch_config["id"] == i) {
-          if (channels[i - 1].loadConfigFromJSON(ch_config, error))
+          if (channels[i - 1].loadConfig(ch_config, error, error_len))
             found = true;
           else
             return false;

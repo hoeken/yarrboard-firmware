@@ -120,12 +120,12 @@ void generateHelloJSON(JsonVariant output, UserRole role);
 void generateUpdateJSON(JsonVariant output);
 void generateUpdateJSON(JsonVariant output);
 void generateFastUpdateJSON(JsonVariant output);
-void generateFullConfigJSONMessage(JsonVariant output);
 void generateConfigJSON(JsonVariant output);
 void generateStatsJSON(JsonVariant output);
 void generateGraphDataJSON(JsonVariant output);
-void generateNetworkConfigJSON(JsonVariant output);
-void generateAppConfigJSON(JsonVariant output);
+void generateFullConfigMessage(JsonVariant output);
+void generateNetworkConfigMessage(JsonVariant output);
+void generateAppConfigMessage(JsonVariant output);
 void generateOTAProgressUpdateJSON(JsonVariant output, float progress);
 void generateOTAProgressFinishedJSON(JsonVariant output);
 void generateErrorJSON(JsonVariant output, const char* error);
@@ -141,5 +141,7 @@ void sendOTAProgressUpdate(float progress);
 void sendOTAProgressFinished();
 void sendDebug(const char* format, ...);
 void sendToAll(const char* jsonString, UserRole auth_level);
+
+const char* getRoleText(UserRole role);
 
 #endif /* !YARR_PROTOCOL_H */

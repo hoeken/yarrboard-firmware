@@ -48,11 +48,8 @@ class PWMChannel : public BaseChannel
       BYPASSED
     };
 
-    byte id = 0;
-
     Status status = Status::OFF;
     bool outputState = false;
-    char name[YB_CHANNEL_NAME_LENGTH];
     char type[30];
     char defaultState[10];
     bool sendFastUpdate = false;
@@ -93,15 +90,17 @@ class PWMChannel : public BaseChannel
     float ampHours = 0.0;
     float wattHours = 0.0;
 
-    bool isEnabled = false;
     bool isDimmable = false;
+
+    bool loadConfig(JsonVariantConst config, char* error, size_t err_size) override;
+    void generateConfig(JsonVariant config) override;
+    void generateUpdate(JsonVariant config) override;
 
     void setup();
     void setupLedc();
     void setupInterrupt();
     void setupOffset();
     void setupDefaultState();
-    bool loadConfigFromJSON(JsonVariantConst config, char* error);
     void saveThrottledDutyCycle();
 
     void updateOutput(bool check_status = false);

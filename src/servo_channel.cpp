@@ -29,24 +29,25 @@ void servo_channels_loop()
 {
 }
 
-bool ServoChannel::loadConfigFromJSON(JsonVariantConst config, char* error)
+bool ServoChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
 {
-  const char* value;
-
-  if (config["id"])
-    this->id = config["id"];
-  else {
-    // todo: error
-  }
-
-  // enabled.  missing defaults to true
-  this->isEnabled = config["enabled"] | true;
-
-  snprintf(this->name, sizeof(this->name), "Channel %d", this->id);
-  if (config["name"])
-    strlcpy(this->name, config["name"], sizeof(this->name));
+  // make our parent do the work.
+  if (!BaseChannel::loadConfig(config, error, err_size))
+    return false;
 
   return true;
+}
+
+void ServoChannel::generateConfig(JsonVariant config)
+{
+  BaseChannel::generateConfig(config);
+}
+
+void ServoChannel::generateUpdate(JsonVariant config)
+{
+  BaseChannel::generateUpdate(config);
+
+  config["angle"] = this->getAngle();
 }
 
 void ServoChannel::setup()

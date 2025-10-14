@@ -39,10 +39,6 @@ unsigned long totalSentMessages = 0;
 unsigned int websocketClientCount = 0;
 unsigned int httpClientCount = 0;
 
-String arduino_version = String(ESP_ARDUINO_VERSION_MAJOR) + "." +
-                         String(ESP_ARDUINO_VERSION_MINOR) + "." +
-                         String(ESP_ARDUINO_VERSION_PATCH);
-
 void protocol_setup()
 {
   // send serial a config off the bat
@@ -208,13 +204,13 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
     else if (!strcmp(cmd, "save_config"))
       return handleSaveConfig(input, output);
     else if (!strcmp(cmd, "get_full_config"))
-      return generateFullConfigJSONMessage(output);
+      return generateFullConfigMessage(output);
     else if (!strcmp(cmd, "get_network_config"))
-      return generateNetworkConfigJSON(output);
+      return generateNetworkConfigMessage(output);
     else if (!strcmp(cmd, "set_network_config"))
       return handleSetNetworkConfig(input, output);
     else if (!strcmp(cmd, "get_app_config"))
-      return generateAppConfigJSON(output);
+      return generateAppConfigMessage(output);
     else if (!strcmp(cmd, "set_app_config"))
       return handleSetAppConfig(input, output);
     else if (!strcmp(cmd, "restart"))
@@ -1360,7 +1356,7 @@ void handleSetWatermaker(JsonVariantConst input, JsonVariant output)
 
 #endif
 
-void generateFullConfigJSONMessage(JsonVariant output)
+void generateFullConfigMessage(JsonVariant output)
 {
   // build our message
   output["msg"] = "full_config";
@@ -1372,17 +1368,13 @@ void generateFullConfigJSONMessage(JsonVariant output)
 
 void generateConfigJSON(JsonVariant output)
 {
-  // our identifying info
+  generateBoardConfigJSON(output);
+
+  // extra info
   output["msg"] = "config";
-  output["firmware_version"] = YB_FIRMWARE_VERSION;
-  output["hardware_version"] = YB_HARDWARE_VERSION;
-  output["esp_idf_version"] = esp_get_idf_version();
-  output["arduino_version"] = arduino_version;
-  output["name"] = board_name;
   output["hostname"] = local_hostname;
   output["use_ssl"] = app_enable_ssl;
   output["enable_ota"] = app_enable_ota;
-  output["uuid"] = uuid;
   output["default_role"] = getRoleText(app_default_role);
   output["brightness"] = globalBrightness;
 
@@ -1398,79 +1390,6 @@ void generateConfigJSON(JsonVariant output)
   // do we want to flag it for config?
   if (is_first_boot)
     output["first_boot"] = true;
-
-// output / pwm channels
-#ifdef YB_HAS_PWM_CHANNELS
-  JsonArray channels = output["pwm"].to<JsonArray>();
-  for (auto& ch : pwm_channels) {
-    JsonObject jo = channels.add<JsonObject>();
-    jo["id"] = ch.id;
-    jo["name"] = ch.name;
-    jo["type"] = ch.type;
-    jo["enabled"] = ch.isEnabled;
-    jo["hasCurrent"] = true;
-    jo["softFuse"] = round2(ch.softFuseAmperage);
-    jo["isDimmable"] = ch.isDimmable;
-    jo["defaultState"] = ch.defaultState;
-  }
-#endif
-
-#ifdef YB_HAS_RELAY_CHANNELS
-  JsonArray r_channels = output["relay_channels"].to<JsonArray>();
-  for (auto& ch : relay_channels) {
-    JsonObject jo = r_channels.add<JsonObject>();
-    jo["id"] = ch.id;
-    jo["name"] = ch.name;
-    jo["type"] = ch.type;
-    jo["enabled"] = ch.isEnabled;
-    jo["defaultState"] = ch.defaultState;
-  }
-#endif
-
-#ifdef YB_HAS_SERVO_CHANNELS
-  JsonArray s_channels = output["servo_channels"].to<JsonArray>();
-  for (auto& ch : servo_channels) {
-    JsonObject jo = s_channels.add<JsonObject>();
-    jo["id"] = ch.id;
-    jo["name"] = ch.name;
-    jo["enabled"] = ch.isEnabled;
-  }
-#endif
-
-// input / analog ADC channesl
-#ifdef YB_HAS_ADC_CHANNELS
-  output["adc_resolution"] = YB_ADC_RESOLUTION;
-  JsonArray channels = output["adc"].to<JsonArray>();
-  for (auto& ch : adc_channels) {
-    JsonObject jo = channels.add<JsonObject>();
-
-    jo["id"] = ch.id;
-    jo["name"] = ch.name;
-    jo["enabled"] = ch.isEnabled;
-    jo["type"] = ch.type;
-    jo["displayDecimals"] = ch.displayDecimals;
-    jo["units"] = ch.getTypeUnits();
-    jo["useCalibrationTable"] = ch.useCalibrationTable;
-    jo["calibratedUnits"] = ch.calibratedUnits;
-
-    JsonArray table = jo["calibrationTable"].to<JsonArray>();
-    for (auto& cp : ch.calibrationTable) {
-      JsonArray row = table.add<JsonArray>();
-      row.add(cp.voltage);
-      row.add(cp.calibrated);
-    }
-  }
-#endif
-
-#ifdef YB_IS_BRINEOMATIC
-  output["brineomatic"] = true;
-  output["has_boost_pump"] = wm.hasBoostPump();
-  output["has_high_pressure_pump"] = wm.hasHighPressurePump();
-  output["has_diverter_valve"] = wm.hasDiverterValve();
-  output["has_flush_valve"] = wm.hasFlushValve();
-  output["has_cooling_fan"] = wm.hasCoolingFan();
-  output["tank_capacity"] = wm.getTankCapacity();
-#endif
 }
 
 void generateUpdateJSON(JsonVariant output)
@@ -1486,16 +1405,7 @@ void generateUpdateJSON(JsonVariant output)
   JsonArray channels = output["pwm"].to<JsonArray>();
   for (auto& ch : pwm_channels) {
     JsonObject jo = channels.add<JsonObject>();
-
-    jo["id"] = ch.id;
-    jo["state"] = ch.getStatus();
-    jo["source"] = ch.source;
-    if (ch.isDimmable)
-      jo["duty"] = round2(ch.dutyCycle);
-    jo["voltage"] = round2(ch.voltage);
-    jo["current"] = round2(ch.amperage);
-    jo["aH"] = round3(ch.ampHours);
-    jo["wH"] = round3(ch.wattHours);
+    ch.generateUpdate(jo);
   }
 #endif
 
@@ -1503,9 +1413,7 @@ void generateUpdateJSON(JsonVariant output)
   JsonArray r_channels = output["relay_channels"].to<JsonArray>();
   for (auto& ch : relay_channels) {
     JsonObject jo = r_channels.add<JsonObject>();
-    jo["id"] = ch.id;
-    jo["state"] = ch.getStatus();
-    jo["source"] = ch.source;
+    ch.generateUpdate(jo);
   }
 #endif
 
@@ -1513,8 +1421,7 @@ void generateUpdateJSON(JsonVariant output)
   JsonArray s_channels = output["servo_channels"].to<JsonArray>();
   for (auto& ch : servo_channels) {
     JsonObject jo = s_channels.add<JsonObject>();
-    jo["id"] = ch.id;
-    jo["angle"] = ch.getAngle();
+    ch.generateUpdate(jo);
   }
 #endif
 
@@ -1523,26 +1430,7 @@ void generateUpdateJSON(JsonVariant output)
   JsonArray channels = output["adc"].to<JsonArray>();
   for (auto& ch : adc_channels) {
     JsonObject jo = channels.add<JsonObject>();
-
-    jo["id"] = ch.id;
-
-    // gotta convert from float to boolean here.
-    if (!strcmp(ch.type, "digital_switch")) {
-      if (ch.getTypeValue() == 1.0)
-        jo["value"] = true;
-      else
-        jo["value"] = false;
-      // or just the float.
-    } else {
-      jo["value"] = ch.getTypeValue();
-
-      // do we interpolate it?
-      if (ch.useCalibrationTable)
-        jo["calibrated_value"] = ch.interpolateValue(ch.getTypeValue());
-    }
-
-    jo["adc_voltage"] = ch.getVoltage();
-    jo["adc_raw"] = ch.getReading();
+    ch.generateUpdate(jo);
   }
 #endif
 
@@ -1620,15 +1508,7 @@ void generateFastUpdateJSON(JsonVariant output)
   for (auto& ch : pwm_channels) {
     JsonObject jo = channels.add<JsonObject>();
     if (ch.sendFastUpdate) {
-      jo["id"] = ch.id;
-      jo["state"] = ch.getStatus();
-      jo["source"] = ch.source;
-      if (ch.isDimmable)
-        jo["duty"] = round2(ch.dutyCycle);
-      jo["voltage"] = round2(ch.voltage);
-      jo["current"] = round2(ch.amperage);
-      jo["aH"] = round3(ch.ampHours);
-      jo["wH"] = round3(ch.wattHours);
+      ch.generateUpdate(jo);
 
       // dont need it anymore
       ch.sendFastUpdate = false;
@@ -1746,33 +1626,18 @@ void generateGraphDataJSON(JsonVariant output)
 #endif
 }
 
-void generateNetworkConfigJSON(JsonVariant output)
+void generateNetworkConfigMessage(JsonVariant output)
 {
   // our identifying info
   output["msg"] = "network_config";
-  output["wifi_mode"] = wifi_mode;
-  output["wifi_ssid"] = wifi_ssid;
-  output["wifi_pass"] = wifi_pass;
-  output["local_hostname"] = local_hostname;
+  generateNetworkConfigJSON(output);
 }
 
-void generateAppConfigJSON(JsonVariant output)
+void generateAppConfigMessage(JsonVariant output)
 {
   // our identifying info
   output["msg"] = "app_config";
-  output["default_role"] = getRoleText(app_default_role);
-  output["admin_user"] = admin_user;
-  output["admin_pass"] = admin_pass;
-  output["guest_user"] = guest_user;
-  output["guest_pass"] = guest_pass;
-  output["app_update_interval"] = app_update_interval;
-  output["app_enable_mfd"] = app_enable_mfd;
-  output["app_enable_api"] = app_enable_api;
-  output["app_enable_serial"] = app_enable_serial;
-  output["app_enable_ota"] = app_enable_ota;
-  output["app_enable_ssl"] = app_enable_ssl;
-  output["server_cert"] = server_cert;
-  output["server_key"] = server_key;
+  generateAppConfigJSON(output);
 }
 
 void generateOTAProgressUpdateJSON(JsonVariant output, float progress)

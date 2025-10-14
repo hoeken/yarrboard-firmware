@@ -240,22 +240,13 @@ float ADCChannel::interpolateValue(float xv)
   return lo->calibrated + t * (hi->calibrated - lo->calibrated);
 }
 
-bool ADCChannel::loadConfigFromJSON(JsonVariantConst config, char* error)
+bool ADCChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
 {
+  // make our parent do the work.
+  if (!BaseChannel::loadConfig(config, error, err_size))
+    return false;
+
   const char* value;
-
-  if (config["id"])
-    this->id = config["id"];
-  else {
-    // todo: error
-  }
-
-  this->isEnabled = config["enabled"];
-
-  if (config["name"]) {
-    value = config["name"].as<const char*>();
-    snprintf(this->name, YB_CHANNEL_NAME_LENGTH, "%s", (value && *value) ? value : "Channel");
-  }
 
   value = config["type"].as<const char*>();
   snprintf(this->type, sizeof(this->type), "%s", (value && *value) ? value : "raw");
@@ -276,6 +267,47 @@ bool ADCChannel::loadConfigFromJSON(JsonVariantConst config, char* error)
     this->parseCalibrationTableJson(config["calibrationTable"]);
 
   return true;
+}
+
+void ADCChannel::generateConfig(JsonVariant config)
+{
+  BaseChannel::generateConfig(config);
+
+  config["type"] = this->type;
+  config["displayDecimals"] = this->displayDecimals;
+  config["units"] = this->getTypeUnits();
+  config["useCalibrationTable"] = this->useCalibrationTable;
+  config["calibratedUnits"] = this->calibratedUnits;
+
+  JsonArray table = config["calibrationTable"].to<JsonArray>();
+  for (auto& cp : this->calibrationTable) {
+    JsonArray row = table.add<JsonArray>();
+    row.add(cp.voltage);
+    row.add(cp.calibrated);
+  }
+}
+
+void ADCChannel::generateUpdate(JsonVariant config)
+{
+  BaseChannel::generateUpdate(config);
+
+  // gotta convert from float to boolean here.
+  if (!strcmp(this->type, "digital_switch")) {
+    if (this->getTypeValue() == 1.0)
+      config["value"] = true;
+    else
+      config["value"] = false;
+    // or just the float.
+  } else {
+    config["value"] = this->getTypeValue();
+
+    // do we interpolate it?
+    if (this->useCalibrationTable)
+      config["calibrated_value"] = this->interpolateValue(this->getTypeValue());
+  }
+
+  config["adc_voltage"] = this->getVoltage();
+  config["adc_raw"] = this->getReading();
 }
 
 // ---- The loader you can call with a JSON string ----

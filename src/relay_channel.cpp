@@ -94,27 +94,33 @@ const char* RelayChannel::getStatus()
     return "OFF";
 }
 
-bool RelayChannel::loadConfigFromJSON(JsonVariantConst config, char* error)
+bool RelayChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
 {
-  const char* value;
-
-  if (config["id"])
-    this->id = config["id"];
-  else {
-    // todo: error
-  }
-
-  // enabled.  missing defaults to true
-  this->isEnabled = config["enabled"] | true;
-
-  snprintf(this->name, sizeof(this->name), "Channel %d", this->id);
-  if (config["name"])
-    strlcpy(this->name, config["name"], sizeof(this->name));
+  // make our parent do the work.
+  if (!BaseChannel::loadConfig(config, error, err_size))
+    return false;
 
   strlcpy(this->type, config["type"] | "other", sizeof(this->type));
   strlcpy(this->defaultState, config["defaultState"] | "OFF", sizeof(this->defaultState));
 
   return true;
+}
+
+void RelayChannel::generateConfig(JsonVariant config)
+{
+  BaseChannel::generateConfig(config);
+
+  config["type"] = this->type;
+  config["enabled"] = this->isEnabled;
+  config["defaultState"] = this->defaultState;
+}
+
+void RelayChannel::generateUpdate(JsonVariant config)
+{
+  BaseChannel::generateUpdate(config);
+
+  config["state"] = this->getStatus();
+  config["source"] = this->source;
 }
 
 #endif

@@ -30,20 +30,18 @@ class RelayChannel : BaseChannel
       OFF
     };
 
-    byte id = 0;
-
     Status status = Status::OFF;
     bool outputState = false;
-    char name[YB_CHANNEL_NAME_LENGTH];
     char type[30];
     char defaultState[10];
     char source[YB_HOSTNAME_LENGTH];
 
     unsigned int stateChangeCount = 0;
 
-    bool isEnabled = false;
+    bool loadConfig(JsonVariantConst config, char* error, size_t err_size) override;
+    void generateConfig(JsonVariant config) override;
+    void generateUpdate(JsonVariant config) override;
 
-    bool loadConfigFromJSON(JsonVariantConst config, char* error);
     void setup();
     void setupDefaultState();
     void updateOutput();

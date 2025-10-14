@@ -28,7 +28,10 @@ class ServoChannel : BaseChannel
 
     //    Servo servo;
 
-    bool loadConfigFromJSON(JsonVariantConst config, char* error);
+    bool loadConfig(JsonVariantConst config, char* error, size_t err_size) override;
+    void generateConfig(JsonVariant config) override;
+    void generateUpdate(JsonVariant config) override;
+
     void setup();
     void write(float angle);
     float getAngle();

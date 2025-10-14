@@ -9,6 +9,10 @@
 #include "prefs.h"
 #include "protocol.h"
 
+String arduino_version = String(ESP_ARDUINO_VERSION_MAJOR) + "." +
+                         String(ESP_ARDUINO_VERSION_MINOR) + "." +
+                         String(ESP_ARDUINO_VERSION_PATCH);
+
 Preferences preferences;
 
 bool prefs_setup()
@@ -22,9 +26,7 @@ bool prefs_setup()
     return false;
   }
 
-  // TODO: update this.
-  // first time here?
-  // is_first_boot = !preferences.isKey("is_first_boot");
+  // default to first time, prove it later
   is_first_boot = true;
 
   // initialize error string
@@ -35,7 +37,7 @@ bool prefs_setup()
     Serial.println("Configuration OK");
     return true;
   } else {
-    Serial.println(error);
+    Serial.printf("Configuration: %s", error);
     return false;
   }
 
@@ -108,21 +110,7 @@ void generateFullConfigJSON(JsonVariant output)
 {
   // our board specific configuration
   JsonObject board = output["board"].to<JsonObject>();
-  generateConfigJSON(board);
-
-  // lots of cleanup on this one.
-  board.remove("msg");
-  board.remove("hostname");
-  board.remove("use_ssl");
-  board.remove("enable_ota");
-  board.remove("default_role");
-  board.remove("last_restart_reason");
-  board.remove("adc_resolution");
-  board.remove("has_coredump");
-  board.remove("bus_voltage");
-  board.remove("brineomatic");
-  board.remove("brightness");
-  board.remove("uuid");
+  generateBoardConfigJSON(board);
 
   // yarrboard application specific configuration
   JsonObject app = output["app"].to<JsonObject>();
@@ -135,9 +123,91 @@ void generateFullConfigJSON(JsonVariant output)
   network.remove("msg");
 }
 
+void generateBoardConfigJSON(JsonVariant output)
+{
+  // our identifying info
+  output["firmware_version"] = YB_FIRMWARE_VERSION;
+  output["hardware_version"] = YB_HARDWARE_VERSION;
+  output["esp_idf_version"] = esp_get_idf_version();
+  output["arduino_version"] = arduino_version;
+  output["name"] = board_name;
+  output["uuid"] = uuid;
+
+// output / pwm channels
+#ifdef YB_HAS_PWM_CHANNELS
+  JsonArray channels = output["pwm"].to<JsonArray>();
+  for (auto& ch : pwm_channels) {
+    JsonObject jo = channels.add<JsonObject>();
+    ch.generateConfig(jo);
+  }
+#endif
+
+#ifdef YB_HAS_RELAY_CHANNELS
+  JsonArray r_channels = output["relay_channels"].to<JsonArray>();
+  for (auto& ch : relay_channels) {
+    JsonObject jo = r_channels.add<JsonObject>();
+    ch.generateConfig(jo);
+  }
+#endif
+
+#ifdef YB_HAS_SERVO_CHANNELS
+  JsonArray s_channels = output["servo_channels"].to<JsonArray>();
+  for (auto& ch : servo_channels) {
+    JsonObject jo = s_channels.add<JsonObject>();
+    ch.generateConfig(jo);
+  }
+#endif
+
+// input / analog ADC channesl
+#ifdef YB_HAS_ADC_CHANNELS
+  output["adc_resolution"] = YB_ADC_RESOLUTION;
+  JsonArray channels = output["adc"].to<JsonArray>();
+  for (auto& ch : adc_channels) {
+    JsonObject jo = channels.add<JsonObject>();
+    ch.generateConfig(jo);
+  }
+#endif
+
+#ifdef YB_IS_BRINEOMATIC
+  JsonObject bom = output["brineomatic"].as<JsonObject>();
+  bom["has_boost_pump"] = wm.hasBoostPump();
+  bom["has_high_pressure_pump"] = wm.hasHighPressurePump();
+  bom["has_diverter_valve"] = wm.hasDiverterValve();
+  bom["has_flush_valve"] = wm.hasFlushValve();
+  bom["has_cooling_fan"] = wm.hasCoolingFan();
+  bom["tank_capacity"] = wm.getTankCapacity();
+#endif
+}
+
+void generateAppConfigJSON(JsonVariant output)
+{
+  // our identifying info
+  output["default_role"] = getRoleText(app_default_role);
+  output["admin_user"] = admin_user;
+  output["admin_pass"] = admin_pass;
+  output["guest_user"] = guest_user;
+  output["guest_pass"] = guest_pass;
+  output["app_update_interval"] = app_update_interval;
+  output["app_enable_mfd"] = app_enable_mfd;
+  output["app_enable_api"] = app_enable_api;
+  output["app_enable_serial"] = app_enable_serial;
+  output["app_enable_ota"] = app_enable_ota;
+  output["app_enable_ssl"] = app_enable_ssl;
+  output["server_cert"] = server_cert;
+  output["server_key"] = server_key;
+}
+
+void generateNetworkConfigJSON(JsonVariant output)
+{
+  // our identifying info
+  output["wifi_mode"] = wifi_mode;
+  output["wifi_ssid"] = wifi_ssid;
+  output["wifi_pass"] = wifi_pass;
+  output["local_hostname"] = local_hostname;
+}
+
 bool loadConfigFromFile(const char* file, char* error)
 {
-
   // sanity check on LittleFS
   if (!LittleFS.begin()) {
     snprintf(error, YB_ERROR_LENGTH, "LittleFS mount failed");
