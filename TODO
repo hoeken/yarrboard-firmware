@@ -4,12 +4,13 @@
     * the various config load/save/parse functions should also pass the size of the error string.
     * check for server_cert and server_key in config.json
         * update server to check if they are not empty first.    
+    * allow drag/drop to load config file
+    * reset to factory should wipe LittleFS or at least our config file
 
 * add "keys" to each channel config 32 chars, ([A-Za-z0-9_]+ only)
-    * default to id?
+    * getChannelByKey(key, channels);
     * allow passing that instead of id
     * use that in place of ids in most places
-    * getChannelByKey(key, channels);
 
 * mqtt
     * move all mqtt calls to mqtt.cpp, channels just create their json payloads
@@ -19,8 +20,6 @@
     * add per-channel flag to include in HA?
     * add generic ha discovery stubs to BaseChannel
     * add simple HA support to brineomatic?
-
-* test out factory reset and fresh board configuration
 
 * upgrade to esp-idf 5.1.x and fix any issues
 * upgrade to PsychicHttp 2.0
@@ -111,6 +110,7 @@
 
 # LONG TERM:
 
+* global cleanup of strcpy, sprintf, etc.
 * espwebtools?  https://esphome.github.io/esp-web-tools/
 * Look into turning yarrboard UI/framework into a library for use in other projects (brineomatic)
 * other MFD integrations:

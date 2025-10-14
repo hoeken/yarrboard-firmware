@@ -25,6 +25,8 @@ extern Preferences preferences;
 
 bool prefs_setup();
 
+void initializeChannels();
+
 void generateFullConfigJSON(JsonVariant output);
 void generateBoardConfigJSON(JsonVariant output);
 void generateAppConfigJSON(JsonVariant output);
@@ -40,6 +42,14 @@ bool loadBoardConfigFromJSON(JsonVariantConst config, char* error);
 
 // this needs to be defined in the header due to how templates work
 template <typename Channel, size_t N>
+void initChannels(etl::array<Channel, N>& channels)
+{
+  for (byte i = 0; i < N; i++)
+    channels[i].init(i + 1); // load default values per channel
+}
+
+// this needs to be defined in the header due to how templates work
+template <typename Channel, size_t N>
 bool loadChannelsConfigFromJSON(const char* channel_key,
   etl::array<Channel, N>& channels,
   JsonVariantConst config,
@@ -47,14 +57,13 @@ bool loadChannelsConfigFromJSON(const char* channel_key,
   size_t error_len)
 {
   if (config[channel_key]) {
-    for (byte i = 1; i <= N; i++) {
+    for (byte i = 0; i < N; i++) {
       bool found = false;
-      channels[i - 1].id = i; // set our initial id
-      sprintf(channels[i - i].name, "Channel %d", i);
+      channels[i].init(i + 1); // load default values per channel
 
       for (JsonVariantConst ch_config : config[channel_key].as<JsonArrayConst>()) {
-        if (ch_config["id"] == i) {
-          if (channels[i - 1].loadConfig(ch_config, error, error_len))
+        if (ch_config["id"] == i + 1) {
+          if (channels[i].loadConfig(ch_config, error, error_len))
             found = true;
           else
             return false;

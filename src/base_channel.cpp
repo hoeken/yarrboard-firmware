@@ -12,6 +12,16 @@ BaseChannel::BaseChannel()
 {
 }
 
+void BaseChannel::init(uint8_t id)
+{
+  this->id = id;
+  this->isEnabled = true;
+  snprintf(this->name, sizeof(this->name), "Channel %d", id);
+  snprintf(this->key, sizeof(this->key), "%d", id);
+
+  DUMP(this->name);
+}
+
 void BaseChannel::setup()
 {
 }
@@ -28,6 +38,8 @@ bool BaseChannel::isValidKey(const char* testKey)
 
 bool BaseChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
 {
+  TRACE();
+
   // we need a valid object
   if (!config.is<JsonObjectConst>()) {
     strlcpy(error, "No JsonObject passed to loadConfig()", err_size);

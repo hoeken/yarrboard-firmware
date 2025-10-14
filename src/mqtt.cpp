@@ -46,6 +46,9 @@ void mqtt_setup()
 
 void mqtt_loop()
 {
+  if (!mqttClient.connected())
+    return;
+
   unsigned int messageDelta = millis() - previousMQQTMillis;
   if (messageDelta >= 1000) {
 

@@ -37,11 +37,30 @@ bool prefs_setup()
     Serial.println("Configuration OK");
     return true;
   } else {
-    Serial.printf("Configuration: %s", error);
+    Serial.printf("Configuration: %s\n", error);
     return false;
   }
 
   return false;
+}
+
+void initializeChannels()
+{
+#ifdef YB_HAS_ADC_CHANNELS
+  initChannels(adc_channels);
+#endif
+
+#ifdef YB_HAS_PWM_CHANNELS
+  initChannels(pwm_channels);
+#endif
+
+#ifdef YB_HAS_RELAY_CHANNELS
+  initChannels(pwm_channels);
+#endif
+
+#ifdef YB_HAS_SERVO_CHANNELS
+  initChannels(pwm_channels);
+#endif
 }
 
 bool saveConfig(char* error, size_t err_size)

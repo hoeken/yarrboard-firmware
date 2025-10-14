@@ -856,6 +856,13 @@ void PWMChannel::haHandleCommand(const char* topic, const char* payload)
   }
 }
 
+void PWMChannel::init(uint8_t id)
+{
+  BaseChannel::init(id);
+
+  snprintf(this->name, sizeof(this->name), "PWM Channel %d", id);
+}
+
 bool PWMChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
 {
   // make our parent do the work.

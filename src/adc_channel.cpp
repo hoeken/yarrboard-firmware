@@ -240,6 +240,13 @@ float ADCChannel::interpolateValue(float xv)
   return lo->calibrated + t * (hi->calibrated - lo->calibrated);
 }
 
+void ADCChannel::init(uint8_t id)
+{
+  BaseChannel::init(id);
+
+  snprintf(this->name, sizeof(this->name), "ADC Channel %d", id);
+}
+
 bool ADCChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
 {
   // make our parent do the work.

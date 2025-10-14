@@ -28,6 +28,7 @@ class BaseChannel
     bool isValidId(unsigned int testId);
     bool isValidKey(const char* testKey);
 
+    virtual void init(uint8_t id);
     virtual bool loadConfig(JsonVariantConst config, char* error, size_t err_size);
     virtual void generateConfig(JsonVariant config);
     virtual void generateUpdate(JsonVariant config);

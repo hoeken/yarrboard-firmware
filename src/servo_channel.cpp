@@ -29,6 +29,13 @@ void servo_channels_loop()
 {
 }
 
+void ServoChannel::init(uint8_t id)
+{
+  BaseChannel::init(id);
+
+  snprintf(this->name, sizeof(this->name), "Servo Channel %d", id);
+}
+
 bool ServoChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
 {
   // make our parent do the work.

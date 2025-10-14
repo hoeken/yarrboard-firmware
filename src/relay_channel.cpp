@@ -94,6 +94,13 @@ const char* RelayChannel::getStatus()
     return "OFF";
 }
 
+void RelayChannel::init(uint8_t id)
+{
+  BaseChannel::init(id);
+
+  snprintf(this->name, sizeof(this->name), "Relay Channel %d", id);
+}
+
 bool RelayChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
 {
   // make our parent do the work.

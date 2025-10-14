@@ -78,7 +78,7 @@
 #define YB_ERROR_LENGTH                128
 #define YB_UUID_LENGTH                 13
 #define YB_VALIDATE_FIRMWARE_SIGNATURE true
-#define YB_BOARD_CONFIG_PATH           "/board_config.json"
+#define YB_BOARD_CONFIG_PATH           "/yarrboard.json"
 
 #define YB_FPS_SAMPLES 256
 

@@ -31,7 +31,7 @@ struct CalibrationPoint {
 class ADCChannel : public BaseChannel
 {
   public:
-    int8_t displayDecimals = -1;
+    int8_t displayDecimals = 2;
     float lastValue = 0.0;
 
     bool useCalibrationTable = false;
@@ -47,7 +47,7 @@ class ADCChannel : public BaseChannel
     low_volt_divider - 0-5v Input
     ten_k_pullup - 10k Pullup
     */
-    char type[30];
+    char type[30] = "raw";
 
   #ifdef YB_ADC_DRIVER_ADS1115
     ADS1115Helper* adcHelper;
@@ -66,6 +66,7 @@ class ADCChannel : public BaseChannel
     float getTypeValue();
     const char* getTypeUnits();
 
+    void init(uint8_t id) override;
     bool loadConfig(JsonVariantConst config, char* error, size_t err_size) override;
     void generateConfig(JsonVariant config) override;
     void generateUpdate(JsonVariant config) override;
