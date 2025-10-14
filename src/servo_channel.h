@@ -29,7 +29,7 @@ class ServoChannel : BaseChannel
     //    Servo servo;
 
     void init(uint8_t id) override;
-    bool loadConfig(JsonVariantConst config, char* error, size_t err_size) override;
+    bool loadConfig(JsonVariantConst config, char* error, size_t len) override;
     void generateConfig(JsonVariant config) override;
     void generateUpdate(JsonVariant config) override;
 

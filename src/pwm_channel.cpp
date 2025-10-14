@@ -858,10 +858,10 @@ void PWMChannel::init(uint8_t id)
   snprintf(this->name, sizeof(this->name), "PWM Channel %d", id);
 }
 
-bool PWMChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
+bool PWMChannel::loadConfig(JsonVariantConst config, char* error, size_t len)
 {
   // make our parent do the work.
-  if (!BaseChannel::loadConfig(config, error, err_size))
+  if (!BaseChannel::loadConfig(config, error, len))
     return false;
 
   isDimmable = config["isDimmable"] | true;

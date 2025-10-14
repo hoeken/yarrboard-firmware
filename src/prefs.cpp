@@ -51,7 +51,7 @@ bool prefs_setup()
   initializeChannels();
 
   // load our config from the json file.
-  if (loadConfigFromFile(YB_BOARD_CONFIG_PATH, error)) {
+  if (loadConfigFromFile(YB_BOARD_CONFIG_PATH, error, sizeof(error))) {
     Serial.println("Configuration OK");
     return true;
   } else {
@@ -81,7 +81,7 @@ void initializeChannels()
 #endif
 }
 
-bool saveConfig(char* error, size_t err_size)
+bool saveConfig(char* error, size_t len)
 {
   // our doc to store.
   JsonDocument config;
@@ -99,14 +99,14 @@ bool saveConfig(char* error, size_t err_size)
     serializeJson(config, jsonBuffer, jsonSize + 1);
   } else {
     free(jsonBuffer);
-    snprintf(error, err_size, "serializeJson() failed to create buffer of size %d", jsonSize);
+    snprintf(error, len, "serializeJson() failed to create buffer of size %d", jsonSize);
     return false;
   }
 
   // write our config to local storage
   File fp = LittleFS.open(YB_BOARD_CONFIG_PATH, "w");
   if (!fp) {
-    snprintf(error, err_size, "Failed to open %s for writing", YB_BOARD_CONFIG_PATH);
+    snprintf(error, len, "Failed to open %s for writing", YB_BOARD_CONFIG_PATH);
     return false;
   }
 
@@ -114,7 +114,7 @@ bool saveConfig(char* error, size_t err_size)
   size_t bytesWritten = fp.print((char*)jsonBuffer);
   if (bytesWritten == 0) {
     fp.close();
-    strncpy(error, "Failed to write JSON data to file", err_size);
+    strncpy(error, "Failed to write JSON data to file", len);
     return false;
   }
 
@@ -124,7 +124,7 @@ bool saveConfig(char* error, size_t err_size)
 
   // confirm file exists and has non-zero length
   if (!LittleFS.exists(YB_BOARD_CONFIG_PATH)) {
-    strncpy(error, "File not found after write", err_size);
+    strncpy(error, "File not found after write", len);
     return false;
   }
 
@@ -132,7 +132,7 @@ bool saveConfig(char* error, size_t err_size)
   File verify = LittleFS.open(YB_BOARD_CONFIG_PATH, "r");
   if (!verify || verify.size() == 0) {
     verify.close();
-    strncpy(error, "Wrote file but it appears empty or unreadable", err_size);
+    strncpy(error, "Wrote file but it appears empty or unreadable", len);
     return false;
   }
   verify.close();
@@ -243,30 +243,30 @@ void generateNetworkConfigJSON(JsonVariant output)
   output["local_hostname"] = local_hostname;
 }
 
-bool loadConfigFromFile(const char* file, char* error)
+bool loadConfigFromFile(const char* file, char* error, size_t len)
 {
   // sanity check on LittleFS
   if (!LittleFS.begin()) {
-    snprintf(error, YB_ERROR_LENGTH, "LittleFS mount failed");
+    snprintf(error, len, "LittleFS mount failed");
     return false;
   }
 
   // open file
   File configFile = LittleFS.open(file, "r");
   if (!configFile || !configFile.available()) {
-    snprintf(error, YB_ERROR_LENGTH, "Could not open file: %s", file);
+    snprintf(error, len, "Could not open file: %s", file);
     return false;
   }
 
   // get size and check reasonableness
   size_t size = configFile.size();
   if (size == 0) {
-    snprintf(error, YB_ERROR_LENGTH, "File %s is empty", file);
+    snprintf(error, len, "File %s is empty", file);
     configFile.close();
     return false;
   }
   if (size > 10000) { // arbitrary limit to prevent large loads
-    snprintf(error, YB_ERROR_LENGTH, "File %s too large (%u bytes)", file, (unsigned int)size);
+    snprintf(error, len, "File %s too large (%u bytes)", file, (unsigned int)size);
     configFile.close();
     return false;
   }
@@ -274,7 +274,7 @@ bool loadConfigFromFile(const char* file, char* error)
   // read into buffer
   std::unique_ptr<char[]> buf(new (std::nothrow) char[size + 1]);
   if (!buf) {
-    snprintf(error, YB_ERROR_LENGTH, "Memory allocation failed for %u bytes", (unsigned int)size);
+    snprintf(error, len, "Memory allocation failed for %u bytes", (unsigned int)size);
     configFile.close();
     return false;
   }
@@ -284,7 +284,7 @@ bool loadConfigFromFile(const char* file, char* error)
   buf[bytesRead] = '\0';
 
   if (bytesRead != size) {
-    snprintf(error, YB_ERROR_LENGTH, "Read size mismatch: expected %u, got %u", (unsigned int)size, (unsigned int)bytesRead);
+    snprintf(error, len, "Read size mismatch: expected %u, got %u", (unsigned int)size, (unsigned int)bytesRead);
     return false;
   }
 
@@ -293,85 +293,85 @@ bool loadConfigFromFile(const char* file, char* error)
   DeserializationError err = deserializeJson(doc, buf.get());
 
   if (err) {
-    snprintf(error, YB_ERROR_LENGTH, "JSON parse error: %s", err.c_str());
+    snprintf(error, len, "JSON parse error: %s", err.c_str());
     return false;
   }
 
   // sanity check: ensure root object
   if (!doc.is<JsonObject>()) {
-    snprintf(error, YB_ERROR_LENGTH, "Root element is not a JSON object");
+    snprintf(error, len, "Root element is not a JSON object");
     return false;
   }
 
   // if we have an existing config file, no need for first round stuff.
   is_first_boot = false;
 
-  return loadConfigFromJSON(doc, error);
+  return loadConfigFromJSON(doc, error, len);
 }
 
-bool loadConfigFromJSON(JsonVariantConst config, char* error)
+bool loadConfigFromJSON(JsonVariantConst config, char* error, size_t len)
 {
   if (!config["network"]) {
-    snprintf(error, YB_ERROR_LENGTH, "Missing 'network' config");
+    snprintf(error, len, "Missing 'network' config");
     return false;
   }
-  if (!loadNetworkConfigFromJSON(config["network"], error))
+  if (!loadNetworkConfigFromJSON(config["network"], error, len))
     return false;
 
   if (!config["app"]) {
-    snprintf(error, YB_ERROR_LENGTH, "Missing 'app' config");
+    snprintf(error, len, "Missing 'app' config");
     return false;
   }
-  if (!loadAppConfigFromJSON(config["app"], error))
+  if (!loadAppConfigFromJSON(config["app"], error, len))
     return false;
 
   if (!config["board"]) {
-    snprintf(error, YB_ERROR_LENGTH, "Missing 'board' config");
+    snprintf(error, len, "Missing 'board' config");
     return false;
   }
-  if (!loadBoardConfigFromJSON(config["board"], error))
+  if (!loadBoardConfigFromJSON(config["board"], error, len))
     return false;
 
   return true;
 }
 
-bool loadNetworkConfigFromJSON(JsonVariantConst config, char* error)
+bool loadNetworkConfigFromJSON(JsonVariantConst config, char* error, size_t len)
 {
   const char* value;
 
   value = config["local_hostname"].as<const char*>();
-  snprintf(local_hostname, YB_HOSTNAME_LENGTH, "%s", (value && *value) ? value : YB_DEFAULT_HOSTNAME);
+  snprintf(local_hostname, sizeof(local_hostname), "%s", (value && *value) ? value : YB_DEFAULT_HOSTNAME);
 
   value = config["wifi_ssid"].as<const char*>();
-  snprintf(wifi_ssid, YB_WIFI_SSID_LENGTH, "%s", (value && *value) ? value : YB_DEFAULT_AP_SSID);
+  snprintf(wifi_ssid, sizeof(wifi_ssid), "%s", (value && *value) ? value : YB_DEFAULT_AP_SSID);
 
   value = config["wifi_pass"].as<const char*>();
-  snprintf(wifi_pass, YB_WIFI_PASSWORD_LENGTH, "%s", (value && *value) ? value : YB_DEFAULT_AP_PASS);
+  snprintf(wifi_pass, sizeof(wifi_pass), "%s", (value && *value) ? value : YB_DEFAULT_AP_PASS);
 
   value = config["wifi_mode"].as<const char*>();
-  snprintf(wifi_mode, YB_WIFI_MODE_LENGTH, "%s", (value && *value) ? value : "ap");
+  snprintf(wifi_mode, sizeof(wifi_mode), "%s", (value && *value) ? value : "ap");
 
   value = config["uuid"].as<const char*>();
-  snprintf(uuid, YB_UUID_LENGTH, "%s", (value && *value) ? value : "");
+  snprintf(uuid, sizeof(uuid), "%s", (value && *value) ? value : "");
 
   return true;
 }
 
-bool loadAppConfigFromJSON(JsonVariantConst config, char* error)
+bool loadAppConfigFromJSON(JsonVariantConst config, char* error, size_t len)
 {
   const char* value;
 
   value = config["admin_user"].as<const char*>();
-  snprintf(admin_user, YB_USERNAME_LENGTH, "%s", (value && *value) ? value : "admin");
+  snprintf(admin_user, sizeof(admin_user), "%s", (value && *value) ? value : "admin");
 
   value = config["admin_pass"].as<const char*>();
-  snprintf(admin_pass, YB_PASSWORD_LENGTH, "%s", (value && *value) ? value : "admin");
+  snprintf(admin_pass, sizeof(admin_pass), "%s", (value && *value) ? value : "admin");
 
   value = config["guest_user"].as<const char*>();
-  snprintf(guest_user, YB_USERNAME_LENGTH, "%s", (value && *value) ? value : "guest");
+  snprintf(guest_user, sizeof(guest_user), "%s", (value && *value) ? value : "guest");
 
   value = config["guest_pass"].as<const char*>();
-  snprintf(guest_pass, YB_PASSWORD_LENGTH, "%s", (value && *value) ? value : "guest");
+  snprintf(guest_pass, sizeof(guest_pass), "%s", (value && *value) ? value : "guest");
 
   if (config["app_update_interval"].is<unsigned int>()) {
     app_update_interval = config["app_update_interval"] | 1000;
@@ -405,30 +405,30 @@ bool loadAppConfigFromJSON(JsonVariantConst config, char* error)
   return true;
 }
 
-bool loadBoardConfigFromJSON(JsonVariantConst config, char* error)
+bool loadBoardConfigFromJSON(JsonVariantConst config, char* error, size_t len)
 {
   const char* value;
 
   value = config["name"].as<const char*>();
-  snprintf(board_name, YB_BOARD_NAME_LENGTH, "%s", (value && *value) ? value : "Yarrboard");
+  snprintf(board_name, sizeof(board_name), "%s", (value && *value) ? value : "Yarrboard");
 
 #ifdef YB_HAS_ADC_CHANNELS
-  if (!loadChannelsConfigFromJSON("adc", adc_channels, config, error, YB_ERROR_LENGTH))
+  if (!loadChannelsConfigFromJSON("adc", adc_channels, config, error, len))
     return false;
 #endif
 
 #ifdef YB_HAS_PWM_CHANNELS
-  if (!loadChannelsConfigFromJSON("pwm", pwm_channels, config, error, YB_ERROR_LENGTH))
+  if (!loadChannelsConfigFromJSON("pwm", pwm_channels, config, error, len))
     return false;
 #endif
 
 #ifdef YB_HAS_RELAY_CHANNELS
-  if (!loadChannelsConfigFromJSON("relay", relay_channels, config, error, YB_ERROR_LENGTH))
+  if (!loadChannelsConfigFromJSON("relay", relay_channels, config, error, len))
     return false;
 #endif
 
 #ifdef YB_HAS_SERVO_CHANNELS
-  if (!loadChannelsConfigFromJSON("servo", servo_channels, config, error, YB_ERROR_LENGTH))
+  if (!loadChannelsConfigFromJSON("servo", servo_channels, config, error, len))
     return false;
 #endif
 

@@ -247,10 +247,10 @@ void ADCChannel::init(uint8_t id)
   snprintf(this->name, sizeof(this->name), "ADC Channel %d", id);
 }
 
-bool ADCChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
+bool ADCChannel::loadConfig(JsonVariantConst config, char* error, size_t len)
 {
   // make our parent do the work.
-  if (!BaseChannel::loadConfig(config, error, err_size))
+  if (!BaseChannel::loadConfig(config, error, len))
     return false;
 
   const char* value;

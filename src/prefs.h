@@ -32,13 +32,13 @@ void generateBoardConfigJSON(JsonVariant output);
 void generateAppConfigJSON(JsonVariant output);
 void generateNetworkConfigJSON(JsonVariant output);
 
-bool saveConfig(char* error, size_t err_size);
+bool saveConfig(char* error, size_t len);
 
-bool loadConfigFromFile(const char* file, char* error);
-bool loadConfigFromJSON(JsonVariantConst config, char* error);
-bool loadNetworkConfigFromJSON(JsonVariantConst config, char* error);
-bool loadAppConfigFromJSON(JsonVariantConst config, char* error);
-bool loadBoardConfigFromJSON(JsonVariantConst config, char* error);
+bool loadConfigFromFile(const char* file, char* error, size_t len);
+bool loadConfigFromJSON(JsonVariantConst config, char* error, size_t len);
+bool loadNetworkConfigFromJSON(JsonVariantConst config, char* error, size_t len);
+bool loadAppConfigFromJSON(JsonVariantConst config, char* error, size_t len);
+bool loadBoardConfigFromJSON(JsonVariantConst config, char* error, size_t len);
 
 // this needs to be defined in the header due to how templates work
 template <typename Channel, size_t N>
@@ -54,7 +54,7 @@ bool loadChannelsConfigFromJSON(const char* channel_key,
   etl::array<Channel, N>& channels,
   JsonVariantConst config,
   char* error,
-  size_t error_len)
+  size_t len)
 {
   // did we get a config entry?
   if (config[channel_key]) {
@@ -67,8 +67,6 @@ bool loadChannelsConfigFromJSON(const char* channel_key,
     for (auto& ch : channels) {
       bool found = false;
 
-      DUMP(ch.key);
-
       // loop over our json config to see if we find a match
       for (JsonVariantConst ch_config : config[channel_key].as<JsonArrayConst>()) {
 
@@ -77,20 +75,19 @@ bool loadChannelsConfigFromJSON(const char* channel_key,
 
           // did we get a non-empty key?
           const char* val = ch_config["key"].as<const char*>();
-          DUMP(val);
           if (val && *val) {
             for (auto& test_ch : channels) {
               Serial.printf("%s == %d / %s?\n", val, test_ch.id, test_ch.key);
               // did we find any with a different id?
               if (!strcmp(val, test_ch.key) && ch.id != test_ch.id) {
-                snprintf(error, error_len, "%s channel #%d - duplicate key: %d/%s", channel_key, ch.id, test_ch.id, val);
+                snprintf(error, len, "%s channel #%d - duplicate key: %d/%s", channel_key, ch.id, test_ch.id, val);
                 return false;
               }
             }
           }
 
           // okay, attempt to load our config.
-          if (ch.loadConfig(ch_config, error, error_len))
+          if (ch.loadConfig(ch_config, error, len))
             found = true;
           else
             return false;
@@ -98,12 +95,12 @@ bool loadChannelsConfigFromJSON(const char* channel_key,
       }
 
       if (!found) {
-        snprintf(error, error_len, "Missing 'board.%s' #%d config", channel_key, ch.id);
+        snprintf(error, len, "Missing 'board.%s' #%d config", channel_key, ch.id);
         return false;
       }
     }
   } else {
-    snprintf(error, error_len, "Missing 'board.%s' config", channel_key);
+    snprintf(error, len, "Missing 'board.%s' config", channel_key);
     return false;
   }
 

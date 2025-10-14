@@ -495,7 +495,7 @@ void handleSaveConfig(JsonVariantConst input, JsonVariant output)
   }
 
   // test the validity by loading it...
-  if (!loadConfigFromJSON(config, error))
+  if (!loadConfigFromJSON(config, error, sizeof(error)))
     return generateErrorJSON(output, error);
 
   // write it!

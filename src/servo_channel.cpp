@@ -36,10 +36,10 @@ void ServoChannel::init(uint8_t id)
   snprintf(this->name, sizeof(this->name), "Servo Channel %d", id);
 }
 
-bool ServoChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
+bool ServoChannel::loadConfig(JsonVariantConst config, char* error, size_t len)
 {
   // make our parent do the work.
-  if (!BaseChannel::loadConfig(config, error, err_size))
+  if (!BaseChannel::loadConfig(config, error, len))
     return false;
 
   return true;

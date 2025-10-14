@@ -101,10 +101,10 @@ void RelayChannel::init(uint8_t id)
   snprintf(this->name, sizeof(this->name), "Relay Channel %d", id);
 }
 
-bool RelayChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
+bool RelayChannel::loadConfig(JsonVariantConst config, char* error, size_t len)
 {
   // make our parent do the work.
-  if (!BaseChannel::loadConfig(config, error, err_size))
+  if (!BaseChannel::loadConfig(config, error, len))
     return false;
 
   strlcpy(this->type, config["type"] | "other", sizeof(this->type));

@@ -1,8 +1,5 @@
 # GENERAL
 
-* single json configuration
-    * the various config load/save/parse functions should also pass the size of the error string.
-
 * channel keys
     * allow passing that instead of id
     * use that in place of ids in most places
@@ -16,6 +13,7 @@
 * ui
     * add config to enable mqqt
     * add config to enable HA discovery
+    * add config for mqqt server/user/pass
     * edit key for each channel
 
 * consolidate on yarrboard default AP/hostname for first boot
