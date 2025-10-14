@@ -1,12 +1,9 @@
 # GENERAL
 
 * single json configuration
-    * allow drag/drop to load config file
-    * file open dialog too?
     * the various config load/save/parse functions should also pass the size of the error string.
 
 * channel keys
-    * editable in ui config
     * allow passing that instead of id
     * use that in place of ids in most places
         * signalk plugin - paths

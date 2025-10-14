@@ -2280,6 +2280,8 @@ function start_websocket() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url); // cleanup
       });
+
+      addConfigurationDragDropHandler();
     }
     //load up our network config.
     else if (msg.msg == "network_config") {
@@ -2595,6 +2597,93 @@ function idle_brineomatic() {
   client.send({
     "cmd": "idle_watermaker",
   }, true);
+}
+
+function addConfigurationDragDropHandler() {
+  const ta = document.getElementById('configurationTextarea');
+  const invalid = document.getElementById('invalidConfigurationJSON');
+  const openBtn = document.getElementById('configurationOpen');
+  const fileInput = document.getElementById('configurationFileInput');
+  const MAX_BYTES = 1024 * 1024 * 2; // 2 MB cap
+
+  if (!ta) return;
+
+  function showInvalid(msg) {
+    if (invalid) {
+      invalid.style.display = '';
+      invalid.textContent = msg || 'Invalid JSON found.';
+    }
+  }
+  function hideInvalid() {
+    if (invalid) invalid.style.display = 'none';
+  }
+
+  async function handleFile(file) {
+    if (!file) return;
+
+    if (file.size > MAX_BYTES) {
+      showInvalid(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max ${(MAX_BYTES / 1024 / 1024)} MB.`);
+      return;
+    }
+
+    const isProbablyText = file.type.startsWith('text/') || /\.json$/i.test(file.name);
+    if (!isProbablyText) {
+      showInvalid('Please choose a .json or text file.');
+      return;
+    }
+
+    try {
+      const raw = await file.text();
+      try {
+        const obj = JSON.parse(raw);
+        ta.value = JSON.stringify(obj, null, 2);
+        hideInvalid();
+      } catch {
+        ta.value = raw;
+        showInvalid('Loaded file, but JSON is invalid.');
+      }
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+    } catch (err) {
+      showInvalid('Failed to read file.');
+      console.error(err);
+    }
+  }
+
+  // Drag & drop visuals
+  ['dragenter', 'dragover'].forEach(evt =>
+    ta.addEventListener(evt, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      ta.classList.add('is-drop-target');
+    })
+  );
+  ['dragleave', 'dragend'].forEach(evt =>
+    ta.addEventListener(evt, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      ta.classList.remove('is-drop-target');
+    })
+  );
+
+  // Drop handler
+  ta.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    ta.classList.remove('is-drop-target');
+    const files = e.dataTransfer?.files;
+    if (files && files.length) handleFile(files[0]);
+  });
+
+  // Open button triggers hidden input
+  if (openBtn && fileInput) {
+    openBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      handleFile(file);
+      // allow re-selecting the same file later
+      e.target.value = '';
+    });
+  }
 }
 
 function toggle_state(id) {
@@ -3408,8 +3497,10 @@ function check_for_updates() {
   //did we get a config yet?
   if (current_config) {
     //dont look up firmware if we're in development mode.
-    if (current_config.is_development)
+    if (current_config.is_development) {
+      $("#firmware_checking").html("Development Mode, automatic firmware checking disabled.")
       return;
+    }
 
     $.ajax({
       url: "https://raw.githubusercontent.com/hoeken/yarrboard-firmware/main/firmware.json",

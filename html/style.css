@@ -131,3 +131,9 @@ tr.pwmRow #statsTable tbody tr {
 [data-bs-theme="light"] .navbar {
     background: #ccc;
 } */
+
+#configurationTextarea.is-drop-target {
+    outline: 2px dashed var(--bs-primary);
+    background: rgba(13, 110, 253, .06);
+    /* bootstrap primary tint */
+}
