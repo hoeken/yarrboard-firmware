@@ -616,14 +616,10 @@ void handleSetPWMChannel(JsonVariantConst input, JsonVariant output)
 {
 #ifdef YB_HAS_PWM_CHANNELS
 
-  // id is required
-  if (!input["id"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'id' is a required parameter");
-
   // load our channel
-  auto* ch = getChannelById(input["id"], pwm_channels);
+  auto* ch = lookupChannel(input, output, pwm_channels);
   if (!ch)
-    return generateErrorJSON(output, "Invalid channel id");
+    return;
 
   // is it enabled?
   if (!ch->isEnabled)
@@ -687,14 +683,10 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
 #ifdef YB_HAS_PWM_CHANNELS
   char error[128];
 
-  // id is required
-  if (!input["id"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'id' is a required parameter");
-
   // load our channel
-  auto* ch = getChannelById(input["id"], pwm_channels);
+  auto* ch = lookupChannel(input, output, pwm_channels);
   if (!ch)
-    return generateErrorJSON(output, "Invalid channel id");
+    return;
 
   // channel name
   if (input["name"].is<String>()) {
@@ -765,14 +757,11 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
 void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output)
 {
 #ifdef YB_HAS_PWM_CHANNELS
-  // id is required
-  if (!input["id"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'id' is a required parameter");
 
   // load our channel
-  auto* ch = getChannelById(input["id"], pwm_channels);
+  auto* ch = lookupChannel(input, output, pwm_channels);
   if (!ch)
-    return generateErrorJSON(output, "Invalid channel id");
+    return;
 
   // source is required
   if (!input["source"].is<String>())
@@ -805,18 +794,15 @@ void handleFadePWMChannel(JsonVariantConst input, JsonVariant output)
   unsigned long start = micros();
   unsigned long t1, t2, t3, t4 = 0;
 
-  // id is required
-  if (!input["id"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'id' is a required parameter");
   if (!input["duty"].is<float>())
     return generateErrorJSON(output, "'duty' is a required parameter");
   if (!input["millis"].is<JsonVariantConst>())
     return generateErrorJSON(output, "'millis' is a required parameter");
 
   // load our channel
-  auto* ch = getChannelById(input["id"], pwm_channels);
+  auto* ch = lookupChannel(input, output, pwm_channels);
   if (!ch)
-    return generateErrorJSON(output, "Invalid channel id");
+    return;
 
   float duty = input["duty"];
 
@@ -855,13 +841,10 @@ void handleConfigRelayChannel(JsonVariantConst input, JsonVariant output)
 #ifdef YB_HAS_RELAY_CHANNELS
   char error[128];
 
-  // id is required
-  if (!input["id"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'id' is a required parameter");
-
-  auto* ch = getChannelById(input["id"], relay_channels);
+  // load our channel
+  auto* ch = lookupChannel(input, output, relay_channels);
   if (!ch)
-    return generateErrorJSON(output, "Invalid channel id");
+    return;
 
   // channel name
   if (input["name"].is<String>()) {
@@ -923,13 +906,10 @@ void handleSetRelayChannel(JsonVariantConst input, JsonVariant output)
 #ifdef YB_HAS_RELAY_CHANNELS
   char prefIndex[YB_PREF_KEY_LENGTH];
 
-  // id is required
-  if (!input["id"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'id' is a required parameter");
-
-  auto* ch = getChannelById(input["id"], relay_channels);
+  // load our channel
+  auto* ch = lookupChannel(input, output, relay_channels);
   if (!ch)
-    return generateErrorJSON(output, "Invalid channel id");
+    return;
 
   // is it enabled?
   if (!ch->isEnabled)
@@ -970,13 +950,10 @@ void handleSetRelayChannel(JsonVariantConst input, JsonVariant output)
 void handleToggleRelayChannel(JsonVariantConst input, JsonVariant output)
 {
 #ifdef YB_HAS_RELAY_CHANNELS
-  // id is required
-  if (!input["id"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'id' is a required parameter");
-
-  auto* ch = getChannelById(input["id"], relay_channels);
+  // load our channel
+  auto* ch = lookupChannel(input, output, relay_channels);
   if (!ch)
-    return generateErrorJSON(output, "Invalid channel id");
+    return;
 
   // source is required
   if (!input["source"].is<String>())
@@ -1007,13 +984,10 @@ void handleConfigServoChannel(JsonVariantConst input, JsonVariant output)
 #ifdef YB_HAS_SERVO_CHANNELS
   char error[128];
 
-  // id is required
-  if (!input["id"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'id' is a required parameter");
-
-  auto* ch = getChannelById(input["id"], servo_channels);
+  // load our channel
+  auto* ch = lookupChannel(input, output, servo_channels);
   if (!ch)
-    return generateErrorJSON(output, "Invalid channel id");
+    return;
 
   // channel name
   if (input["name"].is<String>()) {
@@ -1049,13 +1023,10 @@ void handleConfigServoChannel(JsonVariantConst input, JsonVariant output)
 void handleSetServoChannel(JsonVariantConst input, JsonVariant output)
 {
 #ifdef YB_HAS_SERVO_CHANNELS
-  // id is required
-  if (!input["id"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'id' is a required parameter");
-
-  auto* ch = getChannelById(input["id"], servo_channels);
+  // load our channel
+  auto* ch = lookupChannel(input, output, servo_channels);
   if (!ch)
-    return generateErrorJSON(output, "Invalid channel id");
+    return;
 
   // is it enabled?
   if (!ch->isEnabled)
@@ -1088,14 +1059,10 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
 #ifdef YB_HAS_ADC_CHANNELS
   char error[128] = "Unknown";
 
-  // id is required
-  if (!input["id"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'id' is a required parameter");
-
   // load our channel
-  auto* ch = getChannelById(input["id"], adc_channels);
+  auto* ch = lookupChannel(input, output, adc_channels);
   if (!ch)
-    return generateErrorJSON(output, "Invalid channel id");
+    return;
 
   // channel name
   if (input["name"].is<String>()) {

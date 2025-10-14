@@ -1,9 +1,6 @@
 # GENERAL
 
-* channel keys
-    * allow passing that instead of id
-    * use that in place of ids in most places
-        * signalk plugin - paths
+* test brineomatic with updated code
 
 * ui
     * add config to enable mqqt
@@ -12,6 +9,9 @@
     * edit key for each channel
 
 * consolidate on yarrboard default AP/hostname for first boot
+
+# v2.0.0 Release
+
 * upgrade to esp-idf 5.1.x and fix any issues
 * upgrade to PsychicHttp 2.0
 * add wifi RSSI bars indicator
@@ -24,6 +24,8 @@
 * generic piezo buzzer support
     * on / off / frequency? / preset tones or songs?
     * add a #define to boards to set passive vs active piezo mode
+* signalk frothfet plugin - use key for paths instead of id
+* signalk sendit plugin - use key for paths instead of id
 
 # BRINEOMATIC
 

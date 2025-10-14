@@ -20,16 +20,6 @@ void BaseChannel::setup()
 {
 }
 
-bool BaseChannel::isValidId(unsigned int testId)
-{
-  return (this->id == testId);
-}
-
-bool BaseChannel::isValidKey(const char* testKey)
-{
-  return !strcmp(this->key, testKey);
-}
-
 bool BaseChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
 {
   // we need a valid object

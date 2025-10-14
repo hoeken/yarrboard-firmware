@@ -24,8 +24,6 @@ class BaseChannel
     char key[YB_CHANNEL_KEY_LENGTH];
 
     void setup();
-    bool isValidId(unsigned int testId);
-    bool isValidKey(const char* testKey);
 
     virtual void init(uint8_t id);
     virtual bool loadConfig(JsonVariantConst config, char* error, size_t err_size);
@@ -58,6 +56,62 @@ Channel* getChannelByKey(const char* key, etl::array<Channel, N>& channels)
     if (!strcmp(key, ch.key))
       return &ch;
   }
+  return nullptr;
+}
+
+template <typename Channel, size_t N>
+Channel* lookupChannel(JsonVariantConst input, JsonVariant output, etl::array<Channel, N>& channels)
+{
+  static_assert(std::is_base_of<BaseChannel, Channel>::value,
+    "Channel must derive from BaseChannel");
+
+  // Prefer 'id' if present
+  JsonVariantConst vId = input["id"];
+  JsonVariantConst vKey = input["key"];
+
+  if (!vId.isNull()) {
+    unsigned int id = 0;
+
+    if (vId.is<unsigned int>()) {
+      // direct integer
+      id = vId.as<unsigned int>();
+    } else if (vId.is<const char*>()) {
+      // string, attempt to parse
+      const char* idStr = vId.as<const char*>();
+      char* endPtr = nullptr;
+      id = strtoul(idStr, &endPtr, 10);
+      if (endPtr == idStr || *endPtr != '\0') {
+        generateErrorJSON(output, "Parameter 'id' must be an integer or numeric string");
+        return nullptr;
+      }
+    } else {
+      generateErrorJSON(output, "Parameter 'id' must be an integer or numeric string");
+      return nullptr;
+    }
+
+    Channel* ch = getChannelById(id, channels);
+    if (!ch) {
+      generateErrorJSON(output, "Invalid channel id");
+      return nullptr;
+    }
+    return ch;
+  }
+
+  if (!vKey.isNull()) {
+    if (!vKey.is<const char*>()) {
+      generateErrorJSON(output, "Parameter 'key' must be a string");
+      return nullptr;
+    }
+    const char* key = vKey.as<const char*>();
+    Channel* ch = getChannelByKey(key, channels);
+    if (!ch) {
+      generateErrorJSON(output, "Invalid channel key");
+      return nullptr;
+    }
+    return ch;
+  }
+
+  generateErrorJSON(output, "You must pass in either 'id' or 'key' as a required parameter");
   return nullptr;
 }
 #endif /* !YARR_BASE_CHANNEL_H */
