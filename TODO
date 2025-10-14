@@ -10,10 +10,13 @@
         * save if no errors.
         * we can consolidate all the error checking to a single place aka parseConfig()
 
-* add "keys" to each channel config 32 chars, ([A-Za-z0-9_]+ only)
-    * getChannelByKey(key, channels);
+* add "keys" to each channel config 32 chars, ([A-Za-z0-9_-]+ only)
+    * need to check that its unique
     * allow passing that instead of id
     * use that in place of ids in most places
+        * signalk
+        * mqqt / homeassistant
+        * ???
 
 * mqtt
     * move all mqtt calls to mqtt.cpp, channels just create their json payloads

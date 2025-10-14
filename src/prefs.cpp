@@ -350,10 +350,10 @@ bool loadAppConfigFromJSON(JsonVariantConst config, char* error)
   snprintf(admin_pass, YB_PASSWORD_LENGTH, "%s", (value && *value) ? value : "admin");
 
   value = config["guest_user"].as<const char*>();
-  snprintf(guest_user, YB_USERNAME_LENGTH, "%s", (value && *value) ? value : "admin");
+  snprintf(guest_user, YB_USERNAME_LENGTH, "%s", (value && *value) ? value : "guest");
 
   value = config["guest_pass"].as<const char*>();
-  snprintf(guest_pass, YB_PASSWORD_LENGTH, "%s", (value && *value) ? value : "admin");
+  snprintf(guest_pass, YB_PASSWORD_LENGTH, "%s", (value && *value) ? value : "guest");
 
   if (config["app_update_interval"].is<unsigned int>()) {
     app_update_interval = config["app_update_interval"] | 1000;
