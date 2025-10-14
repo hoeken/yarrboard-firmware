@@ -381,6 +381,9 @@ bool loadAppConfigFromJSON(JsonVariantConst config, char* error)
   app_enable_ota = config["app_enable_ota"];
   app_enable_ssl = config["app_enable_ssl"];
 
+  server_cert = config["server_cert"].as<String>();
+  server_key = config["server_key"].as<String>();
+
   return true;
 }
 

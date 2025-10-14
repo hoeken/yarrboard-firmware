@@ -2,8 +2,6 @@
 
 * change over to a single json file for configuration.  easy to backup / deploy
     * the various config load/save/parse functions should also pass the size of the error string.
-    * check for server_cert and server_key in config.json
-        * update server to check if they are not empty first.    
     * allow drag/drop to load config file
     * reset to factory should wipe LittleFS or at least our config file
 

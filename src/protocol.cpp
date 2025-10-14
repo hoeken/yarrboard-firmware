@@ -443,20 +443,13 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
     app_update_interval = min(5000, (int)app_update_interval);
   }
 
+  server_cert = input["server_cert"].as<String>();
+  server_key = input["server_key"].as<String>();
+
   // save it to file.
   char error[128] = "Unknown";
   if (!saveConfig(error, sizeof(error)))
     return generateErrorJSON(output, error);
-
-  // write our pem to local storage
-  File fp = LittleFS.open("/server.crt", "w");
-  fp.print(input["server_cert"] | "");
-  fp.close();
-
-  // write our key to local storage
-  File fp2 = LittleFS.open("/server.key", "w");
-  fp2.print(input["server_key"] | "");
-  fp2.close();
 
   // init our ota.
   if (app_enable_ota)

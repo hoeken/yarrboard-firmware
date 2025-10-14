@@ -44,29 +44,8 @@ void server_setup()
   else
     Serial.println("SSL disabled");
 
-  // look up our keys?
-  if (app_enable_ssl) {
-    File fp = LittleFS.open("/server.crt");
-    if (fp)
-      server_cert = fp.readString();
-    else {
-      Serial.println("LittleFS /server.pem not found, SSL not available");
-      app_enable_ssl = false;
-    }
-    fp.close();
-
-    File fp2 = LittleFS.open("/server.key");
-    if (fp2)
-      server_key = fp2.readString();
-    else {
-      Serial.println("LittleFS /server.key not found, SSL not available");
-      app_enable_ssl = false;
-    }
-    fp2.close();
-  }
-
   // do we want secure or not?
-  if (app_enable_ssl)
+  if (app_enable_ssl && server_cert.length() > 0 && server_key.length() > 0)
     server.listen(443, server_cert.c_str(), server_key.c_str());
   else
     server.listen(80);
