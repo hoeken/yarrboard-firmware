@@ -37,7 +37,7 @@ bool prefs_setup()
     Serial.println("Configuration OK");
     return true;
   } else {
-    Serial.printf("Configuration: %s\n", error);
+    Serial.printf("CONFIG ERROR: %s\n", error);
     return false;
   }
 

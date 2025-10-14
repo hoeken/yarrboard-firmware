@@ -56,14 +56,41 @@ bool loadChannelsConfigFromJSON(const char* channel_key,
   char* error,
   size_t error_len)
 {
+  // did we get a config entry?
   if (config[channel_key]) {
+    // populate our exact channel count
     for (byte i = 0; i < N; i++) {
-      bool found = false;
-      channels[i].init(i + 1); // load default values per channel
+      channels[i].init(i + 1); // load default values per channel.  channels are 1 indexed for humans.
+    }
 
+    // now iterate over our initialized channels
+    for (auto& ch : channels) {
+      bool found = false;
+
+      DUMP(ch.key);
+
+      // loop over our json config to see if we find a match
       for (JsonVariantConst ch_config : config[channel_key].as<JsonArrayConst>()) {
-        if (ch_config["id"] == i + 1) {
-          if (channels[i].loadConfig(ch_config, error, error_len))
+
+        // channels are one indexed for humans
+        if (ch_config["id"] == ch.id) {
+
+          // did we get a non-empty key?
+          const char* val = ch_config["key"].as<const char*>();
+          DUMP(val);
+          if (val && *val) {
+            for (auto& test_ch : channels) {
+              Serial.printf("%s == %d / %s?\n", val, test_ch.id, test_ch.key);
+              // did we find any with a different id?
+              if (!strcmp(val, test_ch.key) && ch.id != test_ch.id) {
+                snprintf(error, error_len, "%s channel #%d - duplicate key: %d/%s", channel_key, ch.id, test_ch.id, val);
+                return false;
+              }
+            }
+          }
+
+          // okay, attempt to load our config.
+          if (ch.loadConfig(ch_config, error, error_len))
             found = true;
           else
             return false;
@@ -71,7 +98,7 @@ bool loadChannelsConfigFromJSON(const char* channel_key,
       }
 
       if (!found) {
-        snprintf(error, error_len, "Missing 'board.%s' #%d config", channel_key, i);
+        snprintf(error, error_len, "Missing 'board.%s' #%d config", channel_key, ch.id);
         return false;
       }
     }

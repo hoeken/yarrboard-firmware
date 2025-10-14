@@ -59,5 +59,4 @@ Channel* getChannelByKey(const char* key, etl::array<Channel, N>& channels)
   }
   return nullptr;
 }
-
 #endif /* !YARR_BASE_CHANNEL_H */

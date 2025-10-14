@@ -67,10 +67,12 @@ bool BaseChannel::loadConfig(JsonVariantConst config, char* error, size_t err_si
     strlcpy(this->name, config["name"], sizeof(this->name));
   }
 
+  DUMP(this->key);
   // optional key - must not be an empty string.
   snprintf(this->key, sizeof(this->key), "%d", this->id);
+  DUMP(this->key);
   const char* val = config["key"].as<const char*>();
-  if (val && *val) {
+  if (val && *val && strlen(val)) {
     if (strlen(config["key"]) >= sizeof(this->key)) {
       snprintf(error, err_size, "Channel key max length %d characters", sizeof(this->key) - 1);
       return false;
@@ -86,7 +88,11 @@ bool BaseChannel::loadConfig(JsonVariantConst config, char* error, size_t err_si
 
     // okay save it to our object
     strlcpy(this->key, val, sizeof(this->key));
+  } else {
+    Serial.println("empty key");
   }
+
+  DUMP(this->key);
 
   return true;
 }

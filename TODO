@@ -11,11 +11,10 @@
         * we can consolidate all the error checking to a single place aka parseConfig()
 
 * add "keys" to each channel config 32 chars, ([A-Za-z0-9_-]+ only)
-    * need to check that its unique
     * allow passing that instead of id
     * use that in place of ids in most places
-        * signalk
-        * mqqt / homeassistant
+        * signalk plugin - paths
+        * mqqt / homeassistant topics
         * ???
 
 * mqtt
