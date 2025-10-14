@@ -230,6 +230,11 @@ void generateAppConfigJSON(JsonVariant output)
   output["app_enable_serial"] = app_enable_serial;
   output["app_enable_ota"] = app_enable_ota;
   output["app_enable_ssl"] = app_enable_ssl;
+  output["app_enable_mqtt"] = app_enable_mqtt;
+  output["app_enable_ha_integration"] = app_enable_ha_integration;
+  output["mqtt_server"] = mqtt_server;
+  output["mqtt_user"] = mqtt_user;
+  output["mqtt_pass"] = mqtt_pass;
   output["server_cert"] = server_cert;
   output["server_key"] = server_key;
 }
@@ -373,6 +378,15 @@ bool loadAppConfigFromJSON(JsonVariantConst config, char* error, size_t len)
   value = config["guest_pass"].as<const char*>();
   snprintf(guest_pass, sizeof(guest_pass), "%s", (value && *value) ? value : "guest");
 
+  value = config["mqtt_server"].as<const char*>();
+  snprintf(mqtt_server, sizeof(mqtt_server), "%s", (value && *value) ? value : "");
+
+  value = config["mqtt_user"].as<const char*>();
+  snprintf(mqtt_user, sizeof(mqtt_user), "%s", (value && *value) ? value : "");
+
+  value = config["mqtt_pass"].as<const char*>();
+  snprintf(mqtt_pass, sizeof(mqtt_user), "%s", (value && *value) ? value : "");
+
   if (config["app_update_interval"].is<unsigned int>()) {
     app_update_interval = config["app_update_interval"] | 1000;
     app_update_interval = max(100u, app_update_interval);
@@ -398,6 +412,8 @@ bool loadAppConfigFromJSON(JsonVariantConst config, char* error, size_t len)
   app_enable_serial = config["app_enable_serial"];
   app_enable_ota = config["app_enable_ota"];
   app_enable_ssl = config["app_enable_ssl"];
+  app_enable_mqtt = config["app_enable_mqtt"];
+  app_enable_ha_integration = config["app_enable_ha_integration"];
 
   server_cert = config["server_cert"].as<String>();
   server_key = config["server_key"].as<String>();

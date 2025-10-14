@@ -25,23 +25,28 @@
 #endif
 
 PsychicMqttClient mqttClient;
-const char* mqtt_server = "mqtt://192.168.2.246";
 
 unsigned long previousMQQTMillis = 0;
 
 void mqtt_setup()
 {
-  mqttClient.setServer(mqtt_server);
-  mqttClient.setCredentials("yarrboard", "Trunk-View-Repeat-Saucer-6");
+  // are we enabled?
+  if (!app_enable_mqtt)
+    return;
 
-  // on connect home assistant discovery hook
+  mqttClient.setServer(mqtt_server);
+  mqttClient.setCredentials(mqtt_user, mqtt_pass);
+
+  // on connect home hook
   mqttClient.onConnect(onMqttConnect);
 
   // home assistant connection discovery hook.
-  mqttClient.onTopic("homeassistant/status", 0, [&](const char* topic, const char* payload, int retain, int qos, bool dup) {
-    if (!strcmp(payload, "online"))
-      mqtt_ha_discovery();
-  });
+  if (app_enable_ha_integration) {
+    mqttClient.onTopic("homeassistant/status", 0, [&](const char* topic, const char* payload, int retain, int qos, bool dup) {
+      if (!strcmp(payload, "online"))
+        mqtt_ha_discovery();
+    });
+  }
 
   mqttClient.connect();
 
@@ -73,14 +78,16 @@ void mqtt_loop()
 #ifdef YB_HAS_ADC_CHANNELS
       for (auto& ch : adc_channels) {
         ch.mqttUpdate("adc");
-        ch.haPublishAvailable();
+        if (app_enable_ha_integration)
+          ch.haPublishAvailable();
       }
 #endif
 
 #ifdef YB_HAS_PWM_CHANNELS
       for (auto& ch : pwm_channels) {
         ch.mqttUpdate("pwm");
-        ch.haPublishAvailable();
+        if (app_enable_ha_integration)
+          ch.haPublishAvailable();
       }
 #endif
     }
@@ -119,7 +126,8 @@ void onMqttConnect(bool sessionPresent)
 {
   Serial.println("Connected to MQTT.");
 
-  mqtt_ha_discovery();
+  if (app_enable_ha_integration)
+    mqtt_ha_discovery();
 
   // look for json messages on this path...
   char mqtt_path[128];

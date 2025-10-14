@@ -5,11 +5,6 @@
     * use that in place of ids in most places
         * signalk plugin - paths
 
-* mqtt
-    * add config to enable mqqt
-    * add config to enable HA discovery
-    * add call to discovery when config saved
-
 * ui
     * add config to enable mqqt
     * add config to enable HA discovery
