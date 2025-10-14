@@ -590,6 +590,9 @@ void handleFactoryReset(JsonVariantConst input, JsonVariant output)
   preferences.clear();
   preferences.end();
 
+  // clean up littlefs
+  LittleFS.format();
+
   // restart the board.
   ESP.restart();
 }

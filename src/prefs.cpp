@@ -47,6 +47,9 @@ bool prefs_setup()
   // initialize error string
   char error[YB_ERROR_LENGTH] = "";
 
+  // start with defaults
+  initializeChannels();
+
   // load our config from the json file.
   if (loadConfigFromFile(YB_BOARD_CONFIG_PATH, error)) {
     Serial.println("Configuration OK");

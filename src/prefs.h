@@ -45,7 +45,7 @@ template <typename Channel, size_t N>
 void initChannels(etl::array<Channel, N>& channels)
 {
   for (byte i = 0; i < N; i++)
-    channels[i].init(i + 1); // load default values per channel
+    channels[i].init(i + 1); // human indexed
 }
 
 // this needs to be defined in the header due to how templates work
