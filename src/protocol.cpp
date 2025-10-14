@@ -273,11 +273,13 @@ void handleSetBoardName(JsonVariantConst input, JsonVariant output)
   // update variable
   strlcpy(board_name, input["value"] | "Yarrboard", sizeof(board_name));
 
-  // save to our storage
-  preferences.putString("boardName", board_name);
+  // save it to file.
+  char error[128];
+  if (!saveConfig(error, sizeof(error)))
+    return generateErrorJSON(output, error);
 
   // give them the updated config
-  return generateConfigJSON(output);
+  generateConfigJSON(output);
 }
 
 void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output)
@@ -285,7 +287,7 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output)
   // clear our first boot flag since they submitted the network page.
   is_first_boot = false;
 
-  char error[50];
+  char error[128];
 
   // error checking
   if (!input["wifi_mode"].is<String>())
@@ -295,8 +297,7 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output)
   if (!input["wifi_pass"].is<String>())
     return generateErrorJSON(output, "'wifi_pass' is a required parameter");
   if (!input["local_hostname"].is<String>())
-    return generateErrorJSON(output,
-      "'local_hostname' is a required parameter");
+    return generateErrorJSON(output, "'local_hostname' is a required parameter");
 
   // is it too long?
   if (strlen(input["wifi_ssid"]) > YB_WIFI_SSID_LENGTH - 1) {
@@ -324,9 +325,6 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output)
   strlcpy(new_wifi_pass, input["wifi_pass"] | "PASS", sizeof(new_wifi_pass));
   strlcpy(local_hostname, input["local_hostname"] | "yarrboard", sizeof(local_hostname));
 
-  // no special cases here.
-  preferences.putString("local_hostname", local_hostname);
-
   // make sure we can connect before we save
   if (!strcmp(new_wifi_mode, "client")) {
     // did we change username/password?
@@ -337,15 +335,14 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output)
         if (!strcmp(wifi_mode, "ap"))
           WiFi.softAPdisconnect();
 
-        // save to flash
-        preferences.putString("wifi_mode", new_wifi_mode);
-        preferences.putString("wifi_ssid", new_wifi_ssid);
-        preferences.putString("wifi_pass", new_wifi_pass);
-
         // save for local use
         strlcpy(wifi_mode, new_wifi_mode, sizeof(wifi_mode));
         strlcpy(wifi_ssid, new_wifi_ssid, sizeof(wifi_ssid));
         strlcpy(wifi_pass, new_wifi_pass, sizeof(wifi_pass));
+
+        // save it to file.
+        if (!saveConfig(error, sizeof(error)))
+          return generateErrorJSON(output, error);
 
         // let the client know.
         return generateSuccessJSON(output, "Connected to new WiFi.");
@@ -353,19 +350,19 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output)
       // nope, setup our wifi back to default.
       else
         return generateErrorJSON(output, "Can't connect to new WiFi.");
-    } else
+    } else {
+      // save it to file.
+      if (!saveConfig(error, sizeof(error)))
+        return generateErrorJSON(output, error);
+
       return generateSuccessJSON(output, "Network settings updated.");
+    }
   }
   // okay, AP mode is easier
   else {
     // changing modes?
     // if (wifi_mode.equals("client"))
     //   WiFi.disconnect();
-
-    // save to flash
-    preferences.putString("wifi_mode", new_wifi_mode);
-    preferences.putString("wifi_ssid", new_wifi_ssid);
-    preferences.putString("wifi_pass", new_wifi_pass);
 
     // save for local use.
     strlcpy(wifi_mode, new_wifi_mode, sizeof(wifi_mode));
@@ -375,9 +372,10 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output)
     // switch us into AP mode
     setupWifi();
 
-    return generateSuccessJSON(
-      output,
-      "AP mode successful, please connect to new network.");
+    if (!saveConfig(error, sizeof(error)))
+      return generateErrorJSON(output, error);
+
+    return generateSuccessJSON(output, "AP mode successful, please connect to new network.");
   }
 }
 
@@ -449,18 +447,10 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
     app_update_interval = min(5000, (int)app_update_interval);
   }
 
-  // no special cases here.
-  preferences.putString("admin_user", admin_user);
-  preferences.putString("admin_pass", admin_pass);
-  preferences.putString("guest_user", guest_user);
-  preferences.putString("guest_pass", guest_pass);
-  preferences.putUInt("appUpdateInter", app_update_interval);
-  preferences.putString("appDefaultRole", getRoleText(app_default_role));
-  preferences.putBool("appEnableMFD", app_enable_mfd);
-  preferences.putBool("appEnableApi", app_enable_api);
-  preferences.putBool("appEnableSerial", app_enable_serial);
-  preferences.putBool("appEnableOTA", app_enable_ota);
-  preferences.putBool("appEnableSSL", app_enable_ssl);
+  // save it to file.
+  char error[128] = "Unknown";
+  if (!saveConfig(error, sizeof(error)))
+    return generateErrorJSON(output, error);
 
   // write our pem to local storage
   File fp = LittleFS.open("/server.crt", "w");
@@ -1164,68 +1154,46 @@ void handleSetServoChannel(JsonVariantConst input, JsonVariant output)
 void handleConfigADC(JsonVariantConst input, JsonVariant output)
 {
 #ifdef YB_HAS_ADC_CHANNELS
-  char prefIndex[YB_PREF_KEY_LENGTH];
+  char error[128] = "Unknown";
 
   // id is required
   if (!input["id"].is<JsonVariantConst>())
     return generateErrorJSON(output, "'id' is a required parameter");
 
-  // is it a valid channel?
-  byte cid = input["id"];
-  if (!isValidADCChannel(cid))
+  // load our channel
+  auto* ch = getChannelById(input["id"], adc_channels);
+  if (!ch)
     return generateErrorJSON(output, "Invalid channel id");
-
-  // make up for our offset
-  byte idx = cid - 1;
 
   // channel name
   if (input["name"].is<String>()) {
     // is it too long?
     if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
-      char error[50];
       sprintf(error, "Maximum channel name length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
       return generateErrorJSON(output, error);
     }
 
     // save to our storage
-    strlcpy(adc_channels[idx].name, input["name"] | "ADC ?", sizeof(adc_channels[idx].name));
-    sprintf(prefIndex, "adcName%d", cid);
-    preferences.putString(prefIndex, adc_channels[idx].name);
-
-    // give them the updated config
-    return generateConfigJSON(output);
+    strlcpy(ch->name, input["name"] | "ADC ?", sizeof(ch->name));
   }
 
   // enabled
   if (input["enabled"].is<bool>()) {
     // save right nwo.
     bool enabled = input["enabled"];
-    adc_channels[idx].isEnabled = enabled;
-
-    // save to our storage
-    sprintf(prefIndex, "adcEnabled%d", cid);
-    preferences.putBool(prefIndex, enabled);
-
-    // give them the updated config
-    return generateConfigJSON(output);
+    ch->isEnabled = enabled;
   }
 
   // channel type
   if (input["type"].is<String>()) {
     // is it too long?
     if (strlen(input["type"]) > YB_TYPE_LENGTH - 1) {
-      char error[50];
       sprintf(error, "Maximum channel type length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
       return generateErrorJSON(output, error);
     }
 
     // save to our storage
-    strlcpy(adc_channels[idx].type, input["type"] | "other", sizeof(adc_channels[idx].type));
-    sprintf(prefIndex, "adcType%d", cid);
-    preferences.putString(prefIndex, adc_channels[idx].type);
-
-    // give them the updated config
-    return generateConfigJSON(output);
+    strlcpy(ch->type, input["type"] | "other", sizeof(ch->type));
   }
 
   // channel type
@@ -1236,48 +1204,28 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
       return generateErrorJSON(output, "Must be between 0 and 4");
 
     // change our channel.
-    adc_channels[idx].displayDecimals = display_decimals;
-
-    // save to our storage
-    sprintf(prefIndex, "adcDisplay%d", cid);
-    preferences.putChar(prefIndex, display_decimals);
-
-    // give them the updated config
-    return generateConfigJSON(output);
+    ch->displayDecimals = display_decimals;
   }
 
   // useCalibrationTable
   if (input["useCalibrationTable"].is<bool>()) {
     // save right nwo.
     bool enabled = input["useCalibrationTable"];
-    adc_channels[idx].useCalibrationTable = enabled;
-
-    // save to our storage
-    sprintf(prefIndex, "adcUseCalTbl%d", cid);
-    preferences.putBool(prefIndex, enabled);
-
-    // give them the updated config
-    return generateConfigJSON(output);
+    ch->useCalibrationTable = enabled;
   }
 
   // are we using a calibration table?
-  if (adc_channels[idx].useCalibrationTable) {
+  if (ch->useCalibrationTable) {
     // calibratedUnits
     if (input["calibratedUnits"].is<String>()) {
       // is it too long?
       if (strlen(input["calibratedUnits"]) > YB_ADC_UNIT_LENGTH - 1) {
-        char error[50];
         sprintf(error, "Maximum calibrated units length is %s characters.", YB_ADC_UNIT_LENGTH - 1);
         return generateErrorJSON(output, error);
       }
 
       // save to our storage
-      strlcpy(adc_channels[idx].calibratedUnits, input["calibratedUnits"] | "", sizeof(adc_channels[idx].calibratedUnits));
-      sprintf(prefIndex, "adcCalUnits%d", cid);
-      preferences.putString(prefIndex, adc_channels[idx].calibratedUnits);
-
-      // give them the updated config
-      return generateConfigJSON(output);
+      strlcpy(ch->calibratedUnits, input["calibratedUnits"] | "", sizeof(ch->calibratedUnits));
     }
 
     // calibratedUnits
@@ -1290,15 +1238,8 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
       float y = pair[1].as<float>();
 
       // add it in
-      if (!adc_channels[idx].addCalibrationValue({v, y}))
+      if (!ch->addCalibrationValue({v, y}))
         return generateErrorJSON(output, "Failed to add calibration entry");
-
-      // now save it.
-      if (!adc_channels[idx].saveCalibrationTable())
-        return generateErrorJSON(output, "Failed to save calibration table config.");
-
-      // give them the updated config
-      return generateConfigJSON(output);
     }
 
     // calibratedUnits
@@ -1315,23 +1256,23 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
         return generateErrorJSON(output, "Non-finite number in table");
 
       // remove any matching elements
-      for (auto it = adc_channels[idx].calibrationTable.begin(); it != adc_channels[idx].calibrationTable.end();) {
+      for (auto it = ch->calibrationTable.begin(); it != ch->calibrationTable.end();) {
         if (it->voltage == v && it->calibrated == y) {
           // erase returns the next valid iterator
-          it = adc_channels[idx].calibrationTable.erase(it);
+          it = ch->calibrationTable.erase(it);
         } else {
           ++it;
         }
       }
-
-      // now save it.
-      if (!adc_channels[idx].saveCalibrationTable())
-        return generateErrorJSON(output, "Failed to save calibration table config.");
-
-      // give them the updated config
-      return generateConfigJSON(output);
     }
   }
+
+  // write it to file
+  if (!saveConfig(error, sizeof(error)))
+    return generateErrorJSON(output, error);
+
+  // give them the updated config
+  generateConfigJSON(output);
 
 #else
   return generateErrorJSON(output, "Board does not have ADC channels.");

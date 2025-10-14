@@ -123,9 +123,6 @@ void ADCChannel::setup()
   #elif YB_ADC_DRIVER_MCP3208
   this->adcHelper = new MCP3208Helper(3.3, this->id - 1, &_adcAnalogMCP3208);
   #endif
-
-  if (this->useCalibrationTable)
-    this->loadCalibrationTable();
 }
 
 void ADCChannel::update()
@@ -290,47 +287,17 @@ bool ADCChannel::loadConfigFromJSON(JsonVariantConst config, char* error)
   return true;
 }
 
-bool ADCChannel::loadCalibrationTable()
-{
-  char path[32];
-  snprintf(path, sizeof(path), "/adc%d_table.json", this->id);
-
-  File file = LittleFS.open(path, "r");
-  if (!file) {
-    Serial.printf("Failed to open %s\n", path);
-    return false;
-  }
-
-  // Allocate a JSON buffer (adjust capacity based on expected table size)
-  JsonDocument doc;
-  DeserializationError err = deserializeJson(doc, file);
-  file.close();
-
-  if (err) {
-    Serial.printf("Failed to parse %s: %s\n", path, err.c_str());
-    return false;
-  }
-
-  return this->parseCalibrationTableJson(doc.as<JsonVariant>());
-}
-
 // ---- The loader you can call with a JSON string ----
-bool ADCChannel::parseCalibrationTableJson(JsonVariantConst root)
+bool ADCChannel::parseCalibrationTableJson(JsonVariantConst tv)
 {
   // Clear any existing table
   this->calibrationTable.clear();
 
-  // units (optional)
-  // if (root.containsKey("units")) {
-  //   const char* u = root["units"].as<const char*>();
-  //   safe_copy_cstr(this->units, sizeof(this->units), u);
-  // }
-
   // Accept either "table" (preferred compact array) or "points" (object list)
   bool foundAny = false;
 
-  // 1) Preferred: "table": [ [v, y], ... ]
-  JsonVariantConst tv = root["table"]; // may be unbound (missing key)
+  // // 1) Preferred: "table": [ [v, y], ... ]
+  // JsonVariantConst tv = root["table"]; // may be unbound (missing key)
 
   if (tv.is<JsonVariantConst>()) {
     // Key exists: validate it's an array
@@ -397,50 +364,6 @@ void ADCChannel::_sortAndDedupeCalibrationTable()
     }
   }
   calibrationTable.resize(w);
-}
-
-  #include <Arduino.h>
-  #include <ArduinoJson.h>
-  #include <LittleFS.h>
-
-// inside ADCChannel class
-bool ADCChannel::saveCalibrationTable()
-{
-  char path[32];
-  snprintf(path, sizeof(path), "/adc%d_table.json", this->id);
-
-  File file = LittleFS.open(path, "w");
-  if (!file) {
-    Serial.printf("Failed to open %s for writing\n", path);
-    return false;
-  }
-
-  // cleanup
-  this->_sortAndDedupeCalibrationTable();
-
-  // Build JSON
-  JsonDocument doc;
-  doc["version"] = 1;
-  doc["calibratedUnits"] = this->calibratedUnits;
-  doc["mode"] = "clamp";
-
-  JsonArray table = doc["table"].to<JsonArray>();
-  for (auto& cp : calibrationTable) {
-    JsonArray row = table.add<JsonArray>();
-    row.add(cp.voltage);
-    row.add(cp.calibrated);
-  }
-
-  // Serialize to file
-  if (serializeJsonPretty(doc, file) == 0) {
-    Serial.printf("Failed to write JSON to %s\n", path);
-    file.close();
-    return false;
-  }
-
-  file.close();
-  Serial.printf("Saved %d calibration points to %s\n", (int)calibrationTable.size(), path);
-  return true;
 }
 
 bool ADCChannel::addCalibrationValue(CalibrationPoint cp)

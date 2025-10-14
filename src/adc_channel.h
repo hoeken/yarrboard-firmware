@@ -70,10 +70,8 @@ class ADCChannel : public BaseChannel
     const char* getTypeUnits();
 
     bool loadConfigFromJSON(JsonVariantConst config, char* error);
-    bool loadCalibrationTable();
     bool parseCalibrationTableJson(JsonVariantConst root);
     float interpolateValue(float xv);
-    bool saveCalibrationTable();
     bool addCalibrationValue(CalibrationPoint cp);
 
     void haGenerateDiscovery(JsonVariant doc);

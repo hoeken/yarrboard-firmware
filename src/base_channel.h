@@ -11,6 +11,7 @@
 
 #include "ArduinoJson.h"
 #include "config.h"
+#include "etl/array.h"
 #include <cstring> // for strncpy
 
 class BaseChannel
@@ -28,5 +29,31 @@ class BaseChannel
     void generateConfigJSON(JsonVariant config);
     bool parseConfigJSON(JsonVariant config);
 };
+
+template <typename Channel, size_t N>
+Channel* getChannelById(uint8_t id, etl::array<Channel, N>& channels)
+{
+  static_assert(std::is_base_of<BaseChannel, Channel>::value,
+    "Channel must derive from BaseChannel");
+
+  for (auto& ch : channels) {
+    if (ch.id == id)
+      return &ch;
+  }
+  return nullptr;
+}
+
+// template <typename Channel, size_t N>
+// Channel* getChannelByKey(uint8_t id, etl::array<Channel, N>& channels)
+// {
+//   static_assert(std::is_base_of<BaseChannel, Channel>::value,
+//     "Channel must derive from BaseChannel");
+
+//   for (auto& ch : channels) {
+//     if (!strcmp(key, ch.key))
+//       return &ch;
+//   }
+//   return nullptr;
+// }
 
 #endif /* !YARR_BASE_CHANNEL_H */

@@ -3,6 +3,8 @@
 * iteration:
     * switch to auto for loops for all *_channels
     * make templates where it makes sense
+        * getChannelById(id, channels);
+        * getChannelByKey(key, channels);
 
 * change over to a single json file for configuration.  easy to backup / deploy
     * update set_app_config command to call saveConfig();
