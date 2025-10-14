@@ -1,12 +1,6 @@
 # GENERAL
 
-* auto for all channel loops:
-    * relay
-    * servo
-
 * change over to a single json file for configuration.  easy to backup / deploy
-    * relay -> saveConfig()
-    * servo -> saveConfig()
     * the various config load/save/parse functions should also pass the size of the error string.
     * check for server_cert and server_key in config.json
         * update server to check if they are not empty first.    

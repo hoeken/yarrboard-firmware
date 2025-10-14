@@ -312,5 +312,15 @@ bool loadBoardConfigFromJSON(JsonVariantConst config, char* error)
     return false;
 #endif
 
+#ifdef YB_HAS_RELAY_CHANNELS
+  if (!loadChannelsConfigFromJSON("relay", relay_channels, config, error, YB_ERROR_LENGTH))
+    return false;
+#endif
+
+#ifdef YB_HAS_SERVO_CHANNELS
+  if (!loadChannelsConfigFromJSON("servo", servo_channels, config, error, YB_ERROR_LENGTH))
+    return false;
+#endif
+
   return true;
 }

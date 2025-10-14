@@ -15,14 +15,13 @@
 Servo _servo = Servo();
 
 // the main star of the event
-ServoChannel servo_channels[YB_SERVO_CHANNEL_COUNT];
+etl::array<ServoChannel, YB_SERVO_CHANNEL_COUNT> servo_channels;
 
 void servo_channels_setup()
 {
   // intitialize our channel
-  for (short i = 0; i < YB_SERVO_CHANNEL_COUNT; i++) {
-    servo_channels[i].id = i;
-    servo_channels[i].setup();
+  for (auto& ch : servo_channels) {
+    ch.setup();
   }
 }
 
@@ -30,32 +29,28 @@ void servo_channels_loop()
 {
 }
 
-bool isValidServoChannel(byte cid)
+bool ServoChannel::loadConfigFromJSON(JsonVariantConst config, char* error)
 {
-  if (cid < 0 || cid >= YB_SERVO_CHANNEL_COUNT)
-    return false;
-  else
-    return true;
+  const char* value;
+
+  if (config["id"])
+    this->id = config["id"];
+  else {
+    // todo: error
+  }
+
+  // enabled.  missing defaults to true
+  this->isEnabled = config["enabled"] | true;
+
+  snprintf(this->name, sizeof(this->name), "Channel %d", this->id);
+  if (config["name"])
+    strlcpy(this->name, config["name"], sizeof(this->name));
+
+  return true;
 }
 
 void ServoChannel::setup()
 {
-  char prefIndex[YB_PREF_KEY_LENGTH];
-
-  // lookup our name
-  sprintf(prefIndex, "srvName%d", this->id);
-  if (preferences.isKey(prefIndex))
-    strlcpy(this->name, preferences.getString(prefIndex).c_str(), sizeof(this->name));
-  else
-    sprintf(this->name, "Servo #%d", this->id);
-
-  // enabled or no
-  sprintf(prefIndex, "srvEnabled%d", this->id);
-  if (preferences.isKey(prefIndex))
-    this->isEnabled = preferences.getBool(prefIndex);
-  else
-    this->isEnabled = true;
-
   // init our servo
   channel = _servo.attach(_pins[id]);
   _servo.setFrequency(_pins[id], 50); // standard 50hz

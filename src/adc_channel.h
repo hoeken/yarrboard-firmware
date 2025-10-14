@@ -90,7 +90,6 @@ extern etl::array<ADCChannel, YB_ADC_CHANNEL_COUNT> adc_channels;
 
 void adc_channels_setup();
 void adc_channels_loop();
-bool isValidADCChannel(byte cid);
 
 template <class X, class M, class N, class O, class Q>
 X map_generic(X x, M in_min, N in_max, O out_min, Q out_max)

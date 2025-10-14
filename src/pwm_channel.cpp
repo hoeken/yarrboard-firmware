@@ -215,14 +215,6 @@ void pwm_channels_loop()
   }
 }
 
-bool isValidPWMChannel(byte cid)
-{
-  if (cid < 1 || cid > YB_PWM_CHANNEL_COUNT)
-    return false;
-  else
-    return true;
-}
-
 void PWMChannel::setup()
 {
   char prefIndex[YB_PREF_KEY_LENGTH];

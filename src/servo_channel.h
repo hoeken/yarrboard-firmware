@@ -15,7 +15,7 @@
 #include <Arduino.h>
 #include <Servo.h>
 
-class ServoChannel
+class ServoChannel : BaseChannel
 {
   protected:
     byte _pins[YB_SERVO_CHANNEL_COUNT] = YB_SERVO_CHANNEL_PINS;
@@ -28,6 +28,7 @@ class ServoChannel
 
     //    Servo servo;
 
+    bool loadConfigFromJSON(JsonVariantConst config, char* error);
     void setup();
     void write(float angle);
     float getAngle();
@@ -37,10 +38,9 @@ class ServoChannel
     byte channel = 0;
 };
 
-extern ServoChannel servo_channels[YB_SERVO_CHANNEL_COUNT];
+extern etl::array<ServoChannel, YB_SERVO_CHANNEL_COUNT> servo_channels;
 
 void servo_channels_setup();
 void servo_channels_loop();
-bool isValidServoChannel(byte cid);
 
 #endif /* !YARR_SERVO_CHANNEL_H */

@@ -13,15 +13,14 @@
   #include "relay_channel.h"
 
 // the main star of the event
-RelayChannel relay_channels[YB_RELAY_CHANNEL_COUNT];
+etl::array<RelayChannel, YB_RELAY_CHANNEL_COUNT> relay_channels;
 
 void relay_channels_setup()
 {
   // intitialize our channel
-  for (short i = 0; i < YB_RELAY_CHANNEL_COUNT; i++) {
-    relay_channels[i].id = i;
-    relay_channels[i].setup();
-    relay_channels[i].setupDefaultState();
+  for (auto& ch : relay_channels) {
+    ch.setup();
+    ch.setupDefaultState();
   }
 }
 
@@ -29,46 +28,8 @@ void relay_channels_loop()
 {
 }
 
-bool isValidRelayChannel(byte cid)
-{
-  if (cid < 0 || cid >= YB_RELAY_CHANNEL_COUNT)
-    return false;
-  else
-    return true;
-}
-
 void RelayChannel::setup()
 {
-  char prefIndex[YB_PREF_KEY_LENGTH];
-
-  // lookup our name
-  sprintf(prefIndex, "rlyName%d", this->id);
-  if (preferences.isKey(prefIndex))
-    strlcpy(this->name, preferences.getString(prefIndex).c_str(), sizeof(this->name));
-  else
-    sprintf(this->name, "Relay #%d", this->id);
-
-  // enabled or no
-  sprintf(prefIndex, "rlyEnabled%d", this->id);
-  if (preferences.isKey(prefIndex))
-    this->isEnabled = preferences.getBool(prefIndex);
-  else
-    this->isEnabled = true;
-
-  // type
-  sprintf(prefIndex, "rlyType%d", this->id);
-  if (preferences.isKey(prefIndex))
-    strlcpy(this->type, preferences.getString(prefIndex).c_str(), sizeof(this->type));
-  else
-    sprintf(this->type, "other", this->id);
-
-  // default state
-  sprintf(prefIndex, "rlyDefault%d", this->id);
-  if (preferences.isKey(prefIndex))
-    strlcpy(this->defaultState, preferences.getString(prefIndex).c_str(), sizeof(this->defaultState));
-  else
-    sprintf(this->defaultState, "OFF", this->id);
-
   // init!
   pinMode(_pins[id], OUTPUT);
   digitalWrite(_pins[id], LOW);
@@ -131,6 +92,29 @@ const char* RelayChannel::getStatus()
     return "ON";
   else
     return "OFF";
+}
+
+bool RelayChannel::loadConfigFromJSON(JsonVariantConst config, char* error)
+{
+  const char* value;
+
+  if (config["id"])
+    this->id = config["id"];
+  else {
+    // todo: error
+  }
+
+  // enabled.  missing defaults to true
+  this->isEnabled = config["enabled"] | true;
+
+  snprintf(this->name, sizeof(this->name), "Channel %d", this->id);
+  if (config["name"])
+    strlcpy(this->name, config["name"], sizeof(this->name));
+
+  strlcpy(this->type, config["type"] | "other", sizeof(this->type));
+  strlcpy(this->defaultState, config["defaultState"] | "OFF", sizeof(this->defaultState));
+
+  return true;
 }
 
 #endif

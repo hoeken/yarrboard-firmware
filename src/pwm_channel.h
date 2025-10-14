@@ -142,7 +142,6 @@ extern etl::array<PWMChannel, YB_PWM_CHANNEL_COUNT> pwm_channels;
 
 void pwm_channels_setup();
 void pwm_channels_loop();
-bool isValidPWMChannel(byte cid);
 
 void pwm_handle_ha_command(const char* topic, const char* payload, int retain, int qos, bool dup);
 

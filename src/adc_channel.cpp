@@ -104,15 +104,6 @@ void adc_channels_loop()
   #endif
 }
 
-bool isValidADCChannel(byte cid)
-{
-  for (auto& ch : adc_channels)
-    if (ch.id == cid)
-      return true;
-
-  return false;
-}
-
 void ADCChannel::setup()
 {
   #ifdef YB_ADC_DRIVER_ADS1115

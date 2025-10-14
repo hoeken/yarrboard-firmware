@@ -9,12 +9,14 @@
 #ifndef YARR_RELAY_CHANNEL_H
 #define YARR_RELAY_CHANNEL_H
 
+#include "base_channel.h"
 #include "config.h"
+#include "etl/array.h"
 #include "prefs.h"
 #include "protocol.h"
 #include <Arduino.h>
 
-class RelayChannel
+class RelayChannel : BaseChannel
 {
   protected:
     byte _pins[YB_RELAY_CHANNEL_COUNT] = YB_RELAY_CHANNEL_PINS;
@@ -41,6 +43,7 @@ class RelayChannel
 
     bool isEnabled = false;
 
+    bool loadConfigFromJSON(JsonVariantConst config, char* error);
     void setup();
     void setupDefaultState();
     void updateOutput();
@@ -51,10 +54,9 @@ class RelayChannel
     const char* getStatus();
 };
 
-extern RelayChannel relay_channels[YB_RELAY_CHANNEL_COUNT];
+extern etl::array<RelayChannel, YB_RELAY_CHANNEL_COUNT> relay_channels;
 
 void relay_channels_setup();
 void relay_channels_loop();
-bool isValidRelayChannel(byte cid);
 
 #endif /* !YARR_RELAY_CHANNEL_H */
