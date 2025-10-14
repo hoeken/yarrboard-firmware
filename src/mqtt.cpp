@@ -55,6 +55,12 @@ void mqtt_loop()
       mqtt_traverse_json(output);
     }
 
+// periodically update our HomeAssistant status
+#ifdef YB_HAS_ADC_CHANNELS
+    for (auto& ch : adc_channels)
+      ch.haPublishAvailable();
+#endif
+
     previousMQQTMillis = millis();
   }
 }
@@ -129,10 +135,9 @@ void mqtt_ha_discovery()
 
 // let each pwm channel create its own config
 #ifdef YB_HAS_ADC_CHANNELS
-  for (short i = 0; i < YB_ADC_CHANNEL_COUNT; i++) {
-    if (adc_channels[i].isEnabled)
-      adc_channels[i].haGenerateDiscovery(components);
-  }
+  for (auto& ch : adc_channels)
+    if (ch.isEnabled)
+      ch.haGenerateDiscovery(components);
 #endif
 
   // dynamically allocate our buffer

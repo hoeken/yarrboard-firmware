@@ -22,6 +22,10 @@ extern Preferences preferences;
 
 bool prefs_setup();
 
+void generateFullConfigJSON(JsonVariant output);
+
+bool saveConfig(char* error, size_t err_size);
+
 bool loadConfigFromFile(const char* file, char* error);
 bool loadConfigFromJSON(JsonVariantConst config, char* error);
 bool loadNetworkConfigFromJSON(JsonVariantConst config, char* error);

@@ -13,7 +13,6 @@
   #include "adc_channel.h"
 
 // the main star of the event
-// ADCChannel adc_channels[YB_ADC_CHANNEL_COUNT];
 etl::array<ADCChannel, YB_ADC_CHANNEL_COUNT> adc_channels;
 
   #ifdef YB_ADC_DRIVER_ADS1115
@@ -100,74 +99,22 @@ void adc_channels_loop()
 
   #else
   // maintenance on our channels.
-  for (byte id = 0; id < YB_ADC_CHANNEL_COUNT; id++)
-    adc_channels[id].update();
+  for (auto& ch : adc_channels)
+    ch.update();
   #endif
-
-  // periodically update our HomeAssistant status
-  unsigned int messageDelta = millis() - previousHAUpdateMillis;
-  if (messageDelta >= 1000) {
-    for (byte id = 0; id < YB_ADC_CHANNEL_COUNT; id++) {
-      adc_channels[id].haPublishAvailable();
-      previousHAUpdateMillis = millis();
-    }
-  }
 }
 
 bool isValidADCChannel(byte cid)
 {
-  if (cid < 1 || cid > YB_ADC_CHANNEL_COUNT)
-    return false;
-  else
-    return true;
+  for (auto& ch : adc_channels)
+    if (ch.id == cid)
+      return true;
+
+  return false;
 }
 
 void ADCChannel::setup()
 {
-  char prefIndex[YB_PREF_KEY_LENGTH];
-
-  // lookup our name
-  sprintf(prefIndex, "adcName%d", this->id);
-  if (preferences.isKey(prefIndex))
-    strlcpy(this->name, preferences.getString(prefIndex).c_str(), sizeof(this->name));
-  else
-    sprintf(this->name, "ADC #%d", this->id);
-
-  // enabled or no
-  sprintf(prefIndex, "adcEnabled%d", this->id);
-  if (preferences.isKey(prefIndex))
-    this->isEnabled = preferences.getBool(prefIndex);
-  else
-    this->isEnabled = true;
-
-  // what type are we?
-  sprintf(prefIndex, "adcType%d", this->id);
-  if (preferences.isKey(prefIndex))
-    strlcpy(this->type, preferences.getString(prefIndex).c_str(), sizeof(this->type));
-  else
-    sprintf(this->type, "raw");
-
-  // what type are we?
-  sprintf(prefIndex, "adcDisplay%d", this->id);
-  if (preferences.isKey(prefIndex))
-    this->displayDecimals = preferences.getChar(prefIndex);
-  else
-    this->displayDecimals = -1;
-
-  // calibration table?
-  sprintf(prefIndex, "adcUseCalTbl%d", this->id);
-  if (preferences.isKey(prefIndex))
-    this->useCalibrationTable = preferences.getBool(prefIndex);
-  else
-    this->useCalibrationTable = false;
-
-  // units?
-  sprintf(prefIndex, "adcCalUnits%d", this->id);
-  if (preferences.isKey(prefIndex))
-    strlcpy(this->calibratedUnits, preferences.getString(prefIndex).c_str(), sizeof(this->calibratedUnits));
-  else
-    sprintf(this->calibratedUnits, this->getTypeUnits(), this->id);
-
   #ifdef YB_ADC_DRIVER_ADS1115
   if (this->id <= 4)
     this->adcHelper = new ADS1115Helper(YB_ADC_VREF, this->id - 1, &_adcVoltageADS1115_1);
@@ -311,11 +258,34 @@ bool ADCChannel::loadConfigFromJSON(JsonVariantConst config, char* error)
 
   if (config["id"])
     this->id = config["id"];
+  else {
+    // todo: error
+  }
 
   this->isEnabled = config["enabled"];
 
-  value = config["name"].as<const char*>();
-  snprintf(this->name, YB_CHANNEL_NAME_LENGTH, "%s", (value && *value) ? value : YB_DEFAULT_HOSTNAME);
+  if (config["name"]) {
+    value = config["name"].as<const char*>();
+    snprintf(this->name, YB_CHANNEL_NAME_LENGTH, "%s", (value && *value) ? value : "Channel");
+  }
+
+  value = config["type"].as<const char*>();
+  snprintf(this->type, sizeof(this->type), "%s", (value && *value) ? value : "raw");
+
+  this->displayDecimals = 2;
+  if (config["displayDecimals"].is<unsigned int>()) {
+    this->displayDecimals = config["displayDecimals"];
+    this->displayDecimals = max(0, (int)this->displayDecimals);
+  }
+
+  this->useCalibrationTable = config["useCalibrationTable"];
+
+  value = config["calibratedUnits"].as<const char*>();
+  snprintf(this->calibratedUnits, sizeof(this->calibratedUnits), "%s", (value && *value) ? value : "");
+
+  // todo: we need a return here.
+  if (config["calibrationTable"])
+    this->parseCalibrationTableJson(config["calibrationTable"]);
 
   return true;
 }

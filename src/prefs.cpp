@@ -42,6 +42,99 @@ bool prefs_setup()
   return false;
 }
 
+bool saveConfig(char* error, size_t err_size)
+{
+  // our doc to store.
+  JsonDocument config;
+
+  // generate a full new document each time
+  generateFullConfigJSON(config);
+
+  // dynamically allocate our buffer
+  size_t jsonSize = measureJson(config);
+  char* jsonBuffer = (char*)malloc(jsonSize + 1);
+  jsonBuffer[jsonSize] = '\0'; // null terminate
+
+  // now serialize it to the buffer
+  if (jsonBuffer != NULL) {
+    serializeJson(config, jsonBuffer, jsonSize + 1);
+  } else {
+    free(jsonBuffer);
+    snprintf(error, err_size, "serializeJson() failed to create buffer of size %d", jsonSize);
+    return false;
+  }
+
+  // write our config to local storage
+  File fp = LittleFS.open(YB_BOARD_CONFIG_PATH, "w");
+  if (!fp) {
+    snprintf(error, err_size, "Failed to open %s for writing", YB_BOARD_CONFIG_PATH);
+    return false;
+  }
+
+  // check write result
+  size_t bytesWritten = fp.print((char*)jsonBuffer);
+  if (bytesWritten == 0) {
+    fp.close();
+    strncpy(error, "Failed to write JSON data to file", err_size);
+    return false;
+  }
+
+  // flush data (no return value, but still good to call)
+  fp.flush();
+  fp.close();
+
+  // confirm file exists and has non-zero length
+  if (!LittleFS.exists(YB_BOARD_CONFIG_PATH)) {
+    strncpy(error, "File not found after write", err_size);
+    return false;
+  }
+
+  // check for size and opening
+  File verify = LittleFS.open(YB_BOARD_CONFIG_PATH, "r");
+  if (!verify || verify.size() == 0) {
+    verify.close();
+    strncpy(error, "Wrote file but it appears empty or unreadable", err_size);
+    return false;
+  }
+  verify.close();
+
+  // free up our memory
+  free(jsonBuffer);
+
+  return true;
+}
+
+void generateFullConfigJSON(JsonVariant output)
+{
+  // our board specific configuration
+  JsonObject board = output["board"].to<JsonObject>();
+  generateConfigJSON(board);
+
+  // lots of cleanup on this one.
+  board.remove("msg");
+  board.remove("hostname");
+  board.remove("use_ssl");
+  board.remove("enable_ota");
+  board.remove("default_role");
+  board.remove("last_restart_reason");
+  board.remove("adc_resolution");
+  board.remove("has_coredump");
+  board.remove("bus_voltage");
+  board.remove("brineomatic");
+  board.remove("brightness");
+  board.remove("uuid");
+
+  // yarrboard application specific configuration
+  JsonObject app = output["app"].to<JsonObject>();
+  generateAppConfigJSON(app);
+  app.remove("msg");
+
+  // network connection specific configuration
+  JsonObject network = output["network"].to<JsonObject>();
+  generateNetworkConfigJSON(network);
+  network.remove("msg");
+}
+
 bool loadConfigFromFile(const char* file, char* error)
 {
 

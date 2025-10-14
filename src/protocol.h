@@ -120,7 +120,6 @@ void generateHelloJSON(JsonVariant output, UserRole role);
 void generateUpdateJSON(JsonVariant output);
 void generateUpdateJSON(JsonVariant output);
 void generateFastUpdateJSON(JsonVariant output);
-void generateFullConfigJSON(JsonVariant output);
 void generateFullConfigJSONMessage(JsonVariant output);
 void generateConfigJSON(JsonVariant output);
 void generateStatsJSON(JsonVariant output);
