@@ -40,9 +40,6 @@ bool loadChannelsConfigFromJSON(const char* channel_key,
   char* error,
   size_t error_len)
 {
-  DUMP(channel_key);
-  DUMP(N);
-
   if (config[channel_key]) {
     for (byte i = 1; i <= N; i++) {
       bool found = false;

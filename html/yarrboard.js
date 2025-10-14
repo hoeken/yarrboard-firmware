@@ -2272,7 +2272,9 @@ function start_websocket() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'board_config.json';
+        const today = new Date();
+        const dateStr = today.toISOString().split('T')[0];
+        a.download = `${current_config.hostname}_${current_config.uuid}_${dateStr}_config.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

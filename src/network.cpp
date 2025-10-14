@@ -28,11 +28,6 @@ bool is_first_boot = true;
 
 void network_setup()
 {
-#ifdef YB_HAS_PWM_CHANNELS
-  for (byte i = 0; i < YB_PWM_CHANNEL_COUNT; i++)
-    strlcpy(pwm_channels[i].source, local_hostname, sizeof(local_hostname));
-#endif
-
   //  get a unique ID for us
   if (!strlen(uuid)) {
     byte mac[6];

@@ -10,6 +10,7 @@
 #define YARR_PWM_CHANNEL_H
 
 #include "adchelper.h"
+#include "base_channel.h"
 #include "bus_voltage.h"
 #include "config.h"
 #include "driver/ledc.h"
@@ -20,7 +21,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 
-class PWMChannel
+class PWMChannel : public BaseChannel
 {
   private:
     char ha_uuid[64];
@@ -100,7 +101,9 @@ class PWMChannel
     void setupInterrupt();
     void setupOffset();
     void setupDefaultState();
+    bool loadConfigFromJSON(JsonVariantConst config, char* error);
     void saveThrottledDutyCycle();
+
     void updateOutput(bool check_status = false);
     void checkStatus();
 
@@ -135,7 +138,7 @@ class PWMChannel
     void haHandleCommand(const char* topic, const char* payload);
 };
 
-extern PWMChannel pwm_channels[YB_PWM_CHANNEL_COUNT];
+extern etl::array<PWMChannel, YB_PWM_CHANNEL_COUNT> pwm_channels;
 
 void pwm_channels_setup();
 void pwm_channels_loop();

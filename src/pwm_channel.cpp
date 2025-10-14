@@ -16,7 +16,7 @@
 unsigned long previousHAUpdateMillis = 0;
 
 // the main star of the event
-PWMChannel pwm_channels[YB_PWM_CHANNEL_COUNT];
+etl::array<PWMChannel, YB_PWM_CHANNEL_COUNT> pwm_channels;
 
 // flag for hardware fade status
 static volatile bool isChannelFading[YB_PWM_CHANNEL_COUNT];
@@ -158,20 +158,21 @@ void pwm_channels_setup()
   // crash based on this issue: https://github.com/espressif/esp-idf/issues/5167
 
   // intitialize our channel
-  for (short i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
-    pwm_channels[i].id = i + 1;
-    pwm_channels[i].setup();
-    pwm_channels[i].setupLedc();
+  for (auto& ch : pwm_channels) {
+    ch.setup();
+    ch.setupLedc();
+
+    strlcpy(ch.source, local_hostname, sizeof(ch.source));
   }
 
   // fade function
   ledc_fade_func_uninstall();
   ledc_fade_func_install(0);
 
-  for (short i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
-    pwm_channels[i].setupInterrupt(); // intitialize our interrupts for fading
-    pwm_channels[i].setupOffset();
-    pwm_channels[i].setupDefaultState();
+  for (auto& ch : pwm_channels) {
+    ch.setupInterrupt(); // intitialize our interrupts for fading
+    ch.setupOffset();
+    ch.setupDefaultState();
   }
 }
 
@@ -181,19 +182,19 @@ void pwm_channels_loop()
   bool doSendFastUpdate = false;
 
   // maintenance on our channels.
-  for (byte id = 0; id < YB_PWM_CHANNEL_COUNT; id++) {
-    pwm_channels[id].checkStatus();
-    pwm_channels[id].saveThrottledDutyCycle();
-    pwm_channels[id].checkIfFadeOver();
+  for (auto& ch : pwm_channels) {
+    ch.checkStatus();
+    ch.saveThrottledDutyCycle();
+    ch.checkIfFadeOver();
 
-    pwm_channels[id].updateOutputLED();
+    ch.updateOutputLED();
 
     // flag for update?
-    if (pwm_channels[id].sendFastUpdate) {
+    if (ch.sendFastUpdate) {
       doSendFastUpdate = true;
 
       // publish our home assistant state
-      pwm_channels[id].haPublishState();
+      ch.haPublishState();
     }
   }
 
@@ -205,9 +206,9 @@ void pwm_channels_loop()
   // periodically update our HomeAssistant status
   unsigned int messageDelta = millis() - previousHAUpdateMillis;
   if (messageDelta >= 1000) {
-    for (byte id = 0; id < YB_PWM_CHANNEL_COUNT; id++) {
-      pwm_channels[id].haPublishAvailable();
-      pwm_channels[id].haPublishState();
+    for (auto& ch : pwm_channels) {
+      ch.haPublishAvailable();
+      ch.haPublishState();
 
       previousHAUpdateMillis = millis();
     }
@@ -226,20 +227,6 @@ void PWMChannel::setup()
 {
   char prefIndex[YB_PREF_KEY_LENGTH];
 
-  // lookup our name
-  sprintf(prefIndex, "pwmName%d", this->id);
-  if (preferences.isKey(prefIndex))
-    strlcpy(this->name, preferences.getString(prefIndex).c_str(), sizeof(this->name));
-  else
-    sprintf(this->name, "PWM #%d", this->id);
-
-  // enabled or no
-  sprintf(prefIndex, "pwmEnabled%d", this->id);
-  if (preferences.isKey(prefIndex))
-    this->isEnabled = preferences.getBool(prefIndex);
-  else
-    this->isEnabled = true;
-
   // lookup our duty cycle
   sprintf(prefIndex, "pwmDuty%d", this->id);
   if (preferences.isKey(prefIndex))
@@ -248,40 +235,12 @@ void PWMChannel::setup()
     this->dutyCycle = 1.0;
   this->lastDutyCycle = this->dutyCycle;
 
-  // dimmability.
-  sprintf(prefIndex, "pwmDimmable%d", this->id);
-  if (preferences.isKey(prefIndex))
-    this->isDimmable = preferences.getBool(prefIndex);
-  else
-    this->isDimmable = true;
-
-  // soft fuse
-  sprintf(prefIndex, "pwmSoftFuse%d", this->id);
-  if (preferences.isKey(prefIndex))
-    this->softFuseAmperage = preferences.getFloat(prefIndex);
-  else
-    this->softFuseAmperage = YB_PWM_CHANNEL_MAX_AMPS;
-
   // soft fuse trip count
   sprintf(prefIndex, "pwmTripCount%d", this->id);
   if (preferences.isKey(prefIndex))
     this->softFuseTripCount = preferences.getUInt(prefIndex);
   else
     this->softFuseTripCount = 0;
-
-  // type
-  sprintf(prefIndex, "pwmType%d", this->id);
-  if (preferences.isKey(prefIndex))
-    strlcpy(this->type, preferences.getString(prefIndex).c_str(), sizeof(this->type));
-  else
-    sprintf(this->type, "other");
-
-  // default state
-  sprintf(prefIndex, "pwmDefault%d", this->id);
-  if (preferences.isKey(prefIndex))
-    strlcpy(this->defaultState, preferences.getString(prefIndex).c_str(), sizeof(this->defaultState));
-  else
-    sprintf(this->defaultState, "OFF");
 
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
   this->amperageHelper = new MCP3564Helper(3.3, this->id - 1, &_adcCurrentMCP3564);
@@ -871,8 +830,8 @@ void PWMChannel::haPublishState()
 
 void pwm_handle_ha_command(const char* topic, const char* payload, int retain, int qos, bool dup)
 {
-  for (short i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
-    pwm_channels[i].haHandleCommand(topic, payload);
+  for (auto& ch : pwm_channels) {
+    ch.haHandleCommand(topic, payload);
   }
 }
 
@@ -903,6 +862,35 @@ void PWMChannel::haHandleCommand(const char* topic, const char* payload)
     // turn it on
     this->updateOutput(true);
   }
+}
+
+bool PWMChannel::loadConfigFromJSON(JsonVariantConst config, char* error)
+{
+  const char* value;
+
+  if (config["id"])
+    this->id = config["id"];
+  else {
+    // todo: error
+  }
+
+  // enabled.  missing defaults to true
+  this->isEnabled = config["enabled"] | true;
+
+  snprintf(this->name, sizeof(this->name), "Channel %d", this->id);
+  if (config["name"])
+    strlcpy(this->name, config["name"], sizeof(this->name));
+
+  isDimmable = config["isDimmable"] | true;
+
+  softFuseAmperage = config["softFuse"] | YB_PWM_CHANNEL_MAX_AMPS;
+  softFuseAmperage = max(0.0f, softFuseAmperage);
+  softFuseAmperage = min((float)YB_PWM_CHANNEL_MAX_AMPS, softFuseAmperage);
+
+  strlcpy(this->type, config["type"] | "other", sizeof(this->type));
+  strlcpy(this->defaultState, config["defaultState"] | "OFF", sizeof(this->defaultState));
+
+  return true;
 }
 
 #endif

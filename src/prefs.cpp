@@ -307,5 +307,10 @@ bool loadBoardConfigFromJSON(JsonVariantConst config, char* error)
     return false;
 #endif
 
+#ifdef YB_HAS_PWM_CHANNELS
+  if (!loadChannelsConfigFromJSON("pwm", pwm_channels, config, error, YB_ERROR_LENGTH))
+    return false;
+#endif
+
   return true;
 }

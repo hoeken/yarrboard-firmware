@@ -127,9 +127,9 @@ void mqtt_ha_discovery()
 
 // let each pwm channel create its own config
 #ifdef YB_HAS_PWM_CHANNELS
-  for (short i = 0; i < YB_PWM_CHANNEL_COUNT; i++) {
-    if (pwm_channels[i].isEnabled)
-      pwm_channels[i].haGenerateDiscovery(components);
+  for (auto& ch : pwm_channels) {
+    if (ch.isEnabled)
+      ch.haGenerateDiscovery(components);
   }
 #endif
 

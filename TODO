@@ -1,24 +1,16 @@
 # GENERAL
 
-* iteration:
-    * switch to auto for loops for all *_channels
-    * make templates where it makes sense
-        * getChannelById(id, channels);
-        * getChannelByKey(key, channels);
+* auto for all channel loops:
+    * relay
+    * servo
 
 * change over to a single json file for configuration.  easy to backup / deploy
-    * update set_app_config command to call saveConfig();
-    * update set_network_config command to call saveConfig();
-    * update save_config command to call saveConfig()
-    * update set_adc to call saveConfig()
+    * relay -> saveConfig()
+    * servo -> saveConfig()
     * the various config load/save/parse functions should also pass the size of the error string.
-    * remove preferences.* from app, network, and adc
-    * download should be yarrboard_config_UUID_date.json
     * check for server_cert and server_key in config.json
         * update server to check if they are not empty first.    
     * move to BaseChannel generateJSONConfig() and parseJSONConfig()
-    * adc calibration tables only stored in config.json, no separate files.
-    * do pwm channel
 
 * port to new BaseChannel class
     * adc channel
@@ -30,6 +22,7 @@
     * allow passing that instead of id
     * use that in place of ids in most places
     * no more arrays, use key => object in json generation
+    * getChannelByKey(key, channels);
 
 * mqtt
     * move all mqqt calls to mqqt.cpp, channels just create their json payloads
@@ -38,6 +31,8 @@
     * add config to enable HA discovery
     * add per-channel flag to include in HA?
 
+* version bump to 2.0.0
+* add is_development flag - disable firmware checking
 * upgrade to esp-idf 5.1.x and fix any issues
 * upgrade to PsychicHttp 2.0
 * clean up #includes and libraries
