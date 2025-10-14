@@ -4,6 +4,11 @@
     * the various config load/save/parse functions should also pass the size of the error string.
     * allow drag/drop to load config file
     * reset to factory should wipe LittleFS or at least our config file
+    * longer term, editing channel should:
+        * send entire config in command
+        * run it through the same parseConfig()
+        * save if no errors.
+        * we can consolidate all the error checking to a single place aka parseConfig()
 
 * add "keys" to each channel config 32 chars, ([A-Za-z0-9_]+ only)
     * getChannelByKey(key, channels);
