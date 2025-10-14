@@ -444,7 +444,7 @@ void ADCChannel::haGenerateSensorDiscovery(JsonVariant doc)
 
 void ADCChannel::haPublishAvailable()
 {
-  mqttClient.publish(ha_topic_avail, 1, false, "online", 0, false);
+  mqtt_publish(ha_topic_avail, "online", false);
 }
 
 #endif

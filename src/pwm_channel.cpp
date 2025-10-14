@@ -711,8 +711,8 @@ void PWMChannel::haGenerateDiscovery(JsonVariant doc)
   sprintf(ha_topic_current, "yarrboard/%s/pwm/%d/current", local_hostname, this->id);
 
   // our callbacks to the command topics
-  mqttClient.onTopic(ha_topic_cmd_state, 0, pwm_handle_ha_command);
-  mqttClient.onTopic(ha_topic_cmd_brightness, 0, pwm_handle_ha_command);
+  mqqt_on_topic(ha_topic_cmd_state, 0, pwm_handle_ha_command);
+  mqqt_on_topic(ha_topic_cmd_brightness, 0, pwm_handle_ha_command);
 
   this->haGenerateLightDiscovery(doc);
   this->haGenerateVoltageDiscovery(doc);
@@ -792,21 +792,15 @@ void PWMChannel::haGenerateAmperageDiscovery(JsonVariant doc)
 
 void PWMChannel::haPublishAvailable()
 {
-  if (!mqttClient.connected())
-    return;
-
-  mqttClient.publish(ha_topic_avail, 1, false, "online", 0, false);
+  mqtt_publish(ha_topic_avail, "online", false);
 }
 
 void PWMChannel::haPublishState()
 {
-  if (!mqttClient.connected())
-    return;
-
   if (this->status == Status::ON)
-    mqttClient.publish(ha_topic_state_state, 0, false, "ON", 0, false);
+    mqtt_publish(ha_topic_state_state, "ON", false);
   else
-    mqttClient.publish(ha_topic_state_state, 0, false, "OFF", 0, false);
+    mqtt_publish(ha_topic_state_state, "OFF", false);
 
   if (this->isDimmable) {
     char b[8];
@@ -816,7 +810,8 @@ void PWMChannel::haPublishState()
     if (brightness > 255)
       brightness = 255;
     snprintf(b, sizeof(b), "%u", brightness);
-    mqttClient.publish(ha_topic_state_brightness, 0, false, b, 0, false);
+
+    mqtt_publish(ha_topic_state_state, b, false);
   }
 }
 

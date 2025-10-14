@@ -76,21 +76,37 @@ void mqtt_loop()
         ch.haPublishAvailable();
       }
 #endif
+
+#ifdef YB_HAS_PWM_CHANNELS
+      for (auto& ch : pwm_channels) {
+        ch.mqttUpdate("pwm");
+        ch.haPublishAvailable();
+      }
+#endif
     }
 
     previousMQQTMillis = millis();
   }
 }
 
-void mqtt_publish(const char* topic, const char* payload)
+void mqqt_on_topic(const char* topic, int qos, OnMessageUserCallback callback)
 {
-  // prepare our path
-  char mqtt_path[256];
-  sprintf(mqtt_path, "yarrboard/%s/%s", local_hostname, topic);
+  mqttClient.onTopic(topic, qos, callback);
+}
 
-  // send it off!
-  if (mqttClient.connected())
+void mqtt_publish(const char* topic, const char* payload, bool use_prefix)
+{
+  if (!mqttClient.connected())
+    return;
+
+  // prefix it with yarrboard or nah?
+  if (use_prefix) {
+    char mqtt_path[256];
+    sprintf(mqtt_path, "yarrboard/%s/%s", local_hostname, topic);
     mqttClient.publish(mqtt_path, 0, 0, payload, strlen(payload), false);
+  } else {
+    mqttClient.publish(topic, 0, 0, payload, strlen(payload), false);
+  }
 }
 
 void mqtt_receive_message(const char* topic, const char* payload, int retain, int qos, bool dup)
@@ -113,6 +129,9 @@ void onMqttConnect(bool sessionPresent)
 
 void mqtt_ha_discovery()
 {
+  if (!mqttClient.connected())
+    return;
+
   char ha_dev_uuid[128];
   sprintf(ha_dev_uuid, "%s_%s", YB_HARDWARE_VERSION, uuid);
 

@@ -35,10 +35,6 @@
   #include "logo-yarrboard.png.gz.h"
 #endif
 
-#ifdef YB_HAS_PWM_CHANNELS
-  #include "pwm_channel.h"
-#endif
-
 #ifdef YB_HAS_FANS
   #include "fans.h"
 #endif

@@ -50,8 +50,8 @@ class PWMChannel : public BaseChannel
 
     Status status = Status::OFF;
     bool outputState = false;
-    char type[30];
-    char defaultState[10];
+    char type[30] = "other";
+    char defaultState[10] = "OFF";
     bool sendFastUpdate = false;
     char source[YB_HOSTNAME_LENGTH];
 
@@ -86,7 +86,7 @@ class PWMChannel : public BaseChannel
 
     float voltage = 0.0;
     float amperage = 0.0;
-    float softFuseAmperage = 0.0;
+    float softFuseAmperage = YB_PWM_CHANNEL_MAX_AMPS;
     float ampHours = 0.0;
     float wattHours = 0.0;
 
