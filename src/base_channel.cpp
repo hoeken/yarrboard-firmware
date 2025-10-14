@@ -8,6 +8,10 @@
 
 #include "base_channel.h"
 
+BaseChannel::BaseChannel()
+{
+}
+
 void BaseChannel::setup()
 {
 }

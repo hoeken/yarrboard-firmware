@@ -49,6 +49,9 @@ bool loadChannelsConfigFromJSON(const char* channel_key,
   if (config[channel_key]) {
     for (byte i = 1; i <= N; i++) {
       bool found = false;
+      channels[i - 1].id = i; // set our initial id
+      sprintf(channels[i - i].name, "Channel %d", i);
+
       for (JsonVariantConst ch_config : config[channel_key].as<JsonArrayConst>()) {
         if (ch_config["id"] == i) {
           if (channels[i - 1].loadConfig(ch_config, error, error_len))

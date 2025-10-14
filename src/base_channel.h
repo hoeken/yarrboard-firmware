@@ -17,6 +17,8 @@
 class BaseChannel
 {
   public:
+    BaseChannel();
+
     byte id = 0;
     bool isEnabled = true;
     char name[YB_CHANNEL_NAME_LENGTH];

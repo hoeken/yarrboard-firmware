@@ -1378,6 +1378,10 @@ void generateConfigJSON(JsonVariant output)
   output["default_role"] = getRoleText(app_default_role);
   output["brightness"] = globalBrightness;
 
+#ifdef YB_IS_DEVELOPMENT
+  output["is_development"] = true;
+#endif
+
   // some debug info
   output["last_restart_reason"] = getResetReason();
   if (has_coredump)

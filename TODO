@@ -1,25 +1,26 @@
 # GENERAL
 
-* version bump to 2.0.0
-* add is_development flag - disable firmware checking
-
 * change over to a single json file for configuration.  easy to backup / deploy
     * the various config load/save/parse functions should also pass the size of the error string.
     * check for server_cert and server_key in config.json
         * update server to check if they are not empty first.    
 
 * add "keys" to each channel config 32 chars, ([A-Za-z0-9_]+ only)
+    * default to id?
     * allow passing that instead of id
     * use that in place of ids in most places
-    * no more arrays, use key => object in json generation
     * getChannelByKey(key, channels);
 
 * mqtt
-    * move all mqqt calls to mqqt.cpp, channels just create their json payloads
+    * move all mqtt calls to mqtt.cpp, channels just create their json payloads
     * test when host is unreachable... shouldnt keep sending
     * add config to enable mqqt
     * add config to enable HA discovery
     * add per-channel flag to include in HA?
+    * add generic ha discovery stubs to BaseChannel
+    * add simple HA support to brineomatic?
+
+* test out factory reset and fresh board configuration
 
 * upgrade to esp-idf 5.1.x and fix any issues
 * upgrade to PsychicHttp 2.0
@@ -112,9 +113,6 @@
 
 * espwebtools?  https://esphome.github.io/esp-web-tools/
 * Look into turning yarrboard UI/framework into a library for use in other projects (brineomatic)
-* Integrations with other automation frameworks?
-    * Home Assistant
-    * mqqt?
 * other MFD integrations:
     * garmin?
     * raymarine?

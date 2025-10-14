@@ -3407,6 +3407,10 @@ function reset_to_factory() {
 function check_for_updates() {
   //did we get a config yet?
   if (current_config) {
+    //dont look up firmware if we're in development mode.
+    if (current_config.is_development)
+      return;
+
     $.ajax({
       url: "https://raw.githubusercontent.com/hoeken/yarrboard-firmware/main/firmware.json",
       cache: false,
