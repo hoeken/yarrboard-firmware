@@ -416,9 +416,9 @@ bool ADCChannel::addCalibrationValue(CalibrationPoint cp)
 void ADCChannel::haGenerateDiscovery(JsonVariant doc)
 {
   // generate our id / topics
-  sprintf(ha_uuid, "%s_adc_%d", uuid, this->id);
-  sprintf(ha_topic_value, "yarrboard/%s/adc/%d/value", local_hostname, this->id);
-  sprintf(ha_topic_avail, "yarrboard/%s/adc/%d/ha_availability", local_hostname, this->id);
+  sprintf(ha_uuid, "%s_adc_%s", uuid, this->key);
+  sprintf(ha_topic_value, "yarrboard/%s/adc/%s/value", local_hostname, this->key);
+  sprintf(ha_topic_avail, "yarrboard/%s/adc/%s/ha_availability", local_hostname, this->key);
 
   this->haGenerateSensorDiscovery(doc);
 }
@@ -431,7 +431,7 @@ void ADCChannel::haGenerateSensorDiscovery(JsonVariant doc)
   obj["unique_id"] = ha_uuid;
   obj["state_topic"] = ha_topic_value;
   obj["unit_of_measurement"] = this->getTypeUnits();
-  obj["device_class"] = "voltage";
+  // obj["device_class"] = "voltage";
   obj["state_class"] = "measurement";
   obj["entity_category"] = "diagnostic";
   obj["suggested_display_precision"] = this->displayDecimals;

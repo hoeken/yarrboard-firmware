@@ -8,6 +8,22 @@
 
 #include "mqtt.h"
 
+#ifdef YB_HAS_ADC_CHANNELS
+  #include "adc_channel.h"
+#endif
+
+#ifdef YB_HAS_PWM_CHANNELS
+  #include "pwm_channel.h"
+#endif
+
+#ifdef YB_HAS_RELAY_CHANNELS
+  #include "relay_channel.h"
+#endif
+
+#ifdef YB_HAS_SERVO_CHANNELS
+  #include "servo_channel.h"
+#endif
+
 PsychicMqttClient mqttClient;
 const char* mqtt_server = "mqtt://192.168.2.246";
 
@@ -49,20 +65,18 @@ void mqtt_loop()
   if (!mqttClient.connected())
     return;
 
+  // periodically update our mqqt / HomeAssistant status
   unsigned int messageDelta = millis() - previousMQQTMillis;
   if (messageDelta >= 1000) {
-
     if (mqttClient.connected()) {
-      JsonDocument output;
-      generateUpdateJSON(output);
-      mqtt_traverse_json(output);
-    }
 
-// periodically update our HomeAssistant status
 #ifdef YB_HAS_ADC_CHANNELS
-    for (auto& ch : adc_channels)
-      ch.haPublishAvailable();
+      for (auto& ch : adc_channels) {
+        ch.mqttUpdate("adc");
+        ch.haPublishAvailable();
+      }
 #endif
+    }
 
     previousMQQTMillis = millis();
   }
@@ -73,8 +87,6 @@ void mqtt_publish(const char* topic, const char* payload)
   // prepare our path
   char mqtt_path[256];
   sprintf(mqtt_path, "yarrboard/%s/%s", local_hostname, topic);
-
-  // Serial.printf("mqtt publish: %s: %s\n", mqtt_path, payload);
 
   // send it off!
   if (mqttClient.connected())
@@ -90,6 +102,7 @@ void mqtt_receive_message(const char* topic, const char* payload, int retain, in
 void onMqttConnect(bool sessionPresent)
 {
   Serial.println("Connected to MQTT.");
+
   mqtt_ha_discovery();
 
   // look for json messages on this path...
@@ -295,7 +308,7 @@ static void traverse_impl(JsonVariant node, char* topicBuf, size_t cap, size_t c
   // Arrays
   if (node.is<JsonArray>()) {
     JsonArray arr = node.as<JsonArray>();
-    size_t idx = 1;
+    size_t idx = 0;
     for (JsonVariant v : arr) {
       size_t savedLen = curLen;
       append_index_to_topic(topicBuf, curLen, cap, idx++);
@@ -309,16 +322,17 @@ static void traverse_impl(JsonVariant node, char* topicBuf, size_t cap, size_t c
   // Primitive leaf -> publish
   char payload[256];
   const char* data = to_payload(node, payload, sizeof(payload));
+
   // Ensure non-null topic string (can be empty if caller passed "")
   mqtt_publish(topicBuf, data);
 }
 
-void mqtt_traverse_json(JsonVariant node)
+void mqtt_traverse_json(JsonVariant node, const char* topic_prefix)
 {
-  // Fixed topic buffer (max 128 incl. NUL)
-  static constexpr size_t TOPIC_CAP = 128;
+  static constexpr size_t TOPIC_CAP = 256;
   char topicBuf[TOPIC_CAP] = "";
-  size_t len = 0;
+  strlcpy(topicBuf, topic_prefix, TOPIC_CAP);
+  size_t len = strnlen(topicBuf, TOPIC_CAP);
 
   traverse_impl(node, topicBuf, TOPIC_CAP, len);
 }

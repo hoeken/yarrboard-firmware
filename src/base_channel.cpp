@@ -8,18 +8,12 @@
 
 #include "base_channel.h"
 
-BaseChannel::BaseChannel()
-{
-}
-
 void BaseChannel::init(uint8_t id)
 {
   this->id = id;
   this->isEnabled = true;
   snprintf(this->name, sizeof(this->name), "Channel %d", id);
   snprintf(this->key, sizeof(this->key), "%d", id);
-
-  DUMP(this->name);
 }
 
 void BaseChannel::setup()
@@ -38,8 +32,6 @@ bool BaseChannel::isValidKey(const char* testKey)
 
 bool BaseChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
 {
-  TRACE();
-
   // we need a valid object
   if (!config.is<JsonObjectConst>()) {
     strlcpy(error, "No JsonObject passed to loadConfig()", err_size);
@@ -67,10 +59,8 @@ bool BaseChannel::loadConfig(JsonVariantConst config, char* error, size_t err_si
     strlcpy(this->name, config["name"], sizeof(this->name));
   }
 
-  DUMP(this->key);
   // optional key - must not be an empty string.
   snprintf(this->key, sizeof(this->key), "%d", this->id);
-  DUMP(this->key);
   const char* val = config["key"].as<const char*>();
   if (val && *val && strlen(val)) {
     if (strlen(config["key"]) >= sizeof(this->key)) {
@@ -92,8 +82,6 @@ bool BaseChannel::loadConfig(JsonVariantConst config, char* error, size_t err_si
     Serial.println("empty key");
   }
 
-  DUMP(this->key);
-
   return true;
 }
 
@@ -108,4 +96,15 @@ void BaseChannel::generateConfig(JsonVariant config)
 void BaseChannel::generateUpdate(JsonVariant config)
 {
   config["id"] = this->id;
+  config["key"] = this->key;
+}
+
+void BaseChannel::mqttUpdate(const char* channel_type)
+{
+  JsonDocument output;
+  this->generateUpdate(output);
+
+  char topic[128];
+  snprintf(topic, sizeof(topic), "%s/%s", channel_type, this->key);
+  mqtt_traverse_json(output, topic);
 }

@@ -12,13 +12,12 @@
 #include "ArduinoJson.h"
 #include "config.h"
 #include "etl/array.h"
+#include "mqtt.h"
 #include <cstring> // for strncpy
 
 class BaseChannel
 {
   public:
-    BaseChannel();
-
     byte id = 0;
     bool isEnabled = true;
     char name[YB_CHANNEL_NAME_LENGTH];
@@ -32,6 +31,8 @@ class BaseChannel
     virtual bool loadConfig(JsonVariantConst config, char* error, size_t err_size);
     virtual void generateConfig(JsonVariant config);
     virtual void generateUpdate(JsonVariant config);
+
+    void mqttUpdate(const char* channel_type);
 };
 
 template <typename Channel, size_t N>

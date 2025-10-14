@@ -23,7 +23,7 @@ void mqtt_loop();
 void onMqttConnect(bool sessionPresent);
 
 void mqtt_publish(const char* topic, const char* payload);
-void mqtt_traverse_json(JsonVariant node);
+void mqtt_traverse_json(JsonVariant node, const char* topic_prefix);
 void mqtt_ha_discovery();
 
 void mqtt_receive_message(const char* topic, const char* payload, int retain, int qos, bool dup);

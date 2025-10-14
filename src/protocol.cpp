@@ -8,6 +8,22 @@
 
 #include "protocol.h"
 
+#ifdef YB_HAS_ADC_CHANNELS
+  #include "adc_channel.h"
+#endif
+
+#ifdef YB_HAS_PWM_CHANNELS
+  #include "pwm_channel.h"
+#endif
+
+#ifdef YB_HAS_RELAY_CHANNELS
+  #include "relay_channel.h"
+#endif
+
+#ifdef YB_HAS_SERVO_CHANNELS
+  #include "servo_channel.h"
+#endif
+
 char board_name[YB_BOARD_NAME_LENGTH] = "Yarrboard";
 char admin_user[YB_USERNAME_LENGTH] = "admin";
 char admin_pass[YB_PASSWORD_LENGTH] = "admin";
