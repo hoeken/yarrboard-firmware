@@ -1516,18 +1516,21 @@ void generateConfigJSON(JsonVariant output)
 // input / analog ADC channesl
 #ifdef YB_HAS_ADC_CHANNELS
   output["adc_resolution"] = YB_ADC_RESOLUTION;
-  for (byte i = 0; i < YB_ADC_CHANNEL_COUNT; i++) {
-    output["adc"][i]["id"] = adc_channels[i].id;
-    output["adc"][i]["name"] = adc_channels[i].name;
-    output["adc"][i]["enabled"] = adc_channels[i].isEnabled;
-    output["adc"][i]["type"] = adc_channels[i].type;
-    output["adc"][i]["displayDecimals"] = adc_channels[i].displayDecimals;
-    output["adc"][i]["units"] = adc_channels[i].getTypeUnits();
-    output["adc"][i]["useCalibrationTable"] = adc_channels[i].useCalibrationTable;
-    output["adc"][i]["calibratedUnits"] = adc_channels[i].calibratedUnits;
+  JsonArray channels = output["adc"].to<JsonArray>();
+  for (auto& ch : adc_channels) {
+    JsonObject jo = channels.add<JsonObject>();
 
-    JsonArray table = output["adc"][i]["calibrationTable"].to<JsonArray>();
-    for (auto& cp : adc_channels[i].calibrationTable) {
+    jo["id"] = ch.id;
+    jo["name"] = ch.name;
+    jo["enabled"] = ch.isEnabled;
+    jo["type"] = ch.type;
+    jo["displayDecimals"] = ch.displayDecimals;
+    jo["units"] = ch.getTypeUnits();
+    jo["useCalibrationTable"] = ch.useCalibrationTable;
+    jo["calibratedUnits"] = ch.calibratedUnits;
+
+    JsonArray table = jo["calibrationTable"].to<JsonArray>();
+    for (auto& cp : ch.calibrationTable) {
       JsonArray row = table.add<JsonArray>();
       row.add(cp.voltage);
       row.add(cp.calibrated);
@@ -1586,33 +1589,29 @@ void generateUpdateJSON(JsonVariant output)
 
 // input / analog ADC channels
 #ifdef YB_HAS_ADC_CHANNELS
-  byte idx = 0;
-  for (byte i = 0; i < YB_ADC_CHANNEL_COUNT; i++) {
-    output["adc"][idx]["id"] = adc_channels[i].id;
+  JsonArray channels = output["adc"].to<JsonArray>();
+  for (auto& ch : adc_channels) {
+    JsonObject jo = channels.add<JsonObject>();
+
+    jo["id"] = ch.id;
 
     // gotta convert from float to boolean here.
-    if (!strcmp(adc_channels[i].type, "digital_switch")) {
-      if (adc_channels[i].getTypeValue() == 1.0)
-        output["adc"][idx]["value"] = true;
+    if (!strcmp(ch.type, "digital_switch")) {
+      if (ch.getTypeValue() == 1.0)
+        jo["value"] = true;
       else
-        output["adc"][idx]["value"] = false;
+        jo["value"] = false;
       // or just the float.
     } else {
-      output["adc"][idx]["value"] = adc_channels[i].getTypeValue();
+      jo["value"] = ch.getTypeValue();
 
       // do we interpolate it?
-      if (adc_channels[i].useCalibrationTable)
-        output["adc"][idx]["calibrated_value"] = adc_channels[i].interpolateValue(adc_channels[i].getTypeValue());
+      if (ch.useCalibrationTable)
+        jo["calibrated_value"] = ch.interpolateValue(ch.getTypeValue());
     }
 
-    output["adc"][idx]["adc_voltage"] = adc_channels[i].getVoltage();
-    output["adc"][idx]["adc_raw"] = adc_channels[i].getReading();
-
-    // output["adc"][idx]["percentage"] = 100.0 *
-    //                                    (float)adc_channels[i].getReading() /
-    //                                    (pow(2, YB_ADC_RESOLUTION) - 1);
-
-    idx++;
+    jo["adc_voltage"] = ch.getVoltage();
+    jo["adc_raw"] = ch.getReading();
   }
 #endif
 
