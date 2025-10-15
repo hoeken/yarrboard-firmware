@@ -77,7 +77,6 @@ bool loadChannelsConfigFromJSON(const char* channel_key,
           const char* val = ch_config["key"].as<const char*>();
           if (val && *val) {
             for (auto& test_ch : channels) {
-              Serial.printf("%s == %d / %s?\n", val, test_ch.id, test_ch.key);
               // did we find any with a different id?
               if (!strcmp(val, test_ch.key) && ch.id != test_ch.id) {
                 snprintf(error, len, "%s channel #%d - duplicate key: %d/%s", channel_key, ch.id, test_ch.id, val);

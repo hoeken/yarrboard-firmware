@@ -60,9 +60,8 @@ void ServoChannel::generateUpdate(JsonVariant config)
 void ServoChannel::setup()
 {
   // init our servo
-  channel = _servo.attach(_pins[id]);
-  _servo.setFrequency(_pins[id], 50); // standard 50hz
-  // write(90);
+  channel = _servo.attach(_pins[id - 1]);
+  _servo.setFrequency(_pins[id - 1], 50); // standard 50hz
   disable();
 }
 
@@ -70,7 +69,7 @@ void ServoChannel::write(float angle)
 {
   currentAngle = angle;
   _servo.resume(channel);
-  _servo.write(_pins[id], currentAngle);
+  _servo.write(_pins[id - 1], currentAngle);
 }
 
 void ServoChannel::disable()

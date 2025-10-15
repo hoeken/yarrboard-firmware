@@ -31,8 +31,8 @@ void relay_channels_loop()
 void RelayChannel::setup()
 {
   // init!
-  pinMode(_pins[id], OUTPUT);
-  digitalWrite(_pins[id], LOW);
+  pinMode(_pins[id-1], OUTPUT);
+  digitalWrite(_pins[id-1], LOW);
 }
 
 void RelayChannel::setupDefaultState()
@@ -52,7 +52,7 @@ void RelayChannel::setupDefaultState()
 
 void RelayChannel::updateOutput()
 {
-  digitalWrite(_pins[id], outputState);
+  digitalWrite(_pins[id-1], outputState);
 }
 
 void RelayChannel::setState(const char* state)

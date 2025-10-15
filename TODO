@@ -1,7 +1,5 @@
 # GENERAL
 
-* test brineomatic with updated code
-
 * ui
     * add config to enable mqqt
     * add config to enable HA discovery
