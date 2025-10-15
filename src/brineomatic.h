@@ -10,8 +10,6 @@
 #define YARR_BRINEOMATIC_H
 
 #include "etl/deque.h"
-#include "relay_channel.h"
-#include "servo_channel.h"
 #include <QuickPID.h>
 
 class RelayChannel;

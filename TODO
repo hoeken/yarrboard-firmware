@@ -12,6 +12,7 @@
 
 # v2.0.0 Release
 
+* figure out how to include github commit as a #define?
 * upgrade to esp-idf 5.1.x and fix any issues
 * upgrade to PsychicHttp 2.0
 * add wifi RSSI bars indicator

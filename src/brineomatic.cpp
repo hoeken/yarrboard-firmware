@@ -12,6 +12,8 @@
 
   #include "brineomatic.h"
   #include "etl/deque.h"
+  #include "relay_channel.h"
+  #include "servo_channel.h"
   #include <ADS1X15.h>
   #include <Arduino.h>
   #include <DallasTemperature.h>

@@ -16,7 +16,7 @@
 #include "protocol.h"
 #include <Arduino.h>
 
-class RelayChannel : BaseChannel
+class RelayChannel : public BaseChannel
 {
   protected:
     byte _pins[YB_RELAY_CHANNEL_COUNT] = YB_RELAY_CHANNEL_PINS;

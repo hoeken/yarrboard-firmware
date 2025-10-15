@@ -9,13 +9,14 @@
 #ifndef YARR_SERVO_CHANNEL_H
 #define YARR_SERVO_CHANNEL_H
 
+#include "base_channel.h"
 #include "config.h"
 #include "prefs.h"
 #include "protocol.h"
 #include <Arduino.h>
 #include <Servo.h>
 
-class ServoChannel : BaseChannel
+class ServoChannel : public BaseChannel
 {
   protected:
     byte _pins[YB_SERVO_CHANNEL_COUNT] = YB_SERVO_CHANNEL_PINS;

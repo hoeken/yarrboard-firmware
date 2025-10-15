@@ -73,11 +73,11 @@ void initializeChannels()
 #endif
 
 #ifdef YB_HAS_RELAY_CHANNELS
-  initChannels(pwm_channels);
+  initChannels(relay_channels);
 #endif
 
 #ifdef YB_HAS_SERVO_CHANNELS
-  initChannels(pwm_channels);
+  initChannels(servo_channels);
 #endif
 }
 
