@@ -91,4 +91,12 @@ typedef enum { YBP_MODE_WEBSOCKET,
   YBP_MODE_HTTP,
   YBP_MODE_SERIAL } YBMode;
 
+#ifndef GIT_HASH
+  #define GIT_HASH "???"
+#endif
+
+#ifndef BUILD_TIME
+  #define BUILD_TIME "???"
+#endif
+
 #endif // YARR_CONFIG_H

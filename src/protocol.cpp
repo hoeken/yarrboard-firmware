@@ -1361,6 +1361,8 @@ void generateConfigJSON(JsonVariant output)
   output["enable_ota"] = app_enable_ota;
   output["default_role"] = getRoleText(app_default_role);
   output["brightness"] = globalBrightness;
+  output["git_hash"] = GIT_HASH;
+  output["build_time"] = BUILD_TIME;
 
 #ifdef YB_IS_DEVELOPMENT
   output["is_development"] = true;

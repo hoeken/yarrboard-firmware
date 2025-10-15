@@ -71,6 +71,8 @@ void setup()
   Serial.print("Firmware Version: ");
   Serial.println(YB_FIRMWARE_VERSION);
 
+  Serial.printf("Firmware build: %s (%s)\n", GIT_HASH, BUILD_TIME);
+
   // get our prefs early on.
   prefs_setup();
   Serial.println("Prefs ok");
