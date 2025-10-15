@@ -1352,17 +1352,18 @@ void generateFullConfigMessage(JsonVariant output)
 
 void generateConfigJSON(JsonVariant output)
 {
-  generateBoardConfigJSON(output);
-
   // extra info
   output["msg"] = "config";
   output["hostname"] = local_hostname;
   output["use_ssl"] = app_enable_ssl;
   output["enable_ota"] = app_enable_ota;
+  output["enable_mqtt"] = app_enable_mqtt;
   output["default_role"] = getRoleText(app_default_role);
   output["brightness"] = globalBrightness;
   output["git_hash"] = GIT_HASH;
   output["build_time"] = BUILD_TIME;
+
+  generateBoardConfigJSON(output);
 
 #ifdef YB_IS_DEVELOPMENT
   output["is_development"] = true;
@@ -1525,6 +1526,8 @@ void generateStatsJSON(JsonVariant output)
   output["min_free_heap"] = ESP.getMinFreeHeap();
   output["max_alloc_heap"] = ESP.getMaxAllocHeap();
   output["rssi"] = WiFi.RSSI();
+  if (app_enable_mqtt)
+    output["mqtt_connected"] = mqtt_is_connected();
 
   // what is our IP address?
   if (!strcmp(wifi_mode, "ap"))

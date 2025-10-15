@@ -11,6 +11,7 @@
 
 #include "adchelper.h"
 #include "debug.h"
+#include "mqtt.h"
 #include "network.h"
 #include "ota.h"
 #include "prefs.h"

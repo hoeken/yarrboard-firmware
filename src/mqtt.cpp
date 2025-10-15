@@ -96,6 +96,11 @@ void mqtt_loop()
   }
 }
 
+bool mqtt_is_connected()
+{
+  return mqttClient.connected();
+}
+
 void mqqt_on_topic(const char* topic, int qos, OnMessageUserCallback callback)
 {
   mqttClient.onTopic(topic, qos, callback);

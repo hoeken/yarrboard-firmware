@@ -2088,6 +2088,15 @@ function start_websocket() {
       $("#uuid").html(msg.uuid);
       $("#ip_address").html(msg.ip_address);
 
+      //our mqqt?
+      if (current_config.enable_mqtt) {
+        if (msg.mqtt_connected)
+          $("#mqqt_status").html(`<span class="text-success">Connected</span>`);
+        else
+          $("#mqqt_status").html(`<span class="text-danger">Disconnected</span>`);
+      } else
+        $("#mqqt_status").html(`<span>Disabled</span>`);
+
       if (msg.bus_voltage)
         $("#bus_voltage").html(msg.bus_voltage.toFixed(1) + "V");
       else
