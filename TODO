@@ -6,8 +6,6 @@
     * add config for mqqt server/user/pass
     * edit key for each channel
 
-* consolidate on yarrboard default AP/hostname for first boot
-
 # v2.0.0 Release
 
 * upgrade to esp-idf 5.1.x and fix any issues
