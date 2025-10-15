@@ -1,6 +1,6 @@
 #include "yb_server.h"
 
-PsychicHttpsServer server;
+PsychicHttpServer* server;
 PsychicWebSocketHandler websocketHandler;
 
 // Variable to hold the last modification datetime
@@ -32,28 +32,23 @@ void server_setup()
   if (wsRequests == 0)
     Serial.printf("Failed to create queue= %p\n", wsRequests);
 
-  server.config.max_open_sockets = YB_CLIENT_LIMIT;
-  server.config.lru_purge_enable = true;
-  server.config.stack_size = 8192;
+  // do we want secure or not?
+  if (app_enable_ssl && server_cert.length() && server_key.length()) {
+    server = new PsychicHttpsServer(443, server_cert.c_str(), server_key.c_str());
+    Serial.println("SSL enabled");
+  } else {
+    server = new PsychicHttpServer(80);
+    Serial.println("SSL disabled");
+  }
+
+  server->config.max_open_sockets = YB_CLIENT_LIMIT;
+  server->config.lru_purge_enable = true;
+  server->config.stack_size = 8192;
 
   // Populate the last modification date based on build datetime
   sprintf(last_modified, "%s %s GMT", __DATE__, __TIME__);
 
-  if (app_enable_ssl)
-    Serial.println("SSL enabled");
-  else
-    Serial.println("SSL disabled");
-
-  // do we want secure or not?
-  if (app_enable_ssl && server_cert.length() > 0 && server_key.length() > 0) {
-    server.setPort(443);
-    server.setCertificate(server_cert.c_str(), server_key.c_str());
-  } else {
-    server.setPort(80);
-  }
-  server.start();
-
-  server.on("/", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
+  server->on("/", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
     // Check if the client already has the same version and respond with a 304
     // (Not modified)
     if (request->header("If-Modified-Since").indexOf(last_modified) > 0)
@@ -79,7 +74,7 @@ void server_setup()
       return response->send();
     } });
 
-  server.on("/logo-navico.png", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
+  server->on("/logo-navico.png", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
     response->setCode(200);
     response->setContentType("image/png");
 
@@ -119,14 +114,14 @@ void server_setup()
     websocketClientCount--;
 
     removeClientFromAuthList(client); });
-  server.on("/ws", &websocketHandler);
+  server->on("/ws", &websocketHandler);
 
-  server.onOpen([](PsychicClient* client) { httpClientCount++; });
+  server->onOpen([](PsychicClient* client) { httpClientCount++; });
 
-  server.onClose([](PsychicClient* client) { httpClientCount--; });
+  server->onClose([](PsychicClient* client) { httpClientCount--; });
 
   // our main api connection
-  server.on("/api/endpoint", HTTP_POST, [](PsychicRequest* request, PsychicResponse* response) {
+  server->on("/api/endpoint", HTTP_POST, [](PsychicRequest* request, PsychicResponse* response) {
     JsonDocument json;
 
     String body = request->body();
@@ -135,7 +130,7 @@ void server_setup()
     return handleWebServerRequest(json, request, response); });
 
   // send config json
-  server.on("/api/config", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
+  server->on("/api/config", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
     JsonDocument json;
     json["cmd"] = "get_config";
 
@@ -144,7 +139,7 @@ void server_setup()
     return ESP_OK; });
 
   // send stats json
-  server.on("/api/stats", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
+  server->on("/api/stats", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
     JsonDocument json;
     json["cmd"] = "get_stats";
 
@@ -153,7 +148,7 @@ void server_setup()
     return ESP_OK; });
 
   // send update json
-  server.on("/api/update", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
+  server->on("/api/update", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
     JsonDocument json;
     json["cmd"] = "get_update";
 
@@ -162,7 +157,7 @@ void server_setup()
     return ESP_OK; });
 
   // downloadable coredump file
-  server.on("/coredump.txt", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
+  server->on("/coredump.txt", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
     // delete the coredump here, but not from littlefs
     deleteCoreDump();
 
@@ -184,6 +179,8 @@ void server_setup()
     }
 
     return response->send(); });
+
+  server->start();
 }
 
 void server_loop()
