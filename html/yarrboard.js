@@ -1955,7 +1955,7 @@ function start_websocket() {
           $('#bomDepickleProgressRow').hide();
         }
 
-        if (current_config.has_boost_pump) {
+        if (current_config.brineomatic.has_boost_pump) {
           $('#bomBoostPumpStatus span').removeClass();
           $('#bomBoostPumpStatus span').addClass("badge");
           if (msg.boost_pump_on) {
@@ -1985,7 +1985,7 @@ function start_websocket() {
         else
           $('#bomHighPressurePumpStatus').hide();
 
-        if (current_config.has_diverter_valve) {
+        if (current_config.brineomatic.has_diverter_valve) {
           $('#bomDiverterValveStatus span').removeClass();
           $('#bomDiverterValveStatus span').addClass("badge");
           if (msg.diverter_valve_open) {
@@ -2000,7 +2000,7 @@ function start_websocket() {
         else
           $('#bomDiverterValveStatus').hide();
 
-        if (current_config.has_flush_valve) {
+        if (current_config.brineomatic.has_flush_valve) {
           $('#bomFlushValveStatus span').removeClass();
           $('#bomFlushValveStatus span').addClass("badge");
           if (msg.flush_valve_open) {
@@ -2015,7 +2015,7 @@ function start_websocket() {
         else
           $('#bomFlushValveStatus').hide();
 
-        if (current_config.has_cooling_fan) {
+        if (current_config.brineomatic.has_cooling_fan) {
           $('#bomFanStatus span').removeClass();
           $('#bomFanStatus span').addClass("badge");
           if (msg.cooling_fan_on) {

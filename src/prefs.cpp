@@ -180,7 +180,7 @@ void generateBoardConfigJSON(JsonVariant output)
 #endif
 
 #ifdef YB_HAS_RELAY_CHANNELS
-  JsonArray r_channels = output["relay_channels"].to<JsonArray>();
+  JsonArray r_channels = output["relay"].to<JsonArray>();
   for (auto& ch : relay_channels) {
     JsonObject jo = r_channels.add<JsonObject>();
     ch.generateConfig(jo);
@@ -188,7 +188,7 @@ void generateBoardConfigJSON(JsonVariant output)
 #endif
 
 #ifdef YB_HAS_SERVO_CHANNELS
-  JsonArray s_channels = output["servo_channels"].to<JsonArray>();
+  JsonArray s_channels = output["servo"].to<JsonArray>();
   for (auto& ch : servo_channels) {
     JsonObject jo = s_channels.add<JsonObject>();
     ch.generateConfig(jo);
@@ -206,7 +206,7 @@ void generateBoardConfigJSON(JsonVariant output)
 #endif
 
 #ifdef YB_IS_BRINEOMATIC
-  JsonObject bom = output["brineomatic"].as<JsonObject>();
+  JsonObject bom = output["brineomatic"].to<JsonObject>();
   bom["has_boost_pump"] = wm.hasBoostPump();
   bom["has_high_pressure_pump"] = wm.hasHighPressurePump();
   bom["has_diverter_valve"] = wm.hasDiverterValve();

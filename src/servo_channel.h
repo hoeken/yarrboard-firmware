@@ -22,9 +22,6 @@ class ServoChannel : public BaseChannel
     byte _pins[YB_SERVO_CHANNEL_COUNT] = YB_SERVO_CHANNEL_PINS;
 
   public:
-    byte id = 0;
-    char name[YB_CHANNEL_NAME_LENGTH];
-    bool isEnabled = false;
     float currentAngle = 0.0;
 
     //    Servo servo;
