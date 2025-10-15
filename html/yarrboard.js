@@ -2690,8 +2690,11 @@ function addConfigurationDragDropHandler() {
     e.preventDefault();
     e.stopPropagation();
     ta.classList.remove('is-drop-target');
-    const files = e.dataTransfer?.files;
-    if (files && files.length) handleFile(files[0]);
+
+    const files = e.dataTransfer && e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleFile(files[0]);
+    }
   });
 
   // Open button triggers hidden input
