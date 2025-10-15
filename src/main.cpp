@@ -11,13 +11,13 @@
 #include "debug.h"
 #include "mqtt.h"
 #include "navico.h"
-#include "network.h"
+#include "networking.h"
 #include "ota.h"
 #include "piezo.h"
 #include "prefs.h"
 #include "rgb.h"
-#include "server.h"
 #include "utility.h"
+#include "yb_server.h"
 #include <LittleFS.h>
 
 #ifdef YB_HAS_PWM_CHANNELS

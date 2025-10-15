@@ -18,7 +18,7 @@
 #include <freertos/queue.h>
 
 #include "adchelper.h"
-#include "network.h"
+#include "networking.h"
 #include "ota.h"
 #include "prefs.h"
 #include "protocol.h"

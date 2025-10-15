@@ -9,8 +9,8 @@
 #ifndef YARR_OTA_H
 #define YARR_OTA_H
 
-#include "server.h"
 #include "utility.h"
+#include "yb_server.h"
 #include <ArduinoOTA.h>
 
 #define DISABLE_ALL_LIBRARY_WARNINGS

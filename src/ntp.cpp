@@ -18,7 +18,7 @@ void ntp_setup()
 {
   // Setup our NTP to get the current time.
   sntp_set_time_sync_notification_cb(timeAvailable);
-  sntp_servermode_dhcp(1); // (optional)
+  // sntp_servermode_dhcp(1); // (optional)
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer1, ntpServer2);
 }
 

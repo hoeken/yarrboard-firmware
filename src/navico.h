@@ -10,7 +10,7 @@
 #define YARR_NAVICO_H
 
 #include "protocol.h"
-#include "server.h"
+#include "yb_server.h"
 #include <Arduino.h>
 
 void navico_loop();

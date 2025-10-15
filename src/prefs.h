@@ -11,7 +11,7 @@
 
 #include "config.h"
 #include "etl/array.h"
-#include "network.h"
+#include "networking.h"
 #include "protocol.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>

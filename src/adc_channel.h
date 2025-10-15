@@ -15,7 +15,7 @@
 #include "config.h"
 #include "etl/vector.h"
 #include "mqtt.h"
-#include "network.h"
+#include "networking.h"
 #include "prefs.h"
 #include "protocol.h"
 #include <Arduino.h>

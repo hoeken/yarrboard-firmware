@@ -6,9 +6,9 @@
   License: GPLv3
 */
 
-#include "network.h"
+#include "networking.h"
 #include "prefs.h"
-#include "server.h"
+#include "yb_server.h"
 
 // for making a captive portal
 //  The default android DNS

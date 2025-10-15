@@ -12,7 +12,7 @@
 #include "adchelper.h"
 #include "debug.h"
 #include "mqtt.h"
-#include "network.h"
+#include "networking.h"
 #include "ota.h"
 #include "prefs.h"
 #include "server.h"

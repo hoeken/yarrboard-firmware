@@ -1,4 +1,4 @@
-#include "server.h"
+#include "yb_server.h"
 
 PsychicHttpsServer server;
 PsychicWebSocketHandler websocketHandler;
