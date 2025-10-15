@@ -4,6 +4,8 @@
 
 # v2.0.0 Release
 
+* add YB_CONFIG_IS_FROTHFET, etc for all boards
+
 * upgrade to pioarduino and fix any issues
 * upgrade to PsychicHttp 2.0
 * add wifi RSSI bars indicator

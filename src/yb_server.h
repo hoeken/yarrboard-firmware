@@ -70,7 +70,7 @@ UserRole getWebsocketRole(JsonVariantConst doc, PsychicWebSocketClient* connecti
 void sendToAllWebsockets(const char* jsonString, UserRole auth_level);
 void handleWebsocketMessageLoop(WebsocketRequest* request);
 
-esp_err_t handleWebServerRequest(JsonVariant input, PsychicRequest* request);
+esp_err_t handleWebServerRequest(JsonVariant input, PsychicRequest* request, PsychicResponse* response);
 void handleWebSocketMessage(PsychicWebSocketRequest* request, uint8_t* data, size_t len);
 
 #endif /* !YARR_SERVER_H */

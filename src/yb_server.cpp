@@ -45,62 +45,63 @@ void server_setup()
     Serial.println("SSL disabled");
 
   // do we want secure or not?
-  if (app_enable_ssl && server_cert.length() > 0 && server_key.length() > 0)
-    server.listen(443, server_cert.c_str(), server_key.c_str());
-  else
-    server.listen(80);
+  if (app_enable_ssl && server_cert.length() > 0 && server_key.length() > 0) {
+    server.setPort(443);
+    server.setCertificate(server_cert.c_str(), server_key.c_str());
+  } else {
+    server.setPort(80);
+  }
+  server.start();
 
-  server.on("/", HTTP_GET, [](PsychicRequest* request) {
+  server.on("/", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
     // Check if the client already has the same version and respond with a 304
     // (Not modified)
     if (request->header("If-Modified-Since").indexOf(last_modified) > 0)
-      return request->reply(304);
+      return response->send(304);
     // What about our ETag?
     else if (request->header("If-None-Match").equals(index_html_gz_sha))
-      return request->reply(304);
+      return response->send(304);
     else {
-      PsychicResponse response(request);
-      response.setCode(200);
-      response.setContentType("text/html");
+      response->setCode(200);
+      response->setContentType("text/html");
 
       // Tell the browswer the contemnt is Gzipped
-      response.addHeader("Content-Encoding", "gzip");
+      response->addHeader("Content-Encoding", "gzip");
 
       // And set the last-modified datetime so we can check if we need to send
       // it again next time or not
-      response.addHeader("Last-Modified", last_modified);
-      response.addHeader("ETag", index_html_gz_sha);
+      response->addHeader("Last-Modified", last_modified);
+      response->addHeader("ETag", index_html_gz_sha);
 
       // add our actual content
-      response.setContent(index_html_gz, index_html_gz_len);
+      response->setContent(index_html_gz, index_html_gz_len);
 
-      return response.send();
+      return response->send();
     } });
 
-  server.on("/logo-navico.png", HTTP_GET, [](PsychicRequest* request) {
-    PsychicResponse response(request);
-    response.setCode(200);
-    response.setContentType("image/png");
+  server.on("/logo-navico.png", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
+    response->setCode(200);
+    response->setContentType("image/png");
 
     // Tell the browswer the contemnt is Gzipped
-    response.addHeader("Content-Encoding", "gzip");
+    response->addHeader("Content-Encoding", "gzip");
 
     // And set the last-modified datetime so we can check if we need to send it
     // again next time or not
-    response.addHeader("Last-Modified", last_modified);
+    response->addHeader("Last-Modified", last_modified);
 
-#ifdef YB_CONFIG_FROTHFET_REV_D
-    response.addHeader("ETag", logo_frothfet_gz_sha);
-    response.setContent(logo_frothfet_gz, logo_frothfet_gz_len);
-#elif YB_CONFIG_BRINEOMATIC_REV_A
-    response.addHeader("ETag", logo_brineomatic_gz_sha);
-    response.setContent(logo_brineomatic_gz, logo_brineomatic_gz_len);
+#ifdef YB_CONFIG_IS_FROTHFET
+    response->addHeader("ETag", logo_frothfet_gz_sha);
+    response->setContent(logo_frothfet_gz, logo_frothfet_gz_len);
+#elif YB_CONFIG_IS_BRINEOMATIC
+    response->addHeader("ETag", logo_brineomatic_gz_sha);
+    response->setContent(logo_brineomatic_gz, logo_brineomatic_gz_len);
 #else
-    response.addHeader("ETag", logo_yarrboard_gz_sha);
-    response.setContent(logo_yarrboard_gz, logo_yarrboard_gz_len);
+    response->addHeader("ETag", logo_yarrboard_gz_sha);
+    response->setContent(logo_yarrboard_gz, logo_yarrboard_gz_len);
 #endif
 
-    return response.send(); });
+    return response->send(); });
 
   // Our websocket handler
   websocketHandler.onFrame(
@@ -125,65 +126,64 @@ void server_setup()
   server.onClose([](PsychicClient* client) { httpClientCount--; });
 
   // our main api connection
-  server.on("/api/endpoint", HTTP_POST, [](PsychicRequest* request) {
+  server.on("/api/endpoint", HTTP_POST, [](PsychicRequest* request, PsychicResponse* response) {
     JsonDocument json;
 
     String body = request->body();
     DeserializationError err = deserializeJson(json, body);
 
-    return handleWebServerRequest(json, request); });
+    return handleWebServerRequest(json, request, response); });
 
   // send config json
-  server.on("/api/config", HTTP_GET, [](PsychicRequest* request) {
+  server.on("/api/config", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
     JsonDocument json;
     json["cmd"] = "get_config";
 
-    handleWebServerRequest(json, request);
+    handleWebServerRequest(json, request, response);
 
     return ESP_OK; });
 
   // send stats json
-  server.on("/api/stats", HTTP_GET, [](PsychicRequest* request) {
+  server.on("/api/stats", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
     JsonDocument json;
     json["cmd"] = "get_stats";
 
-    handleWebServerRequest(json, request);
+    handleWebServerRequest(json, request, response);
 
     return ESP_OK; });
 
   // send update json
-  server.on("/api/update", HTTP_GET, [](PsychicRequest* request) {
+  server.on("/api/update", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
     JsonDocument json;
     json["cmd"] = "get_update";
 
-    handleWebServerRequest(json, request);
+    handleWebServerRequest(json, request, response);
 
     return ESP_OK; });
 
   // downloadable coredump file
-  server.on("/coredump.txt", HTTP_GET, [](PsychicRequest* request) {
+  server.on("/coredump.txt", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
     // delete the coredump here, but not from littlefs
     deleteCoreDump();
 
     // dont bug the client anymore
     has_coredump = false;
 
-    PsychicResponse response(request);
-    response.setContentType("text/plain");
+    response->setContentType("text/plain");
 
     if (LittleFS.exists("/coredump.txt")) {
-      response.setCode(200);
+      response->setCode(200);
 
       // this feels a little bit hacky...
       File fp = LittleFS.open("/coredump.txt");
       String data = fp.readString();
-      response.setContent(data.c_str());
+      response->setContent(data.c_str());
     } else {
-      response.setCode(404);
-      response.setContent("Coredump not found.");
+      response->setCode(404);
+      response->setContent("Coredump not found.");
     }
 
-    return response.send(); });
+    return response->send(); });
 }
 
 void server_loop()
@@ -239,7 +239,7 @@ bool logClientIn(PsychicWebSocketClient* client, UserRole role)
   return true;
 }
 
-esp_err_t handleWebServerRequest(JsonVariant input, PsychicRequest* request)
+esp_err_t handleWebServerRequest(JsonVariant input, PsychicRequest* request, PsychicResponse* response)
 {
   esp_err_t err = ESP_OK;
   JsonDocument output;
@@ -264,22 +264,21 @@ esp_err_t handleWebServerRequest(JsonVariant input, PsychicRequest* request)
 
     // did we get anything?
     if (jsonBuffer != NULL) {
-      PsychicResponse response(request);
-      response.setContentType("application/json");
+      response->setContentType("application/json");
       serializeJson(output.as<JsonObject>(), jsonBuffer, jsonSize + 1);
-      response.setContent(jsonBuffer);
-      err = response.send();
+      response->setContent(jsonBuffer);
+      err = response->send();
     }
     // send overloaded response
     else
-      err = request->reply(503, "application/json", "{}");
+      err = response->send(503, "application/json", "{}");
 
     // no leaks!
     free(jsonBuffer);
   }
   // give them valid json at least
   else
-    err = request->reply(200, "application/json", "{}");
+    err = response->send(200, "application/json", "{}");
 
   return err;
 }

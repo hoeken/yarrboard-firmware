@@ -20,7 +20,7 @@ void mqtt_loop();
 
 void onMqttConnect(bool sessionPresent);
 
-bool mqtt_disconnect();
+void mqtt_disconnect();
 bool mqtt_is_connected();
 void mqtt_on_topic(const char* topic, int qos, OnMessageUserCallback callback);
 void mqtt_publish(const char* topic, const char* payload, bool use_prefix = true);

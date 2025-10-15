@@ -99,7 +99,7 @@ void mqtt_loop()
   }
 }
 
-bool mqtt_disconnect()
+void mqtt_disconnect()
 {
   if (mqttClient.connected())
     mqttClient.disconnect();
