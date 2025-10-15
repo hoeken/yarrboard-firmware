@@ -167,6 +167,7 @@ void generateBoardConfigJSON(JsonVariant output)
   output["hardware_version"] = YB_HARDWARE_VERSION;
   output["esp_idf_version"] = esp_get_idf_version();
   output["arduino_version"] = arduino_version;
+  output["psychic_http_version"] = PSYCHIC_VERSION_STR;
   output["name"] = board_name;
   output["uuid"] = uuid;
 

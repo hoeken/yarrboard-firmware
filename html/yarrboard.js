@@ -744,6 +744,7 @@ function start_websocket() {
       $("#hardware_version").html(msg.hardware_version);
       $("#esp_idf_version").html(msg.esp_idf_version);
       $("#arduino_version").html(msg.arduino_version);
+      $("#psychic_http_version").html(msg.psychic_http_version);
       $("#yarrboard_client_version").html(YarrboardClient.version);
 
       //show some info about restarts
