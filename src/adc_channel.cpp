@@ -22,8 +22,6 @@ ADS1115 _adcVoltageADS1115_1(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_1);
 ADS1115 _adcVoltageADS1115_2(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_2);
   #elif defined YB_ADC_DRIVER_MCP3564
 MCP3564 _adcAnalogMCP3564(YB_ADC_CS, &SPI, YB_ADC_MOSI, YB_ADC_MISO, YB_ADC_SCK);
-  #elif YB_ADC_DRIVER_MCP3208
-MCP3208 _adcAnalogMCP3208;
   #endif
 
 unsigned long previousHAUpdateMillis = 0;
@@ -66,10 +64,6 @@ void adc_channels_setup()
   _adcAnalogMCP3564.singleEndedMode();
   _adcAnalogMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
   _adcAnalogMCP3564.setAveraging(MCP3x6x::osr::OSR_1024);
-
-  #elif YB_ADC_DRIVER_MCP3208
-  _adcAnalogMCP3208.begin(YB_ADC_CS);
-    //_adcAnalogMCP3208.begin(YB_ADC_CS, 23, 19, 18);
   #endif
 
   // setup our channels
@@ -111,8 +105,6 @@ void ADCChannel::setup()
     this->adcHelper = new ADS1115Helper(YB_ADC_VREF, this->id - 1, &_adcVoltageADS1115_1);
   else
     this->adcHelper = new ADS1115Helper(YB_ADC_VREF, this->id - 5, &_adcVoltageADS1115_2);
-  #elif YB_ADC_DRIVER_MCP3208
-  this->adcHelper = new MCP3208Helper(3.3, this->id - 1, &_adcAnalogMCP3208);
   #endif
 }
 

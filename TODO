@@ -8,7 +8,7 @@
 
 # v2.0.0 Release
 
-* upgrade to esp-idf 5.1.x and fix any issues
+* upgrade to pioarduino and fix any issues
 * upgrade to PsychicHttp 2.0
 * add wifi RSSI bars indicator
 * update/fix the release script for ota

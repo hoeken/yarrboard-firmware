@@ -53,8 +53,6 @@ class ADCChannel : public BaseChannel
     ADS1115Helper* adcHelper;
   #elif YB_ADC_DRIVER_MCP3564
     MCP3564Helper* adcHelper;
-  #elif YB_ADC_DRIVER_MCP3208
-    MCP3208Helper* adcHelper;
   #endif
 
     void setup();

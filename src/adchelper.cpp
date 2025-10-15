@@ -76,22 +76,6 @@ float esp32Helper::toVoltage(unsigned int reading)
   return (float)reading / 1000.0;
 }
 
-MCP3208Helper::MCP3208Helper() : ADCHelper::ADCHelper() {}
-MCP3208Helper::MCP3208Helper(float vref, uint8_t channel, MCP3208* adc)
-    : ADCHelper::ADCHelper(vref, 12)
-{
-  this->channel = channel;
-  this->adc = adc;
-}
-
-unsigned int MCP3208Helper::getReading()
-{
-  unsigned int reading = this->adc->readADC(this->channel);
-  this->addReading(reading);
-
-  return reading;
-}
-
 MCP3564Helper::MCP3564Helper() : ADCHelper::ADCHelper() {}
 MCP3564Helper::MCP3564Helper(float vref, uint8_t channel, MCP3564* adc)
     : ADCHelper::ADCHelper(vref, 24)

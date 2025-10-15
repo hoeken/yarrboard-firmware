@@ -11,7 +11,6 @@
 
 #include <ADS1X15.h>
 #include <Arduino.h>
-#include <MCP3208.h>
 #include <MCP342x.h>
 #include <MCP3x6x.h>
 #include <RunningAverage.h>
@@ -51,18 +50,6 @@ class esp32Helper : public ADCHelper
     float toVoltage(unsigned int reading);
 
   private:
-    uint8_t channel;
-};
-
-class MCP3208Helper : public ADCHelper
-{
-  public:
-    MCP3208Helper();
-    MCP3208Helper(float vref, uint8_t channel, MCP3208* adc);
-    unsigned int getReading();
-
-  private:
-    MCP3208* adc;
     uint8_t channel;
 };
 
