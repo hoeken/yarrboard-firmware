@@ -457,6 +457,12 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   app_enable_serial = input["app_enable_serial"];
   app_enable_ota = input["app_enable_ota"];
   app_enable_ssl = input["app_enable_ssl"];
+  app_enable_mqtt = input["app_enable_mqtt"];
+  app_enable_ha_integration = input["app_enable_ha_integration"];
+
+  strlcpy(mqtt_server, input["mqtt_server"] | "", sizeof(mqtt_server));
+  strlcpy(mqtt_user, input["mqtt_user"] | "", sizeof(mqtt_user));
+  strlcpy(mqtt_pass, input["mqtt_pass"] | "", sizeof(mqtt_pass));
 
   if (input["app_update_interval"].is<JsonVariantConst>()) {
     app_update_interval = input["app_update_interval"] | 500;
@@ -475,6 +481,12 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   // init our ota.
   if (app_enable_ota)
     ota_setup();
+
+  // init our mqtt
+  if (app_enable_mqtt)
+    mqtt_setup();
+  else
+    mqtt_disconnect();
 
   // restart the board.
   if (old_app_enable_ssl != app_enable_ssl)

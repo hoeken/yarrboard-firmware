@@ -2088,14 +2088,14 @@ function start_websocket() {
       $("#uuid").html(msg.uuid);
       $("#ip_address").html(msg.ip_address);
 
-      //our mqqt?
+      //our mqtt?
       if (current_config.enable_mqtt) {
         if (msg.mqtt_connected)
-          $("#mqqt_status").html(`<span class="text-success">Connected</span>`);
+          $("#mqtt_status").html(`<span class="text-success">Connected</span>`);
         else
-          $("#mqqt_status").html(`<span class="text-danger">Disconnected</span>`);
+          $("#mqtt_status").html(`<span class="text-danger">Disconnected</span>`);
       } else
-        $("#mqqt_status").html(`<span>Disabled</span>`);
+        $("#mqtt_status").html(`<span>Disabled</span>`);
 
       if (msg.bus_voltage)
         $("#bus_voltage").html(msg.bus_voltage.toFixed(1) + "V");
@@ -2366,6 +2366,29 @@ function start_websocket() {
         else {
           $("#server_cert_container").hide();
           $("#server_key_container").hide();
+        }
+      });
+
+      //for our mqtt stuff
+      $("#app_enable_mqtt").prop("checked", msg.app_enable_mqtt);
+      $("#app_enable_ha_integration").prop("checked", msg.app_enable_ha_integration);
+      $("#mqtt_server").val(msg.mqtt_server);
+      $("#mqtt_user").val(msg.mqtt_user);
+      $("#mqtt_pass").val(msg.mqtt_pass);
+
+      //hide/show these guys
+      if (msg.app_enable_mqtt) {
+        $(".mqtt_field").show();
+      }
+
+      //make it dynamic too
+      $("#app_enable_mqtt").change(function () {
+        if ($("#app_enable_mqtt").prop("checked")) {
+          $(".mqtt_field").show();
+        }
+        else {
+          $("#app_enable_ha_integration").prop("checked", false);
+          $(".mqtt_field").hide();
         }
       });
 
@@ -3451,6 +3474,11 @@ function save_app_settings() {
   let app_enable_serial = $("#app_enable_serial").prop("checked");
   let app_enable_ota = $("#app_enable_ota").prop("checked");
   let app_enable_ssl = $("#app_enable_ssl").prop("checked");
+  let app_enable_mqtt = $("#app_enable_mqtt").prop("checked");
+  let app_enable_ha_integration = $("#app_enable_ha_integration").prop("checked");
+  let mqtt_server = $("#mqtt_server").val();
+  let mqtt_user = $("#mqtt_user").val();
+  let mqtt_pass = $("#mqtt_pass").val();
   let server_cert = $("#server_cert").val();
   let server_key = $("#server_key").val();
   let update_interval = $("#app_update_interval").val();
@@ -3488,6 +3516,11 @@ function save_app_settings() {
     "app_enable_serial": app_enable_serial,
     "app_enable_ota": app_enable_ota,
     "app_enable_ssl": app_enable_ssl,
+    "app_enable_mqtt": app_enable_mqtt,
+    "app_enable_ha_integration": app_enable_ha_integration,
+    "mqtt_server": mqtt_server,
+    "mqtt_user": mqtt_user,
+    "mqtt_pass": mqtt_pass,
     "server_cert": server_cert,
     "server_key": server_key
   });

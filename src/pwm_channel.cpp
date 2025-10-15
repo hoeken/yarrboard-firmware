@@ -711,8 +711,8 @@ void PWMChannel::haGenerateDiscovery(JsonVariant doc)
   sprintf(ha_topic_current, "yarrboard/%s/pwm/%s/current", local_hostname, this->key);
 
   // our callbacks to the command topics
-  mqqt_on_topic(ha_topic_cmd_state, 0, pwm_handle_ha_command);
-  mqqt_on_topic(ha_topic_cmd_brightness, 0, pwm_handle_ha_command);
+  mqtt_on_topic(ha_topic_cmd_state, 0, pwm_handle_ha_command);
+  mqtt_on_topic(ha_topic_cmd_brightness, 0, pwm_handle_ha_command);
 
   this->haGenerateLightDiscovery(doc);
   this->haGenerateVoltageDiscovery(doc);

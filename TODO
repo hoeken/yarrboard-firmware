@@ -1,10 +1,11 @@
 # GENERAL
 
 * ui
-    * add config to enable mqqt
-    * add config to enable HA discovery
-    * add config for mqqt server/user/pass
     * edit key for each channel
+
+* MQTT
+    * certificates?
+    * find a way to bubble up errors
 
 # v2.0.0 Release
 

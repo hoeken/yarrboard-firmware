@@ -135,7 +135,7 @@ void setup()
 
   // we need to do this last so that all our channels, etc are fully configured.
   mqtt_setup();
-  Serial.println("MQQT ok");
+  Serial.println("MQTT ok");
 
   rgb_set_status_color(0, 255, 0);
 }

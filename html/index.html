@@ -936,7 +936,7 @@
                                 </tr>
                                 <tr>
                                     <th scope="row">MQTT Server</th>
-                                    <td id="mqqt_status" class="text-end"></td>
+                                    <td id="mqtt_status" class="text-end"></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1038,6 +1038,43 @@
                             <label for="server_key" class="col-form-label">Server Private Key</label>
                             <div class="">
                                 <textarea class="form-control" id="server_key" rows="4"></textarea>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="app_enable_mqtt" checked>
+                                <label class="form-check-label" for="app_enable_mqtt">
+                                    Enable MQTT Publishing? (<a
+                                        href="https://github.com/hoeken/yarrboard#enable-mqtt">documentation</a>)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3 mqtt_field">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="app_enable_ha_integration"
+                                    checked>
+                                <label class="form-check-label" for="app_enable_mqtt">
+                                    Enable Home Assistant Integration? (<a
+                                        href="https://github.com/hoeken/yarrboard#enable-ha">documentation</a>)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3 mqtt_field" style="display: none">
+                            <label for="mqtt_server" class="col-form-label">MQTT Server</label>
+                            <div class="">
+                                <input id="mqtt_server" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="mb-3 mqtt_field" style="display: none">
+                            <label for="mqtt_user" class="col-form-label">MQTT Username</label>
+                            <div class="">
+                                <input id="mqtt_user" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="mb-3 mqtt_field" style="display: none">
+                            <label for="mqtt_pass" class="col-form-label">MQTT Password</label>
+                            <div class="">
+                                <input id="mqtt_pass" type="text" class="form-control">
                             </div>
                         </div>
                         <div class="mb-3">

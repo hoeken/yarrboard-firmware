@@ -26,7 +26,7 @@
 
 PsychicMqttClient mqttClient;
 
-unsigned long previousMQQTMillis = 0;
+unsigned long previousMQTTMillis = 0;
 
 void mqtt_setup()
 {
@@ -70,8 +70,8 @@ void mqtt_loop()
   if (!mqttClient.connected())
     return;
 
-  // periodically update our mqqt / HomeAssistant status
-  unsigned int messageDelta = millis() - previousMQQTMillis;
+  // periodically update our mqtt / HomeAssistant status
+  unsigned int messageDelta = millis() - previousMQTTMillis;
   if (messageDelta >= 1000) {
     if (mqttClient.connected()) {
 
@@ -92,8 +92,14 @@ void mqtt_loop()
 #endif
     }
 
-    previousMQQTMillis = millis();
+    previousMQTTMillis = millis();
   }
+}
+
+bool mqtt_disconnect()
+{
+  if (mqttClient.connected())
+    mqttClient.disconnect();
 }
 
 bool mqtt_is_connected()
@@ -101,7 +107,7 @@ bool mqtt_is_connected()
   return mqttClient.connected();
 }
 
-void mqqt_on_topic(const char* topic, int qos, OnMessageUserCallback callback)
+void mqtt_on_topic(const char* topic, int qos, OnMessageUserCallback callback)
 {
   mqttClient.onTopic(topic, qos, callback);
 }
