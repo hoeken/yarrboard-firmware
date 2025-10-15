@@ -235,6 +235,7 @@ void generateAppConfigJSON(JsonVariant output)
   output["mqtt_server"] = mqtt_server;
   output["mqtt_user"] = mqtt_user;
   output["mqtt_pass"] = mqtt_pass;
+  output["mqtt_cert"] = mqtt_cert;
   output["server_cert"] = server_cert;
   output["server_key"] = server_key;
 }
@@ -386,6 +387,8 @@ bool loadAppConfigFromJSON(JsonVariantConst config, char* error, size_t len)
 
   value = config["mqtt_pass"].as<const char*>();
   snprintf(mqtt_pass, sizeof(mqtt_user), "%s", (value && *value) ? value : "");
+
+  mqtt_cert = config["mqtt_cert"] | "";
 
   if (config["app_update_interval"].is<unsigned int>()) {
     app_update_interval = config["app_update_interval"] | 1000;

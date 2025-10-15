@@ -37,6 +37,9 @@ void mqtt_setup()
   mqttClient.setServer(mqtt_server);
   mqttClient.setCredentials(mqtt_user, mqtt_pass);
 
+  if (mqtt_cert.length())
+    mqttClient.setCACert(mqtt_cert.c_str());
+
   // on connect home hook
   mqttClient.onConnect(onMqttConnect);
 

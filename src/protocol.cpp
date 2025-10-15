@@ -32,6 +32,7 @@ char guest_pass[YB_PASSWORD_LENGTH] = "guest";
 char mqtt_server[YB_MQTT_SERVER_LENGTH] = "";
 char mqtt_user[YB_USERNAME_LENGTH] = "";
 char mqtt_pass[YB_PASSWORD_LENGTH] = "";
+String mqtt_cert = "";
 unsigned int app_update_interval = 500;
 bool app_enable_mfd = true;
 bool app_enable_api = true;
@@ -463,6 +464,7 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   strlcpy(mqtt_server, input["mqtt_server"] | "", sizeof(mqtt_server));
   strlcpy(mqtt_user, input["mqtt_user"] | "", sizeof(mqtt_user));
   strlcpy(mqtt_pass, input["mqtt_pass"] | "", sizeof(mqtt_pass));
+  mqtt_cert = input["mqtt_cert"].as<String>();
 
   if (input["app_update_interval"].is<JsonVariantConst>()) {
     app_update_interval = input["app_update_interval"] | 500;

@@ -1,11 +1,6 @@
 # GENERAL
 
-* ui
-    * edit key for each channel
-
-* MQTT
-    * certificates?
-    * find a way to bubble up errors
+* edit key for each channel
 
 # v2.0.0 Release
 
@@ -23,6 +18,8 @@
     * add a #define to boards to set passive vs active piezo mode
 * signalk frothfet plugin - use key for paths instead of id
 * signalk sendit plugin - use key for paths instead of id
+* settings page is ugly af.
+* find a way to bubble up setup errors - config, mqtt, etc.
 
 # BRINEOMATIC
 

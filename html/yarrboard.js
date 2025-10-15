@@ -2375,6 +2375,7 @@ function start_websocket() {
       $("#mqtt_server").val(msg.mqtt_server);
       $("#mqtt_user").val(msg.mqtt_user);
       $("#mqtt_pass").val(msg.mqtt_pass);
+      $("#mqtt_cert").val(msg.mqtt_cert);
 
       //hide/show these guys
       if (msg.app_enable_mqtt) {
@@ -3479,6 +3480,7 @@ function save_app_settings() {
   let mqtt_server = $("#mqtt_server").val();
   let mqtt_user = $("#mqtt_user").val();
   let mqtt_pass = $("#mqtt_pass").val();
+  let mqtt_cert = $("#mqtt_cert").val();
   let server_cert = $("#server_cert").val();
   let server_key = $("#server_key").val();
   let update_interval = $("#app_update_interval").val();
@@ -3521,6 +3523,7 @@ function save_app_settings() {
     "mqtt_server": mqtt_server,
     "mqtt_user": mqtt_user,
     "mqtt_pass": mqtt_pass,
+    "mqtt_cert": mqtt_cert,
     "server_cert": server_cert,
     "server_key": server_key
   });

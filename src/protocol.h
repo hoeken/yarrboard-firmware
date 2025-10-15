@@ -44,6 +44,7 @@ extern char guest_pass[YB_PASSWORD_LENGTH];
 extern char mqtt_server[YB_MQTT_SERVER_LENGTH];
 extern char mqtt_user[YB_USERNAME_LENGTH];
 extern char mqtt_pass[YB_PASSWORD_LENGTH];
+extern String mqtt_cert;
 extern unsigned int app_update_interval;
 extern bool app_enable_api;
 extern bool app_enable_serial;
