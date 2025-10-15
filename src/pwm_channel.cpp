@@ -701,14 +701,14 @@ const char* PWMChannel::getStatus()
 void PWMChannel::haGenerateDiscovery(JsonVariant doc)
 {
   // generate our id / topics
-  sprintf(ha_uuid, "%s_pwm_%d", uuid, this->id);
-  sprintf(ha_topic_cmd_state, "yarrboard/%s/pwm/%d/ha_set", local_hostname, this->id);
-  sprintf(ha_topic_state_state, "yarrboard/%s/pwm/%d/ha_state", local_hostname, this->id);
-  sprintf(ha_topic_avail, "yarrboard/%s/pwm/%d/ha_availability", local_hostname, this->id);
-  sprintf(ha_topic_cmd_brightness, "yarrboard/%s/pwm/%d/ha_brightness/set", local_hostname, this->id);
-  sprintf(ha_topic_state_brightness, "yarrboard/%s/pwm/%d/ha_brightness/state", local_hostname, this->id);
-  sprintf(ha_topic_voltage, "yarrboard/%s/pwm/%d/voltage", local_hostname, this->id);
-  sprintf(ha_topic_current, "yarrboard/%s/pwm/%d/current", local_hostname, this->id);
+  sprintf(ha_uuid, "%s_pwm_%s", uuid, this->key);
+  sprintf(ha_topic_cmd_state, "yarrboard/%s/pwm/%s/ha_set", local_hostname, this->key);
+  sprintf(ha_topic_state_state, "yarrboard/%s/pwm/%s/ha_state", local_hostname, this->key);
+  sprintf(ha_topic_avail, "yarrboard/%s/pwm/%s/ha_availability", local_hostname, this->key);
+  sprintf(ha_topic_cmd_brightness, "yarrboard/%s/pwm/%s/ha_brightness/set", local_hostname, this->key);
+  sprintf(ha_topic_state_brightness, "yarrboard/%s/pwm/%s/ha_brightness/state", local_hostname, this->key);
+  sprintf(ha_topic_voltage, "yarrboard/%s/pwm/%s/voltage", local_hostname, this->key);
+  sprintf(ha_topic_current, "yarrboard/%s/pwm/%s/current", local_hostname, this->key);
 
   // our callbacks to the command topics
   mqqt_on_topic(ha_topic_cmd_state, 0, pwm_handle_ha_command);
