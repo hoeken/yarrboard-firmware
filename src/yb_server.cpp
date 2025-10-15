@@ -34,7 +34,8 @@ void server_setup()
 
   // do we want secure or not?
   if (app_enable_ssl && server_cert.length() && server_key.length()) {
-    server = new PsychicHttpsServer(443, server_cert.c_str(), server_key.c_str());
+    server = new PsychicHttpsServer(443);
+    server->setCertificate(server_cert.c_str(), server_key.c_str());
     Serial.println("SSL enabled");
   } else {
     server = new PsychicHttpServer(80);
