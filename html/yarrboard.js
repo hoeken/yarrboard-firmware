@@ -731,15 +731,17 @@ function start_websocket() {
       //all our versions
       $("#firmware_version").html(msg.firmware_version);
 
-      //clean up the hash.
+      //deal with our hash
       let clean_hash = msg.git_hash;
       let is_dirty = false;
       if (clean_hash.endsWith("-dirty")) {
         is_dirty = true;
         clean_hash = clean_hash.slice(0, -6); // remove the "-dirty" suffix
       }
+      let short_hash = clean_hash.substring(0, 7); // for display
+      $("#git_hash").html(`<a href="https://github.com/hoeken/yarrboard-firmware/commit/${clean_hash}">${short_hash}</a>`);
 
-      $("#git_hash").html(`<a href="https://github.com/hoeken/yarrboard-firmware/commit/${clean_hash}">${msg.git_hash}</a>`);
+      //various other components
       $("#build_time").html(msg.build_time);
       $("#hardware_version").html(msg.hardware_version);
       $("#esp_idf_version").html(msg.esp_idf_version);
