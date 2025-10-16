@@ -105,16 +105,82 @@ MCP3425Helper::MCP3425Helper(float vref, MCP342x* adc)
   this->adc = adc;
 }
 
-MCP342x::Config MCP3425_config(MCP342x::channel1, MCP342x::oneShot,
-  MCP342x::resolution16, MCP342x::gain1);
-
 void MCP3425Helper::setup()
 {
   Wire.begin();
-  MCP342x::generalCallReset();
+  Wire.setClock(100000); // MCP342x is happy at 100 kHz; go to 400k later if stable
+  Wire.setTimeOut(200);  // 200 ms bus timeout (3.x default is 50 ms)
+
+  // MCP342x::generalCallReset();
   delay(1); // MC342x needs 300us to settle, wait 1ms
 
-  this->adc->configure(MCP3425_config);
+  int err;
+  long val;
+
+  MCP342x::Config MCP3425_config(MCP342x::channel1, MCP342x::oneShot, MCP342x::resolution16, MCP342x::gain1);
+  Serial.printf("config at start err=%d  cfg=0x%02X  RDY=%d  resBits=%d\n",
+    (int)(int)MCP3425_config,
+    !MCP3425_config.isReady(),
+    (MCP3425_config.getResolution().operator int()));
+
+  err = this->adc->configure(MCP3425_config);
+  Serial.printf("config after configure err=%d  cfg=0x%02X  RDY=%d  resBits=%d\n",
+    err,
+    (int)(int)MCP3425_config,
+    !MCP3425_config.isReady(),
+    (MCP3425_config.getResolution().operator int()));
+
+  err = this->adc->convert(MCP3425_config);
+  Serial.printf("after convert err=%d  cfg=0x%02X  RDY=%d  resBits=%d\n",
+    err,
+    (int)(int)MCP3425_config,
+    !MCP3425_config.isReady(),
+    (MCP3425_config.getResolution().operator int()));
+
+  delay(100);
+
+  MCP342x::Config configresult(MCP342x::channel1, MCP342x::oneShot, MCP342x::resolution16, MCP342x::gain1);
+  err = this->adc->read(val, configresult);
+  Serial.printf("err=%d  cfg=0x%02X  RDY=%d  resBits=%d  raw=%ld\n",
+    err,
+    (int)(int)configresult,
+    !configresult.isReady(),
+    (configresult.getResolution().operator int()),
+    val);
+
+  MCP342x::Config testconf(MCP342x::channel1, MCP342x::oneShot, MCP342x::resolution16, MCP342x::gain1);
+  err = this->adc->convert(testconf);
+  delay(40);
+
+  // If you suspect byte order issues, dump the raw bytes:
+  int n = Wire.requestFrom((int)this->adc->getAddress(), (uint8_t)4, (uint8_t) true);
+  Serial.printf("I2C returned %d bytes: ", n);
+  while (Wire.available())
+    Serial.printf("%02X ", Wire.read());
+  Serial.println();
+
+  Serial.printf("err=%d  cfg=0x%02X  RDY=%d  resBits=%d  raw=%ld\n",
+    err,
+    (int)(int)testconf,
+    !testconf.isReady(),
+    (testconf.getResolution().operator int()),
+    val);
+
+  delay(40);
+
+  // If you suspect byte order issues, dump the raw bytes:
+  n = Wire.requestFrom((int)this->adc->getAddress(), (uint8_t)4, (uint8_t) true);
+  Serial.printf("I2C returned %d bytes: ", n);
+  while (Wire.available())
+    Serial.printf("%02X ", Wire.read());
+  Serial.println();
+
+  Serial.printf("err=%d  cfg=0x%02X  RDY=%d  resBits=%d  raw=%ld\n",
+    err,
+    (int)(int)testconf,
+    !testconf.isReady(),
+    (testconf.getResolution().operator int()),
+    val);
 
   this->start_conversion = true;
 }
@@ -127,12 +193,13 @@ unsigned int MCP3425Helper::getReading()
 
   // do we need to trigger a conversion?
   if (this->start_conversion) {
+    MCP342x::Config MCP3425_config(MCP342x::channel1, MCP342x::oneShot, MCP342x::resolution16, MCP342x::gain1);
     err = this->adc->convert(MCP3425_config);
     if (err) {
-      Serial.print("MCP3425 convert error: ");
-      Serial.println(err);
+      Serial.printf("MCP3425 convert error: %d\n", err);
     }
     this->start_conversion = false;
+    return 0;
   }
 
   // okay, is it ready?
@@ -143,7 +210,7 @@ unsigned int MCP3425Helper::getReading()
     this->start_conversion = true;
   } else {
     if (err != 4)
-      Serial.printf("MCP3425 error: %d\n", err);
+      Serial.printf("MCP3425 read error: %d\n", err);
 
     value = 0;
   }

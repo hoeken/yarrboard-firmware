@@ -233,9 +233,6 @@ void PWMChannel::setupLedc()
   // track our fades
   this->isFading = false;
 
-  // deinitialize our pin.
-  ledcDetach(this->pin);
-
   // initialize our PWM channels
   ledcAttach(this->pin, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION);
   ledcWrite(this->pin, 0);
