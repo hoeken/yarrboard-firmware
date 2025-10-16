@@ -55,14 +55,14 @@ class esp32Helper : public ADCHelper
 class MCP3425Helper : public ADCHelper
 {
   public:
-    MCP3425Helper();
-    MCP3425Helper(float vref, MCP342x* adc);
+    MCP3425Helper(MCP342x::Config& config, float vref, MCP342x* adc);
     unsigned int getReading();
     void setup();
 
   private:
     MCP342x* adc;
     bool start_conversion = false;
+    MCP342x::Config config;
 };
 
 class MCP3564Helper : public ADCHelper
