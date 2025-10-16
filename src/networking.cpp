@@ -28,14 +28,8 @@ bool is_first_boot = true;
 
 void network_setup()
 {
-  //  get a unique ID for us
-  if (!strlen(uuid)) {
-    byte mac[6];
-    WiFi.macAddress(mac);
-    sprintf(uuid, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-  }
-  Serial.print("UUID: ");
-  Serial.println(uuid);
+  uint64_t chipid = ESP.getEfuseMac(); // unique 48-bit MAC base ID
+  snprintf(uuid, sizeof(uuid), "%04X%08X", (uint16_t)(chipid >> 32), (uint32_t)chipid);
 
   // get an IP address
   setupWifi();

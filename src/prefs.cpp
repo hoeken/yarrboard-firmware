@@ -358,9 +358,6 @@ bool loadNetworkConfigFromJSON(JsonVariantConst config, char* error, size_t len)
   value = config["wifi_mode"].as<const char*>();
   snprintf(wifi_mode, sizeof(wifi_mode), "%s", (value && *value) ? value : "ap");
 
-  value = config["uuid"].as<const char*>();
-  snprintf(uuid, sizeof(uuid), "%s", (value && *value) ? value : "");
-
   return true;
 }
 
