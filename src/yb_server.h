@@ -26,9 +26,9 @@
 // generated at build by running "gulp" in the firmware directory.
 #include "index.html.gz.h"
 
-#ifdef YB_CONFIG_FROTHFET_REV_D
+#ifdef YB_IS_FROTHFET
   #include "logo-frothfet.png.gz.h"
-#elif YB_CONFIG_BRINEOMATIC_REV_A
+#elif YB_IS_BRINEOMATIC
   #include "logo-brineomatic.png.gz.h"
 #else
   #include "logo-navico.png.gz.h"

@@ -4,6 +4,8 @@
 #define YB_HARDWARE_VERSION "FROTHFET_REV_D"
 #define YB_MANUFACTURER     "Yarrboard"
 
+#define YB_IS_FROTHFET 1
+
 #define YB_DEFAULT_HOSTNAME "frothfet"
 #define YB_DEFAULT_AP_SSID  "Frothfet"
 

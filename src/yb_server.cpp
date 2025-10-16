@@ -86,10 +86,10 @@ void server_setup()
     // again next time or not
     response->addHeader("Last-Modified", last_modified);
 
-#ifdef YB_CONFIG_IS_FROTHFET
+#ifdef YB_IS_FROTHFET
     response->addHeader("ETag", logo_frothfet_gz_sha);
     response->setContent(logo_frothfet_gz, logo_frothfet_gz_len);
-#elif YB_CONFIG_IS_BRINEOMATIC
+#elif YB_IS_BRINEOMATIC
     response->addHeader("ETag", logo_brineomatic_gz_sha);
     response->setContent(logo_brineomatic_gz, logo_brineomatic_gz_len);
 #else
