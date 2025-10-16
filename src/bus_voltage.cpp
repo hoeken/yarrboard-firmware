@@ -23,7 +23,7 @@ esp32Helper busADC = esp32Helper(3.3, YB_BUS_VOLTAGE_PIN);
 
   #ifdef YB_BUS_VOLTAGE_MCP3425
 MCP342x _adcMCP3425 = MCP342x(YB_BUS_VOLTAGE_ADDRESS);
-MCP3425Helper busADC = MCP3425Helper((float)2.048, &_adcMCP3425);
+_adcMCP3425.MCP3425Helper busADC = MCP3425Helper((float)2.048, &_adcMCP3425);
   #endif
 
 void bus_voltage_setup()
@@ -45,12 +45,8 @@ void bus_voltage_setup()
 
 void bus_voltage_loop()
 {
-  unsigned long foo;
   if (millis() - lastBusVoltageCheckMillis >= 10) {
-    // check what our power is.
-    foo = busADC.getReading();
-    // Serial.println(foo);
-
+    busADC.getReading();
     lastBusVoltageCheckMillis = millis();
   }
 }
@@ -59,8 +55,8 @@ float getBusVoltage()
 {
   float voltage = busADC.getAverageVoltage();
 
-  // Serial.print("Bus ADC Voltage: ");
-  // Serial.println(voltage);
+  Serial.print("Bus ADC Voltage: ");
+  Serial.println(voltage);
 
   busADC.resetAverage();
 

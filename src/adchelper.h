@@ -38,7 +38,6 @@ class ADCHelper
     float vref = 0.0;
     uint8_t resolution;
     RunningAverage runningAverage;
-    // unsigned long cumulativeReadings = 0;
 };
 
 class esp32Helper : public ADCHelper

@@ -138,16 +138,12 @@ unsigned int MCP3425Helper::getReading()
   // okay, is it ready?
   err = this->adc->read(value, status);
   if (!err && status.isReady()) {
-    // For debugging purposes print the return value.
-    // Serial.print("Value: ");
-    // Serial.println(value);
-
+    Serial.printf("Value: %d\n", value);
     this->addReading(value);
-
     this->start_conversion = true;
   } else {
-    // Serial.print("ADC error: ");
-    // Serial.println(err);
+    if (err != 4)
+      Serial.printf("MCP3425 error: %d\n", err);
 
     value = 0;
   }
