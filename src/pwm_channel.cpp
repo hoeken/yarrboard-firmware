@@ -18,8 +18,8 @@ unsigned long previousHAUpdateMillis = 0;
 // the main star of the event
 etl::array<PWMChannel, YB_PWM_CHANNEL_COUNT> pwm_channels;
 
-// flag for hardware fade status
-static volatile bool isChannelFading[YB_PWM_CHANNEL_COUNT];
+// our channel pins
+byte _pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_PINS;
 
 /* Setting PWM Properties */
 // ledc library range is a little bit quirky:
@@ -40,23 +40,6 @@ ADS1115 _adcVoltageADS1115_2(YB_PWM_CHANNEL_VOLTAGE_I2C_ADDRESS_2);
 MCP3564 _adcVoltageMCP3564(YB_PWM_CHANNEL_VOLTAGE_ADC_CS, &SPI, YB_PWM_CHANNEL_VOLTAGE_ADC_MOSI, YB_PWM_CHANNEL_VOLTAGE_ADC_MISO, YB_PWM_CHANNEL_VOLTAGE_ADC_SCK);
     #endif
   #endif
-
-/*
- * This callback function will be called when fade operation has ended
- * Use callback only if you are aware it is being called inside an ISR
- * Otherwise, you can use a semaphore to unblock tasks
- */
-static bool cb_ledc_fade_end_event(const ledc_cb_param_t* param,
-  void* user_arg)
-{
-  portBASE_TYPE taskAwoken = pdFALSE;
-
-  if (param->event == LEDC_FADE_END_EVT) {
-    isChannelFading[(int)user_arg] = false;
-  }
-
-  return (taskAwoken == pdTRUE);
-}
 
 void mcp_wrapper()
 {
@@ -165,12 +148,7 @@ void pwm_channels_setup()
     strlcpy(ch.source, local_hostname, sizeof(ch.source));
   }
 
-  // fade function
-  ledc_fade_func_uninstall();
-  ledc_fade_func_install(0);
-
   for (auto& ch : pwm_channels) {
-    ch.setupInterrupt(); // intitialize our interrupts for fading
     ch.setupOffset();
     ch.setupDefaultState();
   }
@@ -252,27 +230,15 @@ void PWMChannel::setup()
 
 void PWMChannel::setupLedc()
 {
-  int idx = this->id - 1;
+  // track our fades
+  this->isFading = false;
 
   // deinitialize our pin.
-  // ledc_fade_func_uninstall();
-  ledcDetachPin(this->_pins[idx]);
+  ledcDetach(this->pin);
 
   // initialize our PWM channels
-  ledcSetup(idx, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION);
-  ledcAttachPin(this->_pins[idx], idx);
-  ledcWrite(idx, 0);
-}
-
-void PWMChannel::setupInterrupt()
-{
-  int channel = this->id - 1;
-  isChannelFading[channel] = false;
-
-  ledc_cbs_t callbacks = {.fade_cb = cb_ledc_fade_end_event};
-
-  // this is our callback handler for fade end.
-  ledc_cb_register(LEDC_LOW_SPEED_MODE, (ledc_channel_t)channel, &callbacks, (void*)channel);
+  ledcAttach(this->pin, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION);
+  ledcWrite(this->pin, 0);
 }
 
 void PWMChannel::setupOffset()
@@ -346,8 +312,8 @@ void PWMChannel::updateOutput(bool check_status)
   }
 
   // okay, set our pin state.
-  if (!isChannelFading[this->id - 1]) {
-    ledcWrite(this->id - 1, pwm);
+  if (!this->isFading) {
+    ledcWrite(this->pin, pwm);
   }
 
   // see what we're working with.
@@ -512,7 +478,7 @@ void PWMChannel::checkSoftFuse()
 void PWMChannel::setFade(float duty, int max_fade_time_ms)
 {
   // is our earlier hardware fade over yet?
-  if (!isChannelFading[this->id - 1]) {
+  if (!this->isFading) {
     // dutyCycle is a default - will be non-zero when state is off
     if (this->outputState)
       this->fadeDutyCycleStart = this->dutyCycle;
@@ -524,34 +490,45 @@ void PWMChannel::setFade(float duty, int max_fade_time_ms)
     this->status = Status::ON;
 
     // some vars for tracking.
-    isChannelFading[this->id - 1] = true;
-    this->fadeRequested = true;
+    this->isFading = true;
 
     this->fadeDutyCycleEnd = duty;
     this->fadeStartTime = millis();
     this->fadeDuration = max_fade_time_ms + 100;
 
     // call our hardware fader
+    const int ch = this->id - 1;
     int target_duty = duty * MAX_DUTY_CYCLE;
-    ledc_set_fade_time_and_start(LEDC_LOW_SPEED_MODE, (ledc_channel_t)(this->id - 1), target_duty, max_fade_time_ms, LEDC_FADE_NO_WAIT);
+    const uint32_t start_duty = ledcRead(this->pin); // current duty counts
+
+    // kicks off fade and registers our ISR + arg (the channel index)
+    bool ok = ledcFadeWithInterruptArg(
+      this->pin,
+      start_duty,
+      target_duty,
+      max_fade_time_ms,
+      &PWMChannel::onFadeISR,
+      this);
+
+    // if it failed, clear flag and handle your error path (log, retry, etc.)
+    if (!ok) {
+      this->isFading = false;
+    }
   }
 }
 
 void PWMChannel::checkIfFadeOver()
 {
-  // we're looking to see if the fade is over yet
-  if (this->fadeRequested) {
-    // has our fade ended?
+  // has our fade ended?
+  if (this->isFading) {
     if (millis() - this->fadeStartTime >= this->fadeDuration) {
       // this is a potential bug fix.. had the board "lock" into a fade.
       // it was responsive but wouldnt toggle some pins.  I think it was this
       // flag not getting cleared
-      if (isChannelFading[this->id - 1]) {
-        isChannelFading[this->id - 1];
+      if (this->isFading) {
+        this->isFading = false;
         Serial.println("error fading");
       }
-
-      this->fadeRequested = false;
 
       // ignore the zero duty cycle part
       if (fadeDutyCycleEnd > 0)
@@ -854,6 +831,8 @@ void PWMChannel::haHandleCommand(const char* topic, const char* payload)
 void PWMChannel::init(uint8_t id)
 {
   BaseChannel::init(id);
+
+  this->pin = _pins[id - 1]; // pins are zero indexed, we are 1 indexed
 
   snprintf(this->name, sizeof(this->name), "PWM Channel %d", id);
 }

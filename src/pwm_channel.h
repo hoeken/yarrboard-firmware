@@ -33,8 +33,14 @@ class PWMChannel : public BaseChannel
     char ha_topic_voltage[128];
     char ha_topic_current[128];
 
-  protected:
-    byte _pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_PINS;
+    byte pin = 0;
+
+    static void ARDUINO_ISR_ATTR onFadeISR(void* arg)
+    {
+      // ISR context — keep it tiny
+      auto* self = static_cast<PWMChannel*>(arg);
+      self->isFading = false;
+    }
 
   public:
     /**
@@ -57,6 +63,9 @@ class PWMChannel : public BaseChannel
 
     unsigned int stateChangeCount = 0;
     unsigned int softFuseTripCount = 0;
+
+    // polled from other code; updated in ISR
+    volatile bool isFading = false;
 
     float dutyCycle = 0.0;
     float lastDutyCycle = 0.0;
@@ -99,7 +108,6 @@ class PWMChannel : public BaseChannel
 
     void setup();
     void setupLedc();
-    void setupInterrupt();
     void setupOffset();
     void setupDefaultState();
     void saveThrottledDutyCycle();

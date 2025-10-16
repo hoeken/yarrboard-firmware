@@ -1,13 +1,11 @@
 # GENERAL
 
-* edit key for each channel
 
 # v2.0.0 Release
 
-* add YB_CONFIG_IS_FROTHFET, etc for all boards
+* fix bus voltage error on frothfet
 * add use_hostname_as_uuid flag
-
-* upgrade to pioarduino and fix any issues
+* edit key for each channel
 * add wifi RSSI bars indicator
 * update/fix the release script for ota
 * wifi improvements:

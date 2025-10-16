@@ -28,12 +28,8 @@ int fans_last_rpm[YB_FAN_COUNT];
 unsigned long lastFanCheckMillis = 0;
 
 // Interrupt counting every rotation of the fan
-// https://desire.giesecke.tk/index.php/2018/01/30/change-global-variables-from-isr/
-// This is really janky because of this ESP32 bug:
-// ESP32 Errata 3.14. Within the same group of GPIO pins, edge interrupts cannot
-// be used together with other interrupts.
-void IRAM_ATTR rpm_fan_0_low() { counter_rpm[0]++; }
-void IRAM_ATTR rpm_fan_1_low() { counter_rpm[1]++; }
+void IRAM_ATTR rpm_fan_0_low() { counter_rpm[0] = counter_rpm[0] + 1; }
+void IRAM_ATTR rpm_fan_1_low() { counter_rpm[1] = counter_rpm[1] + 1; }
 
 void fans_setup()
 {
