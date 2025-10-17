@@ -2,7 +2,6 @@
 
 # v2.0.0 Release
 
-* add wifi RSSI bars indicator
 * settings page is ugly af.
     * borders for each config area like channels?
     * side bar that loads each config page?

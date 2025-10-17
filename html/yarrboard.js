@@ -2089,7 +2089,13 @@ function start_websocket() {
       $(`#memory_usage div`).html(formatBytes(msg.heap_size, 0));
       $(`#memory_usage`).attr("aria-valuenow", memory_used);
 
-      $("#rssi").html(msg.rssi + "dBm");
+      //wifi rssi.
+      if (msg.rssi) {
+        $("#rssi").html(msg.rssi + "dBm");
+        $(".rssi_icon").hide();
+        let rssi_icon = getWifiIconForRSSI(msg.rssi);
+        $(`#${rssi_icon}`).show();
+      }
       $("#uuid").html(msg.uuid);
       $("#ip_address").html(msg.ip_address);
 
@@ -4026,4 +4032,24 @@ function updateProgressBar(ele, progress) {
   } else {
     console.error("Progress bar element not found!");
   }
+}
+
+function getWifiIconForRSSI(rssi) {
+  let level;
+
+  if (rssi === null || rssi === undefined || rssi <= -100) {
+    level = 0; // No signal / disconnected
+  } else if (rssi >= -55) {
+    level = 4; // Excellent
+  } else if (rssi >= -65) {
+    level = 3; // Good
+  } else if (rssi >= -75) {
+    level = 2; // Fair
+  } else if (rssi >= -85) {
+    level = 1; // Weak
+  } else {
+    level = 0; // No signal
+  }
+
+  return `rssi_icon_${level}`;
 }
