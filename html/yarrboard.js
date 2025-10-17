@@ -739,6 +739,8 @@ function start_websocket() {
         clean_hash = clean_hash.slice(0, -6); // remove the "-dirty" suffix
       }
       let short_hash = clean_hash.substring(0, 7); // for display
+      if (is_dirty)
+        short_hash += "-dirty";
       $("#git_hash").html(`<a href="https://github.com/hoeken/yarrboard-firmware/commit/${clean_hash}">${short_hash}</a>`);
 
       //various other components
