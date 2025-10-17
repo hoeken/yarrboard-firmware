@@ -11,6 +11,8 @@
 
 #include "config.h"
 
+#ifdef YB_HAS_PIEZO
+
 struct Note {
     uint16_t freqHz;
     uint16_t ms;
@@ -22,5 +24,7 @@ void playMelody(const Note* seq, size_t len, bool repeat = false);
 static inline void buzzerMute();
 static inline void buzzerTone(uint16_t freqHz);
 void BuzzerTask(void* /*pv*/);
+
+#endif
 
 #endif /* !YARR_PIEZO_H */

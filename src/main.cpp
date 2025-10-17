@@ -82,7 +82,10 @@ void setup()
 
   // audio visual notifications
   rgb_setup();
+
+#ifdef YB_HAS_PIEZO
   piezo_setup();
+#endif
 
   network_setup();
   Serial.println("Network ok");

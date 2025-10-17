@@ -8,10 +8,10 @@
 
 #include "piezo.h"
 
-#define LEDC_CHANNEL  0
-#define LEDC_TIMER    0
-#define LEDC_RES_BITS 10
-#define BUZZER_DUTY   512 // ~50% at 10-bit
+#ifdef YB_HAS_PIEZO
+
+  #define LEDC_RES_BITS 10
+  #define BUZZER_DUTY   512 // ~50% at 10-bit
 
 // Example melody (C scale up, rest, then down)
 static const Note MELODY_EXAMPLE[] = {
@@ -43,7 +43,6 @@ static portMUX_TYPE g_mux = portMUX_INITIALIZER_UNLOCKED;
 
 void piezo_setup()
 {
-#ifdef YB_HAS_PIEZO
   pinMode(YB_PIEZO_PIN, OUTPUT);
 
   // LEDC once
@@ -63,7 +62,6 @@ void piezo_setup()
 
   // Kick an example (one-shot). Use true for repeat.
   playMelody(MELODY_EXAMPLE, sizeof(MELODY_EXAMPLE) / sizeof(MELODY_EXAMPLE[0]), false);
-#endif
 }
 
 // Signal the task to start (or restart) a melody.
@@ -166,3 +164,5 @@ void BuzzerTask(void* /*pv*/)
     buzzerMute();
   }
 }
+
+#endif

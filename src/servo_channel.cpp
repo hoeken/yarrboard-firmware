@@ -12,7 +12,7 @@
 
   #include "servo_channel.h"
 
-Servo _servo = Servo();
+byte _pins[YB_SERVO_CHANNEL_COUNT] = YB_SERVO_CHANNEL_PINS;
 
 // the main star of the event
 etl::array<ServoChannel, YB_SERVO_CHANNEL_COUNT> servo_channels;
@@ -32,6 +32,8 @@ void servo_channels_loop()
 void ServoChannel::init(uint8_t id)
 {
   BaseChannel::init(id);
+
+  this->_pin = _pins[id - 1];
 
   snprintf(this->name, sizeof(this->name), "Servo Channel %d", id);
 }
@@ -59,22 +61,25 @@ void ServoChannel::generateUpdate(JsonVariant config)
 
 void ServoChannel::setup()
 {
-  // init our servo
-  channel = _servo.attach(_pins[id - 1]);
-  _servo.setFrequency(_pins[id - 1], 50); // standard 50hz
-  disable();
+  TRACE();
+  // if (this->_pin == 39)
+  //   ledcDetach(this->_pin);
+  TRACE();
+  _servo.attach(this->_pin);
+  TRACE();
 }
 
 void ServoChannel::write(float angle)
 {
   currentAngle = angle;
-  _servo.resume(channel);
-  _servo.write(_pins[id - 1], currentAngle);
+  DUMP(this->_pin);
+  DUMP(currentAngle);
+  _servo.write(currentAngle);
 }
 
 void ServoChannel::disable()
 {
-  _servo.pause(channel);
+  _servo.disable();
 }
 
 float ServoChannel::getAngle()
