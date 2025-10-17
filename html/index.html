@@ -804,9 +804,13 @@
                                 </tr>
                             </thead>
                             <tbody class="table-group-divider">
-                                <tr class="uptime">
+                                <tr class="uptime" onclick="$('#last_reboot').toggle()">
                                     <th scope="row">Uptime</th>
                                     <td id="uptime" class="text-end"></td>
+                                </tr>
+                                <tr id="last_reboot" style="display: none">
+                                    <th scope="row">Last Reboot Reason</th>
+                                    <td id="last_reboot_reason" class="text-end"></td>
                                 </tr>
                                 <tr>
                                     <th scope="row">IP Address</th>
@@ -816,33 +820,33 @@
                                     <th scope="row">WiFi Signal</th>
                                     <td class="text-end">
                                         <span id="rssi" class="align-middle"></span>
-                                        <svg class="rssi_icon" id="rssi_icon_0" xmlns="http://www.w3.org/2000/svg"
-                                            width="16" height="16" fill="currentColor" class="bi bi-reception-0"
-                                            viewBox="0 0 16 16">
+                                        <svg class="rssi_icon text-danger" id="rssi_icon_0"
+                                            xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            fill="currentColor" class="bi bi-reception-0" viewBox="0 0 16 16">
                                             <path
                                                 d="M0 13.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m4 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m4 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m4 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
                                         </svg>
-                                        <svg class="rssi_icon" id="rssi_icon_1" xmlns="http://www.w3.org/2000/svg"
-                                            width="16" height="16" fill="currentColor" class="bi bi-reception-1"
-                                            viewBox="0 0 16 16">
+                                        <svg class="rssi_icon text-warning" id="rssi_icon_1"
+                                            xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            fill="currentColor" class="bi bi-reception-1" viewBox="0 0 16 16">
                                             <path
                                                 d="M0 11.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5zm4 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m4 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m4 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
                                         </svg>
-                                        <svg class="rssi_icon" id="rssi_icon_2" xmlns="http://www.w3.org/2000/svg"
-                                            width="16" height="16" fill="currentColor" class="bi bi-reception-2"
-                                            viewBox="0 0 16 16">
+                                        <svg class="rssi_icon text-warning" id="rssi_icon_2"
+                                            xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            fill="currentColor" class="bi bi-reception-2" viewBox="0 0 16 16">
                                             <path
                                                 d="M0 11.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5zm4-3a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5zm4 5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m4 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
                                         </svg>
-                                        <svg class="rssi_icon" id="rssi_icon_3" xmlns="http://www.w3.org/2000/svg"
-                                            width="16" height="16" fill="currentColor" class="bi bi-reception-3"
-                                            viewBox="0 0 16 16">
+                                        <svg class="rssi_icon text-warning" id="rssi_icon_3"
+                                            xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            fill="currentColor" class="bi bi-reception-3" viewBox="0 0 16 16">
                                             <path
                                                 d="M0 11.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5zm4-3a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5zm4-3a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5zm4 8a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
                                         </svg>
-                                        <svg class="rssi_icon" id="rssi_icon_4" xmlns="http://www.w3.org/2000/svg"
-                                            width="16" height="16" fill="currentColor" class="bi bi-reception-4"
-                                            viewBox="0 0 16 16">
+                                        <svg class="rssi_icon text-success" id="rssi_icon_4"
+                                            xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            fill="currentColor" class="bi bi-reception-4" viewBox="0 0 16 16">
                                             <path
                                                 d="M0 11.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5zm4-3a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5zm4-3a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5zm4-3a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5z" />
                                         </svg>
@@ -852,41 +856,45 @@
                                     <th scope="row">MQTT Server</th>
                                     <td id="mqtt_status" class="text-end"></td>
                                 </tr>
-                                <tr onclick="$('.other_versions').toggle()">
+                                <tr onclick="$('#other_versions').toggle()">
                                     <th scope="row">Firmware Version</th>
                                     <td id="firmware_version" class="text-end"></td>
                                 </tr>
-                                <tr class="other_versions" style="display: none">
-                                    <th scope="row">Hardware Version</th>
-                                    <td id="hardware_version" class="text-end"></td>
-                                </tr>
-                                <tr class="other_versions" style="display: none">
-                                    <th scope="row">Yarrboard Client Version</th>
-                                    <td id="yarrboard_client_version" class="text-end"></td>
-                                </tr>
-                                <tr class="other_versions" style="display: none">
-                                    <th scope="row">ESP-IDF Version</th>
-                                    <td id="esp_idf_version" class="text-end"></td>
-                                </tr>
-                                <tr class="other_versions" style="display: none">
-                                    <th scope="row">Arduino Version</th>
-                                    <td id="arduino_version" class="text-end"></td>
-                                </tr>
-                                <tr class="other_versions" style="display: none">
-                                    <th scope="row">PsychicHttp Version</th>
-                                    <td id="psychic_http_version" class="text-end"></td>
-                                </tr>
-                                <tr class="other_versions" style="display: none">
-                                    <th scope="row">Git Hash</th>
-                                    <td id="git_hash" class="text-end"></td>
-                                </tr>
-                                <tr class="other_versions" style="display: none">
-                                    <th scope="row">Build Time</th>
-                                    <td id="build_time" class="text-end"></td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Last Reboot Reason</th>
-                                    <td id="last_reboot_reason" class="text-end"></td>
+                                <tr id="other_versions" style="display: none">
+                                    <td colspan="2" align="right">
+                                        <table class="table ministats">
+                                            <tbody>
+                                                <tr>
+                                                    <th scope="row">Hardware</th>
+                                                    <td id="hardware_version" class="text-end"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Yarrboard Client</th>
+                                                    <td id="yarrboard_client_version" class="text-end"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">ESP-IDF</th>
+                                                    <td id="esp_idf_version" class="text-end"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Arduino</th>
+                                                    <td id="arduino_version" class="text-end"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">PsychicHttp</th>
+                                                    <td id="psychic_http_version" class="text-end"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Git Hash</th>
+                                                    <td id="git_hash" class="text-end"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Build Time</th>
+                                                    <td id="build_time" class="text-end"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
                                 </tr>
                                 <tr id="bus_voltage_row">
                                     <th scope="row">Bus Voltage</th>
@@ -896,45 +904,45 @@
                                     <th scope="row">Fan RPMs</th>
                                     <td id="fan_rpm" class="text-end"></td>
                                 </tr>
-                                <tr>
+                                <tr onclick="$('#message_stats').toggle()">
                                     <th scope="row">Loop Speed</th>
                                     <td id="fps" class="text-end"></td>
                                 </tr>
-                                <tr onclick="$('#message_stats').toggle()">
-                                    <th scope="row">Messages</th>
-                                    <td id="messages" class="text-end"></td>
-                                </tr>
                                 <tr id="message_stats" style="display: none">
-                                    <td colspan="2">
-                                        <table style="width: 100%">
-                                            <tr>
-                                                <th>Received Rate</th>
-                                                <td id="received_message_mps" class="text-end"></td>
-                                            </tr>
-                                            <tr>
-                                                <th>Sent Rate</th>
-                                                <td id="sent_message_mps" class="text-end"></td>
-                                            </tr>
-                                            <tr>
-                                                <th>Received Total</th>
-                                                <td id="received_message_total" class="text-end"></td>
-                                            </tr>
-                                            <tr>
-                                                <th>Sent Total</th>
-                                                <td id="sent_message_total" class="text-end"></td>
-                                            </tr>
-                                            <tr>
-                                                <th>Websocket Clients</th>
-                                                <td id="websocket_client_count" class="text-end"></td>
-                                            </tr>
-                                            <tr>
-                                                <th>HTTP Clients</th>
-                                                <td id="http_client_count" class="text-end"></td>
-                                            </tr>
-                                            <tr>
-                                                <th>Total Clients</th>
-                                                <td id="total_client_count" class="text-end"></td>
-                                            </tr>
+                                    <td colspan="2" align="right">
+                                        <table class="table ministats">
+                                            <tbody>
+                                                <tr>
+                                                    <th>Message RX Rate</th>
+                                                    <td id="received_message_mps" class="text-end"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Message TX Rate</th>
+                                                    <td id="sent_message_mps" class="text-end"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Message RX Total</th>
+                                                    <td id="received_message_total" class="text-end">
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Message TX Total</th>
+                                                    <td id="sent_message_total" class="text-end"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Websocket Clients</th>
+                                                    <td id="websocket_client_count" class="text-end">
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th>HTTP Clients</th>
+                                                    <td id="http_client_count" class="text-end"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Total Clients</th>
+                                                    <td id="total_client_count" class="text-end"></td>
+                                                </tr>
+                                            </tbody>
                                         </table>
                                     </td>
                                 </tr>
@@ -949,8 +957,8 @@
                                     </td>
                                 </tr>
                                 <tr id="memory_stats" style="display: none">
-                                    <td colspan="2">
-                                        <table style="width: 100%">
+                                    <td colspan="2" align="right">
+                                        <table class="table ministats">
                                             <tr>
                                                 <th scope="row">Heap Size</th>
                                                 <td id="heap_size" class="text-end"></td>
@@ -972,7 +980,7 @@
                                 </tr>
 
                                 <tr>
-                                    <th scope="row">UUID</th>
+                                    <th scope="row">Unique ID</th>
                                     <td id="uuid" class="text-end"></td>
                                 </tr>
                             </tbody>

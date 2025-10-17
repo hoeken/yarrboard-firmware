@@ -2,9 +2,11 @@
 
 # v2.0.0 Release
 
-* stats page
-    * make hidden sub tables look a bit nicer
-    * make ram percentage use decimals
+* wifi improvements:
+    * wifi should reconnect on failure?
+    * wifi authentication fail should default to AP mode
+* rgb status should have its own .h/.cpp file
+    * wifi connection status?
 * settings page is ugly af.
     * borders for each config area like channels?
     * side bar that loads each config page?
@@ -17,11 +19,6 @@
     * users group
 * find a way to bubble up setup errors - config, mqtt, etc.
     * keep an error log?
-* wifi improvements:
-    * wifi should reconnect on failure?
-    * wifi authentication fail should default to AP mode
-* rgb status should have its own .h/.cpp file
-    * wifi connection status?
 * generic piezo buzzer support
     * preset tone variables as part of piezo class
     * passive just turns it on/off for the duration of the note
@@ -89,6 +86,7 @@
 
 # FROTHFET
 
+* bypassed should report ON to HA
 * add rampUpMillis and rampDownMillis to config and test
 * voltage reading average during pwm / fuse blown detection is broken during that time...
 * add inrush current to pwm / soft fuse checking - will need a stateChangeTime variable too...

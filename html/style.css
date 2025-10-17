@@ -137,3 +137,13 @@ tr.pwmRow #statsTable tbody tr {
     background: rgba(13, 110, 253, .06);
     /* bootstrap primary tint */
 }
+
+table.ministats {
+    width: auto;
+    margin-bottom: 0px;
+}
+
+table.ministats tbody tr:last-child th,
+table.ministats tbody tr:last-child td {
+    border-bottom: none;
+}

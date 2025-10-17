@@ -746,7 +746,7 @@ function start_websocket() {
       //various other component versions
       $("#build_time").html(msg.build_time);
       $("#hardware_version").html(msg.hardware_version);
-      $("#esp_idf_version").html(`v${msg.esp_idf_version}`);
+      $("#esp_idf_version").html(`${msg.esp_idf_version}`);
       $("#arduino_version").html(`v${msg.arduino_version}`);
       $("#psychic_http_version").html(`v${msg.psychic_http_version}`);
       $("#yarrboard_client_version").html(`v${YarrboardClient.version}`);
@@ -2063,10 +2063,9 @@ function start_websocket() {
 
       $("#uptime").html(secondsToDhms(Math.round(msg.uptime / 1000000)));
       if (msg.fps)
-        $("#fps").html(msg.fps.toLocaleString("en-US") + " lps");
+        $("#fps").html(msg.fps.toLocaleString("en-US") + " hz");
 
       //message info
-      $("#messages").html(msg.received_message_mps.toLocaleString("en-US") + " mps");
       $("#received_message_mps").html(msg.received_message_mps.toLocaleString("en-US") + " mps");
       $("#received_message_total").html(msg.received_message_total.toLocaleString("en-US"));
       $("#sent_message_mps").html(msg.sent_message_mps.toLocaleString("en-US") + " mps");
@@ -2084,7 +2083,7 @@ function start_websocket() {
       $("#max_alloc_heap").html(formatBytes(msg.max_alloc_heap, 0));
 
       //our memory bar
-      let memory_used = Math.round((msg.heap_size / (msg.heap_size + msg.free_heap)) * 100);
+      let memory_used = ((msg.heap_size / (msg.heap_size + msg.free_heap)) * 100).toFixed(2); //esp32-s3 512kb ram
       $(`#memory_usage div`).css("width", memory_used + "%");
       $(`#memory_usage div`).html(formatBytes(msg.heap_size, 0));
       $(`#memory_usage`).attr("aria-valuenow", memory_used);
