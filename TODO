@@ -2,7 +2,6 @@
 
 # v2.0.0 Release
 
-* edit key for each channel
 * add wifi RSSI bars indicator
 * update/fix the release script for ota
 * wifi improvements:
@@ -22,9 +21,17 @@
         * move hostname from network to app
         * rename network to wifi
 * find a way to bubble up setup errors - config, mqtt, etc.
+* channel edit UI rewrite
+    * consolidate all the client side error checking to a single function per channel type
+        * add overlaps for standard channel stuff (name, key, etc.
+    * send entire channel config in one object (update in-memory object, then send it)
+    * consolidate all the server side error checking to a single place aka parseConfig()
+    * save if no errors.
+    * add edit key for each channel
 
 # BRINEOMATIC
 
+* button colors for relays isnt working.
 * update code for new Rev B board:
     * flowmeter and salinity rename to product_flowmeter and product_salinity
     * add support for brine_flowmeter and brine_salinity
@@ -44,6 +51,7 @@
     * high_pressure_pump
     * flush_valve
     * fan
+    * diverter valve
     * membrane_pressure_target
 * add mid level UI icons/commands for watermaker parts:
     * boost_pump
@@ -97,12 +105,11 @@
 
 # LONG TERM:
 
-* big cleanup of the javascript code for ui.
-* longer term, editing channel should:
-    * send entire config in command
-    * run it through the same parseConfig()
-    * save if no errors.
-    * we can consolidate all the error checking to a single place aka parseConfig()
+* big cleanup of the javascript code:
+    * basic YarrboardApp object
+        * onConnect()
+        * onMessage()
+        * etc
 * global cleanup of strcpy, sprintf, etc.
 * espwebtools?  https://esphome.github.io/esp-web-tools/
 * Look into turning yarrboard UI/framework into a library for use in other projects (brineomatic)
