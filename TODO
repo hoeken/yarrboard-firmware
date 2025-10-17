@@ -18,13 +18,13 @@
 * settings page is ugly af.
     * borders for each config area like channels?
     * side bar that loads each config page?
-    * combine network and app config?
+    * combine network and app config
+        * move hostname from network to app
+        * rename network to wifi
 * find a way to bubble up setup errors - config, mqtt, etc.
 
 # BRINEOMATIC
 
-* add automatic servo off after 10s
-    * will need to add servos_loop() code
 * update code for new Rev B board:
     * flowmeter and salinity rename to product_flowmeter and product_salinity
     * add support for brine_flowmeter and brine_salinity

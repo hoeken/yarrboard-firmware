@@ -70,6 +70,7 @@ class ServoChannel : public BaseChannel
   protected:
   public:
     float currentAngle = 0.0;
+    float autoDisableMillis = 5000;
 
     void init(uint8_t id) override;
     bool loadConfig(JsonVariantConst config, char* error, size_t len) override;
@@ -80,10 +81,13 @@ class ServoChannel : public BaseChannel
     void write(float angle);
     float getAngle();
     void disable();
+    void autoDisable();
 
   private:
+    unsigned long lastUpdateMillis = 0;
     Servo _servo;
     byte _pin;
+    bool _enabled = false;
 };
 
 extern etl::array<ServoChannel, YB_SERVO_CHANNEL_COUNT> servo_channels;

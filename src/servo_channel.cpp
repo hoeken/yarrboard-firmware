@@ -27,6 +27,10 @@ void servo_channels_setup()
 
 void servo_channels_loop()
 {
+  // check if any servos need turning off
+  for (auto& ch : servo_channels) {
+    ch.autoDisable();
+  }
 }
 
 void ServoChannel::init(uint8_t id)
@@ -62,17 +66,31 @@ void ServoChannel::generateUpdate(JsonVariant config)
 void ServoChannel::setup()
 {
   _servo.attach(this->_pin);
+  _enabled = false;
 }
 
 void ServoChannel::write(float angle)
 {
+  lastUpdateMillis = millis();
   currentAngle = angle;
+
+  _enabled = true;
   _servo.write(currentAngle);
 }
 
 void ServoChannel::disable()
 {
+  _enabled = false;
   _servo.disable();
+}
+
+void ServoChannel::autoDisable()
+{
+  // shut off our servos after a certain amount of time of inactivity
+  // eg. a diverter valve that only moves every couple of hours will just sit there getting hot.
+  unsigned int delta = millis() - this->lastUpdateMillis;
+  if (this->autoDisableMillis > 0 && this->_enabled && delta >= this->autoDisableMillis)
+    this->disable();
 }
 
 float ServoChannel::getAngle()
