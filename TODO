@@ -2,7 +2,6 @@
 
 # v2.0.0 Release
 
-* add use_hostname_as_uuid flag
 * edit key for each channel
 * add wifi RSSI bars indicator
 * update/fix the release script for ota
@@ -12,15 +11,20 @@
 * rgb status should have its own .h/.cpp file
     * wifi connection status?
 * generic piezo buzzer support
-    * on / off / frequency? / preset tones or songs?
     * add a #define to boards to set passive vs active piezo mode
+    * on / off / frequency? / preset tones or songs?
 * signalk frothfet plugin - use key for paths instead of id
 * signalk sendit plugin - use key for paths instead of id
 * settings page is ugly af.
+    * borders for each config area like channels?
+    * side bar that loads each config page?
+    * combine network and app config?
 * find a way to bubble up setup errors - config, mqtt, etc.
 
 # BRINEOMATIC
 
+* add automatic servo off after 10s
+    * will need to add servos_loop() code
 * update code for new Rev B board:
     * flowmeter and salinity rename to product_flowmeter and product_salinity
     * add support for brine_flowmeter and brine_salinity
@@ -70,8 +74,9 @@
 
 # FROTHFET
 
+* add rampUpMillis and rampDownMillis to config and test
+* voltage reading average during pwm / fuse blown detection is broken during that time...
 * add inrush current to pwm / soft fuse checking - will need a stateChangeTime variable too...
-* double check that pwm is not getting set if isDimmable is false
 * convert ADC to continuous interrupt driven style
 * add temperature, vdd support to adc library
 * update forms to be consistent style (float labels)
@@ -79,14 +84,9 @@
 * update signalk plugin - same
 * go through and re-adjust the various page sizes for our different viewports
 * protocol documentation
-* add mppt support:
-    * homeassistant "light" for consolidated dashboard control
-    * option to receive json commands over mppt?
 * Rev E: add LED color support to new ws2818b channel leds.
 * add buzzer support - enable alarms for tripped or bypassed on a per-channel basis
-* update fan control to simple on/off and remove any old pwm code for that
 * update current adc define for new chip
-* voltage reading average during pwm / fuse blown detection is broken during that time...
 
 # SENDIT
 

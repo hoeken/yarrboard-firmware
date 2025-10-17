@@ -154,8 +154,12 @@ void mqtt_ha_discovery()
   if (!mqttClient.connected())
     return;
 
+  // how to structure our id?
   char ha_dev_uuid[128];
-  sprintf(ha_dev_uuid, "%s_%s", YB_HARDWARE_VERSION, uuid);
+  if (app_use_hostname_as_mqtt_uuid)
+    sprintf(ha_dev_uuid, "yarrboard_%s", local_hostname);
+  else
+    sprintf(ha_dev_uuid, "yarrboard_%s", uuid);
 
   char topic[128];
   sprintf(topic, "homeassistant/device/%s/config", ha_dev_uuid);

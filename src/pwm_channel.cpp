@@ -674,15 +674,21 @@ const char* PWMChannel::getStatus()
 
 void PWMChannel::haGenerateDiscovery(JsonVariant doc)
 {
+  char ha_key[YB_HOSTNAME_LENGTH];
+  if (app_use_hostname_as_mqtt_uuid)
+    strncpy(ha_key, local_hostname, sizeof(key));
+  else
+    strncpy(ha_key, uuid, sizeof(key));
+
   // generate our id / topics
-  sprintf(ha_uuid, "%s_pwm_%s", uuid, this->key);
-  sprintf(ha_topic_cmd_state, "yarrboard/%s/pwm/%s/ha_set", local_hostname, this->key);
-  sprintf(ha_topic_state_state, "yarrboard/%s/pwm/%s/ha_state", local_hostname, this->key);
-  sprintf(ha_topic_avail, "yarrboard/%s/pwm/%s/ha_availability", local_hostname, this->key);
-  sprintf(ha_topic_cmd_brightness, "yarrboard/%s/pwm/%s/ha_brightness/set", local_hostname, this->key);
-  sprintf(ha_topic_state_brightness, "yarrboard/%s/pwm/%s/ha_brightness/state", local_hostname, this->key);
-  sprintf(ha_topic_voltage, "yarrboard/%s/pwm/%s/voltage", local_hostname, this->key);
-  sprintf(ha_topic_current, "yarrboard/%s/pwm/%s/current", local_hostname, this->key);
+  sprintf(ha_uuid, "%s_pwm_%s", ha_key, this->key);
+  sprintf(ha_topic_cmd_state, "yarrboard/%s/pwm/%s/ha_set", ha_key, this->key);
+  sprintf(ha_topic_state_state, "yarrboard/%s/pwm/%s/ha_state", ha_key, this->key);
+  sprintf(ha_topic_avail, "yarrboard/%s/pwm/%s/ha_availability", ha_key, this->key);
+  sprintf(ha_topic_cmd_brightness, "yarrboard/%s/pwm/%s/ha_brightness/set", ha_key, this->key);
+  sprintf(ha_topic_state_brightness, "yarrboard/%s/pwm/%s/ha_brightness/state", ha_key, this->key);
+  sprintf(ha_topic_voltage, "yarrboard/%s/pwm/%s/voltage", ha_key, this->key);
+  sprintf(ha_topic_current, "yarrboard/%s/pwm/%s/current", ha_key, this->key);
 
   // our callbacks to the command topics
   mqtt_on_topic(ha_topic_cmd_state, 0, pwm_handle_ha_command);
@@ -720,7 +726,10 @@ void PWMChannel::haGenerateVoltageDiscovery(JsonVariant doc)
 {
   // configuration object for the channel voltage
   char ha_uuid_voltage[128];
-  sprintf(ha_uuid_voltage, "%s_voltage", ha_uuid);
+  if (app_use_hostname_as_mqtt_uuid)
+    sprintf(ha_uuid_voltage, "%s_voltage", local_hostname);
+  else
+    sprintf(ha_uuid_voltage, "%s_voltage", ha_uuid);
   char ha_voltage_name[128];
   sprintf(ha_voltage_name, "%s Volts", this->name);
 
@@ -744,7 +753,10 @@ void PWMChannel::haGenerateAmperageDiscovery(JsonVariant doc)
 {
   // configuration object for the channel voltage
   char ha_uuid_amperage[128];
-  sprintf(ha_uuid_amperage, "%s_amperage", ha_uuid);
+  if (app_use_hostname_as_mqtt_uuid)
+    sprintf(ha_uuid_amperage, "%s_amperage", local_hostname);
+  else
+    sprintf(ha_uuid_amperage, "%s_amperage", ha_uuid);
   char ha_amperage_name[128];
   sprintf(ha_amperage_name, "%s Amps", this->name);
 

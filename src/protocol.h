@@ -53,6 +53,7 @@ extern bool app_enable_ssl;
 extern bool app_enable_mfd;
 extern bool app_enable_mqtt;
 extern bool app_enable_ha_integration;
+extern bool app_use_hostname_as_mqtt_uuid;
 extern bool is_serial_authenticated;
 extern UserRole app_default_role;
 extern UserRole serial_role;

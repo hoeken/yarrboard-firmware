@@ -233,6 +233,7 @@ void generateAppConfigJSON(JsonVariant output)
   output["app_enable_ssl"] = app_enable_ssl;
   output["app_enable_mqtt"] = app_enable_mqtt;
   output["app_enable_ha_integration"] = app_enable_ha_integration;
+  output["app_use_hostname_as_mqtt_uuid"] = app_use_hostname_as_mqtt_uuid;
   output["mqtt_server"] = mqtt_server;
   output["mqtt_user"] = mqtt_user;
   output["mqtt_pass"] = mqtt_pass;
@@ -415,6 +416,7 @@ bool loadAppConfigFromJSON(JsonVariantConst config, char* error, size_t len)
   app_enable_ssl = config["app_enable_ssl"];
   app_enable_mqtt = config["app_enable_mqtt"];
   app_enable_ha_integration = config["app_enable_ha_integration"];
+  app_use_hostname_as_mqtt_uuid = config["app_use_hostname_as_mqtt_uuid"];
 
   server_cert = config["server_cert"].as<String>();
   server_key = config["server_key"].as<String>();

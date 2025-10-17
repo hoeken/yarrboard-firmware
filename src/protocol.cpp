@@ -41,6 +41,7 @@ bool app_enable_ota = false;
 bool app_enable_ssl = false;
 bool app_enable_mqtt = false;
 bool app_enable_ha_integration = false;
+bool app_use_hostname_as_mqtt_uuid = true;
 bool is_serial_authenticated = false;
 UserRole app_default_role = NOBODY;
 UserRole serial_role = NOBODY;
@@ -460,6 +461,7 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   app_enable_ssl = input["app_enable_ssl"];
   app_enable_mqtt = input["app_enable_mqtt"];
   app_enable_ha_integration = input["app_enable_ha_integration"];
+  app_use_hostname_as_mqtt_uuid = input["app_use_hostname_as_mqtt_uuid"];
 
   strlcpy(mqtt_server, input["mqtt_server"] | "", sizeof(mqtt_server));
   strlcpy(mqtt_user, input["mqtt_user"] | "", sizeof(mqtt_user));

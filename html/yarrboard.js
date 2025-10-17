@@ -2377,6 +2377,7 @@ function start_websocket() {
       //for our mqtt stuff
       $("#app_enable_mqtt").prop("checked", msg.app_enable_mqtt);
       $("#app_enable_ha_integration").prop("checked", msg.app_enable_ha_integration);
+      $("#app_use_hostname_as_mqtt_uuid").prop("checked", msg.app_use_hostname_as_mqtt_uuid);
       $("#mqtt_server").val(msg.mqtt_server);
       $("#mqtt_user").val(msg.mqtt_user);
       $("#mqtt_pass").val(msg.mqtt_pass);
@@ -3482,6 +3483,7 @@ function save_app_settings() {
   let app_enable_ssl = $("#app_enable_ssl").prop("checked");
   let app_enable_mqtt = $("#app_enable_mqtt").prop("checked");
   let app_enable_ha_integration = $("#app_enable_ha_integration").prop("checked");
+  let app_use_hostname_as_mqtt_uuid = $("#app_use_hostname_as_mqtt_uuid").prop("checked");
   let mqtt_server = $("#mqtt_server").val();
   let mqtt_user = $("#mqtt_user").val();
   let mqtt_pass = $("#mqtt_pass").val();
@@ -3525,6 +3527,7 @@ function save_app_settings() {
     "app_enable_ssl": app_enable_ssl,
     "app_enable_mqtt": app_enable_mqtt,
     "app_enable_ha_integration": app_enable_ha_integration,
+    "app_use_hostname_as_mqtt_uuid": app_use_hostname_as_mqtt_uuid,
     "mqtt_server": mqtt_server,
     "mqtt_user": mqtt_user,
     "mqtt_pass": mqtt_pass,
