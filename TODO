@@ -2,6 +2,9 @@
 
 # v2.0.0 Release
 
+* stats page
+    * make hidden sub tables look a bit nicer
+    * make ram percentage use decimals
 * settings page is ugly af.
     * borders for each config area like channels?
     * side bar that loads each config page?
