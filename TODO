@@ -2,7 +2,6 @@
 
 # v2.0.0 Release
 
-* settings page - "default role" not working.
 * add use_hostname_as_uuid flag
 * edit key for each channel
 * add wifi RSSI bars indicator

@@ -279,14 +279,14 @@ bool loadConfigFromFile(const char* file, char* error, size_t len)
   }
 
   // read into buffer
-  std::unique_ptr<char[]> buf(new (std::nothrow) char[size + 1]);
+  char* buf = (char*)malloc(size + 1);
   if (!buf) {
     snprintf(error, len, "Memory allocation failed for %u bytes", (unsigned int)size);
     configFile.close();
     return false;
   }
 
-  size_t bytesRead = configFile.readBytes(buf.get(), size);
+  size_t bytesRead = configFile.readBytes(buf, size);
   configFile.close();
   buf[bytesRead] = '\0';
 
@@ -297,7 +297,7 @@ bool loadConfigFromFile(const char* file, char* error, size_t len)
 
   // parse JSON
   JsonDocument doc; // adjust to match your configuration complexity
-  DeserializationError err = deserializeJson(doc, buf.get());
+  DeserializationError err = deserializeJson(doc, buf);
 
   if (err) {
     snprintf(error, len, "JSON parse error: %s", err.c_str());
@@ -402,7 +402,7 @@ bool loadAppConfigFromJSON(JsonVariantConst config, char* error, size_t len)
   if (value && *value) {
     if (!strcmp(value, "admin"))
       app_default_role = ADMIN;
-    else if (strcmp(value, "guest"))
+    else if (!strcmp(value, "guest"))
       app_default_role = GUEST;
   }
   serial_role = app_default_role;

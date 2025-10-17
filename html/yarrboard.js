@@ -3531,7 +3531,6 @@ function save_app_settings() {
     "server_key": server_key
   });
 
-  //if they are changing from client to client, we can't show a success.
   show_alert("App settings have been updated.", "success");
 }
 
