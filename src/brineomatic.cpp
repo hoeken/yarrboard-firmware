@@ -45,7 +45,7 @@ float productFlowmeterPulsesPerLiter = YB_PRODUCT_FLOWMETER_DEFAULT_PPL;
 
 void IRAM_ATTR product_flowmeter_interrupt()
 {
-  product_flowmeter_pulse_counter++;
+  product_flowmeter_pulse_counter = product_flowmeter_pulse_counter + 1;
 }
 
 static volatile uint16_t brine_flowmeter_pulse_counter = 0;
@@ -54,7 +54,7 @@ float brineFlowmeterPulsesPerLiter = YB_BRINE_FLOWMETER_DEFAULT_PPL;
 
 void IRAM_ATTR brine_flowmeter_interrupt()
 {
-  brine_flowmeter_pulse_counter++;
+  brine_flowmeter_pulse_counter = brine_flowmeter_pulse_counter + 1;
 }
 
 ADS1115 brineomatic_adc(YB_ADS1115_ADDRESS);

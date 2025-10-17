@@ -61,19 +61,12 @@ void ServoChannel::generateUpdate(JsonVariant config)
 
 void ServoChannel::setup()
 {
-  TRACE();
-  // if (this->_pin == 39)
-  //   ledcDetach(this->_pin);
-  TRACE();
   _servo.attach(this->_pin);
-  TRACE();
 }
 
 void ServoChannel::write(float angle)
 {
   currentAngle = angle;
-  DUMP(this->_pin);
-  DUMP(currentAngle);
   _servo.write(currentAngle);
 }
 
