@@ -438,20 +438,20 @@ void Brineomatic::init()
   depickleResult = Result::STARTUP;
 
   // HSR-1425CR
-  //  highPressureValveOpenMin = 90;
   //  highPressureValveOpenMax = 125;
+  //  highPressureValveOpenMin = 90;
   //  highPressureValveCloseMin = 90;
   //  highPressureValveCloseMax = 55;
 
   // HSR-2645CR
-  highPressureValveOpenMin = 92.5;
   highPressureValveOpenMax = 125;
-  highPressureValveCloseMin = 92.5;
+  highPressureValveOpenMin = 92;
+  highPressureValveCloseMin = 92;
   highPressureValveCloseMax = 55;
 
-  highPressureValveMaintainOpenMin = 92.5;
   highPressureValveMaintainOpenMax = 100;
-  highPressureValveMaintainCloseMin = 92.5;
+  highPressureValveMaintainOpenMin = 92;
+  highPressureValveMaintainCloseMin = 92;
   highPressureValveMaintainCloseMax = 80;
 
   // PID settings - Ramp Up
@@ -704,8 +704,8 @@ void Brineomatic::openDiverterValve()
   if (hasDiverterValve()) {
     diverterValveOpenState = true;
     diverterValve->write(diverterValveOpenAngle);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    diverterValve->disable();
+    // vTaskDelay(pdMS_TO_TICKS(1000));
+    // diverterValve->disable();
   } else
     diverterValveOpenState = false;
 }
@@ -714,8 +714,8 @@ void Brineomatic::closeDiverterValve()
 {
   if (hasDiverterValve()) {
     diverterValve->write(diverterValveClosedAngle);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    diverterValve->disable();
+    // vTaskDelay(pdMS_TO_TICKS(1000));
+    // diverterValve->disable();
   }
   diverterValveOpenState = false;
 }
@@ -1115,6 +1115,7 @@ void Brineomatic::manageHighPressureValve()
           if (abs(membranePressureTarget - currentMembranePressure) / membranePressureTarget > 0.01)
             highPressureValve->write(angle);
           else {
+            highPressureValve->write(highPressureValveCloseMin); // neutral / stop
             highPressureValve->disable();
             membranePressurePID.Reset(); // keep our pid from winding up.
           }
