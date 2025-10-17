@@ -12,9 +12,6 @@
 
   #include "bus_voltage.h"
 
-// for watching our power supply
-float busVoltage = 0;
-
 unsigned long lastBusVoltageCheckMillis = 0;
 
   #ifdef YB_BUS_VOLTAGE_ESP32
@@ -39,6 +36,10 @@ void bus_voltage_setup()
   busADC->setup();
   #endif
 
+  // load our first reading
+  busADC->getReading();
+  vTaskDelay(pdMS_TO_TICKS(70)); // wait for reading
+  busADC->getReading();
   Serial.println("Bus Voltage OK");
 }
 
@@ -53,6 +54,7 @@ void bus_voltage_loop()
 float getBusVoltage()
 {
   float voltage = busADC->getAverageVoltage();
+
   busADC->resetAverage();
 
   return voltage / (YB_BUS_VOLTAGE_R2 / (YB_BUS_VOLTAGE_R2 + YB_BUS_VOLTAGE_R1));

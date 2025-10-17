@@ -85,11 +85,6 @@ void protocol_loop()
       ch.calculateAverages(messageDelta);
 #endif
 
-// TODO: move this to bus voltage loop
-#ifdef YB_HAS_BUS_VOLTAGE
-    busVoltage = getBusVoltage();
-#endif
-
     // for keeping track.
     receivedMessagesPerSecond = receivedMessages;
     receivedMessages = 0;
@@ -1405,7 +1400,7 @@ void generateUpdateJSON(JsonVariant output)
   output["uptime"] = esp_timer_get_time();
 
 #ifdef YB_HAS_BUS_VOLTAGE
-  output["bus_voltage"] = busVoltage;
+  output["bus_voltage"] = getBusVoltage();
 #endif
 
 #ifdef YB_HAS_PWM_CHANNELS
@@ -1505,7 +1500,7 @@ void generateFastUpdateJSON(JsonVariant output)
   output["uptime"] = esp_timer_get_time();
 
 #ifdef YB_HAS_BUS_VOLTAGE
-  output["bus_voltage"] = busVoltage;
+  output["bus_voltage"] = getBusVoltage();
 #endif
 
   byte j;
@@ -1552,7 +1547,7 @@ void generateStatsJSON(JsonVariant output)
     output["ip_address"] = WiFi.localIP();
 
 #ifdef YB_HAS_BUS_VOLTAGE
-  output["bus_voltage"] = busVoltage;
+  output["bus_voltage"] = getBusVoltage();
 #endif
 
 #ifdef YB_HAS_PWM_CHANNELS
@@ -1588,10 +1583,6 @@ void generateGraphDataJSON(JsonVariant output)
 {
   // some basic statistics and info
   output["msg"] = "graph_data";
-
-#ifdef YB_HAS_BUS_VOLTAGE
-  // output["bus_voltage"] = busVoltage;
-#endif
 
 #ifdef YB_IS_BRINEOMATIC
   JsonArray data;

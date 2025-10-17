@@ -103,6 +103,11 @@ void setup()
   ota_setup();
   Serial.println("OTA ok");
 
+#ifdef YB_HAS_BUS_VOLTAGE
+  bus_voltage_setup();
+  Serial.println("Bus voltage ok");
+#endif
+
 #ifdef YB_HAS_ADC_CHANNELS
   adc_channels_setup();
   Serial.println("ADC channels ok");
@@ -126,11 +131,6 @@ void setup()
 #ifdef YB_HAS_FANS
   fans_setup();
   Serial.println("Fans ok");
-#endif
-
-#ifdef YB_HAS_BUS_VOLTAGE
-  bus_voltage_setup();
-  Serial.println("Bus voltage ok");
 #endif
 
 #ifdef YB_IS_BRINEOMATIC

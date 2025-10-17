@@ -14,7 +14,6 @@
 #include "prefs.h"
 #include <Arduino.h>
 
-extern float busVoltage;
 float getBusVoltage();
 
 void bus_voltage_setup();

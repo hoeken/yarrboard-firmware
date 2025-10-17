@@ -44,7 +44,8 @@ float ADCHelper::getAverageVoltage()
 
 void ADCHelper::resetAverage()
 {
-  this->runningAverage.clear();
+  if (this->runningAverage.getCount() > 10)
+    this->runningAverage.clear();
 }
 
 float ADCHelper::toVoltage(unsigned int reading)

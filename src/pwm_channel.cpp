@@ -198,12 +198,15 @@ void PWMChannel::setup()
   char prefIndex[YB_PREF_KEY_LENGTH];
 
   // lookup our duty cycle
-  sprintf(prefIndex, "pwmDuty%d", this->id);
-  if (preferences.isKey(prefIndex))
-    this->dutyCycle = preferences.getFloat(prefIndex);
-  else
+  if (this->isDimmable) {
+    sprintf(prefIndex, "pwmDuty%d", this->id);
+    if (preferences.isKey(prefIndex))
+      this->dutyCycle = preferences.getFloat(prefIndex);
+    else
+      this->dutyCycle = 1.0;
+    this->lastDutyCycle = this->dutyCycle;
+  } else
     this->dutyCycle = 1.0;
-  this->lastDutyCycle = this->dutyCycle;
 
   // soft fuse trip count
   sprintf(prefIndex, "pwmTripCount%d", this->id);
@@ -271,8 +274,8 @@ void PWMChannel::setupDefaultState()
     this->status = Status::OFF;
   }
 
-  // update our pin
-  this->updateOutput(true);
+  // update our pin, but dont check it yet.
+  this->updateOutput(false);
 }
 
 void PWMChannel::saveThrottledDutyCycle()
@@ -402,10 +405,12 @@ void PWMChannel::checkVoltage()
 
 void PWMChannel::checkFuseBlown()
 {
+  // we need bus voltage for our calculations.
+  // also, it takes a little bit to populate on boot.
   if (this->status == Status::ON) {
     // try to "debounce" the on state
-    for (byte i = 0; i < 25; i++) {
-      if (this->voltage > 8.0)
+    for (byte i = 0; i < 100; i++) {
+      if (this->voltage >= getBusVoltage() * this->dutyCycle * 0.3)
         return;
 
       vTaskDelay(1);
@@ -424,7 +429,7 @@ void PWMChannel::checkFuseBypassed()
     for (byte i = 0; i < 10; i++) {
 
       // voltage needs to be over 90%... otherwise we get false readings when shutting off motors as the voltage collapses
-      if (this->voltage < busVoltage * 0.90)
+      if (this->voltage < getBusVoltage() * 0.90)
         return;
 
       vTaskDelay(1);
@@ -607,7 +612,7 @@ void PWMChannel::calculateAverages(unsigned int delta)
     if (this->voltage && this->dutyCycle == 1.0)
       this->wattHours += this->amperage * this->voltage * ((float)delta / 3600000.0);
     else
-      this->wattHours += this->amperage * busVoltage * ((float)delta / 3600000.0);
+      this->wattHours += this->amperage * getBusVoltage() * ((float)delta / 3600000.0);
   }
 }
 
@@ -783,7 +788,7 @@ void PWMChannel::haPublishAvailable()
 
 void PWMChannel::haPublishState()
 {
-  if (this->status == Status::ON)
+  if (this->status == Status::ON || this->status == Status::BYPASSED)
     mqtt_publish(ha_topic_state_state, "ON", false);
   else
     mqtt_publish(ha_topic_state_state, "OFF", false);

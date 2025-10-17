@@ -86,9 +86,7 @@
 
 # FROTHFET
 
-* bypassed should report ON to HA
 * add rampUpMillis and rampDownMillis to config and test
-* voltage reading average during pwm / fuse blown detection is broken during that time...
 * add inrush current to pwm / soft fuse checking - will need a stateChangeTime variable too...
 * convert ADC to continuous interrupt driven style
 * add temperature, vdd support to adc library
