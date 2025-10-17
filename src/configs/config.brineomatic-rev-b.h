@@ -30,6 +30,7 @@
 #define YB_DS18B20_PIN 4
 
 #define YB_HAS_PIEZO
+#define YB_PIEZO_PASSIVE
 #define YB_PIEZO_PIN 39
 
 #define YB_PRODUCT_FLOWMETER_PIN         11

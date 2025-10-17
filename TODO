@@ -3,17 +3,6 @@
 # v2.0.0 Release
 
 * add wifi RSSI bars indicator
-* update/fix the release script for ota
-* wifi improvements:
-    * wifi should reconnect on failure?
-    * wifi authentication fail should default to AP mode
-* rgb status should have its own .h/.cpp file
-    * wifi connection status?
-* generic piezo buzzer support
-    * add a #define to boards to set passive vs active piezo mode
-    * on / off / frequency? / preset tones or songs?
-* signalk frothfet plugin - use key for paths instead of id
-* signalk sendit plugin - use key for paths instead of id
 * settings page is ugly af.
     * borders for each config area like channels?
     * side bar that loads each config page?
@@ -21,6 +10,16 @@
         * move hostname from network to app
         * rename network to wifi
 * find a way to bubble up setup errors - config, mqtt, etc.
+* wifi improvements:
+    * wifi should reconnect on failure?
+    * wifi authentication fail should default to AP mode
+* rgb status should have its own .h/.cpp file
+    * wifi connection status?
+* generic piezo buzzer support
+    * preset tone variables as part of piezo class
+    * passive just turns it on/off for the duration of the note
+* signalk frothfet plugin - use key for paths instead of id
+* signalk sendit plugin - use key for paths instead of id
 * channel edit UI rewrite
     * consolidate all the client side error checking to a single function per channel type
         * add overlaps for standard channel stuff (name, key, etc.
@@ -28,6 +27,8 @@
     * consolidate all the server side error checking to a single place aka parseConfig()
     * save if no errors.
     * add edit key for each channel
+* update/fix the release script for ota
+
 
 # BRINEOMATIC
 

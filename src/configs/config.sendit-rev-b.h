@@ -13,6 +13,7 @@
 #define YB_STATUS_WS2818_PIN 38
 
 #define YB_HAS_PIEZO
+#define YB_PIEZO_PASSIVE
 #define YB_PIEZO_PIN 14
 
 #define YB_HAS_ADC_CHANNELS
