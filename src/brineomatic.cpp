@@ -125,10 +125,28 @@ void brineomatic_setup()
 
   // temporary hardcoding.
   wm.highPressurePump = &relay_channels[0];
+  wm.highPressurePump->setName("High Pressure Pump");
+  wm.highPressurePump->setKey("hp_pump");
+
   wm.flushValve = &relay_channels[1];
+  wm.flushValve->setName("Flush Valve");
+  wm.flushValve->setKey("flush_valve");
+
   wm.coolingFan = &relay_channels[2];
+  wm.coolingFan->setName("Cooling Fan");
+  wm.coolingFan->setKey("cooling_fan");
+
+  // wm.boostPump = &relay_channels[3];
+  // wm.boostPump->setName("Boost Pump");
+  // wm.boostPump->setKey("boost_pump");
+
   wm.diverterValve = &servo_channels[0];
+  wm.diverterValve->setName("Diverter Valve");
+  wm.diverterValve->setKey("diverter_valve");
+
   wm.highPressureValve = &servo_channels[1];
+  wm.highPressureValve->setName("High Pressure Valve");
+  wm.highPressureValve->setKey("hp_valve");
 
   // Create a FreeRTOS task for the state machine
   xTaskCreatePinnedToCore(

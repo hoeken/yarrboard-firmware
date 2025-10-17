@@ -39,7 +39,6 @@
         * need to redesign high pressure valve attachment
     * add support for the piezo on error or success.
         * can we play tunes?
-    * turn off diverter valve servo after ~10 seconds after command to prevent overheating
 * add mid-level commands to set_watermaker
     * boost_pump
     * high_pressure_pump

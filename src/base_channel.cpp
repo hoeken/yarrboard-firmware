@@ -20,6 +20,16 @@ void BaseChannel::setup()
 {
 }
 
+void BaseChannel::setName(const char* name)
+{
+  strncpy(this->name, name, sizeof(this->name));
+}
+
+void BaseChannel::setKey(const char* key)
+{
+  strncpy(this->key, key, sizeof(this->key));
+}
+
 bool BaseChannel::loadConfig(JsonVariantConst config, char* error, size_t err_size)
 {
   // we need a valid object

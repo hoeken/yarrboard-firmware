@@ -25,6 +25,9 @@ class BaseChannel
 
     void setup();
 
+    void setName(const char* name);
+    void setKey(const char* key);
+
     virtual void init(uint8_t id);
     virtual bool loadConfig(JsonVariantConst config, char* error, size_t err_size);
     virtual void generateConfig(JsonVariant config);
