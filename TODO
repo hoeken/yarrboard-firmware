@@ -8,7 +8,12 @@
     * combine network and app config
         * move hostname from network to app
         * rename network to wifi
+    * mqtt group
+    * http server group
+    * wifi group
+    * users group
 * find a way to bubble up setup errors - config, mqtt, etc.
+    * keep an error log?
 * wifi improvements:
     * wifi should reconnect on failure?
     * wifi authentication fail should default to AP mode

@@ -729,7 +729,7 @@ function start_websocket() {
       $('#projectName').html("Yarrboard v" + msg.firmware_version);
 
       //all our versions
-      $("#firmware_version").html(msg.firmware_version);
+      $("#firmware_version").html(`v${msg.firmware_version}`);
 
       //deal with our hash
       let clean_hash = msg.git_hash;
@@ -743,13 +743,13 @@ function start_websocket() {
         short_hash += "-dirty";
       $("#git_hash").html(`<a href="https://github.com/hoeken/yarrboard-firmware/commit/${clean_hash}">${short_hash}</a>`);
 
-      //various other components
+      //various other component versions
       $("#build_time").html(msg.build_time);
       $("#hardware_version").html(msg.hardware_version);
-      $("#esp_idf_version").html(msg.esp_idf_version);
-      $("#arduino_version").html(msg.arduino_version);
-      $("#psychic_http_version").html(msg.psychic_http_version);
-      $("#yarrboard_client_version").html(YarrboardClient.version);
+      $("#esp_idf_version").html(`v${msg.esp_idf_version}`);
+      $("#arduino_version").html(`v${msg.arduino_version}`);
+      $("#psychic_http_version").html(`v${msg.psychic_http_version}`);
+      $("#yarrboard_client_version").html(`v${YarrboardClient.version}`);
 
       //show some info about restarts
       if (msg.last_restart_reason)
