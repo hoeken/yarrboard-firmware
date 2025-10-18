@@ -88,8 +88,6 @@
 
 * fading code
     * need to adjust fade time to delta between start/end in updateOutput()
-    * fuse blown not working
-    * test that callback is called after the fade
     * remove most of the old fade ended checking code.
     * remove set_fade command - just set duty and fading will happen automatically
     * saveThrottledDutyCycle needs reworked

@@ -302,7 +302,7 @@ void PWMChannel::updateOutput(bool check_status)
   // regular on/off outputs just do it.
   if (!this->isDimmable) {
     if (this->outputState)
-      ledcWrite(this->pin, 1);
+      ledcWrite(this->pin, MAX_DUTY_CYCLE);
     else
       ledcWrite(this->pin, 0);
     return;
@@ -440,18 +440,27 @@ void PWMChannel::checkFuseBlown()
   else
     duty = 1.0;
 
+  float busVoltage = getBusVoltage();
+  float minVoltage = busVoltage * duty * 0.5;
+
   // we need bus voltage for our calculations.
   // also, it takes a little bit to populate on boot.
   if (getBusVoltage() > 0) {
     if (this->status == Status::ON) {
-      // try to "debounce" the on state
+      // plenty of tries for when you're a very low pwm
       for (byte i = 0; i < 10; i++) {
-        if (this->voltage >= getBusVoltage() * duty * 0.3)
+        this->voltage = this->getVoltage();
+        if (this->voltage >= minVoltage)
           return;
 
         vTaskDelay(pdMS_TO_TICKS(10));
-        this->voltage = this->getVoltage();
       }
+
+      DUMP(this->id);
+      DUMP(this->voltage);
+      DUMP(duty);
+      DUMP(busVoltage);
+      DUMP(minVoltage);
 
       this->status = Status::BLOWN;
       this->outputState = false;
