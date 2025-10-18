@@ -39,7 +39,6 @@
 
 # BRINEOMATIC
 
-* gauges are janky while they load
 * update code for new Rev B board:
     * flowmeter and salinity rename to product_flowmeter and product_salinity
     * add support for brine_flowmeter and brine_salinity

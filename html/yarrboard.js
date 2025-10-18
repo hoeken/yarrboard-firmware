@@ -915,11 +915,9 @@ function start_websocket() {
         $('#bomInformationDiv').show();
         $('#bomControlDiv').show();
         $('#bomStatsDiv').show();
-        $('#bomInterface').hide();
         $('#brightnessUI').hide();
 
         if (!isMFD()) {
-
           motorTemperatureGauge = c3.generate({
             bindto: '#motorTemperatureGauge',
             data: {
@@ -945,7 +943,7 @@ function start_websocket() {
                 values: brineomatic_gauge_setup.motor_temperature.thresholds
               }
             },
-            size: { height: 130 },
+            size: { height: 130, width: 200 },
             interaction: { enabled: false },
             transition: { duration: 0 },
             legend: { hide: true }
@@ -976,7 +974,7 @@ function start_websocket() {
                 values: brineomatic_gauge_setup.water_temperature.thresholds
               }
             },
-            size: { height: 130 },
+            size: { height: 130, width: 200 },
             interaction: { enabled: false },
             transition: { duration: 0 },
             legend: { hide: true }
@@ -1007,7 +1005,7 @@ function start_websocket() {
                 values: brineomatic_gauge_setup.filter_pressure.thresholds
               }
             },
-            size: { height: 130 },
+            size: { height: 130, width: 200 },
             interaction: { enabled: false },
             transition: { duration: 0 },
             legend: { hide: true }
@@ -1038,7 +1036,7 @@ function start_websocket() {
                 values: brineomatic_gauge_setup.membrane_pressure.thresholds
               }
             },
-            size: { height: 130 },
+            size: { height: 130, width: 200 },
             interaction: { enabled: false },
             transition: { duration: 0 },
             legend: { hide: true }
@@ -1069,7 +1067,7 @@ function start_websocket() {
                 values: brineomatic_gauge_setup.product_salinity.thresholds
               }
             },
-            size: { height: 130 },
+            size: { height: 130, width: 200 },
             interaction: { enabled: false },
             transition: { duration: 0 },
             legend: { hide: true }
@@ -1100,7 +1098,7 @@ function start_websocket() {
                 values: brineomatic_gauge_setup.product_flowrate.thresholds
               }
             },
-            size: { height: 130 },
+            size: { height: 130, width: 200 },
             interaction: { enabled: false },
             transition: { duration: 0 },
             legend: { hide: true }
@@ -1131,7 +1129,7 @@ function start_websocket() {
                 values: brineomatic_gauge_setup.tank_level.thresholds
               }
             },
-            size: { height: 130 },
+            size: { height: 130, width: 200 },
             interaction: { enabled: false },
             transition: { duration: 0 },
             legend: { hide: true }
@@ -1162,7 +1160,7 @@ function start_websocket() {
                 values: brineomatic_gauge_setup.volume.thresholds
               }
             },
-            size: { height: 130 },
+            size: { height: 130, width: 200 },
             interaction: { enabled: false },
             transition: { duration: 0 },
             legend: { hide: true }
@@ -2035,7 +2033,7 @@ function start_websocket() {
         else
           $('#bomFanStatus').hide();
 
-        $('#bomInterface').show();
+        $('#bomInterface').css('visibility', 'visible');
       }
       else
         $('#bomInterface').hide();
