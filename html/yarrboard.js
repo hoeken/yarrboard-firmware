@@ -218,7 +218,7 @@ const PWMControlCard = (ch) => `
           <table style="width: 100%">
             <tbody>
               <tr>
-                <td id="pwmDutySliderControl${ch.id}" class="pe-4 mfdHide" style="display: none">
+                <td id="pwmDutySliderControl${ch.id}" class="pe-4" style="display: none">
                   <input type="range" min="0" max="100" id="pwmDutySlider${ch.id}" orient="vertical" style="height: 75px">
                 </td>
                 <td class="pwmIcon text-center align-middle pe-2">
@@ -762,7 +762,8 @@ function start_websocket() {
             $('#pwmCards').append(PWMControlCard(ch));
 
             if (ch.isDimmable) {
-              $(`#pwmDutySliderControl${ch.id}`).show();
+              if (!isMFD())
+                $(`#pwmDutySliderControl${ch.id}`).show();
 
               //stop it from toggling
               $('#pwmDutySlider' + ch.id).on("click", function (event) {
