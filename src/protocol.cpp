@@ -1458,11 +1458,9 @@ void generateFastUpdateJSON(JsonVariant output)
 #ifdef YB_HAS_PWM_CHANNELS
   JsonArray channels = output["pwm"].to<JsonArray>();
   for (auto& ch : pwm_channels) {
-    JsonObject jo = channels.add<JsonObject>();
     if (ch.sendFastUpdate) {
+      JsonObject jo = channels.add<JsonObject>();
       ch.generateUpdate(jo);
-
-      // dont need it anymore
       ch.sendFastUpdate = false;
     }
   }

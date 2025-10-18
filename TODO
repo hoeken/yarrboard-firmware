@@ -16,8 +16,9 @@
 * find a way to bubble up setup errors - config, mqtt, etc.
     * use an error log and load it when we login (admin only)
 * wifi improvements:
+    * switch to using improvwifi: https://registry.platformio.org/libraries/improv/Improv
     * wifi should reconnect on failure?
-    * wifi authentication fail should default to AP mode
+    * wifi authentication fail should default to using improv wifi
     * switch to ap/sta mode and scan for list of ap's and put that in the dropdown.
     * when in ap mode and switching to client, go to ap/sta mode and make sure we can connect first.
     * let the client know and then reboot
@@ -88,6 +89,7 @@
 
 # FROTHFET
 
+* add gamma correction to pwm width if its a light
 * fading code
     * saveThrottledDutyCycle needs reworked
 * add inrush current to pwm / soft fuse checking - will need a stateChangeTime variable too...
@@ -128,3 +130,6 @@
         * c++ code side: library with lots of callbacks?
         * javascript side: javascript include with lots of callbacks?
         * html???
+
+B&G : User Agent: Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/5.12.9 Chrome/69.0.3497.128 Safari/537.36
+https://ungoogled-software.github.io/ungoogled-chromium-binaries/releases/linux_portable/64bit/

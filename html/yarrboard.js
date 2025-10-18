@@ -213,17 +213,14 @@ const PWMControlCard = (ch) => `
 <div id="pwm${ch.id}" class="col-xs-12 col-sm-6">
   <table class="w-100 h-100 p-2">
     <tr>
-      <td id="pwmDutySliderButton${ch.id}" onclick="toggle_duty_cycle(${ch.id})" class="pwmDutySliderButton text-center" style="display: none">
-        <svg class="bi bi-brightness-high" xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"></path>
-        </svg>
-        <div class="mt-1 pwmDutyCycle" id="pwmDutyCycle${ch.id}">???</div>
-      </td>
       <td>
         <button id="pwmState${ch.id}" type="button" class="btn pwmButton text-center" onclick="toggle_state(${ch.id})">
           <table style="width: 100%">
             <tbody>
               <tr>
+                <td id="pwmDutySliderControl${ch.id}" class="pe-4 mfdHide" style="display: none">
+                  <input type="range" min="0" max="100" id="pwmDutySlider${ch.id}" orient="vertical" style="height: 75px">
+                </td>
                 <td class="pwmIcon text-center align-middle pe-2">
                   ${pwm_type_images[ch.type]}
                 </td>
@@ -242,11 +239,6 @@ const PWMControlCard = (ch) => `
             </tbody>
           </table>
         </button>
-      </td>
-    </tr>
-    <tr id="pwmDutySliderRow${ch.id}" class="align-top" style="display:none">
-      <td colspan="2">
-        <input type="range" class="form-range" min="0" max="100" id="pwmDutySlider${ch.id}">
       </td>
     </tr>
   </table>
@@ -770,7 +762,13 @@ function start_websocket() {
             $('#pwmCards').append(PWMControlCard(ch));
 
             if (ch.isDimmable) {
-              $(`#pwmDutySliderButton${ch.id}`).show();
+              $(`#pwmDutySliderControl${ch.id}`).show();
+
+              //stop it from toggling
+              $('#pwmDutySlider' + ch.id).on("click", function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+              });
 
               $('#pwmDutySlider' + ch.id).change(set_duty_cycle);
 
@@ -1574,12 +1572,7 @@ function start_websocket() {
             if (current_config.pwm[ch.id - 1].isDimmable) {
               if (currentPWMSliderID != ch.id) {
                 $('#pwmDutySlider' + ch.id).val(duty);
-                $('#pwmDutyCycle' + ch.id).html(`${duty}%`);
-                $('#pwmDutyCycle' + ch.id).show();
               }
-            }
-            else {
-              $('#pwmDutyCycle' + ch.id).hide();
             }
 
             let voltage = ch.voltage.toFixed(1);
@@ -2910,15 +2903,15 @@ function set_duty_cycle(e) {
 
   //must be realistic.
   if (value >= 0 && value <= 100) {
-    //update our button
-    $(`#pwmDutyCycle${id}`).html(Math.round(value) + '%');
-
     //we want a duty value from 0 to 1
     value = value / 100;
 
     //update our duty cycle
     client.setPWMChannelDuty(id, value, false);
   }
+
+  e.stopPropagation();
+  e.preventDefault();
 }
 
 function set_servo_angle(e) {
