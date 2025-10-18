@@ -181,8 +181,6 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleSetPWMChannel(input, output);
     else if (!strcmp(cmd, "toggle_pwm_channel"))
       return handleTogglePWMChannel(input, output);
-    else if (!strcmp(cmd, "fade_pwm_channel"))
-      return handleFadePWMChannel(input, output);
     else if (!strcmp(cmd, "set_relay_channel"))
       return handleSetRelayChannel(input, output);
     else if (!strcmp(cmd, "toggle_relay_channel"))
@@ -794,54 +792,6 @@ void handleTogglePWMChannel(JsonVariantConst input, JsonVariant output)
   // OFF and BYPASS can be turned on.
   else
     ch->setState("ON");
-#else
-  return generateErrorJSON(output, "Board does not have output channels.");
-#endif
-}
-
-void handleFadePWMChannel(JsonVariantConst input, JsonVariant output)
-{
-#ifdef YB_HAS_PWM_CHANNELS
-  unsigned long start = micros();
-  unsigned long t1, t2, t3, t4 = 0;
-
-  if (!input["duty"].is<float>())
-    return generateErrorJSON(output, "'duty' is a required parameter");
-  if (!input["millis"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'millis' is a required parameter");
-
-  // load our channel
-  auto* ch = lookupChannel(input, output, pwm_channels);
-  if (!ch)
-    return;
-
-  float duty = input["duty"];
-
-  // what do we hate?  va-li-date!
-  if (duty < 0)
-    return generateErrorJSON(output, "Duty cycle must be >= 0");
-  else if (duty > 1)
-    return generateErrorJSON(output, "Duty cycle must be <= 1");
-
-  t1 = micros();
-  t2 = micros();
-
-  int fadeDelay = input["millis"] | 0;
-
-  ch->requestFade(duty, fadeDelay);
-
-  t3 = micros();
-
-  unsigned long finish = micros();
-
-  if (finish - start > 10000) {
-    Serial.println("led fade");
-    Serial.printf("params: %dus\n", t1 - start);
-    Serial.printf("channelSetDuty: %dus\n", t2 - t1);
-    Serial.printf("channelFade: %dus\n", t3 - t2);
-    Serial.printf("total: %dus\n", finish - start);
-    Serial.println();
-  }
 #else
   return generateErrorJSON(output, "Board does not have output channels.");
 #endif

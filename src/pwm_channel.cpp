@@ -533,23 +533,8 @@ void PWMChannel::startFade(float duty, int fade_time)
 {
   // is an earlier hardware fade blocking?
   if (!this->isFading) {
-
-    // // dutyCycle is a default - will be non-zero when state is off
-    // if (this->outputState)
-    //   this->fadeDutyCycleStart = this->dutyCycle;
-    // else
-    //   this->fadeDutyCycleStart = 0.0;
-
-    // // fading turns on the channel.
-    // this->outputState = true;
-    // this->status = Status::ON;
-
-    // some vars for tracking.
+    // track our fade status
     this->isFading = true;
-
-    // this->fadeDutyCycleEnd = duty;
-    // this->fadeStartTime = millis();
-    // this->fadeDuration = fade_time + 100;
 
     // setup for our hardware fader
     fade_time = max(1, fade_time);
@@ -570,47 +555,6 @@ void PWMChannel::startFade(float duty, int fade_time)
       this->isFading = false;
     }
   }
-}
-
-void PWMChannel::requestFade(float duty, int fade_time)
-{
-  // // is an earlier hardware fade blocking?
-  // if (!this->isFading) {
-  //   // dutyCycle is a default - will be non-zero when state is off
-  //   if (this->outputState)
-  //     this->fadeDutyCycleStart = this->dutyCycle;
-  //   else
-  //     this->fadeDutyCycleStart = 0.0;
-
-  //   // fading turns on the channel.
-  //   this->outputState = true;
-  //   this->status = Status::ON;
-
-  //   // some vars for tracking.
-  //   this->isFading = true;
-
-  //   this->fadeDutyCycleEnd = duty;
-  //   this->fadeStartTime = millis();
-  //   this->fadeDuration = fade_time + 100;
-
-  //   // call our hardware fader
-  //   int target_duty = duty * MAX_DUTY_CYCLE;
-  //   const uint32_t start_duty = ledcRead(this->pin); // current duty counts
-
-  //   // kicks off fade and registers our ISR + arg (the channel index)
-  //   bool ok = ledcFadeWithInterruptArg(
-  //     this->pin,
-  //     start_duty,
-  //     target_duty,
-  //     fade_time,
-  //     &PWMChannel::onFadeISR,
-  //     this);
-
-  //   // if it failed, clear flag and handle your error path (log, retry, etc.)
-  //   if (!ok) {
-  //     this->isFading = false;
-  //   }
-  // }
 }
 
 void PWMChannel::checkIfFadeOver()

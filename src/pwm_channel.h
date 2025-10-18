@@ -74,13 +74,9 @@ class PWMChannel : public BaseChannel
     unsigned long lastDutyCycleUpdate = 0;
     unsigned long dutyCycleIsThrottled = 0;
 
+    // fading speeds / duration
     unsigned int rampOnMillis = 750;
     unsigned int rampOffMillis = 500;
-    bool fadeRequested = false;
-    unsigned long fadeStartTime = 0;
-    unsigned long fadeDuration = 0;
-    float fadeDutyCycleStart = 0;
-    float fadeDutyCycleEnd = 0;
 
 #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
     MCP3564Helper* amperageHelper;
@@ -135,7 +131,6 @@ class PWMChannel : public BaseChannel
     void setState(const char* state);
     void setState(bool newState);
 
-    void requestFade(float duty, int fade_time);
     void startFade(float duty, int fade_time);
     void setDuty(float duty);
     void calculateAverages(unsigned int delta);
