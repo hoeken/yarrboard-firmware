@@ -2,15 +2,7 @@
 
 # v2.0.0 Release
 
-* wifi improvements:
-    * wifi should reconnect on failure?
-    * wifi authentication fail should default to AP mode
-    * switch to ap/sta mode and scan for list of ap's and put that in the dropdown.
-    * when in ap mode and switching to client, go to ap/sta mode and make sure we can connect first.
-    * let the client know and then reboot
 * logging in should send you to the main control page
-* rgb status should have its own .h/.cpp file
-    * wifi connection status?
 * settings page is ugly af.
     * borders for each config area like channels?
     * side bar that loads each config page?
@@ -23,6 +15,14 @@
     * users group
 * find a way to bubble up setup errors - config, mqtt, etc.
     * use an error log and load it when we login (admin only)
+* wifi improvements:
+    * wifi should reconnect on failure?
+    * wifi authentication fail should default to AP mode
+    * switch to ap/sta mode and scan for list of ap's and put that in the dropdown.
+    * when in ap mode and switching to client, go to ap/sta mode and make sure we can connect first.
+    * let the client know and then reboot
+* rgb status should have its own .h/.cpp file
+    * wifi connection status?
 * generic piezo buzzer support
     * preset tone variables as part of piezo class
     * passive just turns it on/off for the duration of the note
@@ -39,7 +39,7 @@
 
 # BRINEOMATIC
 
-* button colors for relays isnt working.
+* gauges are janky while they load
 * update code for new Rev B board:
     * flowmeter and salinity rename to product_flowmeter and product_salinity
     * add support for brine_flowmeter and brine_salinity

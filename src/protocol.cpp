@@ -1362,7 +1362,7 @@ void generateUpdateJSON(JsonVariant output)
 #endif
 
 #ifdef YB_HAS_RELAY_CHANNELS
-  JsonArray r_channels = output["relay_channels"].to<JsonArray>();
+  JsonArray r_channels = output["relay"].to<JsonArray>();
   for (auto& ch : relay_channels) {
     JsonObject jo = r_channels.add<JsonObject>();
     ch.generateUpdate(jo);
@@ -1370,7 +1370,7 @@ void generateUpdateJSON(JsonVariant output)
 #endif
 
 #ifdef YB_HAS_SERVO_CHANNELS
-  JsonArray s_channels = output["servo_channels"].to<JsonArray>();
+  JsonArray s_channels = output["servo"].to<JsonArray>();
   for (auto& ch : servo_channels) {
     JsonObject jo = s_channels.add<JsonObject>();
     ch.generateUpdate(jo);

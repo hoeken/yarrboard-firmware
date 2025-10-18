@@ -1611,7 +1611,7 @@ function start_websocket() {
       //our relay info
       if (msg.relay) {
         for (ch of msg.relay) {
-          if (current_config.relay[ch.id].enabled) {
+          if (current_config.relay[ch.id - 1].enabled) {
             if (ch.state == "ON") {
               $('#relayState' + ch.id).addClass("btn-success");
               $('#relayState' + ch.id).removeClass("btn-secondary");
@@ -1629,7 +1629,7 @@ function start_websocket() {
       //our servo info
       if (msg.servo) {
         for (ch of msg.servo) {
-          if (current_config.servo[ch.id].enabled) {
+          if (current_config.servo[ch.id - 1].enabled) {
             if (currentServoSliderID != ch.id) {
               $('#servoSlider' + ch.id).val(ch.angle);
               $('#servoAngle' + ch.id).html(`${ch.angle}°`);
