@@ -533,20 +533,30 @@ void PWMChannel::startFade(float duty, int fade_time)
 {
   // is an earlier hardware fade blocking?
   if (!this->isFading) {
-    // track our fade status
-    this->isFading = true;
-
     // setup for our hardware fader
     fade_time = max(1, fade_time);
     const uint32_t start_duty = ledcRead(this->pin);   // start from where you are
     const uint32_t end_duty = (duty * MAX_DUTY_CYCLE); // we need it in native units
+
+    // nothing happening.
+    if (start_duty == end_duty)
+      return;
+
+    unsigned int scaled_fade_time;
+    if (start_duty > end_duty)
+      scaled_fade_time = ((float)(start_duty - end_duty) / (float)MAX_DUTY_CYCLE) * fade_time;
+    else
+      scaled_fade_time = ((float)(end_duty - start_duty) / (float)MAX_DUTY_CYCLE) * fade_time;
+
+    // track our fade status
+    this->isFading = true;
 
     // kicks off fade and registers our ISR + arg (the channel index)
     bool ok = ledcFadeWithInterruptArg(
       this->pin,
       start_duty,
       end_duty,
-      fade_time,
+      scaled_fade_time,
       &PWMChannel::onFadeISR,
       this);
 

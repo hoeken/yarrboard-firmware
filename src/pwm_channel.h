@@ -75,8 +75,8 @@ class PWMChannel : public BaseChannel
     unsigned long dutyCycleIsThrottled = 0;
 
     // fading speeds / duration
-    unsigned int rampOnMillis = 750;
-    unsigned int rampOffMillis = 500;
+    unsigned int rampOnMillis = 1000;
+    unsigned int rampOffMillis = 1000;
 
 #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
     MCP3564Helper* amperageHelper;

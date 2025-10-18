@@ -87,7 +87,6 @@
 # FROTHFET
 
 * fading code
-    * need to adjust fade time to delta between start/end in updateOutput()
     * saveThrottledDutyCycle needs reworked
 * add inrush current to pwm / soft fuse checking - will need a stateChangeTime variable too...
 * convert ADC to continuous interrupt driven style
