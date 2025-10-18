@@ -40,6 +40,7 @@ class PWMChannel : public BaseChannel
       // ISR context — keep it tiny
       auto* self = static_cast<PWMChannel*>(arg);
       self->isFading = false;
+      self->fadeOver = true;
     }
 
   public:
@@ -65,7 +66,8 @@ class PWMChannel : public BaseChannel
     unsigned int softFuseTripCount = 0;
 
     // polled from other code; updated in ISR
-    volatile bool isFading = false;
+    volatile bool isFading = false; // used to check if we're actively fading
+    volatile bool fadeOver = false; // used for running code after a fade
 
     float dutyCycle = 0.0;
     float lastDutyCycle = 0.0;

@@ -161,7 +161,7 @@ void pwm_channels_loop()
   for (auto& ch : pwm_channels) {
     ch.checkStatus();
     ch.saveThrottledDutyCycle();
-    // ch.checkIfFadeOver();
+    ch.checkIfFadeOver();
 
     ch.updateOutputLED();
 
@@ -233,6 +233,7 @@ void PWMChannel::setupLedc()
 {
   // track our fades
   this->isFading = false;
+  this->fadeOver = false;
 
   // initialize our PWM channels
   ledcAttach(this->pin, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION);
@@ -432,21 +433,30 @@ void PWMChannel::checkVoltage()
 
 void PWMChannel::checkFuseBlown()
 {
+  // how should we treat our duty cycle?
+  float duty;
+  if (this->isDimmable)
+    duty = getCurrentDutyCycle();
+  else
+    duty = 1.0;
+
   // we need bus voltage for our calculations.
   // also, it takes a little bit to populate on boot.
-  if (this->status == Status::ON) {
-    // try to "debounce" the on state
-    for (byte i = 0; i < 100; i++) {
-      if (this->voltage >= getBusVoltage() * this->getCurrentDutyCycle() * 0.3)
-        return;
+  if (getBusVoltage() > 0) {
+    if (this->status == Status::ON) {
+      // try to "debounce" the on state
+      for (byte i = 0; i < 10; i++) {
+        if (this->voltage >= getBusVoltage() * duty * 0.3)
+          return;
 
-      vTaskDelay(1);
-      this->voltage = this->getVoltage();
+        vTaskDelay(pdMS_TO_TICKS(10));
+        this->voltage = this->getVoltage();
+      }
+
+      this->status = Status::BLOWN;
+      this->outputState = false;
+      this->updateOutput(false);
     }
-
-    this->status = Status::BLOWN;
-    this->outputState = false;
-    this->updateOutput(false);
   }
 }
 
@@ -459,8 +469,14 @@ void PWMChannel::checkFuseBypassed()
       if (this->voltage < getBusVoltage() * 0.90)
         return;
 
-      vTaskDelay(1);
+      vTaskDelay(pdMS_TO_TICKS(10));
       this->voltage = this->getVoltage();
+    }
+
+    if (this->id == 5) {
+      DUMP(this->getCurrentDutyCycle());
+      DUMP(this->isFading);
+      DUMP(this->voltage);
     }
 
     // dont change our outputState here... bypass can be temporary
@@ -591,50 +607,9 @@ void PWMChannel::requestFade(float duty, int fade_time)
 void PWMChannel::checkIfFadeOver()
 {
   // has our fade ended?
-  if (this->isFading) {
-    if (millis() - this->fadeStartTime >= this->fadeDuration) {
-      // this is a potential bug fix.. had the board "lock" into a fade.
-      // it was responsive but wouldnt toggle some pins.  I think it was this
-      // flag not getting cleared
-      if (this->isFading) {
-        this->isFading = false;
-        Serial.println("error fading");
-      }
-
-      // ignore the zero duty cycle part
-      if (fadeDutyCycleEnd > 0)
-        this->setDuty(fadeDutyCycleEnd);
-      else
-        this->dutyCycle = fadeDutyCycleStart;
-
-      if (fadeDutyCycleEnd == 0) {
-        this->outputState = false;
-        this->status = Status::OFF;
-      } else {
-        this->outputState = true;
-        this->status = Status::ON;
-      }
-    }
-    // okay, update our duty cycle as we go for good UI
-    else {
-      unsigned long nowDelta = millis() - this->fadeStartTime;
-      float dutyDelta = this->fadeDutyCycleEnd - this->fadeDutyCycleStart;
-
-      if (this->fadeDuration > 0) {
-        float currentDuty =
-          this->fadeDutyCycleStart +
-          ((float)nowDelta / (float)this->fadeDuration) * dutyDelta;
-        this->dutyCycle = currentDuty;
-      }
-
-      if (this->dutyCycle == 0) {
-        this->outputState = false;
-        this->status = Status::OFF;
-      } else {
-        this->outputState = true;
-        this->status = Status::ON;
-      }
-    }
+  if (!this->isFading && this->fadeOver) {
+    this->fadeOver = false;
+    this->updateOutput(true);
   }
 }
 
