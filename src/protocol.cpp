@@ -828,7 +828,7 @@ void handleFadePWMChannel(JsonVariantConst input, JsonVariant output)
 
   int fadeDelay = input["millis"] | 0;
 
-  ch->setFade(duty, fadeDelay);
+  ch->requestFade(duty, fadeDelay);
 
   t3 = micros();
 

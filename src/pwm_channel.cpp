@@ -24,8 +24,6 @@ byte _pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_PINS;
 /* Setting PWM Properties */
 // ledc library range is a little bit quirky:
 // https://github.com/espressif/arduino-esp32/issues/5089
-// const unsigned int MAX_DUTY_CYCLE = (int)(pow(2, YB_PWM_CHANNEL_RESOLUTION) -
-// 1);
 const unsigned int MAX_DUTY_CYCLE = (int)(pow(2, YB_PWM_CHANNEL_RESOLUTION));
 
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
@@ -163,7 +161,7 @@ void pwm_channels_loop()
   for (auto& ch : pwm_channels) {
     ch.checkStatus();
     ch.saveThrottledDutyCycle();
-    ch.checkIfFadeOver();
+    // ch.checkIfFadeOver();
 
     ch.updateOutputLED();
 
@@ -204,9 +202,9 @@ void PWMChannel::setup()
       this->dutyCycle = preferences.getFloat(prefIndex);
     else
       this->dutyCycle = 1.0;
-    this->lastDutyCycle = this->dutyCycle;
   } else
     this->dutyCycle = 1.0;
+  this->lastDutyCycle = this->dutyCycle;
 
   // soft fuse trip count
   sprintf(prefIndex, "pwmTripCount%d", this->id);
@@ -274,46 +272,75 @@ void PWMChannel::setupDefaultState()
     this->status = Status::OFF;
   }
 
-  // update our pin, but dont check it yet.
+  // update our pin, but dont check it
   this->updateOutput(false);
 }
 
 void PWMChannel::saveThrottledDutyCycle()
 {
   // after 5 secs of no activity, we can save it.
-  if (this->dutyCycleIsThrottled &&
-      millis() - this->lastDutyCycleUpdate > YB_DUTY_SAVE_TIMEOUT)
+  if (this->dutyCycleIsThrottled && millis() - this->lastDutyCycleUpdate > YB_DUTY_SAVE_TIMEOUT)
     this->setDuty(this->dutyCycle);
+}
+
+float PWMChannel::getCurrentDutyCycle()
+{
+  unsigned int pwm = ledcRead(this->pin);
+  return (float)pwm / (float)MAX_DUTY_CYCLE;
 }
 
 void PWMChannel::updateOutput(bool check_status)
 {
-  // what PWM do we want?
-  int pwm = 0;
-  if (this->isDimmable) {
-    // also adjust for global brightness
-    // TODO: we should add an "output_type" and check if its an LED here?
-    // if (this->type == "light")
-    float duty = min(this->dutyCycle, globalBrightness);
-
-    // okay now get our actual duty
-    pwm = duty * MAX_DUTY_CYCLE;
-  } else
-    pwm = MAX_DUTY_CYCLE;
-
-  // if its off, zero it out
-  if (!this->outputState)
-    pwm = 0;
-
-  // if its tripped, zero it out.
+  // first of all, if its tripped or blown zero it out.
   if (this->status == Status::TRIPPED || this->status == Status::BLOWN) {
     this->outputState = false;
-    pwm = 0;
+    ledcWrite(this->pin, 0);
+    return;
   }
 
-  // okay, set our pin state.
-  if (!this->isFading) {
-    ledcWrite(this->pin, pwm);
+  // regular on/off outputs just do it.
+  if (!this->isDimmable) {
+    if (this->outputState)
+      ledcWrite(this->pin, 1);
+    else
+      ledcWrite(this->pin, 0);
+    return;
+  }
+
+  // for non lights, its simple...just output our duty
+  if (strcmp(this->type, "light")) {
+    int pwm = this->dutyCycle * MAX_DUTY_CYCLE;
+    if (this->outputState)
+      ledcWrite(this->pin, pwm);
+    else
+      ledcWrite(this->pin, 0);
+    return;
+  }
+  // otherwise for lights, we need to deal with brightness, fading, etc.
+  else {
+    float duty = this->dutyCycle;
+
+    // follow our global brightness command
+    duty = min(duty, globalBrightness);
+
+    // okay, set our pin state.
+    if (!this->isFading) {
+      // do we want it on or off?
+      if (this->outputState) {
+        // ramp or no?
+        if (this->rampOnMillis)
+          this->startFade(duty, rampOnMillis);
+        else
+          ledcWrite(this->pin, duty * MAX_DUTY_CYCLE);
+      }
+      // okay, turn it off.
+      else {
+        if (this->rampOffMillis)
+          this->startFade(0, rampOffMillis);
+        else
+          ledcWrite(this->pin, 0);
+      }
+    }
   }
 
   // see what we're working with.
@@ -410,7 +437,7 @@ void PWMChannel::checkFuseBlown()
   if (this->status == Status::ON) {
     // try to "debounce" the on state
     for (byte i = 0; i < 100; i++) {
-      if (this->voltage >= getBusVoltage() * this->dutyCycle * 0.3)
+      if (this->voltage >= getBusVoltage() * this->getCurrentDutyCycle() * 0.3)
         return;
 
       vTaskDelay(1);
@@ -425,7 +452,7 @@ void PWMChannel::checkFuseBlown()
 
 void PWMChannel::checkFuseBypassed()
 {
-  if (this->status != Status::ON && this->status != Status::BYPASSED) {
+  if (this->status != Status::ON && this->status != Status::BYPASSED && !this->isFading) {
     for (byte i = 0; i < 10; i++) {
 
       // voltage needs to be over 90%... otherwise we get false readings when shutting off motors as the voltage collapses
@@ -477,38 +504,39 @@ void PWMChannel::checkSoftFuse()
   }
 }
 
-void PWMChannel::setFade(float duty, int max_fade_time_ms)
+void PWMChannel::startFade(float duty, int fade_time)
 {
-  // is our earlier hardware fade over yet?
+  // is an earlier hardware fade blocking?
   if (!this->isFading) {
-    // dutyCycle is a default - will be non-zero when state is off
-    if (this->outputState)
-      this->fadeDutyCycleStart = this->dutyCycle;
-    else
-      this->fadeDutyCycleStart = 0.0;
 
-    // fading turns on the channel.
-    this->outputState = true;
-    this->status = Status::ON;
+    // // dutyCycle is a default - will be non-zero when state is off
+    // if (this->outputState)
+    //   this->fadeDutyCycleStart = this->dutyCycle;
+    // else
+    //   this->fadeDutyCycleStart = 0.0;
+
+    // // fading turns on the channel.
+    // this->outputState = true;
+    // this->status = Status::ON;
 
     // some vars for tracking.
     this->isFading = true;
 
-    this->fadeDutyCycleEnd = duty;
-    this->fadeStartTime = millis();
-    this->fadeDuration = max_fade_time_ms + 100;
+    // this->fadeDutyCycleEnd = duty;
+    // this->fadeStartTime = millis();
+    // this->fadeDuration = fade_time + 100;
 
-    // call our hardware fader
-    const int ch = this->id - 1;
-    int target_duty = duty * MAX_DUTY_CYCLE;
-    const uint32_t start_duty = ledcRead(this->pin); // current duty counts
+    // setup for our hardware fader
+    fade_time = max(1, fade_time);
+    const uint32_t start_duty = ledcRead(this->pin);   // start from where you are
+    const uint32_t end_duty = (duty * MAX_DUTY_CYCLE); // we need it in native units
 
     // kicks off fade and registers our ISR + arg (the channel index)
     bool ok = ledcFadeWithInterruptArg(
       this->pin,
       start_duty,
-      target_duty,
-      max_fade_time_ms,
+      end_duty,
+      fade_time,
       &PWMChannel::onFadeISR,
       this);
 
@@ -517,6 +545,47 @@ void PWMChannel::setFade(float duty, int max_fade_time_ms)
       this->isFading = false;
     }
   }
+}
+
+void PWMChannel::requestFade(float duty, int fade_time)
+{
+  // // is an earlier hardware fade blocking?
+  // if (!this->isFading) {
+  //   // dutyCycle is a default - will be non-zero when state is off
+  //   if (this->outputState)
+  //     this->fadeDutyCycleStart = this->dutyCycle;
+  //   else
+  //     this->fadeDutyCycleStart = 0.0;
+
+  //   // fading turns on the channel.
+  //   this->outputState = true;
+  //   this->status = Status::ON;
+
+  //   // some vars for tracking.
+  //   this->isFading = true;
+
+  //   this->fadeDutyCycleEnd = duty;
+  //   this->fadeStartTime = millis();
+  //   this->fadeDuration = fade_time + 100;
+
+  //   // call our hardware fader
+  //   int target_duty = duty * MAX_DUTY_CYCLE;
+  //   const uint32_t start_duty = ledcRead(this->pin); // current duty counts
+
+  //   // kicks off fade and registers our ISR + arg (the channel index)
+  //   bool ok = ledcFadeWithInterruptArg(
+  //     this->pin,
+  //     start_duty,
+  //     target_duty,
+  //     fade_time,
+  //     &PWMChannel::onFadeISR,
+  //     this);
+
+  //   // if it failed, clear flag and handle your error path (log, retry, etc.)
+  //   if (!ok) {
+  //     this->isFading = false;
+  //   }
+  // }
 }
 
 void PWMChannel::checkIfFadeOver()
@@ -575,6 +644,7 @@ void PWMChannel::setDuty(float duty)
 
   // it only makes sense to change it to non-zero.
   if (this->dutyCycle > 0) {
+    // only if we have changed
     if (this->dutyCycle != this->lastDutyCycle) {
       // we don't want to swamp the flash
       if (millis() - this->lastDutyCycleUpdate > YB_DUTY_SAVE_TIMEOUT) {

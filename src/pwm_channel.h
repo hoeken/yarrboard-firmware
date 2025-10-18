@@ -72,6 +72,8 @@ class PWMChannel : public BaseChannel
     unsigned long lastDutyCycleUpdate = 0;
     unsigned long dutyCycleIsThrottled = 0;
 
+    unsigned int rampOnMillis = 750;
+    unsigned int rampOffMillis = 500;
     bool fadeRequested = false;
     unsigned long fadeStartTime = 0;
     unsigned long fadeDuration = 0;
@@ -111,6 +113,7 @@ class PWMChannel : public BaseChannel
     void setupOffset();
     void setupDefaultState();
     void saveThrottledDutyCycle();
+    float getCurrentDutyCycle();
 
     void updateOutput(bool check_status = false);
     void checkStatus();
@@ -130,7 +133,8 @@ class PWMChannel : public BaseChannel
     void setState(const char* state);
     void setState(bool newState);
 
-    void setFade(float duty, int max_fade_time_ms);
+    void requestFade(float duty, int fade_time);
+    void startFade(float duty, int fade_time);
     void setDuty(float duty);
     void calculateAverages(unsigned int delta);
     const char* getStatus();
