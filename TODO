@@ -2,6 +2,13 @@
 
 # v2.0.0 Release
 
+* update ADCHelper
+    * add local RunningAverage class w/ ring buffer that supports data + timestamp for time based averaging
+    * add getAverageReading()
+    * add getLatestReading()
+    * split into blocking / non blocking code
+    * add callback ability that triggers on pin interrupt to load a value
+    * update calling code to use either blocking or nonblocking code
 * logging in should send you to the main control page
 * settings page is ugly af.
     * borders for each config area like channels?
@@ -89,9 +96,10 @@
 
 # FROTHFET
 
-* add gamma correction to pwm width if its a light
 * fading code
+    * add gamma support to fade code
     * saveThrottledDutyCycle needs reworked
+    * remove / fix blown fuse detection for low value duty cycles
 * add inrush current to pwm / soft fuse checking - will need a stateChangeTime variable too...
 * convert ADC to continuous interrupt driven style
 * add temperature, vdd support to adc library
@@ -131,5 +139,6 @@
         * javascript side: javascript include with lots of callbacks?
         * html???
 
+# B&G MFD Dev Info
 B&G : User Agent: Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/5.12.9 Chrome/69.0.3497.128 Safari/537.36
 https://ungoogled-software.github.io/ungoogled-chromium-binaries/releases/linux_portable/64bit/

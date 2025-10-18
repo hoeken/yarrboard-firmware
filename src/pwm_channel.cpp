@@ -324,6 +324,15 @@ void PWMChannel::updateOutput(bool check_status)
     // follow our global brightness command
     duty = min(duty, globalBrightness);
 
+    // duty constraints 0....1
+    duty = max(0.0f, duty);
+    duty = min(1.0f, duty);
+
+    Serial.printf("duty: %.3f gamma: %.3f\n", duty, powf(duty, 2.2));
+
+    // apply a gamma correction to our brightness.
+    duty = powf(duty, 2.2);
+
     // okay, set our pin state.
     if (!this->isFading) {
       // do we want it on or off?
