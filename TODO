@@ -5,6 +5,10 @@
 * wifi improvements:
     * wifi should reconnect on failure?
     * wifi authentication fail should default to AP mode
+    * switch to ap/sta mode and scan for list of ap's and put that in the dropdown.
+    * when in ap mode and switching to client, go to ap/sta mode and make sure we can connect first.
+    * let the client know and then reboot
+* logging in should send you to the main control page
 * rgb status should have its own .h/.cpp file
     * wifi connection status?
 * settings page is ugly af.
@@ -18,7 +22,7 @@
     * wifi group
     * users group
 * find a way to bubble up setup errors - config, mqtt, etc.
-    * keep an error log?
+    * use an error log and load it when we login (admin only)
 * generic piezo buzzer support
     * preset tone variables as part of piezo class
     * passive just turns it on/off for the duration of the note
@@ -31,8 +35,7 @@
     * consolidate all the server side error checking to a single place aka parseConfig()
     * save if no errors.
     * add edit key for each channel
-* update/fix the release script for ota
-
+* test/update/fix the release script for ota
 
 # BRINEOMATIC
 
