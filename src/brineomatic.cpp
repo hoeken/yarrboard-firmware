@@ -140,11 +140,12 @@ void brineomatic_setup()
   strncpy(wm.coolingFan->defaultState, "OFF", sizeof(wm.coolingFan->defaultState));
   strncpy(wm.coolingFan->type, "fan", sizeof(wm.coolingFan->type));
 
-  wm.boostPump = &relay_channels[3];
-  wm.boostPump->setName("Boost Pump");
-  wm.boostPump->setKey("boost_pump");
-  strncpy(wm.boostPump->defaultState, "OFF", sizeof(wm.boostPump->defaultState));
-  strncpy(wm.boostPump->type, "water_pump", sizeof(wm.boostPump->type));
+  // disabled until we implement config xml
+  // wm.boostPump = &relay_channels[3];
+  // wm.boostPump->setName("Boost Pump");
+  // wm.boostPump->setKey("boost_pump");
+  // strncpy(wm.boostPump->defaultState, "OFF", sizeof(wm.boostPump->defaultState));
+  // strncpy(wm.boostPump->type, "water_pump", sizeof(wm.boostPump->type));
 
   wm.diverterValve = &servo_channels[0];
   wm.diverterValve->setName("Diverter Valve");
