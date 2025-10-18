@@ -441,7 +441,7 @@ void PWMChannel::checkFuseBlown()
     duty = 1.0;
 
   float busVoltage = getBusVoltage();
-  float minVoltage = busVoltage * duty * 0.5;
+  float minVoltage = busVoltage * duty * 0.3;
 
   // we need bus voltage for our calculations.
   // also, it takes a little bit to populate on boot.
