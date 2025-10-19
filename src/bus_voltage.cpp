@@ -55,8 +55,6 @@ float getBusVoltage()
 {
   float voltage = busADC->getAverageVoltage();
 
-  busADC->resetAverage();
-
   return voltage / (YB_BUS_VOLTAGE_R2 / (YB_BUS_VOLTAGE_R2 + YB_BUS_VOLTAGE_R1));
 }
 

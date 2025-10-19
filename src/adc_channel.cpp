@@ -102,9 +102,9 @@ void ADCChannel::setup()
 {
   #ifdef YB_ADC_DRIVER_ADS1115
   if (this->id <= 4)
-    this->adcHelper = new ADS1115Helper(YB_ADC_VREF, this->id - 1, &_adcVoltageADS1115_1);
+    this->adcHelper = new ADS1115Helper(YB_ADC_VREF, this->id - 1, &_adcVoltageADS1115_1, 32);
   else
-    this->adcHelper = new ADS1115Helper(YB_ADC_VREF, this->id - 5, &_adcVoltageADS1115_2);
+    this->adcHelper = new ADS1115Helper(YB_ADC_VREF, this->id - 5, &_adcVoltageADS1115_2, 32);
   #endif
 }
 
@@ -121,11 +121,6 @@ unsigned int ADCChannel::getReading()
 float ADCChannel::getVoltage()
 {
   return this->adcHelper->getAverageVoltage();
-}
-
-void ADCChannel::resetAverage()
-{
-  this->adcHelper->resetAverage();
 }
 
 float ADCChannel::getTypeValue()

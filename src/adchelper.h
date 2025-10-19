@@ -9,6 +9,7 @@
 #ifndef YARR_ADC_H
 #define YARR_ADC_H
 
+#include "RollingAverage.h"
 #include <ADS1X15.h>
 #include <Arduino.h>
 #include <MCP342x.h>
@@ -18,11 +19,14 @@
 
 #include "config.h"
 
+#ifndef RA_DEFAULT_SIZE
+  #define RA_DEFAULT_SIZE 16
+#endif
+
 class ADCHelper
 {
   public:
-    ADCHelper();
-    ADCHelper(float vref, uint8_t resolution);
+    ADCHelper(float vref, uint8_t resolution, uint16_t samples = RA_DEFAULT_SIZE);
 
     bool requestReading(uint8_t channel);
     bool isReady();
@@ -37,14 +41,13 @@ class ADCHelper
   private:
     float vref = 0.0;
     uint8_t resolution;
-    RunningAverage runningAverage;
+    RollingAverage runningAverage;
 };
 
 class esp32Helper : public ADCHelper
 {
   public:
-    esp32Helper();
-    esp32Helper(float vref, uint8_t channel);
+    esp32Helper(float vref, uint8_t channel, uint16_t samples = RA_DEFAULT_SIZE);
     unsigned int getReading();
     float toVoltage(unsigned int reading);
 
@@ -55,7 +58,7 @@ class esp32Helper : public ADCHelper
 class MCP3425Helper : public ADCHelper
 {
   public:
-    MCP3425Helper(MCP342x::Config& config, float vref, MCP342x* adc);
+    MCP3425Helper(MCP342x::Config& config, float vref, MCP342x* adc, uint16_t samples = RA_DEFAULT_SIZE);
     unsigned int getReading();
     void setup();
 
@@ -68,8 +71,7 @@ class MCP3425Helper : public ADCHelper
 class MCP3564Helper : public ADCHelper
 {
   public:
-    MCP3564Helper();
-    MCP3564Helper(float vref, uint8_t channel, MCP3564* adc);
+    MCP3564Helper(float vref, uint8_t channel, MCP3564* adc, uint16_t samples = RA_DEFAULT_SIZE);
     unsigned int getReading();
     float toVoltage(unsigned int reading);
 
@@ -82,8 +84,7 @@ class MCP3564Helper : public ADCHelper
 class ADS1115Helper : public ADCHelper
 {
   public:
-    ADS1115Helper();
-    ADS1115Helper(float vref, uint8_t channel, ADS1115* adc);
+    ADS1115Helper(float vref, uint8_t channel, ADS1115* adc, uint16_t samples = RA_DEFAULT_SIZE);
     bool requestReading(uint8_t channel);
     bool isReady();
     unsigned int getReading();

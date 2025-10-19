@@ -8,11 +8,9 @@
 
 #include "adchelper.h"
 
-ADCHelper::ADCHelper() : vref(3.3), resolution(12), runningAverage(10)
-{
-}
-
-ADCHelper::ADCHelper(float vref, uint8_t resolution) : vref(vref), resolution(resolution), runningAverage(10)
+ADCHelper::ADCHelper(float vref, uint8_t resolution, uint16_t samples) : vref(vref),
+                                                                         resolution(resolution),
+                                                                         runningAverage(samples)
 {
 }
 
@@ -31,10 +29,7 @@ float ADCHelper::getVoltage() { return this->toVoltage(this->getReading()); }
 
 float ADCHelper::getAverageReading()
 {
-  // Serial.printf("Reading Count: %d\n", this->readingCount);
-  // Serial.printf("Cumulative Readings: %d\n", this->cumulativeReadings);
-
-  return this->runningAverage.getAverage();
+  return this->runningAverage.average();
 }
 
 float ADCHelper::getAverageVoltage()
@@ -44,8 +39,7 @@ float ADCHelper::getAverageVoltage()
 
 void ADCHelper::resetAverage()
 {
-  if (this->runningAverage.getCount() > 10)
-    this->runningAverage.clear();
+  // this->runningAverage.clear();
 }
 
 float ADCHelper::toVoltage(unsigned int reading)
@@ -57,9 +51,8 @@ float ADCHelper::toVoltage(unsigned int reading)
   return (float)reading * this->vref / (float)(pow(2, this->resolution) - 1);
 }
 
-esp32Helper::esp32Helper() : ADCHelper::ADCHelper() {}
-esp32Helper::esp32Helper(float vref, uint8_t channel)
-    : ADCHelper::ADCHelper(vref, 12)
+esp32Helper::esp32Helper(float vref, uint8_t channel, uint16_t samples)
+    : ADCHelper::ADCHelper(vref, 12, samples)
 {
   this->channel = channel;
 }
@@ -77,12 +70,9 @@ float esp32Helper::toVoltage(unsigned int reading)
   return (float)reading / 1000.0;
 }
 
-MCP3564Helper::MCP3564Helper() : ADCHelper::ADCHelper() {}
-MCP3564Helper::MCP3564Helper(float vref, uint8_t channel, MCP3564* adc)
-    : ADCHelper::ADCHelper(vref, 24)
+MCP3564Helper::MCP3564Helper(float vref, uint8_t channel, MCP3564* adc, uint16_t samples)
+    : ADCHelper::ADCHelper(vref, 24, samples), channel(channel), adc(adc)
 {
-  this->channel = channel;
-  this->adc = adc;
 }
 
 unsigned int MCP3564Helper::getReading()
@@ -99,8 +89,8 @@ float MCP3564Helper::toVoltage(unsigned int reading)
   return reading * this->adc->getReference() / (this->adc->getMaxValue() / 2);
 }
 
-MCP3425Helper::MCP3425Helper(MCP342x::Config& config, float vref, MCP342x* adc)
-    : ADCHelper::ADCHelper(vref, 15), adc(adc), config(config)
+MCP3425Helper::MCP3425Helper(MCP342x::Config& config, float vref, MCP342x* adc, uint16_t samples)
+    : ADCHelper::ADCHelper(vref, 15, samples), adc(adc), config(config)
 {
 }
 
@@ -142,12 +132,9 @@ unsigned int MCP3425Helper::getReading()
   return value;
 }
 
-ADS1115Helper::ADS1115Helper() : ADCHelper::ADCHelper() {}
-ADS1115Helper::ADS1115Helper(float vref, uint8_t channel, ADS1115* adc)
-    : ADCHelper::ADCHelper(vref, 15)
+ADS1115Helper::ADS1115Helper(float vref, uint8_t channel, ADS1115* adc, uint16_t samples)
+    : ADCHelper::ADCHelper(vref, 15, samples), adc(adc), channel(channel)
 {
-  this->channel = channel;
-  this->adc = adc;
 }
 
 bool ADS1115Helper::requestReading(uint8_t channel)

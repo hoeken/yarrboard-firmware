@@ -59,7 +59,6 @@ class ADCChannel : public BaseChannel
     void update();
     unsigned int getReading();
     float getVoltage();
-    void resetAverage();
 
     float getTypeValue();
     const char* getTypeUnits();

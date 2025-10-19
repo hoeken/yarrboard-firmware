@@ -3,12 +3,19 @@
 # v2.0.0 Release
 
 * update ADCHelper
-    * add local RunningAverage class w/ ring buffer that supports data + timestamp for time based averaging
-    * add getAverageReading()
-    * add getLatestReading()
-    * split into blocking / non blocking code
-    * add callback ability that triggers on pin interrupt to load a value
-    * update calling code to use either blocking or nonblocking code
+    * getBlockingReading() - get a fresh new reading by calling request, waiting, then load
+    * getLatestReading() - get the most recent reading from the adc
+    * getAverageReading() - get the average reading from the adc
+    * requestReading() - start a new conversion on the adc
+    * loadReading() - read the reading from the adc
+    * onLoop() - handle our logic for polling or interrupt and then calling loadReading()
+    * add setupReadyPinInterrupt(pin, mode)
+        * for adcs that have an interrupt pin
+        * isr function sets the isReady flag
+        * load reading clears the isReady flag
+    * update calling code:
+        * use either blocking, nonblocking, or average code
+        * update to call onLoop() for each ADCHelper
 * logging in should send you to the main control page
 * settings page is ugly af.
     * borders for each config area like channels?
