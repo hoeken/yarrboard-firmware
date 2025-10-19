@@ -35,13 +35,24 @@ class PWMChannel : public BaseChannel
 
     byte pin = 0;
 
-    static void ARDUINO_ISR_ATTR onFadeISR(void* arg)
-    {
-      // ISR context — keep it tiny
-      auto* self = static_cast<PWMChannel*>(arg);
-      self->isFading = false;
-      self->fadeOver = true;
-    }
+    struct GammaState {
+        uint8_t pin = 255;
+        uint8_t idx = 0;
+        int step_ms = 0;
+        int last_ms = 0;
+        etl::array<uint32_t, 16> targets;
+        void (*user_cb)(void*) = nullptr;
+        void* user_arg = nullptr;
+        bool active = false;
+    } gamma;
+
+    // Gamma aware led fading: same signature as ledcFadeWithInterruptArg
+    bool gammaFadeWithInterrupt(uint8_t pin_,
+      uint32_t start_duty,
+      uint32_t end_duty,
+      int total_ms,
+      void (*final_cb)(void*),
+      void* final_arg);
 
   public:
     /**
@@ -145,6 +156,38 @@ class PWMChannel : public BaseChannel
     void haPublishAvailable();
     void haPublishState();
     void haHandleCommand(const char* topic, const char* payload);
+
+    static void ARDUINO_ISR_ATTR onFadeISR(void* arg)
+    {
+      // ISR context — keep it tiny
+      auto* self = static_cast<PWMChannel*>(arg);
+      self->isFading = false;
+      self->fadeOver = true;
+    }
+
+    // ISR (Arduino style)
+    static void ARDUINO_ISR_ATTR gammaISR(void* arg)
+    {
+      auto* S = static_cast<GammaState*>(arg);
+      if (!S || !S->active)
+        return;
+
+      constexpr uint8_t SEGMENTS = 16;
+
+      if (S->idx + 1 < SEGMENTS) {
+        const uint32_t from = S->targets[S->idx];
+        const uint32_t to = S->targets[S->idx + 1];
+        const bool lastSeg = (S->idx + 1 == SEGMENTS - 1);
+        const int dur_ms = lastSeg ? S->last_ms : S->step_ms;
+        S->idx++;
+        ledcFadeWithInterruptArg(S->pin, from, to, dur_ms, &PWMChannel::gammaISR, S);
+      } else {
+        // done → call user’s final ISR
+        S->active = false;
+        if (S->user_cb)
+          S->user_cb(S->user_arg);
+      }
+    }
 };
 
 extern etl::array<PWMChannel, YB_PWM_CHANNEL_COUNT> pwm_channels;

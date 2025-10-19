@@ -97,7 +97,6 @@
 # FROTHFET
 
 * fading code
-    * add gamma support to fade code
     * saveThrottledDutyCycle needs reworked
     * remove / fix blown fuse detection for low value duty cycles
 * add inrush current to pwm / soft fuse checking - will need a stateChangeTime variable too...

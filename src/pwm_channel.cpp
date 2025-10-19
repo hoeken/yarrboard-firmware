@@ -559,7 +559,8 @@ void PWMChannel::startFade(float duty, int fade_time)
     this->isFading = true;
 
     // kicks off fade and registers our ISR + arg (the channel index)
-    bool ok = ledcFadeWithInterruptArg(
+    // bool ok = ledcFadeWithInterruptArg(
+    bool ok = gammaFadeWithInterrupt(
       this->pin,
       start_duty,
       end_duty,
@@ -572,6 +573,62 @@ void PWMChannel::startFade(float duty, int fade_time)
       this->isFading = false;
     }
   }
+}
+
+bool PWMChannel::gammaFadeWithInterrupt(
+  uint8_t pin_,
+  uint32_t start_duty,
+  uint32_t end_duty,
+  int total_ms,
+  void (*final_cb)(void*),
+  void* final_arg)
+{
+  constexpr uint8_t SEGMENTS = 16;
+  constexpr float GAMMA = 2.2f;
+  constexpr uint32_t MAX_DUTY = (1u << YB_PWM_CHANNEL_RESOLUTION) - 1; // 13-bit LEDC
+
+  if (total_ms <= 0)
+    total_ms = 1;
+
+  gamma.pin = pin_;
+  gamma.idx = 0;
+  gamma.user_cb = final_cb;
+  gamma.user_arg = final_arg;
+  gamma.active = true;
+
+  // even timing; remainder to last segment
+  gamma.step_ms = (SEGMENTS > 1) ? (total_ms / SEGMENTS) : total_ms;
+  if (gamma.step_ms <= 0)
+    gamma.step_ms = 1;
+  gamma.last_ms = total_ms - gamma.step_ms * (SEGMENTS - 1);
+  if (gamma.last_ms <= 0)
+    gamma.last_ms = gamma.step_ms;
+
+  // precompute gamma-corrected target duties
+  const float b0 = powf((float)start_duty / (float)MAX_DUTY, 1.0f / GAMMA);
+  const float b1 = powf((float)end_duty / (float)MAX_DUTY, 1.0f / GAMMA);
+
+  for (uint8_t i = 0; i < SEGMENTS; ++i) {
+    const float t = (float)(i + 1) / (float)SEGMENTS;
+    float bp = b0 + (b1 - b0) * t;
+    if (bp < 0)
+      bp = 0;
+    else if (bp > 1)
+      bp = 1;
+    const float pf = powf(bp, GAMMA);
+    gamma.targets[i] = (uint32_t)lroundf(pf * (float)MAX_DUTY);
+  }
+
+  const uint32_t first_to = gamma.targets[0];
+  const int first_ms = gamma.step_ms;
+
+  // start first segment — our ISR chains the rest
+  return ledcFadeWithInterruptArg(pin_,
+    start_duty,
+    first_to,
+    first_ms,
+    &PWMChannel::gammaISR,
+    &gamma);
 }
 
 void PWMChannel::checkIfFadeOver()
