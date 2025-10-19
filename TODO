@@ -3,18 +3,18 @@
 # v2.0.0 Release
 
 * update ADCHelper
-    * getBlockingReading() - get a fresh new reading by calling request, waiting, then load
-    * getLatestReading() - get the most recent reading from the adc
-    * getAverageReading() - get the average reading from the adc
-    * requestReading() - start a new conversion on the adc
-    * loadReading() - read the reading from the adc
-    * onLoop() - handle our logic for polling or interrupt and then calling loadReading()
-    * add setupReadyPinInterrupt(pin, mode)
+    * getNewReading() - get a fresh new reading by calling request, waiting, then load
+    * setupReadyPinInterrupt(pin, mode)
         * for adcs that have an interrupt pin
         * isr function sets the isReady flag
         * load reading clears the isReady flag
+        * request reading should also clear the isReady flag
+    * finish MCP3425Helper
+    * finish MCP3564Helper
     * update calling code:
-        * use either blocking, nonblocking, or average code
+        * choose which get* function to use
+        * update adcHelper instanciation
+        * add _adcChannel to classes where necessary
         * update to call onLoop() for each ADCHelper
 * logging in should send you to the main control page
 * settings page is ugly af.

@@ -16,10 +16,10 @@
 etl::array<ADCChannel, YB_ADC_CHANNEL_COUNT> adc_channels;
 
   #ifdef YB_ADC_DRIVER_ADS1115
-byte ads1_channel = 0;
-byte ads2_channel = 0;
 ADS1115 _adcVoltageADS1115_1(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_1);
 ADS1115 _adcVoltageADS1115_2(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_2);
+ADS1115Helper* adcHelper1;
+ADS1115Helper* adcHelper2;
   #elif defined YB_ADC_DRIVER_MCP3564
 MCP3564 _adcAnalogMCP3564(YB_ADC_CS, &SPI, YB_ADC_MOSI, YB_ADC_MISO, YB_ADC_SCK);
   #endif
@@ -59,6 +59,9 @@ void adc_channels_setup()
   _adcVoltageADS1115_2.setDataRate(5);
   _adcVoltageADS1115_2.requestADC(0); // trigger first read
 
+  adcHelper1 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_1);
+  adcHelper2 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_2);
+
   #elif defined(YB_ADC_DRIVER_MCP3564)
 
   _adcAnalogMCP3564.singleEndedMode();
@@ -74,23 +77,8 @@ void adc_channels_setup()
 void adc_channels_loop()
 {
   #ifdef YB_ADC_DRIVER_ADS1115
-
-  if (!_adcVoltageADS1115_1.isBusy()) {
-    adc_channels[ads1_channel].adcHelper->getReading();
-
-    // next channel
-    ads1_channel = (ads1_channel + 1) & 0x03; // 0..3
-    adc_channels[ads1_channel].adcHelper->requestReading(ads1_channel);
-  }
-
-  if (!_adcVoltageADS1115_2.isBusy()) {
-    adc_channels[ads2_channel + 4].adcHelper->getReading();
-
-    // next channel
-    ads2_channel = (ads2_channel + 1) & 0x03; // 0..3
-    adc_channels[ads2_channel + 4].adcHelper->requestReading(ads2_channel);
-  }
-
+  adcHelper1->onLoop();
+  adcHelper2->onLoop();
   #else
   // maintenance on our channels.
   for (auto& ch : adc_channels)
@@ -101,26 +89,28 @@ void adc_channels_loop()
 void ADCChannel::setup()
 {
   #ifdef YB_ADC_DRIVER_ADS1115
-  if (this->id <= 4)
-    this->adcHelper = new ADS1115Helper(YB_ADC_VREF, this->id - 1, &_adcVoltageADS1115_1, 32);
-  else
-    this->adcHelper = new ADS1115Helper(YB_ADC_VREF, this->id - 5, &_adcVoltageADS1115_2, 32);
+  if (this->id <= 4) {
+    this->adcHelper = adcHelper1;
+    _adcChannel = this->id - 1;
+  } else {
+    this->adcHelper = adcHelper2;
+    _adcChannel = this->id - 5;
+  }
   #endif
 }
 
 void ADCChannel::update()
 {
-  this->adcHelper->getReading();
 }
 
 unsigned int ADCChannel::getReading()
 {
-  return this->adcHelper->getAverageReading();
+  return this->adcHelper->getAverageReading(_adcChannel);
 }
 
 float ADCChannel::getVoltage()
 {
-  return this->adcHelper->getAverageVoltage();
+  return this->adcHelper->getAverageVoltage(_adcChannel);
 }
 
 float ADCChannel::getTypeValue()

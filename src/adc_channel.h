@@ -81,6 +81,8 @@ class ADCChannel : public BaseChannel
     char ha_topic_value[128];
     char ha_topic_avail[128];
 
+    uint8_t _adcChannel = 0;
+
     void _sortAndDedupeCalibrationTable();
 };
 
