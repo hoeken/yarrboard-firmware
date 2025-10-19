@@ -25,6 +25,11 @@ void ADCHelper::requestADCReading(uint8_t channel) {}
 bool ADCHelper::isADCReady() { return false; }
 unsigned int ADCHelper::loadReadingFromADC(uint8_t channel) { return 0; }
 
+unsigned int ADCHelper::getReadingCount(uint8_t channel)
+{
+  return _averages[channel].count();
+}
+
 unsigned int ADCHelper::getLatestReading(uint8_t channel)
 {
   if (channel >= _totalChannels)

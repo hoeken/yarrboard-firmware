@@ -44,8 +44,16 @@ void adc_channels_setup()
   // BASIC CONFIG
   _adcVoltageADS1115_1.setMode(ADS1X15_MODE_SINGLE);
   _adcVoltageADS1115_1.setGain(1);
-  _adcVoltageADS1115_1.setDataRate(5);
+  _adcVoltageADS1115_1.setDataRate(4);
   _adcVoltageADS1115_1.requestADC(0); // trigger first read
+
+  adcHelper1 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_1);
+
+  // _adcVoltageADS1115_1.setComparatorThresholdLow(0x0000);
+  // _adcVoltageADS1115_1.setComparatorThresholdHigh(0x8000);
+  // _adcVoltageADS1115_1.setComparatorQueConvert(0); //  enable RDY pin !!
+  // _adcVoltageADS1115_1.setComparatorLatch(0);
+  // adcHelper1->attachReadyPinInterrupt(YB_ADS1115_READY_PIN_1, FALLING);
 
   _adcVoltageADS1115_2.begin();
   if (_adcVoltageADS1115_2.isConnected())
@@ -56,11 +64,18 @@ void adc_channels_setup()
   // BASIC CONFIG
   _adcVoltageADS1115_2.setMode(ADS1X15_MODE_SINGLE);
   _adcVoltageADS1115_2.setGain(1);
-  _adcVoltageADS1115_2.setDataRate(5);
-  _adcVoltageADS1115_2.requestADC(0); // trigger first read
+  _adcVoltageADS1115_2.setDataRate(4);
 
-  adcHelper1 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_1);
   adcHelper2 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_2);
+
+    // adcHelper2->attachReadyPinInterrupt(YB_ADS1115_READY_PIN_2, FALLING);
+    // _adcVoltageADS1115_2.setComparatorThresholdLow(0x0000);
+    // _adcVoltageADS1115_2.setComparatorThresholdHigh(0x8000);
+    // _adcVoltageADS1115_2.setComparatorQueConvert(0);
+    // _adcVoltageADS1115_2.setComparatorPolarity(0);
+    // _adcVoltageADS1115_2.setComparatorLatch(0);
+    // _adcVoltageADS1115_2.setComparatorMode(0);
+    // _adcVoltageADS1115_2.requestADC(0); // trigger first read
 
   #elif defined(YB_ADC_DRIVER_MCP3564)
 
@@ -302,9 +317,6 @@ bool ADCChannel::parseCalibrationTableJson(JsonVariantConst tv)
 
   // Accept either "table" (preferred compact array) or "points" (object list)
   bool foundAny = false;
-
-  // // 1) Preferred: "table": [ [v, y], ... ]
-  // JsonVariantConst tv = root["table"]; // may be unbound (missing key)
 
   if (tv.is<JsonVariantConst>()) {
     // Key exists: validate it's an array
