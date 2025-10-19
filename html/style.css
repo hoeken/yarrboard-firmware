@@ -76,6 +76,10 @@ tr.pwmRow #statsTable tbody tr {
     font-size: 1.3rem !important;
 }
 
+.pwmButton .pwmDutySlider {
+    height: 75px;
+}
+
 .pwmData {
     width: 70px;
     font-size: 1rem !important;
@@ -104,6 +108,10 @@ tr.pwmRow #statsTable tbody tr {
     .pwmButton {
         height: 70px;
         font-size: 1.1rem !important;
+    }
+
+    .pwmButton .pwmDutySlider {
+        height: 50px;
     }
 
     .pwmData {

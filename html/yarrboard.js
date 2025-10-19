@@ -219,7 +219,7 @@ const PWMControlCard = (ch) => `
             <tbody>
               <tr>
                 <td id="pwmDutySliderControl${ch.id}" class="pe-4" style="display: none">
-                  <input type="range" min="0" max="100" id="pwmDutySlider${ch.id}" orient="vertical" style="height: 75px">
+                  <input class="pwmDutySlider" type="range" min="0" max="100" id="pwmDutySlider${ch.id}" orient="vertical">
                 </td>
                 <td class="pwmIcon text-center align-middle pe-2">
                   ${pwm_type_images[ch.type]}
