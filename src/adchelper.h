@@ -25,8 +25,13 @@ class ADCHelper
   public:
     ADCHelper(uint8_t channels, float vref, uint8_t resolution, uint16_t samples = RA_DEFAULT_SIZE, uint32_t window_ms = RA_DEFAULT_WINDOW);
 
-    // unsigned int getNewReading(uint8_t channel);
-    // float getNewVoltage(uint8_t channel);
+    // non copyable.
+    virtual ~ADCHelper() = default;
+    ADCHelper(const ADCHelper&) = delete;
+    ADCHelper& operator=(const ADCHelper&) = delete;
+
+    unsigned int getNewReading(uint8_t channel);
+    float getNewVoltage(uint8_t channel);
 
     unsigned int getReadingCount(uint8_t channel);
     unsigned int getLatestReading(uint8_t channel);
@@ -54,7 +59,7 @@ class ADCHelper
 
     virtual void requestADCReading(uint8_t channel);
     virtual bool isADCReady();
-    void loadReading(uint8_t channel);
+    unsigned int loadReading(uint8_t channel);
     virtual unsigned int loadReadingFromADC(uint8_t channel);
 
     static void ARDUINO_ISR_ATTR onReadyISR(void* arg)
@@ -77,41 +82,30 @@ class ADS1115Helper : public ADCHelper
     ADS1115* _adc;
 };
 
-// class esp32Helper : public ADCHelper
-// {
-//   public:
-//     esp32Helper(float vref, uint8_t channel, uint16_t samples = RA_DEFAULT_SIZE);
-//     unsigned int getReading();
-//     float toVoltage(unsigned int reading);
+class MCP3425Helper : public ADCHelper
+{
+  public:
+    MCP3425Helper(MCP342x::Config& config, float vref, MCP342x* adc, uint16_t samples = RA_DEFAULT_SIZE, uint32_t window_ms = RA_DEFAULT_WINDOW);
+    void requestADCReading(uint8_t channel) override;
+    bool isADCReady() override;
+    unsigned int loadReadingFromADC(uint8_t channel) override;
 
-//   private:
-//     uint8_t channel;
-// };
+  private:
+    MCP342x* _adc;
+    MCP342x::Config _config;
+};
 
-// class MCP3425Helper : public ADCHelper
-// {
-//   public:
-//     MCP3425Helper(MCP342x::Config& config, float vref, MCP342x* adc, uint16_t samples = RA_DEFAULT_SIZE);
-//     unsigned int getReading();
-//     void setup();
+class MCP3564Helper : public ADCHelper
+{
+  public:
+    MCP3564Helper(float vref, MCP3564* adc, uint16_t samples = RA_DEFAULT_SIZE, uint32_t window_ms = RA_DEFAULT_WINDOW);
+    void requestADCReading(uint8_t channel) override;
+    bool isADCReady() override;
+    unsigned int loadReadingFromADC(uint8_t channel) override;
 
-//   private:
-//     MCP342x* adc;
-//     bool start_conversion = false;
-//     MCP342x::Config config;
-// };
-
-// class MCP3564Helper : public ADCHelper
-// {
-//   public:
-//     MCP3564Helper(float vref, uint8_t channel, MCP3564* adc, uint16_t samples = RA_DEFAULT_SIZE);
-//     unsigned int getReading();
-//     float toVoltage(unsigned int reading);
-
-//   private:
-//     unsigned int _channelAddresses[8] = {MCP_CH0, MCP_CH1, MCP_CH2, MCP_CH3, MCP_CH4, MCP_CH5, MCP_CH6, MCP_CH7};
-//     MCP3564* adc;
-//     uint8_t channel;
-// };
+  private:
+    unsigned int _channelAddresses[8] = {MCP_CH0, MCP_CH1, MCP_CH2, MCP_CH3, MCP_CH4, MCP_CH5, MCP_CH6, MCP_CH7};
+    MCP3564* _adc;
+};
 
 #endif /* !YARR_ADC_H */

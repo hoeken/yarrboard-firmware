@@ -33,27 +33,20 @@ void bus_voltage_setup()
   #ifdef YB_BUS_VOLTAGE_MCP3425
   MCP342x::Config cfg(MCP342x::channel1, MCP342x::oneShot, MCP342x::resolution16, MCP342x::gain1);
   busADC = new MCP3425Helper(cfg, 2.048f, &_adcMCP3425);
-  busADC->setup();
+  Wire.begin();
   #endif
 
-  // load our first reading
-  busADC->getReading();
-  vTaskDelay(pdMS_TO_TICKS(70)); // wait for reading
-  busADC->getReading();
   Serial.println("Bus Voltage OK");
 }
 
 void bus_voltage_loop()
 {
-  if (millis() - lastBusVoltageCheckMillis >= 10) {
-    busADC->getReading();
-    lastBusVoltageCheckMillis = millis();
-  }
+  busADC->onLoop();
 }
 
 float getBusVoltage()
 {
-  float voltage = busADC->getAverageVoltage();
+  float voltage = busADC->getAverageVoltage(0);
 
   return voltage / (YB_BUS_VOLTAGE_R2 / (YB_BUS_VOLTAGE_R2 + YB_BUS_VOLTAGE_R1));
 }

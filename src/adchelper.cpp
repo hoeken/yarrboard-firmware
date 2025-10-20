@@ -20,6 +20,27 @@ ADCHelper::ADCHelper(uint8_t channels, float vref, uint8_t resolution, uint16_t 
   }
 }
 
+unsigned int ADCHelper::getNewReading(uint8_t channel)
+{
+  // if we're currently working on a reading, then ignore it.
+  while (isBusy()) {
+    while (!isReady())
+      delay(1);
+    loadReading(channel);
+  }
+
+  requestReading(channel);
+
+  while (!isReady())
+    delay(1);
+
+  return loadReading(channel);
+}
+float ADCHelper::getNewVoltage(uint8_t channel)
+{
+  return toVoltage(getNewReading(channel));
+}
+
 // dummy functions - should be implemented by the real clases.
 void ADCHelper::requestADCReading(uint8_t channel) {}
 bool ADCHelper::isADCReady() { return false; }
@@ -36,6 +57,7 @@ unsigned int ADCHelper::getLatestReading(uint8_t channel)
     return 0;
   return _averages[channel].latest();
 }
+
 unsigned int ADCHelper::getAverageReading(uint8_t channel)
 {
   if (channel >= _totalChannels)
@@ -74,7 +96,7 @@ bool ADCHelper::isReady()
 }
 bool ADCHelper::isBusy() { return _isBusy; }
 
-void ADCHelper::loadReading(uint8_t channel)
+unsigned int ADCHelper::loadReading(uint8_t channel)
 {
   unsigned int reading = loadReadingFromADC(channel);
 
@@ -83,6 +105,8 @@ void ADCHelper::loadReading(uint8_t channel)
 
   _isReady = false;
   _isBusy = false;
+
+  return reading;
 }
 
 void ADCHelper::attachReadyPinInterrupt(uint8_t pin, int mode)
@@ -113,7 +137,7 @@ void ADCHelper::onLoop()
 // ADS1115 Helper Class
 //
 ADS1115Helper::ADS1115Helper(float vref, ADS1115* adc, uint16_t samples, uint32_t window_ms)
-    : ADCHelper::ADCHelper(8, vref, 15, samples, window_ms), _adc(adc)
+    : ADCHelper(4, vref, 15, samples, window_ms), _adc(adc)
 {
 }
 
@@ -132,83 +156,70 @@ unsigned int ADS1115Helper::loadReadingFromADC(uint8_t channel)
   return reading;
 }
 
-// esp32Helper::esp32Helper(float vref, uint8_t channel, uint16_t samples)
-//     : ADCHelper::ADCHelper(vref, 12, samples)
-// {
-//   this->channel = channel;
-// }
+MCP3425Helper::MCP3425Helper(MCP342x::Config& config, float vref, MCP342x* adc, uint16_t samples, uint32_t window_ms)
+    : ADCHelper(1, vref, 15, samples, window_ms), _adc(adc), _config(config)
+{
+}
 
-// unsigned int esp32Helper::getReading()
-// {
-//   unsigned int reading = analogReadMilliVolts(this->channel);
-//   this->addReading(reading);
+void MCP3425Helper::requestADCReading(uint8_t channel)
+{
+  uint8_t err;
 
-//   return reading;
-// }
+  err = this->_adc->convert(this->_config);
+  if (err) {
+    Serial.printf("MCP3425 convert error: %d\n", err);
+  }
+}
 
-// float esp32Helper::toVoltage(unsigned int reading)
-// {
-//   return (float)reading / 1000.0;
-// }
+bool MCP3425Helper::isADCReady()
+{
+  long value = 0;
+  MCP342x::Config status;
 
-// MCP3564Helper::MCP3564Helper(float vref, uint8_t channel, MCP3564* adc, uint16_t samples)
-//     : ADCHelper::ADCHelper(vref, 24, samples), channel(channel), adc(adc)
-// {
-// }
+  this->_adc->read(value, status);
+  return status.isReady();
+}
 
-// unsigned int MCP3564Helper::getReading()
-// {
-//   unsigned int reading;
-//   reading = this->adc->analogRead(_channelAddresses[this->channel]);
-//   this->addReading(reading);
+unsigned int MCP3425Helper::loadReadingFromADC(uint8_t channel)
+{
+  long value = 0;
+  MCP342x::Config status;
+  uint8_t err;
 
-//   return reading;
-// }
+  // okay, is it ready?
+  err = this->_adc->read(value, status);
+  if (!err && status.isReady()) {
+    return value;
+  }
+  return 0;
+}
+
+//
+// MCP3564 Helper Class
+//
+
+MCP3564Helper::MCP3564Helper(float vref, MCP3564* adc, uint16_t samples, uint32_t window_ms)
+    : ADCHelper(8, vref, 23, samples, window_ms), _adc(adc)
+{
+}
+
+void MCP3564Helper::requestADCReading(uint8_t channel)
+{
+  // this->_adc->requestConversion(_channelAddresses[channel]);
+}
+
+bool MCP3564Helper::isADCReady()
+{
+  return true;
+  // return this->_adc->isComplete();
+}
+
+unsigned int MCP3564Helper::loadReadingFromADC(uint8_t channel)
+{
+  return this->_adc->analogRead(_channelAddresses[channel]);
+}
 
 // float MCP3564Helper::toVoltage(unsigned int reading)
 // {
 //   return reading * this->adc->getReference() / (this->adc->getMaxValue() / 2);
-// }
-
-// MCP3425Helper::MCP3425Helper(MCP342x::Config& config, float vref, MCP342x* adc, uint16_t samples)
-//     : ADCHelper::ADCHelper(vref, 15, samples), adc(adc), config(config)
-// {
-// }
-
-// void MCP3425Helper::setup()
-// {
-//   Wire.begin();
-//   this->start_conversion = true;
-// }
-
-// unsigned int MCP3425Helper::getReading()
-// {
-//   long value = 0;
-//   MCP342x::Config status;
-//   uint8_t err;
-
-//   // do we need to trigger a conversion?
-//   if (this->start_conversion) {
-
-//     err = this->adc->convert(this->config);
-//     if (err) {
-//       Serial.printf("MCP3425 convert error: %d\n", err);
-//     }
-//     this->start_conversion = false;
-//     return 0;
-//   }
-
-//   // okay, is it ready?
-//   err = this->adc->read(value, status);
-//   if (!err && status.isReady()) {
-//     this->addReading(value);
-//     this->start_conversion = true;
-//   } else {
-//     if (err != 4)
-//       Serial.printf("MCP3425 read error: %d\n", err);
-
-//     value = 0;
-//   }
-
-//   return value;
 // }

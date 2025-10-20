@@ -45,7 +45,6 @@ void adc_channels_setup()
   _adcVoltageADS1115_1.setMode(ADS1X15_MODE_SINGLE);
   _adcVoltageADS1115_1.setGain(1);
   _adcVoltageADS1115_1.setDataRate(4);
-  _adcVoltageADS1115_1.requestADC(0); // trigger first read
 
   adcHelper1 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_1);
 

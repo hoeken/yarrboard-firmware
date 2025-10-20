@@ -28,29 +28,33 @@ const unsigned int MAX_DUTY_CYCLE = (int)(pow(2, YB_PWM_CHANNEL_RESOLUTION));
 
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
 MCP3564 _adcCurrentMCP3564(YB_PWM_CHANNEL_CURRENT_ADC_CS, &SPI, YB_PWM_CHANNEL_CURRENT_ADC_MOSI, YB_PWM_CHANNEL_CURRENT_ADC_MISO, YB_PWM_CHANNEL_CURRENT_ADC_SCK);
+MCP3564Helper* adcCurrentHelper;
   #endif
 
   #ifdef YB_HAS_CHANNEL_VOLTAGE
     #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
 ADS1115 _adcVoltageADS1115_1(YB_PWM_CHANNEL_VOLTAGE_I2C_ADDRESS_1);
 ADS1115 _adcVoltageADS1115_2(YB_PWM_CHANNEL_VOLTAGE_I2C_ADDRESS_2);
+ADS1115Helper* adcVoltageHelper1;
+ADS1115Helper* adcVoltageHelper2;
     #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
 MCP3564 _adcVoltageMCP3564(YB_PWM_CHANNEL_VOLTAGE_ADC_CS, &SPI, YB_PWM_CHANNEL_VOLTAGE_ADC_MOSI, YB_PWM_CHANNEL_VOLTAGE_ADC_MISO, YB_PWM_CHANNEL_VOLTAGE_ADC_SCK);
+MCP3564Helper* adcVoltageHelper;
     #endif
   #endif
 
-void mcp_wrapper()
-{
-  Serial.print(".");
+// void mcp_wrapper()
+// {
+//   Serial.print(".");
 
-  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
-  _adcCurrentMCP3564.IRQ_handler();
-  #endif
+//   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
+//   _adcCurrentMCP3564.IRQ_handler();
+//   #endif
 
-  #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
-  _adcVoltageMCP3564.IRQ_handler();
-  #endif
-}
+//   #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
+//   _adcVoltageMCP3564.IRQ_handler();
+//   #endif
+// }
 
 void pwm_channels_setup()
 {
@@ -78,6 +82,10 @@ void pwm_channels_setup()
 
   Serial.print("TEMP: ");
   Serial.println(_adcCurrentMCP3564.analogRead(MCP_TEMP));
+
+  TRACE();
+  adcCurrentHelper = new MCP3564Helper(3.3, &_adcCurrentMCP3564);
+
   #endif
 
   #ifdef YB_HAS_CHANNEL_VOLTAGE
@@ -90,10 +98,12 @@ void pwm_channels_setup()
   else
     Serial.println("Voltage ADS115 #1 Not Found");
 
-  _adcVoltageADS1115_1.setMode(1); //  SINGLE SHOT MODE
+  _adcVoltageADS1115_1.setMode(ADS1X15_MODE_SINGLE); //  SINGLE SHOT MODE
   _adcVoltageADS1115_1.setGain(1);
-  _adcVoltageADS1115_1.setDataRate(7);
-  _adcVoltageADS1115_1.requestADC(0); // trigger first read
+  _adcVoltageADS1115_1.setDataRate(5);
+
+  TRACE();
+  adcVoltageHelper1 = new ADS1115Helper(4.096, &_adcVoltageADS1115_1);
 
   _adcVoltageADS1115_2.begin();
   if (_adcVoltageADS1115_2.isConnected())
@@ -101,10 +111,12 @@ void pwm_channels_setup()
   else
     Serial.println("Voltage ADS115 #2 Not Found");
 
-  _adcVoltageADS1115_2.setMode(1); //  SINGLE SHOT MODE
+  _adcVoltageADS1115_2.setMode(ADS1X15_MODE_SINGLE); //  SINGLE SHOT MODE
   _adcVoltageADS1115_2.setGain(1);
-  _adcVoltageADS1115_2.setDataRate(7);
-  _adcVoltageADS1115_2.requestADC(0); // trigger first read
+  _adcVoltageADS1115_2.setDataRate(5);
+
+  TRACE();
+  adcVoltageHelper2 = new ADS1115Helper(4.096, &_adcVoltageADS1115_2);
 
     #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
 
@@ -130,6 +142,9 @@ void pwm_channels_setup()
 
   Serial.print("TEMP: ");
   Serial.println(_adcVoltageMCP3564.analogRead(MCP_TEMP));
+
+  adcVoltageHelper = new MCP3564Helper(3.3, &_adcVoltageMCP3564);
+
     #endif
 
   #endif
@@ -156,6 +171,19 @@ void pwm_channels_loop()
 {
   // do we need to send an update?
   bool doSendFastUpdate = false;
+
+  #ifdef YB_HAS_CHANNEL_VOLTAGE
+    #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
+  adcVoltageHelper1->onLoop();
+  adcVoltageHelper2->onLoop();
+    #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
+  adcVoltageHelper->onLoop();
+    #endif
+  #endif
+
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
+  adcCurrentHelper->onLoop();
+  #endif
 
   // maintenance on our channels.
   for (auto& ch : pwm_channels) {
@@ -214,17 +242,23 @@ void PWMChannel::setup()
     this->softFuseTripCount = 0;
 
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
-  this->amperageHelper = new MCP3564Helper(3.3, this->id - 1, &_adcCurrentMCP3564);
+  this->amperageHelper = adcCurrentHelper;
+  _adcAmperageChannel = this->id - 1;
   #endif
 
   #ifdef YB_HAS_CHANNEL_VOLTAGE
     #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
-  if (this->id <= 4)
-    this->voltageHelper = new ADS1115Helper(3.3, this->id - 1, &_adcVoltageADS1115_1);
-  else
-    this->voltageHelper = new ADS1115Helper(3.3, this->id - 5, &_adcVoltageADS1115_2);
+  if (this->id <= 4) {
+    this->voltageHelper = adcVoltageHelper1;
+    _adcVoltageChannel = this->id - 1;
+  } else {
+    this->voltageHelper = adcVoltageHelper2;
+    _adcVoltageChannel = this->id - 5;
+  }
+
     #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
-  this->voltageHelper = new MCP3564Helper(3.3, this->id - 1, &_adcVoltageMCP3564);
+  this->voltageHelper = adcVoltageHelper;
+  _adcVoltageChannel = this->id - 1;
     #endif
   #endif
 }
@@ -249,15 +283,17 @@ void PWMChannel::setupOffset()
 
   // voltage zero state
   this->voltageOffset = 0.0;
-  float v = this->getVoltage();
-  if (v < (30.0 * 0.05))
-    this->voltageOffset = v;
+  // float v = this->getVoltage();
+  // float v = this->toVoltage(this->voltageHelper->getNewVoltage(_adcVoltageChannel));
+  // if (v < (30.0 * 0.05))
+  //   this->voltageOffset = v;
 
   // amperage zero state
   this->amperageOffset = 0.0;
-  float a = this->getAmperage();
-  if (a < (20.0 * 0.05))
-    this->amperageOffset = a;
+  //  float a = this->getAmperage();
+  // float a = this->toAmperage(this->amperageHelper->getNewVoltage(_adcAmperageChannel));
+  // if (a < (20.0 * 0.05))
+  //   this->amperageOffset = a;
 
   Serial.printf("CH%d Voltage Offset: %0.3f / Amperage Offset: %0.3f\n", this->id, this->voltageOffset, this->amperageOffset);
 }
@@ -370,12 +406,7 @@ float PWMChannel::toAmperage(float voltage)
 
 float PWMChannel::getAmperage()
 {
-  return this->toAmperage(
-    this->amperageHelper->toVoltage(this->amperageHelper->getReading()));
-}
-
-void PWMChannel::checkAmperage()
-{
+  return this->toAmperage(this->amperageHelper->getAverageVoltage(this->_adcAmperageChannel));
 }
 
 float PWMChannel::toVoltage(float adcVoltage)
@@ -391,8 +422,8 @@ float PWMChannel::toVoltage(float adcVoltage)
 
 void PWMChannel::checkStatus()
 {
-  this->voltage = this->getVoltage();
-  this->amperage = this->getAmperage();
+  // this->voltage = this->getVoltage();
+  // this->amperage = this->getAmperage();
 
   this->checkSoftFuse();
   this->checkFuseBlown();
@@ -419,23 +450,7 @@ void PWMChannel::updateOutputLED()
 
 float PWMChannel::getVoltage()
 {
-  // queue up our voltage reading.
-  if (this->id <= 4)
-    this->voltageHelper->requestReading(this->id - 1);
-  else
-    this->voltageHelper->requestReading(this->id - 5);
-
-  // get our latest voltage reading.
-  while (!this->voltageHelper->isReady())
-    vTaskDelay(1);
-
-  float voltage = this->toVoltage(this->voltageHelper->toVoltage(this->voltageHelper->getReading()));
-
-  return voltage;
-}
-
-void PWMChannel::checkVoltage()
-{
+  return this->toVoltage(this->voltageHelper->getAverageVoltage(_adcVoltageChannel));
 }
 
 void PWMChannel::checkFuseBlown()
@@ -454,17 +469,19 @@ void PWMChannel::checkFuseBlown()
   // also, it takes a little bit to populate on boot.
   if (getBusVoltage() > 0) {
     if (this->status == Status::ON) {
-      // plenty of tries for when you're a very low pwm
-      for (byte i = 0; i < 10; i++) {
-        this->voltage = this->getVoltage();
-        if (this->voltage >= minVoltage)
-          return;
+      if (this->getVoltage() >= minVoltage)
+        return;
+      // // plenty of tries for when you're a very low pwm
+      // for (byte i = 0; i < 10; i++) {
+      //   this->voltage = this->getVoltage();
+      //   if (this->voltage >= minVoltage)
+      //     return;
 
-        vTaskDelay(pdMS_TO_TICKS(10));
-      }
+      //   vTaskDelay(pdMS_TO_TICKS(10));
+      // }
 
       DUMP(this->id);
-      DUMP(this->voltage);
+      DUMP(this->getVoltage());
       DUMP(duty);
       DUMP(busVoltage);
       DUMP(minVoltage);
@@ -479,26 +496,28 @@ void PWMChannel::checkFuseBlown()
 void PWMChannel::checkFuseBypassed()
 {
   if (this->status != Status::ON && this->status != Status::BYPASSED && !this->isFading) {
-    for (byte i = 0; i < 10; i++) {
+    if (this->getVoltage() < getBusVoltage() * 0.90)
+      return;
+    // for (byte i = 0; i < 10; i++) {
 
-      // voltage needs to be over 90%... otherwise we get false readings when shutting off motors as the voltage collapses
-      if (this->voltage < getBusVoltage() * 0.90)
-        return;
+    //   // voltage needs to be over 90%... otherwise we get false readings when shutting off motors as the voltage collapses
+    //   if (this->voltage < getBusVoltage() * 0.90)
+    //     return;
 
-      vTaskDelay(pdMS_TO_TICKS(10));
-      this->voltage = this->getVoltage();
-    }
+    //   vTaskDelay(pdMS_TO_TICKS(10));
+    //   this->voltage = this->getVoltage();
+    // }
 
     if (this->id == 5) {
       DUMP(this->getCurrentDutyCycle());
       DUMP(this->isFading);
-      DUMP(this->voltage);
+      DUMP(this->getVoltage());
     }
 
     // dont change our outputState here... bypass can be temporary
     this->status = Status::BYPASSED;
   } else if (this->status == Status::BYPASSED) {
-    if (!this->outputState && this->voltage < 2.0) {
+    if (!this->outputState && this->getVoltage() < 2.0) {
       this->status = Status::OFF;
     }
   }
@@ -509,8 +528,8 @@ void PWMChannel::checkSoftFuse()
   // only trip once....
   if (this->status != Status::TRIPPED) {
     // Check our soft fuse, and our max limit for the board.
-    if (abs(this->amperage) >= this->softFuseAmperage ||
-        abs(this->amperage) >= YB_PWM_CHANNEL_MAX_AMPS) {
+    if (abs(this->getAmperage()) >= this->softFuseAmperage ||
+        abs(this->getAmperage()) >= YB_PWM_CHANNEL_MAX_AMPS) {
 
       // record some variables
       this->status = Status::TRIPPED;
@@ -671,20 +690,15 @@ void PWMChannel::setDuty(float duty)
 
 void PWMChannel::calculateAverages(unsigned int delta)
 {
-  // this->voltage = this->toVoltage(this->voltageHelper->getAverageVoltage());
-  // this->voltageHelper->resetAverage();
-  // this->amperage = this->toAmperage(this->amperageHelper->getAverageVoltage());
-  // this->amperageHelper->resetAverage();
-
   // record our total consumption
-  if (this->amperage > 0) {
-    this->ampHours += this->amperage * ((float)delta / 3600000.0);
+  if (this->getAmperage() > 0) {
+    this->ampHours += this->getAmperage() * ((float)delta / 3600000.0);
 
     // only use our voltage if we're not pwming.
-    if (this->voltage && this->dutyCycle == 1.0)
-      this->wattHours += this->amperage * this->voltage * ((float)delta / 3600000.0);
+    if (this->getVoltage() && this->dutyCycle == 1.0)
+      this->wattHours += this->getAmperage() * this->getVoltage() * ((float)delta / 3600000.0);
     else
-      this->wattHours += this->amperage * getBusVoltage() * ((float)delta / 3600000.0);
+      this->wattHours += this->getAmperage() * getBusVoltage() * ((float)delta / 3600000.0);
   }
 }
 
@@ -960,8 +974,8 @@ void PWMChannel::generateUpdate(JsonVariant config)
   config["source"] = this->source;
   if (this->isDimmable)
     config["duty"] = round2(this->dutyCycle);
-  config["voltage"] = round2(this->voltage);
-  config["current"] = round2(this->amperage);
+  config["voltage"] = round2(this->getVoltage());
+  config["current"] = round2(this->getAmperage());
   config["aH"] = round3(this->ampHours);
   config["wH"] = round3(this->wattHours);
 }

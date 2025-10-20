@@ -100,6 +100,8 @@ class PWMChannel : public BaseChannel
     MCP3564Helper* voltageHelper;
   #endif
 #endif
+    uint8_t _adcVoltageChannel = 0;
+    uint8_t _adcAmperageChannel = 0;
 
     float voltageOffset = 0;
     float amperageOffset = 0;
@@ -129,13 +131,11 @@ class PWMChannel : public BaseChannel
 
     float getVoltage();
     float toVoltage(float adcVoltage);
-    void checkVoltage();
     void checkFuseBlown();
     void checkFuseBypassed();
 
     float getAmperage();
     float toAmperage(float voltage);
-    void checkAmperage();
     void checkSoftFuse();
 
     void checkIfFadeOver();
