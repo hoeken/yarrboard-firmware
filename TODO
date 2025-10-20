@@ -3,6 +3,8 @@
 # v2.0.0 Release
 
 * update ADCHelper
+    * update MCP3564 library to have an async friendly method.
+        * need to test with a real load, something isnt right.
     * setupReadyPinInterrupt(pin, mode)
         * for adcs that have an interrupt pin
         * isr function sets the isReady flag
@@ -10,7 +12,6 @@
         * request reading should also clear the isReady flag
         * get this working with ads1115
         * get it working with MCP3564
-    * update MCP3564 library to have an async friendly method.
 * logging in should send you to the main control page
 * settings page is ugly af.
     * borders for each config area like channels?
