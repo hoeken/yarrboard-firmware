@@ -242,15 +242,17 @@ MCP3564Helper::MCP3564Helper(float vref, MCP3564* adc, uint16_t samples, uint32_
 
 void MCP3564Helper::requestADCReading(uint8_t channel)
 {
-  this->_adc->startMux(_channelAddresses[channel]);
+  // this->_adc->startMux(_channelAddresses[channel]);
 }
 
 bool MCP3564Helper::isADCReady()
 {
-  return this->_adc->isComplete();
+  return true;
+  // return this->_adc->isComplete();
 }
 
 uint32_t MCP3564Helper::loadReadingFromADC(uint8_t channel)
 {
-  return this->_adc->readResult();
+  return this->_adc->analogRead(_channelAddresses[channel]);
+  // return this->_adc->readResult();
 }
