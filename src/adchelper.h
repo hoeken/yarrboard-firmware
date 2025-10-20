@@ -41,6 +41,7 @@ class ADCHelper
 
     unsigned int getReadingCount(uint8_t channel);
     void clearReadings(uint8_t channel);
+    void printDebug();
 
     void attachReadyPinInterrupt(uint8_t pin, int mode);
     void requestReading(uint8_t channel);
@@ -55,6 +56,7 @@ class ADCHelper
     float _vref = 0.0;
     uint8_t _resolution;
     std::vector<RollingAverage> _averages;
+    unsigned long lastDebugTime = 0 - 10000;
 
     uint8_t _totalChannels = 0;
     uint8_t _currentChannel = 0;

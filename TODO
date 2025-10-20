@@ -11,7 +11,6 @@
         * get this working with ads1115
         * get it working with MCP3564
     * update MCP3564 library to have an async friendly method.
-    * add adchelper debug dump - print counts, totals and average entries
 * logging in should send you to the main control page
 * settings page is ugly af.
     * borders for each config area like channels?

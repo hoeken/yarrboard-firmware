@@ -67,6 +67,25 @@ void ADCHelper::clearReadings(uint8_t channel)
   _averages[channel].clear();
 }
 
+void ADCHelper::printDebug()
+{
+  // only print every 10s
+  if (millis() - lastDebugTime > 5000) {
+    Serial.printf("%d Channels | Vref: %.3f | Resolution: %d\n", _totalChannels, _vref, _resolution);
+
+    for (byte i = 0; i < _totalChannels; i++) {
+      unsigned int cnt = getReadingCount(i);
+      size_t cap = _averages[i].cap();
+      uint32_t window = _averages[i].window();
+      unsigned int avgr = getAverageReading(i);
+      float avgv = getAverageVoltage(i);
+      Serial.printf("CH%d: Window: %dms | Readings: %d/%d | Average: %d | Voltage: %.3f\n", i, window, cnt, cap, avgr, avgv);
+    }
+
+    lastDebugTime = millis();
+  }
+}
+
 unsigned int ADCHelper::getLatestReading(uint8_t channel)
 {
   if (channel >= _totalChannels)
@@ -147,6 +166,8 @@ void ADCHelper::onLoop()
 
     requestReading(_currentChannel);
   }
+
+  printDebug();
 }
 
 //
