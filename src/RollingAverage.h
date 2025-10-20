@@ -43,7 +43,7 @@ class RollingAverage
     inline void clear()
     {
       head_ = tail_ = count_ = 0;
-      sum_ = 0.0f;
+      sum_ = 0;
     }
 
     /**
@@ -54,7 +54,7 @@ class RollingAverage
      *
      * @param v The sample value to add.
      */
-    inline void add(uint16_t v)
+    inline void add(uint32_t v)
     {
       const uint32_t now = millis();
       prune(now);
@@ -78,18 +78,18 @@ class RollingAverage
      * @param fast If true (default), use the precomputed running sum (fast).
      *             If false, recalculate the sum from scratch (slower but accurate
      *             if you've modified data manually or want to verify integrity).
-     * @return The average value, or 0.0f if no valid samples exist.
+     * @return The average value, or 0. if no valid samples exist.
      */
-    inline uint16_t average(bool fast = false)
+    inline uint32_t average(bool fast = false)
     {
       prune(millis());
       if (!count_)
-        return 0.0f;
+        return 0;
 
       if (fast) {
         return sum_ / count_;
       } else {
-        uint32_t total = 0.0f;
+        uint32_t total = 0;
         for (uint16_t i = 0, idx = head_; i < count_; ++i) {
           total += buf_[idx].v;
           idx = next(idx);
@@ -101,9 +101,9 @@ class RollingAverage
     /**
      * @brief Get the most recent sample value.
      *
-     * @return The latest value, or 0.0f if no samples exist.
+     * @return The latest value, or 0 if no samples exist.
      */
-    inline uint16_t latest()
+    inline uint32_t latest()
     {
       prune(millis());
       if (!count_)
@@ -139,7 +139,7 @@ class RollingAverage
 
   private:
     struct Sample {
-        uint16_t v; ///< Sample value
+        uint32_t v; ///< Sample value
         uint32_t t; ///< Timestamp in milliseconds
     };
 
@@ -148,7 +148,7 @@ class RollingAverage
     uint16_t head_ = 0;   ///< Index of oldest sample
     uint16_t tail_ = 0;   ///< Index for next write
     uint16_t count_ = 0;  ///< Current sample count
-    uint32_t sum_ = 0.0f; ///< Running sum for fast average
+    uint32_t sum_ = 0;    ///< Running sum for fast average
     uint32_t window_ = 0; ///< Time window in ms
 
     inline uint16_t next(uint16_t i) const { return (i + 1u == cap_) ? 0u : (i + 1u); }
