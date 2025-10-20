@@ -22,19 +22,30 @@ ADCHelper::ADCHelper(uint8_t channels, float vref, uint8_t resolution, uint16_t 
 
 unsigned int ADCHelper::getNewReading(uint8_t channel)
 {
+  // save the old one.
+  uint8_t oldChannel = _currentChannel;
+
   // if we're currently working on a reading, then ignore it.
   while (isBusy()) {
     while (!isReady())
-      delay(1);
+      vTaskDelay(1);
     loadReading(channel);
   }
 
+  // lookup our channel please
   requestReading(channel);
 
+  // wait for our reading
   while (!isReady())
-    delay(1);
+    vTaskDelay(1);
 
-  return loadReading(channel);
+  // okay load it in.
+  unsigned int reading = loadReading(channel);
+
+  // resume our regular scrolling
+  requestReading(oldChannel);
+
+  return reading;
 }
 float ADCHelper::getNewVoltage(uint8_t channel)
 {

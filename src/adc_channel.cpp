@@ -31,10 +31,11 @@ void adc_channels_setup()
   #ifdef YB_ADC_DRIVER_ADS1115
     #if defined(YB_I2C_SDA_PIN) && defined(YB_I2C_SCL_PIN)
   Wire.begin(YB_I2C_SDA_PIN, YB_I2C_SCL_PIN);
-      // Wire.setClock(400000); // 400 kHz I2C to cut overhead
     #else
   Wire.begin(); // fallback to defaults
     #endif
+  Wire.setClock(YB_I2C_SPEED);
+
   _adcVoltageADS1115_1.begin();
   if (_adcVoltageADS1115_1.isConnected())
     Serial.println("Voltage ADS115 #1 OK");

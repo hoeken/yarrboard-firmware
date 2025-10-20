@@ -52,6 +52,10 @@
   #endif
 #endif
 
+#ifndef YB_I2C_SPEED
+  #define YB_I2C_SPEED 400000
+#endif
+
 // bytes for sending json
 #define YB_LARGE_JSON_SIZE 4096
 #define YB_CLIENT_LIMIT    12

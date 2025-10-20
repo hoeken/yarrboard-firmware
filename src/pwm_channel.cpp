@@ -92,6 +92,8 @@ void pwm_channels_setup()
     #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
 
   Wire.begin();
+  Wire.setClock(YB_I2C_SPEED);
+
   _adcVoltageADS1115_1.begin();
   if (_adcVoltageADS1115_1.isConnected())
     Serial.println("Voltage ADS115 #1 OK");
@@ -115,7 +117,6 @@ void pwm_channels_setup()
   _adcVoltageADS1115_2.setGain(1);
   _adcVoltageADS1115_2.setDataRate(4);
 
-  TRACE();
   adcVoltageHelper2 = new ADS1115Helper(4.096, &_adcVoltageADS1115_2, 50, 500);
 
     #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
@@ -281,19 +282,30 @@ void PWMChannel::setupOffset()
   this->status = Status::OFF;
   this->updateOutput(false);
 
-  // voltage zero state
+  // how many?
+  byte readings = 10;
+
+  // average a bunch of readings
+  float tv = 0;
+  for (byte i = 0; i < readings; i++)
+    tv += this->voltageHelper->getNewVoltage(_adcVoltageChannel);
+  float v = this->toVoltage(tv / readings);
+
+  // low enough value to be an offset?
   this->voltageOffset = 0.0;
-  // float v = this->getVoltage();
-  // float v = this->toVoltage(this->voltageHelper->getNewVoltage(_adcVoltageChannel));
-  // if (v < (30.0 * 0.05))
-  //   this->voltageOffset = v;
+  if (v < (30.0 * 0.05))
+    this->voltageOffset = v;
+
+  // average a bunch of readings
+  float ta = 0;
+  for (byte i = 0; i < readings; i++)
+    ta += this->amperageHelper->getNewVoltage(_adcAmperageChannel);
+  float a = this->toAmperage(ta / readings);
 
   // amperage zero state
   this->amperageOffset = 0.0;
-  //  float a = this->getAmperage();
-  // float a = this->toAmperage(this->amperageHelper->getNewVoltage(_adcAmperageChannel));
-  // if (a < (20.0 * 0.05))
-  //   this->amperageOffset = a;
+  if (a < (YB_PWM_CHANNEL_MAX_AMPS * 0.05))
+    this->amperageOffset = a;
 
   Serial.printf("CH%d Voltage Offset: %0.3f / Amperage Offset: %0.3f\n", this->id, this->voltageOffset, this->amperageOffset);
 }

@@ -3,16 +3,15 @@
 # v2.0.0 Release
 
 * update ADCHelper
-    * getNewReading() - get a fresh new reading by calling request, waiting, then load
-    * needs to save the currentChannel so we can resume and dont feed false readings to other channels
     * setupReadyPinInterrupt(pin, mode)
         * for adcs that have an interrupt pin
         * isr function sets the isReady flag
         * load reading clears the isReady flag
         * request reading should also clear the isReady flag
-    * update calling code:
-        * finish getNewReading() and use that to get our offsets
-    * update MCP3564 to have an async friendly method.
+        * get this working with ads1115
+        * get it working with MCP3564
+    * update MCP3564 library to have an async friendly method.
+    * add adchelper debug dump - print counts, totals and average entries
 * logging in should send you to the main control page
 * settings page is ugly af.
     * borders for each config area like channels?

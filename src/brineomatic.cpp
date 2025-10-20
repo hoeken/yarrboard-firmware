@@ -104,6 +104,7 @@ void brineomatic_setup()
   ds18b20.requestTemperatures();
 
   Wire.begin();
+  Wire.setClock(YB_I2C_SPEED);
   brineomatic_adc.begin();
   if (brineomatic_adc.isConnected())
     Serial.println("ADS1115 OK");
