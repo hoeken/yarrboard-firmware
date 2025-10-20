@@ -33,12 +33,14 @@ class ADCHelper
     unsigned int getNewReading(uint8_t channel);
     float getNewVoltage(uint8_t channel);
 
-    unsigned int getReadingCount(uint8_t channel);
     unsigned int getLatestReading(uint8_t channel);
     unsigned int getAverageReading(uint8_t channel);
     float toVoltage(unsigned int reading);
     float getLatestVoltage(uint8_t channel);
     float getAverageVoltage(uint8_t channel);
+
+    unsigned int getReadingCount(uint8_t channel);
+    void clearReadings(uint8_t channel);
 
     void attachReadyPinInterrupt(uint8_t pin, int mode);
     void requestReading(uint8_t channel);

@@ -4,18 +4,15 @@
 
 * update ADCHelper
     * getNewReading() - get a fresh new reading by calling request, waiting, then load
+    * needs to save the currentChannel so we can resume and dont feed false readings to other channels
     * setupReadyPinInterrupt(pin, mode)
         * for adcs that have an interrupt pin
         * isr function sets the isReady flag
         * load reading clears the isReady flag
         * request reading should also clear the isReady flag
-    * finish MCP3425Helper
-    * finish MCP3564Helper
     * update calling code:
-        * choose which get* function to use
-        * update adcHelper instanciation
-        * add _adcChannel to classes where necessary
-        * update to call onLoop() for each ADCHelper
+        * finish getNewReading() and use that to get our offsets
+    * update MCP3564 to have an async friendly method.
 * logging in should send you to the main control page
 * settings page is ugly af.
     * borders for each config area like channels?

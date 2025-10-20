@@ -34,6 +34,7 @@ class PWMChannel : public BaseChannel
     char ha_topic_current[128];
 
     byte pin = 0;
+    unsigned long lastStateChange = 0;
 
     struct GammaState {
         uint8_t pin = 255;

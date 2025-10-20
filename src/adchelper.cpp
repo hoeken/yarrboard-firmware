@@ -51,6 +51,11 @@ unsigned int ADCHelper::getReadingCount(uint8_t channel)
   return _averages[channel].count();
 }
 
+void ADCHelper::clearReadings(uint8_t channel)
+{
+  _averages[channel].clear();
+}
+
 unsigned int ADCHelper::getLatestReading(uint8_t channel)
 {
   if (channel >= _totalChannels)

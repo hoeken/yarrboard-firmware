@@ -84,7 +84,7 @@ void pwm_channels_setup()
   Serial.println(_adcCurrentMCP3564.analogRead(MCP_TEMP));
 
   TRACE();
-  adcCurrentHelper = new MCP3564Helper(3.3, &_adcCurrentMCP3564);
+  adcCurrentHelper = new MCP3564Helper(3.3, &_adcCurrentMCP3564, 50, 500);
 
   #endif
 
@@ -100,10 +100,10 @@ void pwm_channels_setup()
 
   _adcVoltageADS1115_1.setMode(ADS1X15_MODE_SINGLE); //  SINGLE SHOT MODE
   _adcVoltageADS1115_1.setGain(1);
-  _adcVoltageADS1115_1.setDataRate(5);
+  _adcVoltageADS1115_1.setDataRate(4);
 
   TRACE();
-  adcVoltageHelper1 = new ADS1115Helper(4.096, &_adcVoltageADS1115_1);
+  adcVoltageHelper1 = new ADS1115Helper(4.096, &_adcVoltageADS1115_1, 50, 500);
 
   _adcVoltageADS1115_2.begin();
   if (_adcVoltageADS1115_2.isConnected())
@@ -113,10 +113,10 @@ void pwm_channels_setup()
 
   _adcVoltageADS1115_2.setMode(ADS1X15_MODE_SINGLE); //  SINGLE SHOT MODE
   _adcVoltageADS1115_2.setGain(1);
-  _adcVoltageADS1115_2.setDataRate(5);
+  _adcVoltageADS1115_2.setDataRate(4);
 
   TRACE();
-  adcVoltageHelper2 = new ADS1115Helper(4.096, &_adcVoltageADS1115_2);
+  adcVoltageHelper2 = new ADS1115Helper(4.096, &_adcVoltageADS1115_2, 50, 500);
 
     #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
 
@@ -309,6 +309,9 @@ void PWMChannel::setupDefaultState()
     this->status = Status::OFF;
   }
 
+  // our first state change too
+  this->lastStateChange = millis();
+
   // update our pin, but dont check it
   this->updateOutput(false);
 }
@@ -465,30 +468,33 @@ void PWMChannel::checkFuseBlown()
   float busVoltage = getBusVoltage();
   float minVoltage = busVoltage * duty * 0.3;
 
+  // dimming lights are a special case...
+  unsigned long firstCheckTime = 1000;
+  if (isDimmable && !strcmp(this->type, "light"))
+    firstCheckTime += rampOnMillis;
+
   // we need bus voltage for our calculations.
-  // also, it takes a little bit to populate on boot.
+  // it takes a little bit to populate on boot.
   if (getBusVoltage() > 0) {
     if (this->status == Status::ON) {
-      if (this->getVoltage() >= minVoltage)
-        return;
-      // // plenty of tries for when you're a very low pwm
-      // for (byte i = 0; i < 10; i++) {
-      //   this->voltage = this->getVoltage();
-      //   if (this->voltage >= minVoltage)
-      //     return;
+      // grace period when changing state
+      if (millis() - lastStateChange > firstCheckTime) {
 
-      //   vTaskDelay(pdMS_TO_TICKS(10));
-      // }
+        // if our voltage is at a high enough level, we're fine.
+        if (this->getVoltage() >= minVoltage)
+          return;
 
-      DUMP(this->id);
-      DUMP(this->getVoltage());
-      DUMP(duty);
-      DUMP(busVoltage);
-      DUMP(minVoltage);
+        DUMP(this->id);
+        DUMP(voltageHelper->getReadingCount(_adcVoltageChannel));
+        DUMP(this->getVoltage());
+        DUMP(duty);
+        DUMP(busVoltage);
+        DUMP(minVoltage);
 
-      this->status = Status::BLOWN;
-      this->outputState = false;
-      this->updateOutput(false);
+        this->status = Status::BLOWN;
+        this->outputState = false;
+        this->updateOutput(false);
+      }
     }
   }
 }
@@ -496,26 +502,21 @@ void PWMChannel::checkFuseBlown()
 void PWMChannel::checkFuseBypassed()
 {
   if (this->status != Status::ON && this->status != Status::BYPASSED && !this->isFading) {
-    if (this->getVoltage() < getBusVoltage() * 0.90)
-      return;
-    // for (byte i = 0; i < 10; i++) {
 
-    //   // voltage needs to be over 90%... otherwise we get false readings when shutting off motors as the voltage collapses
-    //   if (this->voltage < getBusVoltage() * 0.90)
-    //     return;
+    // dimming lights are a special case...
+    unsigned long firstCheckTime = 1000;
+    if (isDimmable && !strcmp(this->type, "light"))
+      firstCheckTime += rampOffMillis;
 
-    //   vTaskDelay(pdMS_TO_TICKS(10));
-    //   this->voltage = this->getVoltage();
-    // }
+    // grace period when changing state
+    if (millis() - lastStateChange > firstCheckTime) {
 
-    if (this->id == 5) {
-      DUMP(this->getCurrentDutyCycle());
-      DUMP(this->isFading);
-      DUMP(this->getVoltage());
+      if (this->getVoltage() < getBusVoltage() * 0.90)
+        return;
+
+      // dont change our outputState here... bypass can be temporary
+      this->status = Status::BYPASSED;
     }
-
-    // dont change our outputState here... bypass can be temporary
-    this->status = Status::BYPASSED;
   } else if (this->status == Status::BYPASSED) {
     if (!this->outputState && this->getVoltage() < 2.0) {
       this->status = Status::OFF;
@@ -727,6 +728,7 @@ void PWMChannel::setState(const char* state)
 void PWMChannel::setState(bool newState)
 {
   if (newState != outputState) {
+
     // save our output state
     this->outputState = newState;
 
@@ -738,6 +740,13 @@ void PWMChannel::setState(bool newState)
       this->status = Status::ON;
     else
       this->status = Status::OFF;
+
+    // clear our readings since we want fresh readings.
+    this->amperageHelper->clearReadings(_adcAmperageChannel);
+    this->voltageHelper->clearReadings(_adcVoltageChannel);
+
+    // track when we last changed states.
+    this->lastStateChange = millis();
 
     // change our output pin to reflect
     this->updateOutput(true);
