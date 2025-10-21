@@ -43,7 +43,7 @@ class ADCHelper
     void clearReadings(uint8_t channel);
     void printDebug();
 
-    void attachReadyPinInterrupt(uint8_t pin, int mode);
+    virtual void attachReadyPinInterrupt(uint8_t pin, int mode);
     void requestReading(uint8_t channel);
     void onLoop();
     bool isReady();
@@ -56,7 +56,7 @@ class ADCHelper
     float _vref = 0.0;
     uint8_t _resolution;
     std::vector<RollingAverage> _averages;
-    unsigned long lastDebugTime = 0 - 10000;
+    unsigned long lastDebugTime = 0;
 
     uint8_t _totalChannels = 0;
     uint8_t _currentChannel = 0;
@@ -80,6 +80,7 @@ class ADS1115Helper : public ADCHelper
 {
   public:
     ADS1115Helper(float vref, ADS1115* adc, uint16_t samples = RA_DEFAULT_SIZE, uint32_t window_ms = RA_DEFAULT_WINDOW);
+    void attachReadyPinInterrupt(uint8_t pin, int mode) override;
     void requestADCReading(uint8_t channel) override;
     bool isADCReady() override;
     uint32_t loadReadingFromADC(uint8_t channel) override;

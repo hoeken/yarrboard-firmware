@@ -182,6 +182,17 @@ ADS1115Helper::ADS1115Helper(float vref, ADS1115* adc, uint16_t samples, uint32_
 void ADS1115Helper::requestADCReading(uint8_t channel) { _adc->requestADC(channel); }
 bool ADS1115Helper::isADCReady() { return _adc->isReady(); }
 
+void ADS1115Helper::attachReadyPinInterrupt(uint8_t pin, int mode)
+{
+  _adc->setComparatorThresholdLow(0x0000);
+  _adc->setComparatorThresholdHigh(0x8000);
+  _adc->setComparatorPolarity(0);
+  _adc->setComparatorLatch(0);
+  _adc->setComparatorQueConvert(0);
+
+  ADCHelper::attachReadyPinInterrupt(pin, mode);
+}
+
 uint32_t ADS1115Helper::loadReadingFromADC(uint8_t channel)
 {
   // Serial.printf("CH%d READ\n", channel);
