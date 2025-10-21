@@ -47,13 +47,15 @@ void adc_channels_setup()
   _adcVoltageADS1115_1.setGain(1);
   _adcVoltageADS1115_1.setDataRate(4);
 
-  adcHelper1 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_1);
+  // these are all needed for the interrupts
+  _adcVoltageADS1115_1.setComparatorThresholdLow(0x0000);
+  _adcVoltageADS1115_1.setComparatorThresholdHigh(0x8000);
+  _adcVoltageADS1115_1.setComparatorLatch(0);
+  _adcVoltageADS1115_1.setComparatorPolarity(0);
+  _adcVoltageADS1115_1.setComparatorQueConvert(0);
 
-  // _adcVoltageADS1115_1.setComparatorThresholdLow(0x0000);
-  // _adcVoltageADS1115_1.setComparatorThresholdHigh(0x8000);
-  // _adcVoltageADS1115_1.setComparatorQueConvert(0); //  enable RDY pin !!
-  // _adcVoltageADS1115_1.setComparatorLatch(0);
-  // adcHelper1->attachReadyPinInterrupt(YB_ADS1115_READY_PIN_1, FALLING);
+  adcHelper1 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_1);
+  adcHelper1->attachReadyPinInterrupt(YB_ADS1115_READY_PIN_1, FALLING);
 
   _adcVoltageADS1115_2.begin();
   if (_adcVoltageADS1115_2.isConnected())
@@ -66,16 +68,15 @@ void adc_channels_setup()
   _adcVoltageADS1115_2.setGain(1);
   _adcVoltageADS1115_2.setDataRate(4);
 
-  adcHelper2 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_2);
+  // these are all needed for the interrupts
+  _adcVoltageADS1115_2.setComparatorThresholdLow(0x0000);
+  _adcVoltageADS1115_2.setComparatorThresholdHigh(0x8000);
+  _adcVoltageADS1115_2.setComparatorPolarity(0);
+  _adcVoltageADS1115_2.setComparatorLatch(0);
+  _adcVoltageADS1115_2.setComparatorQueConvert(0);
 
-    // adcHelper2->attachReadyPinInterrupt(YB_ADS1115_READY_PIN_2, FALLING);
-    // _adcVoltageADS1115_2.setComparatorThresholdLow(0x0000);
-    // _adcVoltageADS1115_2.setComparatorThresholdHigh(0x8000);
-    // _adcVoltageADS1115_2.setComparatorQueConvert(0);
-    // _adcVoltageADS1115_2.setComparatorPolarity(0);
-    // _adcVoltageADS1115_2.setComparatorLatch(0);
-    // _adcVoltageADS1115_2.setComparatorMode(0);
-    // _adcVoltageADS1115_2.requestADC(0); // trigger first read
+  adcHelper2 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_2);
+  adcHelper2->attachReadyPinInterrupt(YB_ADS1115_READY_PIN_2, FALLING);
 
   #elif defined(YB_ADC_DRIVER_MCP3564)
 

@@ -153,12 +153,13 @@ void ADCHelper::attachReadyPinInterrupt(uint8_t pin, int mode)
 void ADCHelper::onLoop()
 {
   // smoke em if you got em
-  if (isReady())
+  if (isReady()) {
+    delay(1);
     loadReading(_currentChannel);
+  }
 
   // should we tee up the next one?
   if (!isBusy()) {
-
     // increment our channel
     _currentChannel++;
     if (_currentChannel >= _totalChannels)
@@ -183,6 +184,14 @@ bool ADS1115Helper::isADCReady() { return _adc->isReady(); }
 
 uint32_t ADS1115Helper::loadReadingFromADC(uint8_t channel)
 {
+  // Serial.printf("CH%d READ\n", channel);
+  // bool busy = _adc->isBusy();
+  // while (busy) {
+  //   Serial.printf("CH%d BUSY: %d\n", channel, busy);
+  //   busy = _adc->isBusy();
+  //   delay(10);
+  // }
+
   int16_t reading;
   reading = _adc->getValue();
 
