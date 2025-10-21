@@ -2,7 +2,6 @@
 
 # v2.0.0 Release
 
-* logging in should send you to the main control page
 * settings page is ugly af.
     * borders for each config area like channels?
     * side bar that loads each config page?
@@ -83,6 +82,7 @@
 * add tds calibration
 * PID calibration?
 * ntp server and next flush being an actual time that is stored in preferences (survive reboot)
+* move brineomatic to interrupt based adc
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker
     * sensors for each output type...

@@ -3688,8 +3688,10 @@ function open_default_page() {
     //check to see if we want a certain page
     if (window.location.hash) {
       let page = window.location.hash.substring(1);
-      if (page_list.includes(page))
+      if (page != "login" && page_list.includes(page))
         open_page(page);
+      else
+        open_page("control");
     }
     else
       open_page("control");
