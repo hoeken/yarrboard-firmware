@@ -83,8 +83,8 @@ void pwm_channels_setup()
   Serial.print("TEMP: ");
   Serial.println(_adcCurrentMCP3564.analogRead(MCP_TEMP));
 
-  TRACE();
   adcCurrentHelper = new MCP3564Helper(3.3, &_adcCurrentMCP3564, 50, 500);
+  adcCurrentHelper->attachReadyPinInterrupt(YB_PWM_CHANNEL_CURRENT_ADC_IRQ, FALLING);
 
   #endif
 
