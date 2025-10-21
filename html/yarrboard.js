@@ -1580,18 +1580,32 @@ function start_websocket() {
             let voltageHTML = `${voltage}V`;
             $('#pwmVoltage' + ch.id).html(voltageHTML);
 
-            let current = ch.current.toFixed(1);
+            let current = ch.current;
+            if (current < 1)
+              current = current.toFixed(2);
+            else
+              current = current.toFixed(1);
             let currentHTML = `${current}A`;
             $('#pwmCurrent' + ch.id).html(currentHTML);
 
             let wattage = 0;
             if (ch.voltage) {
               wattage = ch.voltage * ch.current;
-              wattage = wattage.toFixed(0);
+              if (wattage > 10)
+                wattage = Math.round(wattage);
+              else if (wattage > 1)
+                wattage = wattage.toFixed(1);
+              else
+                wattage = wattage.toFixed(2);
               $('#pwmWattage' + ch.id).html(`${wattage}W`);
             } else if (msg.bus_voltage) {
               wattage = ch.current * msg.bus_voltage;
-              wattage = wattage.toFixed(0);
+              if (wattage > 10)
+                wattage = Math.round(wattage);
+              else if (wattage > 1)
+                wattage = wattage.toFixed(1);
+              else
+                wattage = wattage.toFixed(2);
               $('#pwmWattage' + ch.id).html(`${wattage}W`);
             }
             else
