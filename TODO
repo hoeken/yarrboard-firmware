@@ -2,9 +2,6 @@
 
 # v2.0.0 Release
 
-* update ADCHelper
-    * update MCP3564 library to have an async friendly method.
-        * need to test with a real load, something isnt right.
 * logging in should send you to the main control page
 * settings page is ugly af.
     * borders for each config area like channels?

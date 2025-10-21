@@ -229,7 +229,7 @@ const PWMControlCard = (ch) => `
                   <div id="pwmStatus${ch.id}"></div>
                 </td>
                 <td>
-                  <div class="text-end pwmData">
+                  <div id="pwmData${ch.id}" class="text-end pwmData">
                     <div id="pwmVoltage${ch.id}"></div>
                     <div id="pwmCurrent${ch.id}"></div>
                     <div id="pwmWattage${ch.id}"></div>
@@ -1531,6 +1531,7 @@ function start_websocket() {
               $('#pwmState' + ch.id).removeClass("btn-danger");
               $('#pwmState' + ch.id).removeClass("btn-secondary");
               $(`#pwmStatus${ch.id}`).hide();
+              $(`#pwmData${ch.id}`).show();
             }
             else if (ch.state == "TRIPPED") {
               $('#pwmState' + ch.id).addClass("btn-warning");
@@ -1540,6 +1541,7 @@ function start_websocket() {
               $('#pwmState' + ch.id).removeClass("btn-secondary");
               $(`#pwmStatus${ch.id}`).html("SOFT TRIP");
               $(`#pwmStatus${ch.id}`).show();
+              $(`#pwmData${ch.id}`).hide();
             }
             else if (ch.state == "BLOWN") {
               $('#pwmState' + ch.id).addClass("btn-danger");
@@ -1549,6 +1551,7 @@ function start_websocket() {
               $('#pwmState' + ch.id).removeClass("btn-secondary");
               $(`#pwmStatus${ch.id}`).html("FUSE BLOWN");
               $(`#pwmStatus${ch.id}`).show();
+              $(`#pwmData${ch.id}`).hide();
             }
             else if (ch.state == "BYPASSED") {
               $('#pwmState' + ch.id).addClass("btn-primary");
@@ -1558,6 +1561,7 @@ function start_websocket() {
               $('#pwmState' + ch.id).removeClass("btn-secondary");
               $(`#pwmStatus${ch.id}`).html("BYPASSED");
               $(`#pwmStatus${ch.id}`).show();
+              $(`#pwmData${ch.id}`).show();
             }
             else if (ch.state == "OFF") {
               $('#pwmState' + ch.id).addClass("btn-secondary");
@@ -1566,6 +1570,7 @@ function start_websocket() {
               $('#pwmState' + ch.id).removeClass("btn-success");
               $('#pwmState' + ch.id).removeClass("btn-danger");
               $(`#pwmStatus${ch.id}`).hide();
+              $(`#pwmData${ch.id}`).hide();
             }
 
             //duty is a bit of a special case.
