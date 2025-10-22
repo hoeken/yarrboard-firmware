@@ -103,4 +103,12 @@ typedef enum { YBP_MODE_WEBSOCKET,
   #define BUILD_TIME "???"
 #endif
 
+#ifndef RA_DEFAULT_SIZE
+  #define RA_DEFAULT_SIZE 50
+#endif
+
+#ifndef RA_DEFAULT_WINDOW
+  #define RA_DEFAULT_WINDOW 1000
+#endif
+
 #endif // YARR_CONFIG_H

@@ -2,14 +2,6 @@
 #pragma once
 #include <Arduino.h>
 
-#ifndef RA_DEFAULT_SIZE
-  #define RA_DEFAULT_SIZE 50
-#endif
-
-#ifndef RA_DEFAULT_WINDOW
-  #define RA_DEFAULT_WINDOW 1000
-#endif
-
 /**
  * @brief RollingAverage maintains a running average of recent samples
  *        collected within a given time window (in milliseconds).
@@ -80,7 +72,7 @@ class RollingAverage
      *             if you've modified data manually or want to verify integrity).
      * @return The average value, or 0. if no valid samples exist.
      */
-    inline uint32_t average(bool fast = false)
+    inline uint32_t average(bool fast = true)
     {
       prune(millis());
       if (!count_)

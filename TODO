@@ -3,7 +3,7 @@
 # v2.0.0 Release
 
 * settings page is ugly af.
-    * borders for each config area like channels?
+    * borders for each config area like channels
     * side bar that loads each config page?
     * combine network and app config
         * move hostname from network to app
@@ -15,6 +15,7 @@
 * find a way to bubble up setup errors - config, mqtt, etc.
     * use an error log and load it when we login (admin only)
 * wifi improvements:
+    * add a RollingAverage to wifi rssi
     * switch to using improvwifi: https://registry.platformio.org/libraries/improv/Improv
     * wifi should reconnect on failure?
     * wifi authentication fail should default to using improv wifi
