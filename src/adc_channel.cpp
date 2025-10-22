@@ -81,10 +81,6 @@ void adc_channels_loop()
   #ifdef YB_ADC_DRIVER_ADS1115
   adcHelper1->onLoop();
   adcHelper2->onLoop();
-  #else
-  // maintenance on our channels.
-  for (auto& ch : adc_channels)
-    ch.update();
   #endif
 }
 

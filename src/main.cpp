@@ -6,6 +6,7 @@
   License: GPLv3
 */
 
+#include "IntervalTimer.h"
 #include "adchelper.h"
 #include "config.h"
 #include "debug.h"
@@ -50,6 +51,7 @@
 #endif
 
 unsigned long lastFrameMillis = 0;
+IntervalTimer it;
 
 void setup()
 {
@@ -146,42 +148,66 @@ void setup()
 
 void loop()
 {
+  // start our interval timer
+  it.start();
+
 #ifdef YB_HAS_ADC_CHANNELS
   adc_channels_loop();
+  it.time("adc_loop");
 #endif
 
 #ifdef YB_HAS_PWM_CHANNELS
   pwm_channels_loop();
+  it.time("pwm_loop");
 #endif
 
 #ifdef YB_HAS_RELAY_CHANNELS
   relay_channels_loop();
+  it.time("relay_loop");
 #endif
 
 #ifdef YB_HAS_SERVO_CHANNELS
   servo_channels_loop();
+  it.time("servo_loop");
 #endif
 
 #ifdef YB_HAS_FANS
   fans_loop();
+  it.time("fans_loop");
 #endif
 
 #ifdef YB_HAS_BUS_VOLTAGE
   bus_voltage_loop();
+  it.time("bus_voltage_loop");
 #endif
 
 #ifdef YB_IS_BRINEOMATIC
   brineomatic_loop();
+  it.time("brineomatic_loop");
 #endif
 
   network_loop();
-  server_loop();
-  protocol_loop();
-  mqtt_loop();
-  ota_loop();
+  it.time("network_loop");
 
-  if (app_enable_mfd)
+  server_loop();
+  it.time("server_loop");
+
+  protocol_loop();
+  it.time("protocol_loop");
+
+  mqtt_loop();
+  it.time("mqtt_loop");
+
+  ota_loop();
+  it.time("ota_loop");
+
+  if (app_enable_mfd) {
     navico_loop();
+    it.time("navico_loop");
+  }
+
+  // our debug.
+  it.print(5000);
 
   // calculate our framerate
   framerate = calculateFramerate(millis() - lastFrameMillis);
