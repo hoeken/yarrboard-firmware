@@ -92,8 +92,9 @@
 * fading code
     * saveThrottledDutyCycle needs reworked
     * remove / fix blown fuse detection for low value duty cycles
-* add inrush current to pwm / soft fuse checking - will need a stateChangeTime variable too...
-* convert ADC to continuous interrupt driven style
+* slow vs fast blow
+    * fast checks getLatestReading()
+    * slow checks getAverageReading()
 * add temperature, vdd support to adc library
 * update forms to be consistent style (float labels)
 * update yarrboard client if any changes needed - probably for state
