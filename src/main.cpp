@@ -50,18 +50,18 @@
   #include "brineomatic.h"
 #endif
 
-unsigned long lastFrameMillis = 0;
+// various timer things.
 IntervalTimer it;
+RollingAverage loopSpeed(100, 1000);
+RollingAverage framerateAvg(10, 10000);
+unsigned long lastLoopMicros = 0;
+unsigned long lastLoopMillis = 0;
 
 void setup()
 {
   // startup our serial
   Serial.begin(115200);
   Serial.setTimeout(50);
-
-  /* need to zero out the ticklist array before starting */
-  for (int i = 0; i < YB_FPS_SAMPLES; i++)
-    ticklist[i] = 0;
 
   if (!LittleFS.begin(true)) {
     Serial.println("ERROR: Unable to mount LittleFS");
@@ -144,6 +144,8 @@ void setup()
   Serial.println("MQTT ok");
 
   rgb_set_status_color(0, 255, 0);
+
+  lastLoopMicros = micros();
 }
 
 void loop()
@@ -210,6 +212,15 @@ void loop()
   it.print(5000);
 
   // calculate our framerate
-  framerate = calculateFramerate(millis() - lastFrameMillis);
-  lastFrameMillis = millis();
+  unsigned long loopDelta = micros() - lastLoopMicros;
+  lastLoopMicros = micros();
+  loopSpeed.add(loopDelta);
+  unsigned long framerate_now = 1000000 / loopSpeed.average();
+
+  // smooth out our frequency
+  if (millis() - lastLoopMillis > 1000) {
+    framerateAvg.add(framerate_now);
+    framerate = framerateAvg.average();
+    lastLoopMillis = millis();
+  }
 }
