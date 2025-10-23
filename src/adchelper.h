@@ -14,7 +14,6 @@
 #include <Arduino.h>
 #include <MCP342x.h>
 #include <MCP3x6x.h>
-#include <RunningAverage.h>
 #include <Wire.h>
 #include <vector>
 
