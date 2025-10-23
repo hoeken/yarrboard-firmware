@@ -60,16 +60,16 @@
     * flush_valve
     * fan
     * diverter valve
-    * membrane_pressure_target
 * add mid level UI icons/commands for watermaker parts:
     * boost_pump
     * hp pump
     * diverter valve
     * flush valve
     * fan
+    * membrane_pressure_target
     * advanced manual mode to set servos, stepper, etc.
 * add configuration options for:
-    * flowmeters
+    * flowmeters - ppl
     * tds (can we autodetect - whats this look like?)
     * diverter valve
     * hp valve servo
@@ -92,7 +92,6 @@
 
 * fading code
     * saveThrottledDutyCycle needs reworked
-    * remove / fix blown fuse detection for low value duty cycles
 * slow vs fast blow
     * fast checks getLatestReading()
     * slow checks getAverageReading()
