@@ -49,6 +49,9 @@
 #define YB_BUS_VOLTAGE_R2      22000.0
 #define YB_BUS_VOLTAGE_ADDRESS 0x68
 
+#define YB_I2C_SDA_PIN 47
+#define YB_I2C_SCL_PIN 48
+
 #define YB_HAS_FANS
 #define YB_FAN_COUNT                     2
 #define YB_FAN_MOSFET_PINS               {12, 10}

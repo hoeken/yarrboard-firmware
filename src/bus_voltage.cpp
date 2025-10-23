@@ -33,7 +33,7 @@ void bus_voltage_setup()
   #ifdef YB_BUS_VOLTAGE_MCP3425
   MCP342x::Config cfg(MCP342x::channel1, MCP342x::oneShot, MCP342x::resolution16, MCP342x::gain1);
   busADC = new MCP3425Helper(cfg, 2.048f, &_adcMCP3425);
-  Wire.begin();
+  Wire.begin(YB_I2C_SDA_PIN, YB_I2C_SCL_PIN);
   Wire.setClock(YB_I2C_SPEED);
   #endif
 
