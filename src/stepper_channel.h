@@ -9,13 +9,14 @@
 #ifndef YARR_STEPPER_CHANNEL_H
 #define YARR_STEPPER_CHANNEL_H
 
+#include "FastAccelStepper.h"
+#include "TMC2209.h"
 #include "base_channel.h"
 #include "config.h"
 #include "driver/ledc.h"
 #include "prefs.h"
 #include "protocol.h"
 #include <Arduino.h>
-#include <TMC2209.h>
 
 class StepperChannel : public BaseChannel
 {
@@ -31,20 +32,24 @@ class StepperChannel : public BaseChannel
     void generateUpdate(JsonVariant config) override;
 
     void setup();
-    void write(float angle);
+    void setAngle(float angle, uint32_t speed);
+    void setPosition(int32_t position, uint32_t speed);
     float getAngle();
-    uint32_t getPosition()
+    int32_t getPosition();
+    void disable();
 
-      void disable();
-    void autoDisable();
+    void printDebug(unsigned int milliDelay);
+    //    void autoDisable();
 
   private:
     unsigned long lastUpdateMillis = 0;
-    TMC2209 _stepper;
+    FastAccelStepper* _stepper = NULL;
+    TMC2209 _stepperConfig;
     byte _step_pin;
     byte _dir_pin;
     byte _enable_pin;
-    bool _enabled = false;
+    byte _diag_pin;
+    uint32_t _steps_per_degree;
 };
 
 extern etl::array<StepperChannel, YB_STEPPER_CHANNEL_COUNT> stepper_channels;

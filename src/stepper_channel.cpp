@@ -8,19 +8,24 @@
 
 #include "config.h"
 
-// #ifdef trueYB_HAS_STEPPER_CHANNELS
+#ifdef YB_HAS_STEPPER_CHANNELS
 
-#include "stepper_channel.h"
+  #include "stepper_channel.h"
 
-byte _step_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_CHANNEL_STEP_PINS;
-byte _dir_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_CHANNEL_DIR_PINS;
-byte _enable_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_CHANNEL_ENABLE_PINS;
+byte _step_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_STEP_PINS;
+byte _dir_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_DIR_PINS;
+byte _enable_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_ENABLE_PINS;
+byte _diag_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_DIAG_PINS;
 
 // the main star of the event
 etl::array<StepperChannel, YB_STEPPER_CHANNEL_COUNT> stepper_channels;
 
+FastAccelStepperEngine engine = FastAccelStepperEngine();
+
 void stepper_channels_setup()
 {
+  engine.init();
+
   // intitialize our channel
   for (auto& ch : stepper_channels) {
     ch.setup();
@@ -29,10 +34,10 @@ void stepper_channels_setup()
 
 void stepper_channels_loop()
 {
-  // check if any steppers need turning off
-  for (auto& ch : stepper_channels) {
-    ch.autoDisable();
-  }
+  // // check if any steppers need turning off
+  // for (auto& ch : stepper_channels) {
+  //   ch.autoDisable();
+  // }
 }
 
 void StepperChannel::init(uint8_t id)
@@ -42,6 +47,12 @@ void StepperChannel::init(uint8_t id)
   this->_step_pin = _step_pins[id - 1];
   this->_dir_pin = _dir_pins[id - 1];
   this->_enable_pin = _enable_pins[id - 1];
+  this->_diag_pin = _diag_pins[id - 1];
+
+  pinMode(_step_pin, OUTPUT);
+  pinMode(_dir_pin, OUTPUT);
+  pinMode(_enable_pin, OUTPUT);
+  pinMode(_diag_pin, INPUT);
 
   snprintf(this->name, sizeof(this->name), "Stepper Channel %d", id);
 }
@@ -70,25 +81,36 @@ void StepperChannel::generateUpdate(JsonVariant config)
 
 void StepperChannel::setup()
 {
-  _enabled = false;
+  // _enabled = false;
 
   HardwareSerial& serial_stream = Serial2;
-  _stepper.setup(serial_stream);
+  _stepperConfig.setup(serial_stream);
+  _stepperConfig.setMicrostepsPerStepPowerOfTwo(8);
+  _stepperConfig.setRunCurrent(50);
+  _stepperConfig.setHoldCurrent(10);
+  _stepperConfig.setStandstillMode(_stepperConfig.FREEWHEELING);
+  _stepperConfig.setStallGuardThreshold(25);
+  _stepperConfig.enable();
 
-  _stepper.setMicrostepsPerStepPowerOfTwo(8);
-  _stepper.setRunCurrent(50);
-  _stepper.setHoldCurrent(10);
-  _stepper.setStandstillMode(stepper_driver.FREEWHEELING);
-  _stepper.setStallGuardThreshold(25);
+  _stepper = engine.stepperConnectToPin(_step_pin);
+  if (_stepper) {
+    _stepper->setDirectionPin(_dir_pin);
+    _stepper->setEnablePin(_enable_pin);
+    _stepper->setAutoEnable(true);
 
-  _stepper.enable();
+    // If auto enable/disable need delays, just add (one or both):
+    // stepper->setDelayToEnable(50);
+    // stepper->setDelayToDisable(1000);
+
+    _stepper->setAcceleration(100);
+  }
 }
 
-void StepperDriver::printDebug(unsigned int milliDelay)
+void StepperChannel::printDebug(unsigned int milliDelay)
 {
   Serial.println("*************************");
   Serial.println("getSettings()");
-  TMC2209::Settings settings = _stepper.getSettings();
+  TMC2209::Settings settings = _stepperConfig.getSettings();
   Serial.print("settings.is_communicating = ");
   Serial.println(settings.is_communicating);
   Serial.print("settings.is_setup = ");
@@ -147,7 +169,7 @@ void StepperDriver::printDebug(unsigned int milliDelay)
 
   Serial.println("*************************");
   Serial.println("hardwareDisabled()");
-  bool hardware_disabled = stepper_driver.hardwareDisabled();
+  bool hardware_disabled = _stepperConfig.hardwareDisabled();
   Serial.print("hardware_disabled = ");
   Serial.println(hardware_disabled);
   Serial.println("*************************");
@@ -155,7 +177,7 @@ void StepperDriver::printDebug(unsigned int milliDelay)
 
   Serial.println("*************************");
   Serial.println("getStatus()");
-  TMC2209::Status status = stepper_driver.getStatus();
+  TMC2209::Status status = _stepperConfig.getStatus();
   Serial.print("status.over_temperature_warning = ");
   Serial.println(status.over_temperature_warning);
   Serial.print("status.over_temperature_shutdown = ");
@@ -190,39 +212,45 @@ void StepperDriver::printDebug(unsigned int milliDelay)
   Serial.println();
 }
 
-void StepperChannel::write(float angle)
+void StepperChannel::setAngle(float angle, uint32_t speed)
 {
   lastUpdateMillis = millis();
   currentAngle = angle;
 
-  _enabled = true;
+  int32_t position = angle * _steps_per_degree;
+  setPosition(position, speed);
+}
 
-  // _servo.write(currentAngle);
+void StepperChannel::setPosition(int32_t position, uint32_t speed)
+{
+  // _stepper->setAcceleration(100);
+  _stepper->setSpeedInUs(speed); // the parameter is us/step !!!
+  _stepper->move(position);
 }
 
 void StepperChannel::disable()
 {
-  _enabled = false;
+  _stepper->disableOutputs();
   // _servo.disable();
 }
 
-void StepperChannel::autoDisable()
-{
-  // shut off our servos after a certain amount of time of inactivity
-  // eg. a diverter valve that only moves every couple of hours will just sit there getting hot.
-  unsigned int delta = millis() - this->lastUpdateMillis;
-  if (this->autoDisableMillis > 0 && this->_enabled && delta >= this->autoDisableMillis)
-    this->disable();
-}
+// void StepperChannel::autoDisable()
+// {
+//   // shut off our servos after a certain amount of time of inactivity
+//   // eg. a diverter valve that only moves every couple of hours will just sit there getting hot.
+//   unsigned int delta = millis() - this->lastUpdateMillis;
+//   if (this->autoDisableMillis > 0 && this->_enabled && delta >= this->autoDisableMillis)
+//     this->disable();
+// }
 
 float StepperChannel::getAngle()
 {
-  return currentAngle;
+  return this->getPosition() / _steps_per_degree;
 }
 
-uint32_t StepperChannel::getPosition()
+int32_t StepperChannel::getPosition()
 {
-  return currentPosition;
+  return _stepper->getCurrentPosition();
 }
 
 #endif

@@ -46,8 +46,7 @@ void piezo_setup()
   pinMode(YB_PIEZO_PIN, OUTPUT);
 
   // LEDC once
-  ledcSetup(LEDC_CHANNEL, /*freq*/ 1000, LEDC_RES_BITS);
-  ledcAttachPin(YB_PIEZO_PIN, LEDC_CHANNEL);
+  ledcAttach(YB_PIEZO_PIN, 1000, LEDC_RES_BITS);
   buzzerMute();
 
   // Create buzzer task (small stack, low priority)
@@ -90,7 +89,7 @@ void stopMelody()
 // ---------- Low-level helpers ----------
 static inline void buzzerMute()
 {
-  ledcWrite(LEDC_CHANNEL, 0);
+  ledcWrite(YB_PIEZO_PIN, 0);
 }
 
 static inline void buzzerTone(uint16_t freqHz)
@@ -98,8 +97,8 @@ static inline void buzzerTone(uint16_t freqHz)
   if (freqHz == 0) {
     buzzerMute(); // rest
   } else {
-    ledcWrite(LEDC_CHANNEL, BUZZER_DUTY);
-    ledcWriteTone(LEDC_CHANNEL, freqHz); // hardware retune
+    ledcWrite(YB_PIEZO_PIN, BUZZER_DUTY);
+    ledcWriteTone(YB_PIEZO_PIN, freqHz); // hardware retune
   }
 }
 

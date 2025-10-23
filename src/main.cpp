@@ -34,6 +34,10 @@
   #include "servo_channel.h"
 #endif
 
+#ifdef YB_HAS_STEPPER_CHANNELS
+  #include "stepper_channel.h"
+#endif
+
 #ifdef YB_HAS_ADC_CHANNELS
   #include "adc_channel.h"
 #endif
@@ -130,6 +134,11 @@ void setup()
   Serial.println("Servo channels ok");
 #endif
 
+#ifdef YB_HAS_STEPPER_CHANNELS
+  stepper_channels_setup();
+  Serial.println("Stepper channels ok");
+#endif
+
 #ifdef YB_HAS_FANS
   fans_setup();
   Serial.println("Fans ok");
@@ -171,6 +180,11 @@ void loop()
 #ifdef YB_HAS_SERVO_CHANNELS
   servo_channels_loop();
   it.time("servo_loop");
+#endif
+
+#ifdef YB_HAS_STEPPER_CHANNELS
+  stepper_channels_loop();
+  it.time("stepper_loop");
 #endif
 
 #ifdef YB_HAS_FANS

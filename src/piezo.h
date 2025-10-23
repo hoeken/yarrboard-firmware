@@ -10,6 +10,7 @@
 #define YARR_PIEZO_H
 
 #include "config.h"
+#include "driver/ledc.h"
 
 #ifdef YB_HAS_PIEZO
 
