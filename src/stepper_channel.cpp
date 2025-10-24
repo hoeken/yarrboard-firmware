@@ -15,7 +15,10 @@
 byte _step_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_STEP_PINS;
 byte _dir_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_DIR_PINS;
 byte _enable_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_ENABLE_PINS;
+
+  #ifdef YB_STEPPER_DIAG_PINS
 byte _diag_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_DIAG_PINS;
+  #endif
 
 // the main star of the event
 etl::array<StepperChannel, YB_STEPPER_CHANNEL_COUNT> stepper_channels;
@@ -45,14 +48,18 @@ void StepperChannel::init(uint8_t id)
   BaseChannel::init(id);
 
   this->_step_pin = _step_pins[id - 1];
-  this->_dir_pin = _dir_pins[id - 1];
-  this->_enable_pin = _enable_pins[id - 1];
-  this->_diag_pin = _diag_pins[id - 1];
-
   pinMode(_step_pin, OUTPUT);
+
+  this->_dir_pin = _dir_pins[id - 1];
   pinMode(_dir_pin, OUTPUT);
+
+  this->_enable_pin = _enable_pins[id - 1];
   pinMode(_enable_pin, OUTPUT);
+
+  #ifdef YB_STEPPER_DIAG_PINS
+  this->_diag_pin = _diag_pins[id - 1];
   pinMode(_diag_pin, INPUT);
+  #endif
 
   snprintf(this->name, sizeof(this->name), "Stepper Channel %d", id);
 }
@@ -99,10 +106,11 @@ void StepperChannel::setup()
     _stepper->setAutoEnable(true);
 
     // If auto enable/disable need delays, just add (one or both):
-    // stepper->setDelayToEnable(50);
-    // stepper->setDelayToDisable(1000);
+    _stepper->setDelayToEnable(50);
+    _stepper->setDelayToDisable(1000);
 
-    _stepper->setAcceleration(100);
+    _stepper->setSpeedInUs(_home_fast_speed_hz);
+    _stepper->setAcceleration(_acceleration);
   }
 }
 
@@ -223,9 +231,8 @@ void StepperChannel::setAngle(float angle, uint32_t speed)
 
 void StepperChannel::setPosition(int32_t position, uint32_t speed)
 {
-  // _stepper->setAcceleration(100);
-  _stepper->setSpeedInUs(speed); // the parameter is us/step !!!
-  _stepper->move(position);
+  _stepper->setSpeedInHz(speed); // the parameter is hz
+  _stepper->moveTo(position);
 }
 
 void StepperChannel::disable()
@@ -251,6 +258,88 @@ float StepperChannel::getAngle()
 int32_t StepperChannel::getPosition()
 {
   return _stepper->getCurrentPosition();
+}
+
+bool StepperChannel::isEndstopHit()
+{
+  return digitalRead(_diag_pin) == HIGH;
+}
+
+bool StepperChannel::home()
+{
+  // If starting already on the switch, back off first
+  if (isEndstopHit()) {
+    _stepper->setSpeedInHz(_home_fast_speed_hz);
+    _stepper->move(+_backoff_steps); // move away (positive) to release
+    uint32_t t0 = millis();
+    while (!_stepper->isQueueEmpty()) {
+      if (millis() - t0 > _timeout_ms)
+        return false;
+      delay(1);
+    }
+    if (isEndstopHit())
+      return false; // still held => wiring/problem
+  }
+
+  // Phase 1: fast seek toward negative until DIAG triggers
+  _stepper->setSpeedInHz(_home_fast_speed_hz);
+  _stepper->move(-_homing_travel);
+
+  uint32_t t1 = millis();
+  while (!isEndstopHit()) {
+    if (millis() - t1 > _timeout_ms) {
+      _stepper->forceStop();
+      return false;
+    }
+    delay(1);
+  }
+  delay(_debounce_ms);
+  if (!isEndstopHit()) {
+    _stepper->forceStop();
+    return false;
+  }
+  _stepper->forceStop();
+  _stepper->forceStopAndNewPosition(0); // provisional zero simplifies math
+
+  // Phase 2: back off to release
+  _stepper->setSpeedInHz(_home_slow_speed_hz);
+  _stepper->move(+_backoff_steps); // away from switch
+  uint32_t t2 = millis();
+  while (!_stepper->isQueueEmpty()) {
+    if (millis() - t2 > _timeout_ms)
+      return false;
+    delay(1);
+  }
+  // ensure released
+  uint32_t t2b = millis();
+  while (isEndstopHit()) {
+    if (millis() - t2b > _timeout_ms)
+      return false;
+    delay(1);
+  }
+
+  // Phase 3: slow seek back into switch for precise zero
+  _stepper->setSpeedInHz(_home_slow_speed_hz);
+  _stepper->move(-_homing_travel);
+
+  uint32_t t3 = millis();
+  while (!isEndstopHit()) {
+    if (millis() - t3 > _timeout_ms) {
+      _stepper->forceStop();
+      return false;
+    }
+    delay(1);
+  }
+  delay(_backoff_steps);
+  if (!isEndstopHit()) {
+    _stepper->forceStop();
+    return false;
+  }
+  _stepper->forceStop();
+
+  // Final: set home = 0
+  _stepper->forceStopAndNewPosition(0);
+  return true;
 }
 
 #endif

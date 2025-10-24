@@ -38,6 +38,9 @@ class StepperChannel : public BaseChannel
     int32_t getPosition();
     void disable();
 
+    bool home();
+    bool isEndstopHit();
+
     void printDebug(unsigned int milliDelay);
     //    void autoDisable();
 
@@ -50,6 +53,14 @@ class StepperChannel : public BaseChannel
     byte _enable_pin;
     byte _diag_pin;
     uint32_t _steps_per_degree;
+
+    uint32_t _acceleration = 8000;       // steps/s^2
+    uint32_t _home_fast_speed_hz = 4000; // fast seek speed
+    uint32_t _home_slow_speed_hz = 800;  // slow seek speed
+    uint32_t _backoff_steps = 800;       // release distance
+    uint32_t _homing_travel = 200000;    // "very far" move to guarantee hit
+    uint32_t _debounce_ms = 5;           // switch debounce
+    uint32_t _timeout_ms = 15000;        // homing timeout
 };
 
 extern etl::array<StepperChannel, YB_STEPPER_CHANNEL_COUNT> stepper_channels;
