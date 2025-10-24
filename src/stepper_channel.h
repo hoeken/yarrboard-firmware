@@ -33,13 +33,13 @@ class StepperChannel : public BaseChannel
     void generateUpdate(JsonVariant config) override;
 
     void setup();
-    void setSpeed(uint32_t speed);
+    void setSpeed(float rpm);
     float getAngle();
     int32_t getPosition();
-    void gotoAngle(float angle, uint32_t speed = 0);
-    void gotoPosition(int32_t position, uint32_t speed = 0);
+    void gotoAngle(float angle, float rpm = 0);
+    void gotoPosition(int32_t position, float rpm = 0);
     bool home();
-    bool homeWithSpeed(uint32_t speed, bool debounce = true);
+    bool homeWithSpeed(float rpm, bool debounce = true);
 
     bool isEndstopHit();
     void disable();
@@ -63,12 +63,11 @@ class StepperChannel : public BaseChannel
     uint32_t _steps_per_degree = YB_STEPPER_STEPS_PER_REVOLUTION / 360;
     uint32_t _acceleration = 8000;                    // steps/s^2
     uint32_t _move_speed_hz = 2000;                   // regular moving speed
-    uint32_t _home_fast_speed_hz = 4000;              // fast homing speed
-    uint32_t _home_slow_speed_hz = 800;               // slow homing speed
+    float _home_fast_speed_rpm = 5;                   // fast homing speed
+    float _home_slow_speed_rpm = 1;                   // slow homing speed
     uint32_t _backoff_steps = 10 * _steps_per_degree; // release distance
-    // uint32_t _homing_travel = 720 * _steps_per_degree; // "very far" move to guarantee hit
-    uint32_t _debounce_ms = 5;    // switch debounce
-    uint32_t _timeout_ms = 15000; // homing timeout
+    uint32_t _debounce_ms = 5;                        // switch debounce
+    uint32_t _timeout_ms = 15000;                     // homing timeout
 };
 
 extern etl::array<StepperChannel, YB_STEPPER_CHANNEL_COUNT> stepper_channels;

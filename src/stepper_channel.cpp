@@ -112,7 +112,7 @@ void StepperChannel::setup()
     _stepper->setDelayToEnable(50);
     _stepper->setDelayToDisable(1000);
 
-    _stepper->setSpeedInHz(_home_fast_speed_hz);
+    setSpeed(_home_fast_speed_rpm);
     _stepper->setAcceleration(_acceleration);
   }
 }
@@ -225,25 +225,26 @@ void StepperChannel::printDebug(unsigned int milliDelay)
   #endif
 }
 
-void StepperChannel::setSpeed(uint32_t speed)
+void StepperChannel::setSpeed(float rpm)
 {
-  _stepper->setSpeedInHz(speed);
+  float hz = (rpm * YB_STEPPER_STEPS_PER_REVOLUTION) / 60.0;
+  _stepper->setSpeedInHz(hz);
 }
 
-void StepperChannel::gotoAngle(float angle, uint32_t speed)
+void StepperChannel::gotoAngle(float angle, float rpm)
 {
   lastUpdateMillis = millis();
   currentAngle = angle;
 
   int32_t position = angle * _steps_per_degree;
-  gotoPosition(position, speed);
+  gotoPosition(position, rpm);
 }
 
-void StepperChannel::gotoPosition(int32_t position, uint32_t speed)
+void StepperChannel::gotoPosition(int32_t position, float rpm)
 {
   // optional set speed
-  if (speed)
-    _stepper->setSpeedInHz(speed);
+  if (rpm)
+    setSpeed(rpm);
 
   // giddyup
   _stepper->moveTo(position);
@@ -271,16 +272,16 @@ bool StepperChannel::isEndstopHit()
 
 bool StepperChannel::home()
 {
-  if (homeWithSpeed(_home_fast_speed_hz))
-    return homeWithSpeed(_home_slow_speed_hz);
+  if (homeWithSpeed(_home_fast_speed_rpm))
+    return homeWithSpeed(_home_slow_speed_rpm);
 
   return false;
 }
 
-bool StepperChannel::homeWithSpeed(uint32_t speed, bool debounce)
+bool StepperChannel::homeWithSpeed(float rpm, bool debounce)
 {
   // back off a tiny bit first
-  _stepper->setSpeedInHz(speed);
+  setSpeed(rpm);
   _stepper->move(_backoff_steps);
   while (!_stepper->isRunning())
     delay(1);
@@ -289,8 +290,7 @@ bool StepperChannel::homeWithSpeed(uint32_t speed, bool debounce)
   if (isEndstopHit())
     return false;
 
-  // fast seek toward negative until endstop triggers
-  _stepper->setSpeedInHz(speed);
+  // seek toward negative until endstop triggers
   _stepper->runBackward();
 
   // look for endstop with timeout

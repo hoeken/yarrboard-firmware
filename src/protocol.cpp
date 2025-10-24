@@ -1076,9 +1076,9 @@ void handleSetStepperChannel(JsonVariantConst input, JsonVariant output)
   if (!ch->isEnabled)
     return generateErrorJSON(output, "Channel is not enabled.");
 
-  // update our speed
-  if (input["speed"] > 0) {
-    ch->setSpeed(input["speed"]);
+  // update our rpm
+  if (input["rpm"] > 0) {
+    ch->setSpeed(input["rpm"]);
   }
 
   // start a homing operation
