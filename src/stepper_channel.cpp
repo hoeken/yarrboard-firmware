@@ -88,15 +88,22 @@ void StepperChannel::generateUpdate(JsonVariant config)
 
 void StepperChannel::setup()
 {
+  _steps_per_degree = YB_STEPPER_STEPS_PER_REVOLUTION / 360;
+
+  // setup our TMC2209 parameters
+  #ifdef YB_STEPPER_DRIVER_TMC2209
   HardwareSerial& serial_stream = Serial2;
+  Serial2.setPins(YB_STEPPER_RX_PIN, YB_STEPPER_TX_PIN);
   _stepperConfig.setup(serial_stream);
-  _stepperConfig.setMicrostepsPerStepPowerOfTwo(8);
+  _stepperConfig.setMicrostepsPerStep(YB_STEPPER_MICROSTEPS);
+  _stepperConfig.setStandstillMode(_stepperConfig.FREEWHEELING);
   _stepperConfig.setRunCurrent(50);
   _stepperConfig.setHoldCurrent(10);
-  _stepperConfig.setStandstillMode(_stepperConfig.FREEWHEELING);
   _stepperConfig.setStallGuardThreshold(25);
   _stepperConfig.enable();
+  #endif
 
+  // setup our actual stepper controller
   _stepper = engine.stepperConnectToPin(_step_pin);
   if (_stepper) {
     _stepper->setDirectionPin(_dir_pin);
