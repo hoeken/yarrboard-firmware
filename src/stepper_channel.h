@@ -32,10 +32,11 @@ class StepperChannel : public BaseChannel
     void generateUpdate(JsonVariant config) override;
 
     void setup();
-    void setAngle(float angle, uint32_t speed);
-    void setPosition(int32_t position, uint32_t speed);
+    void setSpeed(uint32_t speed);
     float getAngle();
     int32_t getPosition();
+    void gotoAngle(float angle, uint32_t speed = 0);
+    void gotoPosition(int32_t position, uint32_t speed = 0);
     void disable();
 
     bool home();

@@ -24,6 +24,10 @@
   #include "servo_channel.h"
 #endif
 
+#ifdef YB_HAS_STEPPER_CHANNELS
+  #include "stepper_channel.h"
+#endif
+
 char board_name[YB_BOARD_NAME_LENGTH] = "Yarrboard";
 char admin_user[YB_USERNAME_LENGTH] = "admin";
 char admin_pass[YB_PASSWORD_LENGTH] = "admin";
@@ -187,6 +191,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleToggleRelayChannel(input, output);
     else if (!strcmp(cmd, "set_servo_channel"))
       return handleSetServoChannel(input, output);
+    else if (!strcmp(cmd, "set_stepper_channel"))
+      return handleSetStepperChannel(input, output);
     else if (!strcmp(cmd, "set_theme"))
       return handleSetTheme(input, output);
     else if (!strcmp(cmd, "set_brightness"))
@@ -241,6 +247,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleConfigRelayChannel(input, output);
     else if (!strcmp(cmd, "config_servo_channel"))
       return handleConfigServoChannel(input, output);
+    else if (!strcmp(cmd, "config_stepper_channel"))
+      return handleConfigStepperChannel(input, output);
     else if (!strcmp(cmd, "config_adc"))
       return handleConfigADC(input, output);
   }
@@ -1015,6 +1023,83 @@ void handleSetServoChannel(JsonVariantConst input, JsonVariant output)
 #endif
 }
 
+void handleConfigStepperChannel(JsonVariantConst input, JsonVariant output)
+{
+#ifdef YB_HAS_STEPPER_CHANNELS
+  char error[128];
+
+  // load our channel
+  auto* ch = lookupChannel(input, output, stepper_channels);
+  if (!ch)
+    return;
+
+  // channel name
+  if (input["name"].is<String>()) {
+    // is it too long?
+    if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
+      sprintf(error, "Maximum channel name length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
+      return generateErrorJSON(output, error);
+    }
+
+    // save to our storage
+    strlcpy(ch->name, input["name"] | "Stepper ?", sizeof(ch->name));
+  }
+
+  // enabled
+  if (input["enabled"].is<bool>()) {
+    // save right nwo.
+    bool enabled = input["enabled"];
+    ch->isEnabled = enabled;
+  }
+
+  // write it to file
+  if (!saveConfig(error, sizeof(error)))
+    return generateErrorJSON(output, error);
+
+  // give them the updated config
+  generateConfigJSON(output);
+
+#else
+  return generateErrorJSON(output, "Board does not have stepper channels.");
+#endif
+}
+
+void handleSetStepperChannel(JsonVariantConst input, JsonVariant output)
+{
+#ifdef YB_HAS_STEPPER_CHANNELS
+  // load our channel
+  auto* ch = lookupChannel(input, output, stepper_channels);
+  if (!ch)
+    return;
+
+  // is it enabled?
+  if (!ch->isEnabled)
+    return generateErrorJSON(output, "Channel is not enabled.");
+
+  // update our speed
+  if (input["speed"] > 0) {
+    ch->setSpeed(input["speed"]);
+  }
+
+  // start a homing operation
+  if (input["home"]) {
+    ch->home();
+    return;
+  }
+
+  // move to an angle
+  if (input["angle"].is<JsonVariantConst>()) {
+    float angle = input["angle"];
+    if (angle >= 0)
+      ch->gotoAngle(angle);
+    else
+      return generateErrorJSON(output, "'angle' must be greater than 0");
+  }
+#else
+  return generateErrorJSON(output, "Board does not have stepper channels.");
+#endif
+}
+
 void handleConfigADC(JsonVariantConst input, JsonVariant output)
 {
 #ifdef YB_HAS_ADC_CHANNELS
@@ -1370,9 +1455,17 @@ void generateUpdateJSON(JsonVariant output)
 #endif
 
 #ifdef YB_HAS_SERVO_CHANNELS
-  JsonArray s_channels = output["servo"].to<JsonArray>();
+  JsonArray servo_array = output["servo"].to<JsonArray>();
   for (auto& ch : servo_channels) {
-    JsonObject jo = s_channels.add<JsonObject>();
+    JsonObject jo = servo_array.add<JsonObject>();
+    ch.generateUpdate(jo);
+  }
+#endif
+
+#ifdef YB_HAS_STEPPER_CHANNELS
+  JsonArray stepper_array = output["stepper"].to<JsonArray>();
+  for (auto& ch : stepper_channels) {
+    JsonObject jo = stepper_array.add<JsonObject>();
     ch.generateUpdate(jo);
   }
 #endif
@@ -1387,8 +1480,6 @@ void generateUpdateJSON(JsonVariant output)
 #endif
 
 #ifdef YB_IS_BRINEOMATIC
-  // servos
-  // motor(s)
   output["brineomatic"] = true;
   output["status"] = wm.getStatus();
   output["run_result"] = wm.resultToString(wm.getRunResult());

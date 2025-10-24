@@ -88,6 +88,8 @@ void handleSetRelayChannel(JsonVariantConst input, JsonVariant output);
 void handleToggleRelayChannel(JsonVariantConst input, JsonVariant output);
 void handleConfigServoChannel(JsonVariantConst input, JsonVariant output);
 void handleSetServoChannel(JsonVariantConst input, JsonVariant output);
+void handleConfigStepperChannel(JsonVariantConst input, JsonVariant output);
+void handleSetStepperChannel(JsonVariantConst input, JsonVariant output);
 void handleSetSwitch(JsonVariantConst input, JsonVariant output);
 void handleConfigSwitch(JsonVariantConst input, JsonVariant output);
 void handleConfigRGB(JsonVariantConst input, JsonVariant output);

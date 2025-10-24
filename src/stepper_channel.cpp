@@ -88,8 +88,6 @@ void StepperChannel::generateUpdate(JsonVariant config)
 
 void StepperChannel::setup()
 {
-  // _enabled = false;
-
   HardwareSerial& serial_stream = Serial2;
   _stepperConfig.setup(serial_stream);
   _stepperConfig.setMicrostepsPerStepPowerOfTwo(8);
@@ -220,35 +218,34 @@ void StepperChannel::printDebug(unsigned int milliDelay)
   Serial.println();
 }
 
-void StepperChannel::setAngle(float angle, uint32_t speed)
+void StepperChannel::setSpeed(uint32_t speed)
+{
+  _stepper->setSpeedInHz(speed);
+}
+
+void StepperChannel::gotoAngle(float angle, uint32_t speed)
 {
   lastUpdateMillis = millis();
   currentAngle = angle;
 
   int32_t position = angle * _steps_per_degree;
-  setPosition(position, speed);
+  gotoPosition(position, speed);
 }
 
-void StepperChannel::setPosition(int32_t position, uint32_t speed)
+void StepperChannel::gotoPosition(int32_t position, uint32_t speed)
 {
-  _stepper->setSpeedInHz(speed); // the parameter is hz
+  // optional set speed
+  if (speed)
+    _stepper->setSpeedInHz(speed);
+
+  // giddyup
   _stepper->moveTo(position);
 }
 
 void StepperChannel::disable()
 {
   _stepper->disableOutputs();
-  // _servo.disable();
 }
-
-// void StepperChannel::autoDisable()
-// {
-//   // shut off our servos after a certain amount of time of inactivity
-//   // eg. a diverter valve that only moves every couple of hours will just sit there getting hot.
-//   unsigned int delta = millis() - this->lastUpdateMillis;
-//   if (this->autoDisableMillis > 0 && this->_enabled && delta >= this->autoDisableMillis)
-//     this->disable();
-// }
 
 float StepperChannel::getAngle()
 {
