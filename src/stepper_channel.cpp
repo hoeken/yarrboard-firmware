@@ -88,19 +88,17 @@ void StepperChannel::generateUpdate(JsonVariant config)
 
 void StepperChannel::setup()
 {
-  _steps_per_degree = YB_STEPPER_STEPS_PER_REVOLUTION / 360;
-
   // setup our TMC2209 parameters
   #ifdef YB_STEPPER_DRIVER_TMC2209
   HardwareSerial& serial_stream = Serial2;
   Serial2.setPins(YB_STEPPER_RX_PIN, YB_STEPPER_TX_PIN);
-  _stepperConfig.setup(serial_stream);
-  _stepperConfig.setMicrostepsPerStep(YB_STEPPER_MICROSTEPS);
-  _stepperConfig.setStandstillMode(_stepperConfig.FREEWHEELING);
-  _stepperConfig.setRunCurrent(50);
-  _stepperConfig.setHoldCurrent(10);
-  _stepperConfig.setStallGuardThreshold(25);
-  _stepperConfig.enable();
+  _tmc2209.setup(serial_stream);
+  _tmc2209.setMicrostepsPerStep(YB_STEPPER_MICROSTEPS);
+  _tmc2209.setStandstillMode(_tmc2209.FREEWHEELING);
+  _tmc2209.setRunCurrent(_run_current);
+  _tmc2209.setHoldCurrent(_hold_current);
+  _tmc2209.setStallGuardThreshold(_stall_guard);
+  _tmc2209.enable();
   #endif
 
   // setup our actual stepper controller
@@ -114,16 +112,17 @@ void StepperChannel::setup()
     _stepper->setDelayToEnable(50);
     _stepper->setDelayToDisable(1000);
 
-    _stepper->setSpeedInUs(_home_fast_speed_hz);
+    _stepper->setSpeedInHz(_home_fast_speed_hz);
     _stepper->setAcceleration(_acceleration);
   }
 }
 
 void StepperChannel::printDebug(unsigned int milliDelay)
 {
+  #ifdef YB_STEPPER_DRIVER_TMC2209
   Serial.println("*************************");
   Serial.println("getSettings()");
-  TMC2209::Settings settings = _stepperConfig.getSettings();
+  TMC2209::Settings settings = _tmc2209.getSettings();
   Serial.print("settings.is_communicating = ");
   Serial.println(settings.is_communicating);
   Serial.print("settings.is_setup = ");
@@ -182,7 +181,7 @@ void StepperChannel::printDebug(unsigned int milliDelay)
 
   Serial.println("*************************");
   Serial.println("hardwareDisabled()");
-  bool hardware_disabled = _stepperConfig.hardwareDisabled();
+  bool hardware_disabled = _tmc2209.hardwareDisabled();
   Serial.print("hardware_disabled = ");
   Serial.println(hardware_disabled);
   Serial.println("*************************");
@@ -190,7 +189,7 @@ void StepperChannel::printDebug(unsigned int milliDelay)
 
   Serial.println("*************************");
   Serial.println("getStatus()");
-  TMC2209::Status status = _stepperConfig.getStatus();
+  TMC2209::Status status = _tmc2209.getStatus();
   Serial.print("status.over_temperature_warning = ");
   Serial.println(status.over_temperature_warning);
   Serial.print("status.over_temperature_shutdown = ");
@@ -223,6 +222,7 @@ void StepperChannel::printDebug(unsigned int milliDelay)
   Serial.println(status.standstill);
   Serial.println("*************************");
   Serial.println();
+  #endif
 }
 
 void StepperChannel::setSpeed(uint32_t speed)
@@ -271,24 +271,29 @@ bool StepperChannel::isEndstopHit()
 
 bool StepperChannel::home()
 {
-  // If starting already on the switch, back off first
-  if (isEndstopHit()) {
-    _stepper->setSpeedInHz(_home_fast_speed_hz);
-    _stepper->move(+_backoff_steps); // move away (positive) to release
-    uint32_t t0 = millis();
-    while (!_stepper->isQueueEmpty()) {
-      if (millis() - t0 > _timeout_ms)
-        return false;
-      delay(1);
-    }
-    if (isEndstopHit())
-      return false; // still held => wiring/problem
-  }
+  if (homeWithSpeed(_home_fast_speed_hz))
+    return homeWithSpeed(_home_slow_speed_hz);
 
-  // Phase 1: fast seek toward negative until DIAG triggers
-  _stepper->setSpeedInHz(_home_fast_speed_hz);
-  _stepper->move(-_homing_travel);
+  return false;
+}
 
+bool StepperChannel::homeWithSpeed(uint32_t speed, bool debounce)
+{
+  // back off a tiny bit first
+  _stepper->setSpeedInHz(speed);
+  _stepper->move(_backoff_steps);
+  while (!_stepper->isRunning())
+    delay(1);
+
+  // ensure released
+  if (isEndstopHit())
+    return false;
+
+  // fast seek toward negative until endstop triggers
+  _stepper->setSpeedInHz(speed);
+  _stepper->runBackward();
+
+  // look for endstop with timeout
   uint32_t t1 = millis();
   while (!isEndstopHit()) {
     if (millis() - t1 > _timeout_ms) {
@@ -297,53 +302,19 @@ bool StepperChannel::home()
     }
     delay(1);
   }
-  delay(_debounce_ms);
-  if (!isEndstopHit()) {
-    _stepper->forceStop();
-    return false;
-  }
-  _stepper->forceStop();
-  _stepper->forceStopAndNewPosition(0); // provisional zero simplifies math
 
-  // Phase 2: back off to release
-  _stepper->setSpeedInHz(_home_slow_speed_hz);
-  _stepper->move(+_backoff_steps); // away from switch
-  uint32_t t2 = millis();
-  while (!_stepper->isQueueEmpty()) {
-    if (millis() - t2 > _timeout_ms)
-      return false;
-    delay(1);
-  }
-  // ensure released
-  uint32_t t2b = millis();
-  while (isEndstopHit()) {
-    if (millis() - t2b > _timeout_ms)
-      return false;
-    delay(1);
-  }
-
-  // Phase 3: slow seek back into switch for precise zero
-  _stepper->setSpeedInHz(_home_slow_speed_hz);
-  _stepper->move(-_homing_travel);
-
-  uint32_t t3 = millis();
-  while (!isEndstopHit()) {
-    if (millis() - t3 > _timeout_ms) {
+  // double check?
+  if (debounce) {
+    delay(_debounce_ms);
+    if (!isEndstopHit()) {
       _stepper->forceStop();
       return false;
     }
-    delay(1);
   }
-  delay(_backoff_steps);
-  if (!isEndstopHit()) {
-    _stepper->forceStop();
-    return false;
-  }
-  _stepper->forceStop();
 
-  // Final: set home = 0
+  // okay, zero us.
   _stepper->forceStopAndNewPosition(0);
+
   return true;
 }
-
 #endif
