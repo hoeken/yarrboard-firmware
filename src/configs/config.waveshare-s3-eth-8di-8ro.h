@@ -17,8 +17,9 @@
 #define YB_HAS_RELAY_CHANNELS
 #define YB_RELAY_DRIVER_TCA9554
 #define YB_RELAY_DRIVER_TCA9554_ADDRESS 0x20
-#define YB_I2C_SDA_PIN                  41
+#define YB_I2C_SDA_PIN                  42
 #define YB_I2C_SCL_PIN                  41
+#define YB_I2C_SPEED                    400000
 #define YB_RELAY_CHANNEL_COUNT          8
 #define YB_RELAY_CHANNEL_PINS           {0, 1, 2, 3, 4, 5, 6, 7}
 
