@@ -84,7 +84,7 @@ void mqtt_loop()
 
 #ifdef YB_HAS_ADC_CHANNELS
       for (auto& ch : adc_channels) {
-        ch.mqttUpdate("adc");
+        ch.mqttUpdate();
         if (app_enable_ha_integration)
           ch.haPublishAvailable();
       }
@@ -92,27 +92,27 @@ void mqtt_loop()
 
 #ifdef YB_HAS_PWM_CHANNELS
       for (auto& ch : pwm_channels) {
-        ch.mqttUpdate("pwm");
+        ch.mqttUpdate();
         if (app_enable_ha_integration)
           ch.haPublishAvailable();
       }
 #endif
 
-      // #ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
-      //       for (auto& ch : digital_input_channels) {
-      //         ch.mqttUpdate("dio");
-      //         if (app_enable_ha_integration)
-      //           ch.haPublishAvailable();
-      //       }
-      // #endif
+#ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
+      for (auto& ch : digital_input_channels) {
+        ch.mqttUpdate();
+        if (app_enable_ha_integration)
+          ch.haPublishAvailable();
+      }
+#endif
 
-      // #ifdef YB_HAS_RELAY_CHANNELS
-      //       for (auto& ch : relay_channels) {
-      //         ch.mqttUpdate("relay");
-      //         if (app_enable_ha_integration)
-      //           ch.haPublishAvailable();
-      //       }
-      // #endif
+#ifdef YB_HAS_RELAY_CHANNELS
+      for (auto& ch : relay_channels) {
+        ch.mqttUpdate();
+        if (app_enable_ha_integration)
+          ch.haPublishAvailable();
+      }
+#endif
     }
 
     previousMQTTMillis = millis();
@@ -208,33 +208,22 @@ void mqtt_ha_discovery()
 
 // let each pwm channel create its own config
 #ifdef YB_HAS_PWM_CHANNELS
-  for (auto& ch : pwm_channels) {
-    if (ch.isEnabled)
-      ch.haGenerateDiscovery(components);
-  }
+  mqqt_update_channels(pwm_channels, components);
 #endif
 
-// // let each pwm channel create its own config
-// #ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
-//   for (auto& ch : digital_input_channels) {
-//     if (ch.isEnabled)
-//       ch.haGenerateDiscovery(components);
-//   }
-// #endif
+// let each pwm channel create its own config
+#ifdef YB_HAS_RELAY_CHANNELS
+  mqqt_update_channels(relay_channels, components);
+#endif
 
-// // let each pwm channel create its own config
-// #ifdef YB_HAS_RELAY_CHANNELS
-//   for (auto& ch : relay_channels) {
-//     if (ch.isEnabled)
-//       ch.haGenerateDiscovery(components);
-//   }
-// #endif
+// let each pwm channel create its own config
+#ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
+  mqqt_update_channels(digital_input_channels, components);
+#endif
 
 // let each pwm channel create its own config
 #ifdef YB_HAS_ADC_CHANNELS
-  for (auto& ch : adc_channels)
-    if (ch.isEnabled)
-      ch.haGenerateDiscovery(components);
+  mqqt_update_channels(adc_channels, components);
 #endif
 
   // dynamically allocate our buffer

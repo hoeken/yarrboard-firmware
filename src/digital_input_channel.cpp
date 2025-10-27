@@ -50,6 +50,7 @@ void input_channels_loop()
 void DigitalInputChannel::init(uint8_t id)
 {
   BaseChannel::init(id);
+  this->channel_type = "dio";
 
   this->pin = _di_pins[id - 1]; // pins are zero indexed, we are 1 indexed
 
@@ -171,4 +172,35 @@ DigitalInputChannel::SwitchMode DigitalInputChannel::getMode(const char* mode)
     return DIRECT;
 }
 
+void DigitalInputChannel::haGenerateDiscovery(JsonVariant doc)
+{
+  BaseChannel::haGenerateDiscovery(doc);
+
+  // generate our topics
+  sprintf(ha_topic_state, "yarrboard/%s/%s/%s/ha_state", ha_key, channel_type, this->key);
+
+  // configuration object for the individual channel
+  JsonObject obj = doc[ha_uuid].to<JsonObject>();
+  obj["platform"] = "binary_sensor";
+  obj["name"] = this->name;
+  obj["unique_id"] = ha_uuid;
+  obj["state_topic"] = ha_topic_state;
+  obj["enabled_by_default"] = defaultState;
+  obj["payload_on"] = "ON";
+  obj["payload_off"] = "OFF";
+  // obj["device_class"] = "door";
+
+  // availability is an array of objects
+  JsonArray availability = obj["availability"].to<JsonArray>();
+  JsonObject avail = availability.add<JsonObject>();
+  avail["topic"] = ha_topic_avail;
+}
+
+void DigitalInputChannel::haPublishState()
+{
+  if (this->getState())
+    mqtt_publish(ha_topic_state, "ON", false);
+  else
+    mqtt_publish(ha_topic_state, "OFF", false);
+}
 #endif

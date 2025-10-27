@@ -99,12 +99,34 @@ void BaseChannel::generateUpdate(JsonVariant config)
   config["key"] = this->key;
 }
 
-void BaseChannel::mqttUpdate(const char* channel_type)
+void BaseChannel::mqttUpdate()
 {
   JsonDocument output;
   this->generateUpdate(output);
 
   char topic[128];
-  snprintf(topic, sizeof(topic), "%s/%s", channel_type, this->key);
+  snprintf(topic, sizeof(topic), "%s/%s", this->channel_type, this->key);
   mqtt_traverse_json(output, topic);
+}
+
+void BaseChannel::haGenerateDiscovery(JsonVariant doc)
+{
+  if (app_use_hostname_as_mqtt_uuid)
+    strncpy(ha_key, local_hostname, sizeof(key));
+  else
+    strncpy(ha_key, uuid, sizeof(key));
+
+  // generate our id / topics
+  sprintf(ha_uuid, "%s_%s_%s", ha_key, channel_type, this->key);
+  sprintf(ha_topic_avail, "yarrboard/%s/%s/%s/ha_availability", ha_key, channel_type, this->key);
+}
+
+void BaseChannel::haPublishAvailable()
+{
+  mqtt_publish(ha_topic_avail, "online", false);
+}
+
+void BaseChannel::haPublishState()
+{
+  return;
 }

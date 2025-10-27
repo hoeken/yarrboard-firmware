@@ -12,7 +12,7 @@
 
   #include "servo_channel.h"
 
-byte _pins[YB_SERVO_CHANNEL_COUNT] = YB_SERVO_CHANNEL_PINS;
+byte _servo_pins[YB_SERVO_CHANNEL_COUNT] = YB_SERVO_CHANNEL_PINS;
 
 // the main star of the event
 etl::array<ServoChannel, YB_SERVO_CHANNEL_COUNT> servo_channels;
@@ -37,7 +37,7 @@ void ServoChannel::init(uint8_t id)
 {
   BaseChannel::init(id);
 
-  this->_pin = _pins[id - 1];
+  this->_pin = _servo_pins[id - 1];
 
   snprintf(this->name, sizeof(this->name), "Servo Channel %d", id);
 }

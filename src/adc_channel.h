@@ -74,12 +74,9 @@ class ADCChannel : public BaseChannel
 
     void haGenerateDiscovery(JsonVariant doc);
     void haGenerateSensorDiscovery(JsonVariant doc);
-    void haPublishAvailable();
 
   private:
-    char ha_uuid[64];
     char ha_topic_value[128];
-    char ha_topic_avail[128];
 
     uint8_t _adcChannel = 0;
 

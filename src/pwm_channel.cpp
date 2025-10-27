@@ -19,7 +19,7 @@ unsigned long previousHAUpdateMillis = 0;
 etl::array<PWMChannel, YB_PWM_CHANNEL_COUNT> pwm_channels;
 
 // our channel pins
-byte _pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_PINS;
+byte _pwm_pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_PINS;
 
 /* Setting PWM Properties */
 // ledc library range is a little bit quirky:
@@ -786,17 +786,11 @@ const char* PWMChannel::getStatus()
 
 void PWMChannel::haGenerateDiscovery(JsonVariant doc)
 {
-  char ha_key[YB_HOSTNAME_LENGTH];
-  if (app_use_hostname_as_mqtt_uuid)
-    strncpy(ha_key, local_hostname, sizeof(key));
-  else
-    strncpy(ha_key, uuid, sizeof(key));
+  BaseChannel::haGenerateDiscovery(doc);
 
-  // generate our id / topics
-  sprintf(ha_uuid, "%s_pwm_%s", ha_key, this->key);
+  // generate our topics
   sprintf(ha_topic_cmd_state, "yarrboard/%s/pwm/%s/ha_set", ha_key, this->key);
   sprintf(ha_topic_state_state, "yarrboard/%s/pwm/%s/ha_state", ha_key, this->key);
-  sprintf(ha_topic_avail, "yarrboard/%s/pwm/%s/ha_availability", ha_key, this->key);
   sprintf(ha_topic_cmd_brightness, "yarrboard/%s/pwm/%s/ha_brightness/set", ha_key, this->key);
   sprintf(ha_topic_state_brightness, "yarrboard/%s/pwm/%s/ha_brightness/state", ha_key, this->key);
   sprintf(ha_topic_voltage, "yarrboard/%s/pwm/%s/voltage", ha_key, this->key);
@@ -815,7 +809,7 @@ void PWMChannel::haGenerateLightDiscovery(JsonVariant doc)
 {
   // configuration object for the individual channel
   JsonObject obj = doc[ha_uuid].to<JsonObject>();
-  obj["p"] = "light";
+  obj["platform"] = "light";
   obj["name"] = this->name;
   obj["unique_id"] = ha_uuid;
   obj["command_topic"] = ha_topic_cmd_state;
@@ -888,11 +882,6 @@ void PWMChannel::haGenerateAmperageDiscovery(JsonVariant doc)
   avail["topic"] = ha_topic_avail;
 }
 
-void PWMChannel::haPublishAvailable()
-{
-  mqtt_publish(ha_topic_avail, "online", false);
-}
-
 void PWMChannel::haPublishState()
 {
   if (this->status == Status::ON || this->status == Status::BYPASSED)
@@ -952,8 +941,9 @@ void PWMChannel::haHandleCommand(const char* topic, const char* payload)
 void PWMChannel::init(uint8_t id)
 {
   BaseChannel::init(id);
+  this->channel_type = "pwm";
 
-  this->pin = _pins[id - 1]; // pins are zero indexed, we are 1 indexed
+  this->pin = _pwm_pins[id - 1]; // pins are zero indexed, we are 1 indexed
 
   snprintf(this->name, sizeof(this->name), "PWM Channel %d", id);
 }

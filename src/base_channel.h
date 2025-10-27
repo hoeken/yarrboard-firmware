@@ -33,7 +33,17 @@ class BaseChannel
     virtual void generateConfig(JsonVariant config);
     virtual void generateUpdate(JsonVariant config);
 
-    void mqttUpdate(const char* channel_type);
+    virtual void haGenerateDiscovery(JsonVariant doc);
+    virtual void haPublishAvailable();
+    virtual void haPublishState();
+
+    void mqttUpdate();
+
+  protected:
+    char ha_key[YB_HOSTNAME_LENGTH];
+    char ha_uuid[64];
+    char ha_topic_avail[128];
+    const char* channel_type = "base";
 };
 
 template <typename Channel, size_t N>
@@ -116,5 +126,17 @@ Channel* lookupChannel(JsonVariantConst input, JsonVariant output, etl::array<Ch
 
   generateErrorJSON(output, "You must pass in either 'id' or 'key' as a required parameter");
   return nullptr;
+}
+
+template <typename Channel, size_t N>
+void mqqt_update_channels(etl::array<Channel, N>& channels, JsonVariant components)
+{
+  static_assert(std::is_base_of<BaseChannel, Channel>::value,
+    "Channel must derive from BaseChannel");
+
+  for (auto& ch : channels) {
+    if (ch.isEnabled)
+      ch.haGenerateDiscovery(components);
+  }
 }
 #endif /* !YARR_BASE_CHANNEL_H */

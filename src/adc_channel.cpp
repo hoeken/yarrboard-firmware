@@ -218,6 +218,7 @@ float ADCChannel::interpolateValue(float xv)
 void ADCChannel::init(uint8_t id)
 {
   BaseChannel::init(id);
+  this->channel_type = "adc";
 
   snprintf(this->name, sizeof(this->name), "ADC Channel %d", id);
 }
@@ -387,10 +388,10 @@ bool ADCChannel::addCalibrationValue(CalibrationPoint cp)
 
 void ADCChannel::haGenerateDiscovery(JsonVariant doc)
 {
+  BaseChannel::haGenerateDiscovery(doc);
+
   // generate our id / topics
-  sprintf(ha_uuid, "%s_adc_%s", uuid, this->key);
   sprintf(ha_topic_value, "yarrboard/%s/adc/%s/value", local_hostname, this->key);
-  sprintf(ha_topic_avail, "yarrboard/%s/adc/%s/ha_availability", local_hostname, this->key);
 
   this->haGenerateSensorDiscovery(doc);
 }
@@ -398,7 +399,7 @@ void ADCChannel::haGenerateDiscovery(JsonVariant doc)
 void ADCChannel::haGenerateSensorDiscovery(JsonVariant doc)
 {
   JsonObject obj = doc[ha_uuid].to<JsonObject>();
-  obj["p"] = "sensor";
+  obj["platform"] = "sensor";
   obj["name"] = this->name;
   obj["unique_id"] = ha_uuid;
   obj["state_topic"] = ha_topic_value;
@@ -412,11 +413,6 @@ void ADCChannel::haGenerateSensorDiscovery(JsonVariant doc)
   JsonArray availability = obj["availability"].to<JsonArray>();
   JsonObject avail = availability.add<JsonObject>();
   avail["topic"] = ha_topic_avail;
-}
-
-void ADCChannel::haPublishAvailable()
-{
-  mqtt_publish(ha_topic_avail, "online", false);
 }
 
 #endif

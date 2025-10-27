@@ -12,6 +12,7 @@
 #include "base_channel.h"
 #include "config.h"
 #include "etl/array.h"
+#include "mqtt.h"
 #include "prefs.h"
 #include "protocol.h"
 #include <Arduino.h>
@@ -24,6 +25,8 @@ class RelayChannel : public BaseChannel
 {
   protected:
     byte _pin;
+    char ha_topic_cmd_state[128];
+    char ha_topic_state_state[128];
 
   public:
     /**
@@ -47,12 +50,17 @@ class RelayChannel : public BaseChannel
     void generateConfig(JsonVariant config) override;
     void generateUpdate(JsonVariant config) override;
 
+    void haGenerateDiscovery(JsonVariant doc);
+    void haPublishState();
+    void haHandleCommand(const char* topic, const char* payload);
+
     void setup();
     void setupDefaultState();
     void updateOutput();
 
     void setState(const char* state);
     void setState(bool newState);
+    bool getState();
 
     const char* getStatus();
 };
@@ -61,5 +69,6 @@ extern etl::array<RelayChannel, YB_RELAY_CHANNEL_COUNT> relay_channels;
 
 void relay_channels_setup();
 void relay_channels_loop();
+void relay_handle_ha_command(const char* topic, const char* payload, int retain, int qos, bool dup);
 
 #endif /* !YARR_RELAY_CHANNEL_H */

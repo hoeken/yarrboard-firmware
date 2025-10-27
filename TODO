@@ -37,6 +37,7 @@
     * save if no errors.
     * add edit key for each channel
 * test/update/fix the release script for ota
+* relaychannel -> move to boolean state only
 
 # BRINEOMATIC
 

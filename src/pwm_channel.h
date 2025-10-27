@@ -24,12 +24,10 @@
 class PWMChannel : public BaseChannel
 {
   private:
-    char ha_uuid[64];
     char ha_topic_cmd_state[128];
     char ha_topic_cmd_brightness[128];
     char ha_topic_state_state[128];
     char ha_topic_state_brightness[128];
-    char ha_topic_avail[128];
     char ha_topic_voltage[128];
     char ha_topic_current[128];
 
@@ -154,7 +152,6 @@ class PWMChannel : public BaseChannel
     void haGenerateLightDiscovery(JsonVariant doc);
     void haGenerateVoltageDiscovery(JsonVariant doc);
     void haGenerateAmperageDiscovery(JsonVariant doc);
-    void haPublishAvailable();
     void haPublishState();
     void haHandleCommand(const char* topic, const char* payload);
 

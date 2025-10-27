@@ -36,6 +36,9 @@ class DigitalInputChannel : public BaseChannel
     void generateConfig(JsonVariant config) override;
     void generateUpdate(JsonVariant update) override;
 
+    void haGenerateDiscovery(JsonVariant doc);
+    void haPublishState();
+
     void setState(bool state);
     bool getState();
 
@@ -43,9 +46,7 @@ class DigitalInputChannel : public BaseChannel
     static SwitchMode getMode(const char* mode);
 
   private:
-    char ha_uuid[64];
     char ha_topic_state[128];
-    char ha_topic_avail[128];
 
     byte pin = 0;
     SwitchMode mode;

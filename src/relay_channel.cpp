@@ -14,7 +14,7 @@
 
 // the main star of the event
 etl::array<RelayChannel, YB_RELAY_CHANNEL_COUNT> relay_channels;
-byte _pins[YB_RELAY_CHANNEL_COUNT] = YB_RELAY_CHANNEL_PINS;
+byte _relay_pins[YB_RELAY_CHANNEL_COUNT] = YB_RELAY_CHANNEL_PINS;
 
   #ifdef YB_RELAY_DRIVER_TCA9554
 TCA9554 TCA(YB_RELAY_DRIVER_TCA9554_ADDRESS);
@@ -44,7 +44,7 @@ void relay_channels_loop()
 void RelayChannel::setup()
 {
   // init!
-  _pin = _pins[id - 1];
+  _pin = _relay_pins[id - 1];
 
   #ifdef YB_RELAY_DRIVER_TCA9554
   TCA.pinMode1(_pin, OUTPUT);
@@ -110,6 +110,14 @@ void RelayChannel::setState(bool newState)
   this->updateOutput();
 }
 
+bool RelayChannel::getState()
+{
+  if (this->status == Status::ON)
+    return true;
+  else
+    return false;
+}
+
 const char* RelayChannel::getStatus()
 {
   if (this->status == Status::ON)
@@ -121,6 +129,7 @@ const char* RelayChannel::getStatus()
 void RelayChannel::init(uint8_t id)
 {
   BaseChannel::init(id);
+  this->channel_type = "relay";
 
   snprintf(this->name, sizeof(this->name), "Relay Channel %d", id);
 }
@@ -152,6 +161,58 @@ void RelayChannel::generateUpdate(JsonVariant config)
 
   config["state"] = this->getStatus();
   config["source"] = this->source;
+}
+
+void RelayChannel::haGenerateDiscovery(JsonVariant doc)
+{
+  BaseChannel::haGenerateDiscovery(doc);
+
+  // generate our topics
+  sprintf(ha_topic_cmd_state, "yarrboard/%s/pwm/%s/ha_set", ha_key, this->key);
+  sprintf(ha_topic_state_state, "yarrboard/%s/pwm/%s/ha_state", ha_key, this->key);
+
+  // our callbacks to the command topics
+  mqtt_on_topic(ha_topic_cmd_state, 0, relay_handle_ha_command);
+
+  // configuration object for the individual channel
+  JsonObject obj = doc[ha_uuid].to<JsonObject>();
+  obj["platform"] = "light";
+  obj["name"] = this->name;
+  obj["unique_id"] = ha_uuid;
+  obj["command_topic"] = ha_topic_cmd_state;
+  obj["state_topic"] = ha_topic_state_state;
+  obj["payload_on"] = "ON";
+  obj["payload_off"] = "OFF";
+
+  // availability is an array of objects
+  JsonArray availability = obj["availability"].to<JsonArray>();
+  JsonObject avail = availability.add<JsonObject>();
+  avail["topic"] = ha_topic_avail;
+}
+
+void RelayChannel::haPublishState()
+{
+  if (this->getStatus())
+    mqtt_publish(ha_topic_state_state, "ON", false);
+  else
+    mqtt_publish(ha_topic_state_state, "OFF", false);
+}
+
+void relay_handle_ha_command(const char* topic, const char* payload, int retain, int qos, bool dup)
+{
+  for (auto& ch : relay_channels) {
+    ch.haHandleCommand(topic, payload);
+  }
+}
+
+void RelayChannel::haHandleCommand(const char* topic, const char* payload)
+{
+  if (!strcmp(ha_topic_cmd_state, topic)) {
+    if (!strcmp(payload, "ON"))
+      this->setState(true);
+    else
+      this->setState(false);
+  }
 }
 
 #endif
