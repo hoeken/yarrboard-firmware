@@ -129,7 +129,20 @@ Channel* lookupChannel(JsonVariantConst input, JsonVariant output, etl::array<Ch
 }
 
 template <typename Channel, size_t N>
-void mqqt_update_channels(etl::array<Channel, N>& channels, JsonVariant components)
+void mqqt_update_channels(etl::array<Channel, N>& channels)
+{
+  static_assert(std::is_base_of<BaseChannel, Channel>::value,
+    "Channel must derive from BaseChannel");
+
+  for (auto& ch : channels) {
+    ch.mqttUpdate();
+    if (app_enable_ha_integration)
+      ch.haPublishAvailable();
+  }
+}
+
+template <typename Channel, size_t N>
+void ha_generate_channels_discovery(etl::array<Channel, N>& channels, JsonVariant components)
 {
   static_assert(std::is_base_of<BaseChannel, Channel>::value,
     "Channel must derive from BaseChannel");

@@ -38,6 +38,11 @@
     * add edit key for each channel
 * test/update/fix the release script for ota
 * relaychannel -> move to boolean state only
+* big cleanup of the javascript code:
+    * basic YarrboardApp object
+        * onConnect()
+        * onMessage()
+        * etc
 
 # BRINEOMATIC
 
@@ -116,14 +121,29 @@
 
 # LONG TERM:
 
-* big cleanup of the javascript code:
-    * basic YarrboardApp object
-        * onConnect()
-        * onMessage()
-        * etc
 * global cleanup of strcpy, sprintf, etc.
 * espwebtools?  https://esphome.github.io/esp-web-tools/
-* Look into turning yarrboard UI/framework into a library for use in other projects (brineomatic)
+* yarrboard framework
+    * create YarrboardApp class
+    * create callbacks:
+        * onSetup() - main.cpp
+        * onLoop() - main.cpp
+        * onInit() - prefs.cpp
+        * onGenerateConfig() - prefs.cpp
+        * onLoadConfig() - prefs.cpp
+        * onMQTTUpdate() - mqtt.cpp
+        * onHADiscovery() - mqtt.cpp
+        * onUpdate() - protocol.cpp
+        * onFastUpdate() - protocol.cpp
+        * onStats() - protocol.cpp
+        * registerNobodyCommand("command");
+        * registerGuestCommand("command");
+        * registerAdminCommand("command");
+    * for looping only stuff it would be best to do something like this:
+        * yba.registerChannels(channels);
+        * yba.registerMQTTChannels(channels);
+        * yba.registerHAChannels(channels);
+
 * other MFD integrations:
     * garmin?
     * raymarine?
