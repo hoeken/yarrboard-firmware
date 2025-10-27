@@ -113,4 +113,8 @@ typedef enum { YBP_MODE_WEBSOCKET,
   #define RA_DEFAULT_WINDOW 1000
 #endif
 
+#ifndef YB_INPUT_DEBOUNCE_RATE_MS
+  #define YB_INPUT_DEBOUNCE_RATE_MS 20
+#endif
+
 #endif // YARR_CONFIG_H

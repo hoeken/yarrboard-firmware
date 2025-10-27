@@ -12,6 +12,10 @@
   #include "adc_channel.h"
 #endif
 
+#ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
+  #include "digital_input_channel.h"
+#endif
+
 #ifdef YB_HAS_PWM_CHANNELS
   #include "pwm_channel.h"
 #endif
@@ -1446,6 +1450,14 @@ void generateUpdateJSON(JsonVariant output)
   }
 #endif
 
+#ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
+  JsonArray channels = output["dio"].to<JsonArray>();
+  for (auto& ch : digital_input_channels) {
+    JsonObject jo = channels.add<JsonObject>();
+    ch.generateUpdate(jo);
+  }
+#endif
+
 #ifdef YB_HAS_RELAY_CHANNELS
   JsonArray r_channels = output["relay"].to<JsonArray>();
   for (auto& ch : relay_channels) {
@@ -1549,6 +1561,17 @@ void generateFastUpdateJSON(JsonVariant output)
 #ifdef YB_HAS_PWM_CHANNELS
   JsonArray channels = output["pwm"].to<JsonArray>();
   for (auto& ch : pwm_channels) {
+    if (ch.sendFastUpdate) {
+      JsonObject jo = channels.add<JsonObject>();
+      ch.generateUpdate(jo);
+      ch.sendFastUpdate = false;
+    }
+  }
+#endif
+
+#ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
+  JsonArray channels = output["dio"].to<JsonArray>();
+  for (auto& ch : digital_input_channels) {
     if (ch.sendFastUpdate) {
       JsonObject jo = channels.add<JsonObject>();
       ch.generateUpdate(jo);

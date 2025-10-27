@@ -16,6 +16,10 @@
   #include "pwm_channel.h"
 #endif
 
+#ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
+  #include "digital_input_channel.h"
+#endif
+
 #ifdef YB_HAS_RELAY_CHANNELS
   #include "relay_channel.h"
 #endif
@@ -93,6 +97,22 @@ void mqtt_loop()
           ch.haPublishAvailable();
       }
 #endif
+
+      // #ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
+      //       for (auto& ch : digital_input_channels) {
+      //         ch.mqttUpdate("dio");
+      //         if (app_enable_ha_integration)
+      //           ch.haPublishAvailable();
+      //       }
+      // #endif
+
+      // #ifdef YB_HAS_RELAY_CHANNELS
+      //       for (auto& ch : relay_channels) {
+      //         ch.mqttUpdate("relay");
+      //         if (app_enable_ha_integration)
+      //           ch.haPublishAvailable();
+      //       }
+      // #endif
     }
 
     previousMQTTMillis = millis();
@@ -193,6 +213,22 @@ void mqtt_ha_discovery()
       ch.haGenerateDiscovery(components);
   }
 #endif
+
+// // let each pwm channel create its own config
+// #ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
+//   for (auto& ch : digital_input_channels) {
+//     if (ch.isEnabled)
+//       ch.haGenerateDiscovery(components);
+//   }
+// #endif
+
+// // let each pwm channel create its own config
+// #ifdef YB_HAS_RELAY_CHANNELS
+//   for (auto& ch : relay_channels) {
+//     if (ch.isEnabled)
+//       ch.haGenerateDiscovery(components);
+//   }
+// #endif
 
 // let each pwm channel create its own config
 #ifdef YB_HAS_ADC_CHANNELS

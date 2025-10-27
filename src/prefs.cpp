@@ -16,6 +16,10 @@
   #include "pwm_channel.h"
 #endif
 
+#ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
+  #include "digital_input_channel.h"
+#endif
+
 #ifdef YB_HAS_RELAY_CHANNELS
   #include "relay_channel.h"
 #endif
@@ -70,6 +74,10 @@ void initializeChannels()
 
 #ifdef YB_HAS_PWM_CHANNELS
   initChannels(pwm_channels);
+#endif
+
+#ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
+  initChannels(digital_input_channels);
 #endif
 
 #ifdef YB_HAS_RELAY_CHANNELS
@@ -175,6 +183,14 @@ void generateBoardConfigJSON(JsonVariant output)
 #ifdef YB_HAS_PWM_CHANNELS
   JsonArray channels = output["pwm"].to<JsonArray>();
   for (auto& ch : pwm_channels) {
+    JsonObject jo = channels.add<JsonObject>();
+    ch.generateConfig(jo);
+  }
+#endif
+
+#ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
+  JsonArray channels = output["dio"].to<JsonArray>();
+  for (auto& ch : digital_input_channels) {
     JsonObject jo = channels.add<JsonObject>();
     ch.generateConfig(jo);
   }
@@ -438,6 +454,11 @@ bool loadBoardConfigFromJSON(JsonVariantConst config, char* error, size_t len)
 
 #ifdef YB_HAS_PWM_CHANNELS
   if (!loadChannelsConfigFromJSON("pwm", pwm_channels, config, error, len))
+    return false;
+#endif
+
+#ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
+  if (!loadChannelsConfigFromJSON("dio", digital_input_channels, config, error, len))
     return false;
 #endif
 
