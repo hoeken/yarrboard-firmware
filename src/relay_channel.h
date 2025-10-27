@@ -16,10 +16,14 @@
 #include "protocol.h"
 #include <Arduino.h>
 
+#ifdef YB_RELAY_DRIVER_TCA9554
+  #include "TCA9554.h"
+#endif
+
 class RelayChannel : public BaseChannel
 {
   protected:
-    byte _pins[YB_RELAY_CHANNEL_COUNT] = YB_RELAY_CHANNEL_PINS;
+    byte _pin;
 
   public:
     /**

@@ -26,6 +26,8 @@
   #include "./configs/config.sendit-rev-a.h"
 #elif defined YB_CONFIG_SENDIT_REV_B
   #include "./configs/config.sendit-rev-b.h"
+#elif defined WAVESHARE_ESP32_S3_ETH_8DI_8RO
+  #include "./configs/config.waveshare-s3-eth-8di-8ro.h"
 #else
   #error "No board config has been defined"
 #endif

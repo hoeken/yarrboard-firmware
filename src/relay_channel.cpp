@@ -14,9 +14,22 @@
 
 // the main star of the event
 etl::array<RelayChannel, YB_RELAY_CHANNEL_COUNT> relay_channels;
+byte _pins[YB_RELAY_CHANNEL_COUNT] = YB_RELAY_CHANNEL_PINS;
+
+  #ifdef YB_RELAY_DRIVER_TCA9554
+TCA9554 TCA(YB_RELAY_DRIVER_TCA9554_ADDRESS);
+  #endif
 
 void relay_channels_setup()
 {
+  #ifdef YB_RELAY_DRIVER_TCA9554
+  Wire.begin();
+  Wire.setPins(YB_I2C_SDA_PIN, YB_I2C_SCL_PIN);
+  Wire.setClock(YB_I2C_SPEED);
+  TCA.begin();
+
+  // todo: connect and config driver
+  #endif
   // intitialize our channel
   for (auto& ch : relay_channels) {
     ch.setup();
@@ -31,8 +44,15 @@ void relay_channels_loop()
 void RelayChannel::setup()
 {
   // init!
-  pinMode(_pins[id-1], OUTPUT);
-  digitalWrite(_pins[id-1], LOW);
+  _pin = _pins[id - 1];
+
+  #ifdef YB_RELAY_DRIVER_TCA9554
+  TCA.pinMode1(_pin, OUTPUT);
+  TCA.write1(_pin, LOW);
+  #else
+  pinMode(_pin, OUTPUT);
+  digitalWrite(_pin, LOW);
+  #endif
 }
 
 void RelayChannel::setupDefaultState()
@@ -52,7 +72,11 @@ void RelayChannel::setupDefaultState()
 
 void RelayChannel::updateOutput()
 {
-  digitalWrite(_pins[id-1], outputState);
+  #ifdef YB_RELAY_DRIVER_TCA9554
+  TCA.write1(_pin, outputState);
+  #else
+  digitalWrite(_pin, outputState);
+  #endif
 }
 
 void RelayChannel::setState(const char* state)
