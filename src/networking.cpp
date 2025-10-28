@@ -7,6 +7,7 @@
 */
 
 #include "networking.h"
+#include "debug.h"
 #include "prefs.h"
 #include "yb_server.h"
 
@@ -49,33 +50,33 @@ void setupWifi()
   // WiFi.useStaticBuffers(true);  //from: https://github.com/espressif/arduino-esp32/issues/7183
   WiFi.setHostname(local_hostname);
 
-  Serial.print("Hostname: ");
-  Serial.print(local_hostname);
-  Serial.println(".local");
+  YBP.print("Hostname: ");
+  YBP.print(local_hostname);
+  YBP.println(".local");
 
   // which mode do we want?
   if (!strcmp(wifi_mode, "client")) {
-    Serial.print("Client mode: ");
-    Serial.print(wifi_ssid);
-    Serial.print(" / ");
-    Serial.println(wifi_pass);
+    YBP.print("Client mode: ");
+    YBP.print(wifi_ssid);
+    YBP.print(" / ");
+    YBP.println(wifi_pass);
 
     // try and connect
     connectToWifi(wifi_ssid, wifi_pass);
   }
   // default to AP mode.
   else {
-    Serial.print("AP mode: ");
-    Serial.print(wifi_ssid);
-    Serial.print(" / ");
-    Serial.println(wifi_pass);
+    YBP.print("AP mode: ");
+    YBP.print(wifi_ssid);
+    YBP.print(" / ");
+    YBP.println(wifi_pass);
 
     WiFi.mode(WIFI_AP);
     WiFi.softAP(wifi_ssid, wifi_pass);
     WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
 
-    Serial.print("AP IP address: ");
-    Serial.println(apIP);
+    YBP.print("AP IP address: ");
+    YBP.println(apIP);
 
     // if DNSServer is started with "*" for domain name, it will reply with
     // provided IP to all DNS request
@@ -84,7 +85,7 @@ void setupWifi()
 
   // setup our local name.
   if (!MDNS.begin(local_hostname)) {
-    Serial.println("Error starting mDNS");
+    YBP.println("Error starting mDNS");
     return;
   }
   MDNS.addService("http", "tcp", 80);
@@ -92,8 +93,8 @@ void setupWifi()
 
 bool connectToWifi(const char* ssid, const char* pass)
 {
-  Serial.print("[WiFi] Connecting to ");
-  Serial.println(ssid);
+  YBP.print("[WiFi] Connecting to ");
+  YBP.println(ssid);
 
   WiFi.mode(WIFI_STA);
   WiFi.setAutoReconnect(true);
@@ -107,25 +108,25 @@ bool connectToWifi(const char* ssid, const char* pass)
   while (true) {
     switch (WiFi.status()) {
       case WL_NO_SSID_AVAIL:
-        Serial.println("[WiFi] SSID not found");
+        YBP.println("[WiFi] SSID not found");
         return false;
         break;
       case WL_CONNECT_FAILED:
-        Serial.print("[WiFi] Failed");
+        YBP.print("[WiFi] Failed");
         break;
       case WL_CONNECTION_LOST:
-        Serial.println("[WiFi] Connection was lost");
+        YBP.println("[WiFi] Connection was lost");
         break;
       case WL_SCAN_COMPLETED:
-        Serial.println("[WiFi] Scan is completed");
+        YBP.println("[WiFi] Scan is completed");
         break;
       case WL_DISCONNECTED:
-        Serial.println("[WiFi] WiFi is disconnected");
+        YBP.println("[WiFi] WiFi is disconnected");
         break;
       case WL_CONNECTED:
-        Serial.println("[WiFi] WiFi is connected!");
-        Serial.print("[WiFi] IP address: ");
-        Serial.println(WiFi.localIP());
+        YBP.println("[WiFi] WiFi is connected!");
+        YBP.print("[WiFi] IP address: ");
+        YBP.println(WiFi.localIP());
 
         // #ifdef YB_HAS_STATUS_WS2818
         //         status_led.setPixelColor(0, status_led.Color(0, 255, 0));
@@ -135,8 +136,8 @@ bool connectToWifi(const char* ssid, const char* pass)
         return true;
         break;
       default:
-        Serial.print("[WiFi] WiFi Status: ");
-        Serial.println(WiFi.status());
+        YBP.print("[WiFi] WiFi Status: ");
+        YBP.println(WiFi.status());
         break;
     }
 

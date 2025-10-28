@@ -20,7 +20,7 @@ void server_setup()
 {
   sendMutex = xSemaphoreCreateMutex();
   if (sendMutex == NULL)
-    Serial.println("Failed to create send mutex");
+    YBP.println("Failed to create send mutex");
 
   // init our authentication stuff
   for (byte i = 0; i < YB_CLIENT_LIMIT; i++) {
@@ -31,16 +31,16 @@ void server_setup()
   // prepare our message queue
   wsRequests = xQueueCreate(YB_RECEIVE_BUFFER_COUNT, sizeof(WebsocketRequest));
   if (wsRequests == 0)
-    Serial.printf("Failed to create queue= %p\n", wsRequests);
+    YBP.printf("Failed to create queue= %p\n", wsRequests);
 
   // do we want secure or not?
   if (app_enable_ssl && server_cert.length() && server_key.length()) {
     server = new PsychicHttpsServer(443);
     server->setCertificate(server_cert.c_str(), server_key.c_str());
-    Serial.println("SSL enabled");
+    YBP.println("SSL enabled");
   } else {
     server = new PsychicHttpServer(80);
-    Serial.println("SSL disabled");
+    YBP.println("SSL disabled");
   }
 
   server->config.max_open_sockets = YB_CLIENT_LIMIT;
@@ -107,11 +107,11 @@ void server_setup()
       return ESP_OK;
     });
   websocketHandler.onOpen([](PsychicWebSocketClient* client) {
-    Serial.printf("[socket] connection #%u connected from %s\n",
+    YBP.printf("[socket] connection #%u connected from %s\n",
                   client->socket(), client->remoteIP().toString());
     websocketClientCount++; });
   websocketHandler.onClose([](PsychicWebSocketClient* client) {
-    Serial.printf("[socket] connection #%u closed from %s\n", client->socket(),
+    YBP.printf("[socket] connection #%u closed from %s\n", client->socket(),
                   client->remoteIP().toString());
     websocketClientCount--;
 
@@ -227,7 +227,7 @@ bool logClientIn(PsychicWebSocketClient* client, UserRole role)
 {
   // did we not find a spot?
   if (!addClientToAuthList(client, role)) {
-    Serial.println("Error: could not add to auth list.");
+    YBP.println("Error: could not add to auth list.");
 
     // i'm pretty sure this closes our connection
     close(client->socket());
@@ -294,7 +294,7 @@ void handleWebSocketMessage(PsychicWebSocketRequest* request, uint8_t* data,
 
   // did we flame out?
   if (wr.buffer == NULL) {
-    Serial.printf("Queue message: unable to allocate %d bytes\n", len + 1);
+    YBP.printf("Queue message: unable to allocate %d bytes\n", len + 1);
     return;
   }
 
@@ -304,7 +304,7 @@ void handleWebSocketMessage(PsychicWebSocketRequest* request, uint8_t* data,
   // throw it in our queue
   if (xQueueSend(wsRequests, &wr, 1) != pdTRUE) {
     // request->client()->close();
-    Serial.printf("[socket] queue full #%d\n", wr.socket);
+    YBP.printf("[socket] queue full #%d\n", wr.socket);
 
     // free the memory... no worker to do it for us.
     free(wr.buffer);
@@ -320,7 +320,7 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
   // make sure our client is still good.
   PsychicWebSocketClient* client = websocketHandler.getClient(request->socket);
   if (client == NULL) {
-    // Serial.printf("[socket] client #%d bad, bailing\n", request->socket);
+    // YBP.printf("[socket] client #%d bad, bailing\n", request->socket);
     return;
   }
 
@@ -472,7 +472,7 @@ bool addClientToAuthList(PsychicWebSocketClient* client, UserRole role)
   // did we not find a spot?
   if (i == YB_CLIENT_LIMIT) {
     return false;
-    Serial.println("ERROR: max clients reached");
+    YBP.println("ERROR: max clients reached");
   } else
     return true;
 }

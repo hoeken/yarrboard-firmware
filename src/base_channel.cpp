@@ -7,6 +7,7 @@
 */
 
 #include "base_channel.h"
+#include "debug.h"
 
 void BaseChannel::init(uint8_t id)
 {
@@ -79,7 +80,7 @@ bool BaseChannel::loadConfig(JsonVariantConst config, char* error, size_t err_si
     // okay save it to our object
     strlcpy(this->key, val, sizeof(this->key));
   } else {
-    Serial.println("empty key");
+    YBP.println("empty key");
   }
 
   return true;

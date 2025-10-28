@@ -11,6 +11,7 @@
 #ifdef YB_HAS_ADC_CHANNELS
 
   #include "adc_channel.h"
+  #include "debug.h"
 
 // the main star of the event
 etl::array<ADCChannel, YB_ADC_CHANNEL_COUNT> adc_channels;
@@ -38,9 +39,9 @@ void adc_channels_setup()
 
   _adcVoltageADS1115_1.begin();
   if (_adcVoltageADS1115_1.isConnected())
-    Serial.println("Voltage ADS115 #1 OK");
+    YBP.println("Voltage ADS115 #1 OK");
   else
-    Serial.println("Voltage ADS115 #1 Not Found");
+    YBP.println("Voltage ADS115 #1 Not Found");
 
   // BASIC CONFIG
   _adcVoltageADS1115_1.setMode(ADS1X15_MODE_SINGLE);
@@ -52,9 +53,9 @@ void adc_channels_setup()
 
   _adcVoltageADS1115_2.begin();
   if (_adcVoltageADS1115_2.isConnected())
-    Serial.println("Voltage ADS115 #2 OK");
+    YBP.println("Voltage ADS115 #2 OK");
   else
-    Serial.println("Voltage ADS115 #2 Not Found");
+    YBP.println("Voltage ADS115 #2 Not Found");
 
   // BASIC CONFIG
   _adcVoltageADS1115_2.setMode(ADS1X15_MODE_SINGLE);
@@ -305,7 +306,7 @@ bool ADCChannel::parseCalibrationTableJson(JsonVariantConst tv)
   if (tv.is<JsonVariantConst>()) {
     // Key exists: validate it's an array
     if (!tv.is<JsonArrayConst>()) {
-      Serial.println(F("\"table\" must be an array"));
+      YBP.println(F("\"table\" must be an array"));
       return false;
     }
 
@@ -313,13 +314,13 @@ bool ADCChannel::parseCalibrationTableJson(JsonVariantConst tv)
 
     for (JsonVariantConst row : arr) {
       if (!row.is<JsonArrayConst>()) {
-        Serial.println(F("Each table entry must be an array [v, y]"));
+        YBP.println(F("Each table entry must be an array [v, y]"));
         return false;
       }
 
       JsonArrayConst pair = row.as<JsonArrayConst>();
       if (pair.size() != 2) {
-        Serial.println(F("Each table entry must have exactly 2 elements [v, y]"));
+        YBP.println(F("Each table entry must have exactly 2 elements [v, y]"));
         return false;
       }
 
@@ -334,12 +335,12 @@ bool ADCChannel::parseCalibrationTableJson(JsonVariantConst tv)
   }
 
   if (!foundAny) {
-    Serial.println("No calibration array found (expected \"table\" or \"points\")");
+    YBP.println("No calibration array found (expected \"table\" or \"points\")");
     return false;
   }
 
   if (this->calibrationTable.empty()) {
-    Serial.println("Calibration array is empty");
+    YBP.println("Calibration array is empty");
     return false;
   }
 
@@ -373,12 +374,12 @@ bool ADCChannel::addCalibrationValue(CalibrationPoint cp)
 {
   // Use std::isfinite(v) if <cmath> is available; otherwise isfinite(v) with <math.h>
   if (!std::isfinite(cp.voltage) || !std::isfinite(cp.calibrated)) {
-    Serial.println(F("Non-finite number in table"));
+    YBP.println(F("Non-finite number in table"));
     return false;
   }
 
   if (this->calibrationTable.full()) {
-    Serial.println(F("Calibration table capacity exceeded"));
+    YBP.println(F("Calibration table capacity exceeded"));
     return false;
   }
 

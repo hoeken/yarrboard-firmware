@@ -10,6 +10,7 @@
 
 #ifdef YB_HAS_STEPPER_CHANNELS
 
+  #include "debug.h"
   #include "stepper_channel.h"
 
 byte _step_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_STEP_PINS;
@@ -120,108 +121,108 @@ void StepperChannel::setup()
 void StepperChannel::printDebug(unsigned int milliDelay)
 {
   #ifdef YB_STEPPER_DRIVER_TMC2209
-  Serial.println("*************************");
-  Serial.println("getSettings()");
+  YBP.println("*************************");
+  YBP.println("getSettings()");
   TMC2209::Settings settings = _tmc2209.getSettings();
-  Serial.print("settings.is_communicating = ");
-  Serial.println(settings.is_communicating);
-  Serial.print("settings.is_setup = ");
-  Serial.println(settings.is_setup);
-  Serial.print("settings.software_enabled = ");
-  Serial.println(settings.software_enabled);
-  Serial.print("settings.microsteps_per_step = ");
-  Serial.println(settings.microsteps_per_step);
-  Serial.print("settings.inverse_motor_direction_enabled = ");
-  Serial.println(settings.inverse_motor_direction_enabled);
-  Serial.print("settings.stealth_chop_enabled = ");
-  Serial.println(settings.stealth_chop_enabled);
-  Serial.print("settings.standstill_mode = ");
+  YBP.print("settings.is_communicating = ");
+  YBP.println(settings.is_communicating);
+  YBP.print("settings.is_setup = ");
+  YBP.println(settings.is_setup);
+  YBP.print("settings.software_enabled = ");
+  YBP.println(settings.software_enabled);
+  YBP.print("settings.microsteps_per_step = ");
+  YBP.println(settings.microsteps_per_step);
+  YBP.print("settings.inverse_motor_direction_enabled = ");
+  YBP.println(settings.inverse_motor_direction_enabled);
+  YBP.print("settings.stealth_chop_enabled = ");
+  YBP.println(settings.stealth_chop_enabled);
+  YBP.print("settings.standstill_mode = ");
   switch (settings.standstill_mode) {
     case TMC2209::NORMAL:
-      Serial.println("normal");
+      YBP.println("normal");
       break;
     case TMC2209::FREEWHEELING:
-      Serial.println("freewheeling");
+      YBP.println("freewheeling");
       break;
     case TMC2209::STRONG_BRAKING:
-      Serial.println("strong_braking");
+      YBP.println("strong_braking");
       break;
     case TMC2209::BRAKING:
-      Serial.println("braking");
+      YBP.println("braking");
       break;
   }
-  Serial.print("settings.irun_percent = ");
-  Serial.println(settings.irun_percent);
-  Serial.print("settings.irun_register_value = ");
-  Serial.println(settings.irun_register_value);
-  Serial.print("settings.ihold_percent = ");
-  Serial.println(settings.ihold_percent);
-  Serial.print("settings.ihold_register_value = ");
-  Serial.println(settings.ihold_register_value);
-  Serial.print("settings.iholddelay_percent = ");
-  Serial.println(settings.iholddelay_percent);
-  Serial.print("settings.iholddelay_register_value = ");
-  Serial.println(settings.iholddelay_register_value);
-  Serial.print("settings.automatic_current_scaling_enabled = ");
-  Serial.println(settings.automatic_current_scaling_enabled);
-  Serial.print("settings.automatic_gradient_adaptation_enabled = ");
-  Serial.println(settings.automatic_gradient_adaptation_enabled);
-  Serial.print("settings.pwm_offset = ");
-  Serial.println(settings.pwm_offset);
-  Serial.print("settings.pwm_gradient = ");
-  Serial.println(settings.pwm_gradient);
-  Serial.print("settings.cool_step_enabled = ");
-  Serial.println(settings.cool_step_enabled);
-  Serial.print("settings.analog_current_scaling_enabled = ");
-  Serial.println(settings.analog_current_scaling_enabled);
-  Serial.print("settings.internal_sense_resistors_enabled = ");
-  Serial.println(settings.internal_sense_resistors_enabled);
-  Serial.println("*************************");
-  Serial.println();
+  YBP.print("settings.irun_percent = ");
+  YBP.println(settings.irun_percent);
+  YBP.print("settings.irun_register_value = ");
+  YBP.println(settings.irun_register_value);
+  YBP.print("settings.ihold_percent = ");
+  YBP.println(settings.ihold_percent);
+  YBP.print("settings.ihold_register_value = ");
+  YBP.println(settings.ihold_register_value);
+  YBP.print("settings.iholddelay_percent = ");
+  YBP.println(settings.iholddelay_percent);
+  YBP.print("settings.iholddelay_register_value = ");
+  YBP.println(settings.iholddelay_register_value);
+  YBP.print("settings.automatic_current_scaling_enabled = ");
+  YBP.println(settings.automatic_current_scaling_enabled);
+  YBP.print("settings.automatic_gradient_adaptation_enabled = ");
+  YBP.println(settings.automatic_gradient_adaptation_enabled);
+  YBP.print("settings.pwm_offset = ");
+  YBP.println(settings.pwm_offset);
+  YBP.print("settings.pwm_gradient = ");
+  YBP.println(settings.pwm_gradient);
+  YBP.print("settings.cool_step_enabled = ");
+  YBP.println(settings.cool_step_enabled);
+  YBP.print("settings.analog_current_scaling_enabled = ");
+  YBP.println(settings.analog_current_scaling_enabled);
+  YBP.print("settings.internal_sense_resistors_enabled = ");
+  YBP.println(settings.internal_sense_resistors_enabled);
+  YBP.println("*************************");
+  YBP.println();
 
-  Serial.println("*************************");
-  Serial.println("hardwareDisabled()");
+  YBP.println("*************************");
+  YBP.println("hardwareDisabled()");
   bool hardware_disabled = _tmc2209.hardwareDisabled();
-  Serial.print("hardware_disabled = ");
-  Serial.println(hardware_disabled);
-  Serial.println("*************************");
-  Serial.println();
+  YBP.print("hardware_disabled = ");
+  YBP.println(hardware_disabled);
+  YBP.println("*************************");
+  YBP.println();
 
-  Serial.println("*************************");
-  Serial.println("getStatus()");
+  YBP.println("*************************");
+  YBP.println("getStatus()");
   TMC2209::Status status = _tmc2209.getStatus();
-  Serial.print("status.over_temperature_warning = ");
-  Serial.println(status.over_temperature_warning);
-  Serial.print("status.over_temperature_shutdown = ");
-  Serial.println(status.over_temperature_shutdown);
-  Serial.print("status.short_to_ground_a = ");
-  Serial.println(status.short_to_ground_a);
-  Serial.print("status.short_to_ground_b = ");
-  Serial.println(status.short_to_ground_b);
-  Serial.print("status.low_side_short_a = ");
-  Serial.println(status.low_side_short_a);
-  Serial.print("status.low_side_short_b = ");
-  Serial.println(status.low_side_short_b);
-  Serial.print("status.open_load_a = ");
-  Serial.println(status.open_load_a);
-  Serial.print("status.open_load_b = ");
-  Serial.println(status.open_load_b);
-  Serial.print("status.over_temperature_120c = ");
-  Serial.println(status.over_temperature_120c);
-  Serial.print("status.over_temperature_143c = ");
-  Serial.println(status.over_temperature_143c);
-  Serial.print("status.over_temperature_150c = ");
-  Serial.println(status.over_temperature_150c);
-  Serial.print("status.over_temperature_157c = ");
-  Serial.println(status.over_temperature_157c);
-  Serial.print("status.current_scaling = ");
-  Serial.println(status.current_scaling);
-  Serial.print("status.stealth_chop_mode = ");
-  Serial.println(status.stealth_chop_mode);
-  Serial.print("status.standstill = ");
-  Serial.println(status.standstill);
-  Serial.println("*************************");
-  Serial.println();
+  YBP.print("status.over_temperature_warning = ");
+  YBP.println(status.over_temperature_warning);
+  YBP.print("status.over_temperature_shutdown = ");
+  YBP.println(status.over_temperature_shutdown);
+  YBP.print("status.short_to_ground_a = ");
+  YBP.println(status.short_to_ground_a);
+  YBP.print("status.short_to_ground_b = ");
+  YBP.println(status.short_to_ground_b);
+  YBP.print("status.low_side_short_a = ");
+  YBP.println(status.low_side_short_a);
+  YBP.print("status.low_side_short_b = ");
+  YBP.println(status.low_side_short_b);
+  YBP.print("status.open_load_a = ");
+  YBP.println(status.open_load_a);
+  YBP.print("status.open_load_b = ");
+  YBP.println(status.open_load_b);
+  YBP.print("status.over_temperature_120c = ");
+  YBP.println(status.over_temperature_120c);
+  YBP.print("status.over_temperature_143c = ");
+  YBP.println(status.over_temperature_143c);
+  YBP.print("status.over_temperature_150c = ");
+  YBP.println(status.over_temperature_150c);
+  YBP.print("status.over_temperature_157c = ");
+  YBP.println(status.over_temperature_157c);
+  YBP.print("status.current_scaling = ");
+  YBP.println(status.current_scaling);
+  YBP.print("status.stealth_chop_mode = ");
+  YBP.println(status.stealth_chop_mode);
+  YBP.print("status.standstill = ");
+  YBP.println(status.standstill);
+  YBP.println("*************************");
+  YBP.println();
   #endif
 }
 

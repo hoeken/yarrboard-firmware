@@ -606,7 +606,7 @@ void handleLogout(JsonVariantConst input, JsonVariant output, YBMode mode,
 
 void handleRestart(JsonVariantConst input, JsonVariant output)
 {
-  Serial.println("Restarting board.");
+  YBP.println("Restarting board.");
 
   ESP.restart();
 }
@@ -1850,5 +1850,5 @@ void sendToAll(const char* jsonString, UserRole auth_level)
   sendToAllWebsockets(jsonString, auth_level);
 
   if (app_enable_serial && serial_role >= auth_level)
-    Serial.println(jsonString);
+    YBP.println(jsonString);
 }

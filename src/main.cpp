@@ -10,7 +10,6 @@
 #include "adchelper.h"
 #include "config.h"
 #include "debug.h"
-#include "logging.h"
 #include "mqtt.h"
 #include "navico.h"
 #include "networking.h"

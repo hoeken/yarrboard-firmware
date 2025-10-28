@@ -7,6 +7,7 @@
 */
 
 #include "ota.h"
+#include "debug.h"
 
 esp32FOTA FOTA(YB_HARDWARE_VERSION, YB_FIRMWARE_VERSION, YB_VALIDATE_FIRMWARE_SIGNATURE);
 
@@ -80,14 +81,14 @@ void ota_setup()
   FOTA.setPubKey(MyPubKey);
 
   FOTA.setUpdateBeginFailCb([](int partition) {
-    Serial.printf("[ota] Update could not begin with %s partition\n", partition == U_SPIFFS ? "spiffs" : "firmware");
+    YBP.printf("[ota] Update could not begin with %s partition\n", partition == U_SPIFFS ? "spiffs" : "firmware");
   });
 
   // usage with lambda function:
   FOTA.setProgressCb([](size_t progress, size_t size) {
     if (progress == size || progress == 0)
-      Serial.println();
-    Serial.print(".");
+      YBP.println();
+    YBP.print(".");
 
     // let the clients know every second and at the end
     if (millis() - ota_last_message > 1000 || progress == size) {
@@ -98,12 +99,12 @@ void ota_setup()
   });
 
   FOTA.setUpdateEndCb([](int partition) {
-    Serial.printf("[ota] Update ended with %s partition\n", partition == U_SPIFFS ? "spiffs" : "firmware");
+    YBP.printf("[ota] Update ended with %s partition\n", partition == U_SPIFFS ? "spiffs" : "firmware");
     sendOTAProgressFinished();
   });
 
   FOTA.setUpdateCheckFailCb([](int partition, int error_code) {
-    Serial.printf("[ota] Update could not validate %s partition (error %d)\n", partition == U_SPIFFS ? "spiffs" : "firmware", error_code);
+    YBP.printf("[ota] Update could not validate %s partition (error %d)\n", partition == U_SPIFFS ? "spiffs" : "firmware", error_code);
     // error codes:
     //  -1 : partition not found
     //  -2 : validation (signature check) failed

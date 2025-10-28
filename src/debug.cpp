@@ -16,12 +16,12 @@ WebsocketPrint networkLogger;
 
 void debug_setup()
 {
-  Serial.print("Last Reset: ");
-  Serial.println(getResetReason());
+  YBP.print("Last Reset: ");
+  YBP.println(getResetReason());
 
   if (checkCoreDump()) {
     has_coredump = true;
-    Serial.println("WARNING: Coredump Found.");
+    YBP.println("WARNING: Coredump Found.");
     String coredump = readCoreDump();
 
     File file = LittleFS.open("/coredump.txt", FILE_WRITE);
@@ -65,8 +65,8 @@ bool checkCoreDump()
   size_t size = 0;
   size_t address = 0;
   if (esp_core_dump_image_get(&address, &size) == ESP_OK) {
-    Serial.print("coredump size: ");
-    Serial.println(size);
+    YBP.print("coredump size: ");
+    YBP.println(size);
     const esp_partition_t* pt = NULL;
     pt = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_COREDUMP, "coredump");
     if (pt != NULL)
@@ -97,7 +97,7 @@ String readCoreDump()
 
         esp_err_t er = esp_partition_read(pt, i * 256, bf, toRead);
         if (er != ESP_OK) {
-          Serial.printf("FAIL [%x]\n", er);
+          YBP.printf("FAIL [%x]\n", er);
           break;
         }
 

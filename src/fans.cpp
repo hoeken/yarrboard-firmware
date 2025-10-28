@@ -10,6 +10,7 @@
 
 #ifdef YB_HAS_FANS
 
+  #include "debug.h"
   #include "fans.h"
   #include "pwm_channel.h"
   #include <Arduino.h>
@@ -76,10 +77,10 @@ void fans_loop()
     // one channel on high?
     if (amps_max > YB_FAN_SINGLE_CHANNEL_THRESHOLD) {
       set_fans_state(true);
-      // Serial.println("Single channel full blast");
+      // YBP.println("Single channel full blast");
     } else if (amps_avg > YB_FAN_AVERAGE_CHANNEL_THRESHOLD) {
       set_fans_state(true);
-      // Serial.println("Average current full blast");
+      // YBP.println("Average current full blast");
     } else
       set_fans_state(false);
 

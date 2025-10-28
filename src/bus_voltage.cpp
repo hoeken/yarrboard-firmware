@@ -11,6 +11,7 @@
 #ifdef YB_HAS_BUS_VOLTAGE
 
   #include "bus_voltage.h"
+  #include "debug.h"
 
 unsigned long lastBusVoltageCheckMillis = 0;
 
@@ -37,7 +38,7 @@ void bus_voltage_setup()
   Wire.setClock(YB_I2C_SPEED);
   #endif
 
-  Serial.println("Bus Voltage OK");
+  YBP.println("Bus Voltage OK");
 }
 
 void bus_voltage_loop()

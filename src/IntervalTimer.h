@@ -1,5 +1,6 @@
 // IntervalTimer.h
 #pragma once
+#include "debug.h"
 #include <Arduino.h>
 #include <cstring>
 #include <stdint.h>
@@ -60,19 +61,19 @@ class IntervalTimer
         return;
 
       unsigned long total_us = 0;
-      Serial.println(F("=== IntervalTimer averages (us) ==="));
+      YBP.println(F("=== IntervalTimer averages (us) ==="));
       for (const auto& e : _entries) {
         if (e.count == 0)
           continue;
         const uint32_t avg_us = static_cast<uint32_t>(e.total_us / e.count);
         total_us += avg_us;
         // Keep it simple: label, average in microseconds, and sample count.
-        Serial.printf("%s: avg=%lu us  (n=%lu)\n",
+        YBP.printf("%s: avg=%lu us  (n=%lu)\n",
           e.label ? e.label : "(null)",
           static_cast<unsigned long>(avg_us),
           static_cast<unsigned long>(e.count));
       }
-      Serial.printf("Total: avg=%lu us\n",
+      YBP.printf("Total: avg=%lu us\n",
         static_cast<unsigned long>(total_us));
     }
 

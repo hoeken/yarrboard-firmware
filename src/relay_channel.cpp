@@ -10,6 +10,7 @@
 
 #ifdef YB_HAS_RELAY_CHANNELS
 
+  #include "debug.h"
   #include "relay_channel.h"
 
 // the main star of the event

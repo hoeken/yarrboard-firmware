@@ -7,6 +7,7 @@
 */
 
 #include "prefs.h"
+#include "debug.h"
 
 #ifdef YB_HAS_ADC_CHANNELS
   #include "adc_channel.h"
@@ -37,11 +38,11 @@ Preferences preferences;
 bool prefs_setup()
 {
   if (preferences.begin("yarrboard", false)) {
-    Serial.println("Prefs OK");
-    Serial.printf("There are: %u entries available in the 'yarrboard' prefs table.\n", preferences.freeEntries());
+    YBP.println("Prefs OK");
+    YBP.printf("There are: %u entries available in the 'yarrboard' prefs table.\n", preferences.freeEntries());
 
   } else {
-    Serial.println("Opening Preferences failed.");
+    YBP.println("Opening Preferences failed.");
     return false;
   }
 
@@ -56,10 +57,10 @@ bool prefs_setup()
 
   // load our config from the json file.
   if (loadConfigFromFile(YB_BOARD_CONFIG_PATH, error, sizeof(error))) {
-    Serial.println("Configuration OK");
+    YBP.println("Configuration OK");
     return true;
   } else {
-    Serial.printf("CONFIG ERROR: %s\n", error);
+    YBP.printf("CONFIG ERROR: %s\n", error);
     return false;
   }
 

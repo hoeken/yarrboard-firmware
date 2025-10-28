@@ -10,6 +10,7 @@
 
 #ifdef YB_HAS_PWM_CHANNELS
 
+  #include "debug.h"
   #include "pwm_channel.h"
   #include "rgb.h"
 
@@ -45,7 +46,7 @@ MCP3564Helper* adcVoltageHelper;
 
 // void mcp_wrapper()
 // {
-//   Serial.print(".");
+//   YBP.print(".");
 
 //   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
 //   _adcCurrentMCP3564.IRQ_handler();
@@ -66,9 +67,9 @@ void pwm_channels_setup()
   // start up our SPI and ADC objects
   SPI.begin(YB_PWM_CHANNEL_CURRENT_ADC_SCK, YB_PWM_CHANNEL_CURRENT_ADC_MISO, YB_PWM_CHANNEL_CURRENT_ADC_MOSI, YB_PWM_CHANNEL_CURRENT_ADC_CS);
   if (!_adcCurrentMCP3564.begin(0, 3.3)) {
-    Serial.println("failed to initialize current MCP3564");
+    YBP.println("failed to initialize current MCP3564");
   } else {
-    Serial.println("MCP3564 ok.");
+    YBP.println("MCP3564 ok.");
   }
 
   _adcCurrentMCP3564.singleEndedMode();
@@ -77,11 +78,11 @@ void pwm_channels_setup()
 
   _adcCurrentMCP3564.printConfig();
 
-  Serial.print("VDD: ");
-  Serial.println(_adcCurrentMCP3564.analogRead(MCP_AVDD));
+  YBP.print("VDD: ");
+  YBP.println(_adcCurrentMCP3564.analogRead(MCP_AVDD));
 
-  Serial.print("TEMP: ");
-  Serial.println(_adcCurrentMCP3564.analogRead(MCP_TEMP));
+  YBP.print("TEMP: ");
+  YBP.println(_adcCurrentMCP3564.analogRead(MCP_TEMP));
 
   adcCurrentHelper = new MCP3564Helper(3.3, &_adcCurrentMCP3564, 50, 500);
   adcCurrentHelper->attachReadyPinInterrupt(YB_PWM_CHANNEL_CURRENT_ADC_IRQ, FALLING);
@@ -96,9 +97,9 @@ void pwm_channels_setup()
 
   _adcVoltageADS1115_1.begin();
   if (_adcVoltageADS1115_1.isConnected())
-    Serial.println("Voltage ADS115 #1 OK");
+    YBP.println("Voltage ADS115 #1 OK");
   else
-    Serial.println("Voltage ADS115 #1 Not Found");
+    YBP.println("Voltage ADS115 #1 Not Found");
 
   _adcVoltageADS1115_1.setMode(ADS1X15_MODE_SINGLE); //  SINGLE SHOT MODE
   _adcVoltageADS1115_1.setGain(1);
@@ -109,9 +110,9 @@ void pwm_channels_setup()
 
   _adcVoltageADS1115_2.begin();
   if (_adcVoltageADS1115_2.isConnected())
-    Serial.println("Voltage ADS115 #2 OK");
+    YBP.println("Voltage ADS115 #2 OK");
   else
-    Serial.println("Voltage ADS115 #2 Not Found");
+    YBP.println("Voltage ADS115 #2 Not Found");
 
   _adcVoltageADS1115_2.setMode(ADS1X15_MODE_SINGLE); //  SINGLE SHOT MODE
   _adcVoltageADS1115_2.setGain(1);
@@ -127,9 +128,9 @@ void pwm_channels_setup()
   // start up our SPI and ADC objects
   SPI.begin(YB_PWM_CHANNEL_VOLTAGE_ADC_SCK, YB_PWM_CHANNEL_VOLTAGE_ADC_MISO, YB_PWM_CHANNEL_VOLTAGE_ADC_MOSI, YB_PWM_CHANNEL_VOLTAGE_ADC_CS);
   if (!_adcVoltageMCP3564.begin(0, 3.3)) {
-    Serial.println("failed to initialize voltage MCP3564");
+    YBP.println("failed to initialize voltage MCP3564");
   } else {
-    Serial.println("MCP3564 ok.");
+    YBP.println("MCP3564 ok.");
   }
 
   _adcVoltageMCP3564.singleEndedMode();
@@ -138,11 +139,11 @@ void pwm_channels_setup()
 
   _adcVoltageMCP3564.printConfig();
 
-  Serial.print("VDD: ");
-  Serial.println(_adcVoltageMCP3564.analogRead(MCP_AVDD));
+  YBP.print("VDD: ");
+  YBP.println(_adcVoltageMCP3564.analogRead(MCP_AVDD));
 
-  Serial.print("TEMP: ");
-  Serial.println(_adcVoltageMCP3564.analogRead(MCP_TEMP));
+  YBP.print("TEMP: ");
+  YBP.println(_adcVoltageMCP3564.analogRead(MCP_TEMP));
 
   adcVoltageHelper = new MCP3564Helper(3.3, &_adcVoltageMCP3564);
 
@@ -307,7 +308,7 @@ void PWMChannel::setupOffset()
   if (a < (YB_PWM_CHANNEL_MAX_AMPS * 0.05))
     this->amperageOffset = a;
 
-  Serial.printf("CH%d Voltage Offset: %0.3f / Amperage Offset: %0.3f\n", this->id, this->voltageOffset, this->amperageOffset);
+  YBP.printf("CH%d Voltage Offset: %0.3f / Amperage Offset: %0.3f\n", this->id, this->voltageOffset, this->amperageOffset);
 }
 
 void PWMChannel::setupDefaultState()
@@ -686,7 +687,7 @@ void PWMChannel::setDuty(float duty)
         sprintf(prefIndex, "pwmDuty%d", this->id);
         preferences.putFloat(prefIndex, duty);
         this->dutyCycleIsThrottled = false;
-        Serial.printf("saving %s: %f\n", prefIndex, this->dutyCycle);
+        YBP.printf("saving %s: %f\n", prefIndex, this->dutyCycle);
 
         this->lastDutyCycle = this->dutyCycle;
       }

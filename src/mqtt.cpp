@@ -7,6 +7,7 @@
 */
 
 #include "mqtt.h"
+#include "debug.h"
 
 #ifdef YB_HAS_ADC_CHANNELS
   #include "adc_channel.h"
@@ -66,7 +67,7 @@ void mqtt_setup()
     tries++;
 
     if (tries > 20) {
-      Serial.println("MQTT failed to connect.");
+      YBP.println("MQTT failed to connect.");
       return;
     }
   }
@@ -136,13 +137,13 @@ void mqtt_publish(const char* topic, const char* payload, bool use_prefix)
 
 void mqtt_receive_message(const char* topic, const char* payload, int retain, int qos, bool dup)
 {
-  Serial.printf("Received Topic: %s\r\n", topic);
-  Serial.printf("Received Payload: %s\r\n", payload);
+  YBP.printf("Received Topic: %s\r\n", topic);
+  YBP.printf("Received Payload: %s\r\n", payload);
 }
 
 void onMqttConnect(bool sessionPresent)
 {
-  Serial.println("Connected to MQTT.");
+  YBP.println("Connected to MQTT.");
 
   if (app_enable_ha_integration)
     mqtt_ha_discovery();
@@ -337,7 +338,7 @@ static inline const char* to_payload(JsonVariant v, char* out, size_t outcap)
 // Depth-first traversal with an in-place topic buffer
 static void traverse_impl(JsonVariant node, char* topicBuf, size_t cap, size_t curLen)
 {
-  // Serial.printf("traverse_impl: %s\n", topicBuf);
+  // YBP.printf("traverse_impl: %s\n", topicBuf);
 
   // Objects
   if (node.is<JsonObject>()) {

@@ -7,6 +7,7 @@
 */
 
 #include "ntp.h"
+#include "debug.h"
 
 const char* ntpServer1 = "pool.ntp.org";
 const char* ntpServer2 = "time.nist.gov";
@@ -29,18 +30,18 @@ void ntp_loop()
 // Callback function (get's called when time adjusts via NTP)
 void timeAvailable(struct timeval* t)
 {
-  Serial.print("NTP update: ");
+  YBP.print("NTP update: ");
   printLocalTime();
 }
 
 void printLocalTime()
 {
   if (!getLocalTime(&timeinfo)) {
-    Serial.println("Failed to obtain time");
+    YBP.println("Failed to obtain time");
     return;
   }
 
   char buffer[40];
   strftime(buffer, 40, "%FT%T%z", &timeinfo);
-  Serial.println(buffer);
+  YBP.println(buffer);
 }

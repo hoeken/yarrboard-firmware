@@ -7,6 +7,7 @@
 */
 
 #include "adchelper.h"
+#include "debug.h"
 
 ADCHelper::ADCHelper(uint8_t channels, float vref, uint8_t resolution, uint16_t samples, uint32_t window_ms) : _totalChannels(channels),
                                                                                                                _vref(vref),
@@ -71,7 +72,7 @@ void ADCHelper::printDebug()
 {
   // only print every 10s
   if (millis() - lastDebugTime > 5000) {
-    Serial.printf("%d Channels | Vref: %.3f | Resolution: %d\n", _totalChannels, _vref, _resolution);
+    YBP.printf("%d Channels | Vref: %.3f | Resolution: %d\n", _totalChannels, _vref, _resolution);
 
     for (byte i = 0; i < _totalChannels; i++) {
       uint16_t cnt = getReadingCount(i);
@@ -79,7 +80,7 @@ void ADCHelper::printDebug()
       uint32_t window = _averages[i].window();
       uint32_t avgr = getAverageReading(i);
       float avgv = getAverageVoltage(i);
-      Serial.printf("CH%d: Window: %dms | Readings: %d/%d | Average: %d | Voltage: %.3f\n", i, window, cnt, cap, avgr, avgv);
+      YBP.printf("CH%d: Window: %dms | Readings: %d/%d | Average: %d | Voltage: %.3f\n", i, window, cnt, cap, avgr, avgv);
     }
 
     lastDebugTime = millis();
@@ -195,10 +196,10 @@ void ADS1115Helper::attachReadyPinInterrupt(uint8_t pin, int mode)
 
 uint32_t ADS1115Helper::loadReadingFromADC(uint8_t channel)
 {
-  // Serial.printf("CH%d READ\n", channel);
+  // YBP.printf("CH%d READ\n", channel);
   // bool busy = _adc->isBusy();
   // while (busy) {
-  //   Serial.printf("CH%d BUSY: %d\n", channel, busy);
+  //   YBP.printf("CH%d BUSY: %d\n", channel, busy);
   //   busy = _adc->isBusy();
   //   delay(10);
   // }
@@ -224,7 +225,7 @@ void MCP3425Helper::requestADCReading(uint8_t channel)
 
   err = this->_adc->convert(this->_config);
   if (err) {
-    Serial.printf("MCP3425 convert error: %d\n", err);
+    YBP.printf("MCP3425 convert error: %d\n", err);
   }
 }
 
