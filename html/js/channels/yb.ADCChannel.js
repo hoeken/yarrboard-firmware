@@ -8,16 +8,51 @@
   ADCChannel.prototype = Object.create(YB.BaseChannel.prototype);
   ADCChannel.prototype.constructor = ADCChannel;
 
-  ADCChannel.prototype.parseConfig = function (cfg) {
-    YB.BaseChannel.prototype.parseConfig.call(this, cfg);
+  ADCChannel.prototype.getConfigSchema = function () {
+    let schema = YB.BaseChannel.prototype.getConfigSchema.call(this);
 
-    this.type = String(cfg.type);
-    this.displayDecimals = parseFloat(cfg.displayDecimals);
-    this.units = String(cfg.units);
-    this.useCalibrationTable = Boolean(cfg.useCalibrationTable);
-    this.calibratedUnits = String(cfg.calibratedUnits);
-    this.calibrationTable = cfg.calibrationTable;
-  };
+    schema.type = {
+      presence: { allowEmpty: false },
+      type: "string",
+      length: { minimum: 1, maximum: 32 }
+    };
+
+    // Integer between 0–6 (display precision)
+    schema.displayDecimals = {
+      numericality: {
+        onlyInteger: true,
+        greaterThanOrEqualTo: 0,
+        lessThanOrEqualTo: 6
+      }
+    };
+
+    // Optional units field
+    schema.units = {
+      type: "string",
+      length: { minimum: 0, maximum: 12 }
+    };
+
+    // Boolean flag for whether calibration is used
+    schema.useCalibrationTable = {
+      inclusion: {
+        within: [true, false],
+        message: "^useCalibrationTable must be boolean"
+      }
+    };
+
+    // Optional calibrated units string
+    schema.calibratedUnits = {
+      type: "string",
+      length: { minimum: 0, maximum: 12 }
+    };
+
+    // Optional calibration table — must be array if present
+    schema.calibrationTable = {
+      type: "array"
+    };
+
+    return schema;
+  }
 
   YB.ADCChannel = ADCChannel;
   YB.ChannelRegistry.registerChannelType("adc", YB.ADCChannel)

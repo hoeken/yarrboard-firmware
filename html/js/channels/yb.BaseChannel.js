@@ -5,22 +5,41 @@
   // Base class for all channels
   function BaseChannel(type) {
     this.channelType = type;
+    this.cfg = {};
+    this.data = {};
   }
 
-  BaseChannel.prototype.parseConfig = function (cfg) {
-    this.id = parseInt(cfg.id);
-    this.name = String(cfg.name);
-    this.key = String(cfg.key);
-    this.enabled = Boolean(cfg.enabled);
+  BaseChannel.prototype.getConfigSchema = function () {
+    return {
+      id: {
+        presence: { allowEmpty: false },
+        numericality: {
+          onlyInteger: true,
+          greaterThan: 0
+        }
+      },
+      name: {
+        presence: { allowEmpty: false },
+        type: "string",
+        length: { minimum: 1, maximum: 32 }
+      },
+      key: {
+        presence: { allowEmpty: false },
+        type: "string",
+        length: { minimum: 1, maximum: 32 }
+      },
+      enabled: {
+        presence: true,
+        inclusion: {
+          within: [true, false],
+          message: "^enabled must be boolean"
+        }
+      }
+    };
   };
 
-  BaseChannel.prototype.toJSON = function () {
-    return {
-      id: this.id,
-      name: this.name,
-      key: this.key,
-      enabled: this.enabled,
-    };
+  BaseChannel.prototype.validateConfig = function (cfg) {
+    return validate(cfg, this.getConfigSchema());
   };
 
   YB.BaseChannel = BaseChannel;
