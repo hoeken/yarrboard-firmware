@@ -1424,6 +1424,7 @@ void generateConfigJSON(JsonVariant output)
   output["last_restart_reason"] = getResetReason();
   if (has_coredump)
     output["has_coredump"] = has_coredump;
+  output["boot_log"] = startupLogger.value;
 
 #ifdef YB_HAS_BUS_VOLTAGE
   output["bus_voltage"] = true;
