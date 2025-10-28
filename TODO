@@ -123,7 +123,7 @@
 
 * global cleanup of strcpy, sprintf, etc.
 * espwebtools?  https://esphome.github.io/esp-web-tools/
-* yarrboard framework
+* yarrboard c++ framework
     * create YarrboardApp class
     * move channel headers/classes to a channels/ folder
     * rename foo_channel to FooChannel to match class names
@@ -148,6 +148,27 @@
         * yba.registerChannels(channels);
         * yba.registerMQTTChannels(channels);
         * yba.registerHAChannels(channels);
+* yarrboard javascript framework
+    * move most of the logic to a YarrboardUI class
+    * generic event handlers:
+        * onMessage()
+        * onUpdate()
+        * onConfig()
+        * onPageOpen()
+    * basechannel / extension classes
+        * loadConfig() // save data to self?
+        * checkConfig() // check if data is ok
+        * saveConfig() // json call
+        * updateUI()
+        * updateStatsUI()
+        * updateGraphsUI()
+        * generateConfigJSON()
+        * generateControlUI()
+        * generateEditUI()
+        * generateStatsUI()
+        * setupControlUI()
+        * setupEditUI()
+        * setupStatsUI()
 
 * other MFD integrations:
     * garmin?
