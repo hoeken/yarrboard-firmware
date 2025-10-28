@@ -7,9 +7,7 @@ RelayChannel.prototype = Object.create(YB.BaseChannel.prototype);
 RelayChannel.prototype.constructor = RelayChannel;
 
 RelayChannel.prototype.parseConfig = function (cfg) {
-  if (!cfg) return this;
-
-  return YB.BaseChannel.prototype.parseConfig.call(this, cfg);
+  YB.BaseChannel.prototype.parseConfig.call(this, cfg);
 };
 
 YB.RelayChannel = RelayChannel;

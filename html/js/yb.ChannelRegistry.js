@@ -2,29 +2,29 @@ var YB = typeof YB !== "undefined" ? YB : {};
 
 // Simple type registry + factory
 var YBChannelRegistry = {
-  relay: YB.RelayChannel,
-  pwm: YB.PWMChannel
+  "adc": YB.ADCChannel,
+  "dio": YB.DigitalInputChannel,
+  "pwm": YB.PWMChannel,
+  "relay": YB.RelayChannel,
+  "servo": YB.ServoChannel,
+  "stepper": YB.StepperChannel,
 };
 
 YB.registerChannelType = function (type, ctor) {
   YBChannelRegistry[type] = ctor;
 };
 
-YB.channelFromConfig = function (cfg) {
-  if (!cfg || !cfg.type) {
+YB.channelFromConfig = function (cfg, type) {
+  if (!cfg) {
     throw new Error('Channel config must include a "type".');
   }
-  var Ctor = YBChannelRegistry[cfg.type];
-  if (!Ctor) {
-    throw new Error("Unknown channel type: " + cfg.type);
+  var channel = YBChannelRegistry[type];
+  if (!channel) {
+    throw new Error("Unknown channel type: " + type);
   }
-  return new Ctor().parseConfig(cfg);
-};
 
-YB.channelsFromArray = function (arr) {
-  var out = [];
-  for (var i = 0; i < arr.length; i++) {
-    out.push(YB.channelFromConfig(arr[i]));
-  }
-  return out;
+  let myChannel = new channel();
+  channel.parseConfig(cfg);
+
+  return channel;
 };

@@ -3,38 +3,22 @@ var YB = typeof YB !== "undefined" ? YB : {};
 
 // Base class for all channels
 function BaseChannel(type) {
-  this.type = type;   // "relay", "pwm", etc.
-  this.id = null;
-  this.name = null;
-  this.enabled = true;
+  this.channelType = type;
 }
 
 BaseChannel.prototype.parseConfig = function (cfg) {
-  if (!cfg) return this;
-
-  if (cfg.id != null) this.id = String(cfg.id);
-  if (cfg.name != null) this.name = String(cfg.name);
-  if (cfg.icon != null) this.icon = String(cfg.icon);
-  if (cfg.enabled != null) this.enabled = !!cfg.enabled;
-
-  if (cfg.meta && typeof cfg.meta === "object") {
-    for (var k in cfg.meta) {
-      if (Object.prototype.hasOwnProperty.call(cfg.meta, k)) {
-        this.meta[k] = cfg.meta[k];
-      }
-    }
-  }
-  return this;
+  this.id = parseInt(cfg.id);
+  this.name = String(cfg.name);
+  this.key = String(cfg.key);
+  this.enabled = Boolean(cfg.enabled);
 };
 
 BaseChannel.prototype.toJSON = function () {
   return {
-    type: this.type,
     id: this.id,
     name: this.name,
-    icon: this.icon,
+    key: this.key,
     enabled: this.enabled,
-    meta: this.meta
   };
 };
 
