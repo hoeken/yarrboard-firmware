@@ -1,13 +1,18 @@
-var YB = typeof YB !== "undefined" ? YB : {};
+(function (global) { //private scope
 
-function ServoChannel() {
-  YB.BaseChannel.call(this, "servo");
-}
-ServoChannel.prototype = Object.create(YB.BaseChannel.prototype);
-ServoChannel.prototype.constructor = ServoChannel;
+  var YB = typeof YB !== "undefined" ? YB : {};
 
-ServoChannel.prototype.parseConfig = function (cfg) {
-  YB.BaseChannel.prototype.parseConfig.call(this, cfg);
-};
+  function ServoChannel() {
+    YB.BaseChannel.call(this, "servo");
+  }
+  ServoChannel.prototype = Object.create(YB.BaseChannel.prototype);
+  ServoChannel.prototype.constructor = ServoChannel;
 
-YB.ServoChannel = ServoChannel;
+  ServoChannel.prototype.parseConfig = function (cfg) {
+    YB.BaseChannel.prototype.parseConfig.call(this, cfg);
+  };
+
+  YB.ServoChannel = ServoChannel;
+  YB.ChannelRegistry.registerChannelType("servo", YB.ServoChannel)
+
+})(this); //private scope

@@ -1,13 +1,18 @@
-var YB = typeof YB !== "undefined" ? YB : {};
+(function (global) { //private scope
 
-function DigitalInputChannel() {
-  YB.BaseChannel.call(this, "dio");
-}
-DigitalInputChannel.prototype = Object.create(YB.BaseChannel.prototype);
-DigitalInputChannel.prototype.constructor = DigitalInputChannel;
+  var YB = typeof YB !== "undefined" ? YB : {};
 
-DigitalInputChannel.prototype.parseConfig = function (cfg) {
-  YB.BaseChannel.prototype.parseConfig.call(this, cfg);
-};
+  function DigitalInputChannel() {
+    YB.BaseChannel.call(this, "dio");
+  }
+  DigitalInputChannel.prototype = Object.create(YB.BaseChannel.prototype);
+  DigitalInputChannel.prototype.constructor = DigitalInputChannel;
 
-YB.DigitalInputChannel = DigitalInputChannel;
+  DigitalInputChannel.prototype.parseConfig = function (cfg) {
+    YB.BaseChannel.prototype.parseConfig.call(this, cfg);
+  };
+
+  YB.DigitalInputChannel = DigitalInputChannel;
+  YB.ChannelRegistry.registerChannelType("dio", YB.DigitalInputChannel)
+
+})(this); //private scope

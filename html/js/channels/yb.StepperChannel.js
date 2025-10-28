@@ -1,13 +1,18 @@
-var YB = typeof YB !== "undefined" ? YB : {};
+(function (global) { //private scope
 
-function StepperChannel() {
-  YB.BaseChannel.call(this, "stepper");
-}
-StepperChannel.prototype = Object.create(YB.BaseChannel.prototype);
-StepperChannel.prototype.constructor = StepperChannel;
+  var YB = typeof YB !== "undefined" ? YB : {};
 
-StepperChannel.prototype.parseConfig = function (cfg) {
-  YB.BaseChannel.prototype.parseConfig.call(this, cfg);
-};
+  function StepperChannel() {
+    YB.BaseChannel.call(this, "stepper");
+  }
+  StepperChannel.prototype = Object.create(YB.BaseChannel.prototype);
+  StepperChannel.prototype.constructor = StepperChannel;
 
-YB.StepperChannel = StepperChannel;
+  StepperChannel.prototype.parseConfig = function (cfg) {
+    YB.BaseChannel.prototype.parseConfig.call(this, cfg);
+  };
+
+  YB.StepperChannel = StepperChannel;
+  YB.ChannelRegistry.registerChannelType("stepper", YB.StepperChannel)
+
+})(this); //private scope

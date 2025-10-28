@@ -1,20 +1,25 @@
-var YB = typeof YB !== "undefined" ? YB : {};
+(function (global) { //private scope
 
-function ADCChannel() {
-  YB.BaseChannel.call(this, "adc");
-}
-ADCChannel.prototype = Object.create(YB.BaseChannel.prototype);
-ADCChannel.prototype.constructor = ADCChannel;
+  var YB = typeof YB !== "undefined" ? YB : {};
 
-ADCChannel.prototype.parseConfig = function (cfg) {
-  YB.BaseChannel.prototype.parseConfig.call(this, cfg);
+  function ADCChannel() {
+    YB.BaseChannel.call(this, "adc");
+  }
+  ADCChannel.prototype = Object.create(YB.BaseChannel.prototype);
+  ADCChannel.prototype.constructor = ADCChannel;
 
-  this.type = String(cfg.type);
-  this.displayDecimals = parseFloat(cfg.displayDecimals);
-  this.units = String(cfg.units);
-  this.useCalibrationTable = Boolean(cfg.useCalibrationTable);
-  this.calibratedUnits = String(cfg.calibratedUnits);
-  this.calibrationTable = cfg.calibrationTable;
-};
+  ADCChannel.prototype.parseConfig = function (cfg) {
+    YB.BaseChannel.prototype.parseConfig.call(this, cfg);
 
-YB.ADCChannel = ADCChannel;
+    this.type = String(cfg.type);
+    this.displayDecimals = parseFloat(cfg.displayDecimals);
+    this.units = String(cfg.units);
+    this.useCalibrationTable = Boolean(cfg.useCalibrationTable);
+    this.calibratedUnits = String(cfg.calibratedUnits);
+    this.calibrationTable = cfg.calibrationTable;
+  };
+
+  YB.ADCChannel = ADCChannel;
+  YB.ChannelRegistry.registerChannelType("adc", YB.ADCChannel)
+
+})(this); //private scope
