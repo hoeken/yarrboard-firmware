@@ -10,6 +10,10 @@
 
 bool has_coredump = false;
 
+YarrboardPrint YBP;
+StringPrint startupLogger;
+WebsocketPrint networkLogger;
+
 void debug_setup()
 {
   Serial.print("Last Reset: ");

@@ -11,6 +11,7 @@
 #ifdef YB_IS_BRINEOMATIC
 
   #include "brineomatic.h"
+  #include "debug.h"
   #include "etl/deque.h"
   #include "relay_channel.h"
   #include "servo_channel.h"
@@ -84,20 +85,20 @@ void brineomatic_setup()
 
   // DS18B20 Sensor
   ds18b20.begin();
-  Serial.print("Found ");
-  Serial.print(ds18b20.getDeviceCount(), DEC);
-  Serial.println(" devices.");
+  YBP.print("Found ");
+  YBP.print(ds18b20.getDeviceCount(), DEC);
+  YBP.println(" devices.");
 
   // report parasite power requirements
-  Serial.print("Parasite power is: ");
+  YBP.print("Parasite power is: ");
   if (ds18b20.isParasitePowerMode())
-    Serial.println("ON");
+    YBP.println("ON");
   else
-    Serial.println("OFF");
+    YBP.println("OFF");
 
   // lookup our address
   if (!ds18b20.getAddress(motorThermometer, 0))
-    Serial.println("Unable to find address for DS18B20");
+    YBP.println("Unable to find address for DS18B20");
 
   ds18b20.setResolution(motorThermometer, 9);
   ds18b20.setWaitForConversion(false);
@@ -107,9 +108,9 @@ void brineomatic_setup()
   Wire.setClock(YB_I2C_SPEED);
   brineomatic_adc.begin();
   if (brineomatic_adc.isConnected())
-    Serial.println("ADS1115 OK");
+    YBP.println("ADS1115 OK");
   else
-    Serial.println("ADS1115 Not Found");
+    YBP.println("ADS1115 Not Found");
 
   brineomatic_adc.setMode(1);     // SINGLE SHOT MODE
   brineomatic_adc.setGain(1);     // ±4.096V
@@ -194,7 +195,7 @@ void brineomatic_loop()
       else if (current_ads1115_channel == 3)
         measure_membrane_pressure(value);
     } else
-      Serial.println("ADC Error.");
+      YBP.println("ADC Error.");
 
     // update to our channel index
     current_ads1115_channel++;
@@ -357,7 +358,7 @@ void measure_filter_pressure(int16_t reading)
   float voltage = brineomatic_adc.toVoltage(reading);
 
   if (voltage < 0.4) {
-    // Serial.println("No LP Sensor Detected");
+    // YBP.println("No LP Sensor Detected");
     wm.setFilterPressure(-999);
     return;
   }
@@ -372,7 +373,7 @@ void measure_membrane_pressure(int16_t reading)
   float voltage = brineomatic_adc.toVoltage(reading);
 
   if (voltage < 0.4) {
-    // Serial.println("No HP Sensor Detected");
+    // YBP.println("No HP Sensor Detected");
     wm.setMembranePressure(-999);
     return;
   }
@@ -381,7 +382,7 @@ void measure_membrane_pressure(int16_t reading)
   float highPressureReading = map_generic(amperage, 4.0, 20.0, 0.0, YB_HP_SENSOR_MAX);
 
   // if (highPressureReading > ge)
-  //   sendDebug("high pressure: %.3f", highPressureReading);
+  //   YBP.printf("high pressure: %.3f\n", highPressureReading);
 
   wm.setMembranePressure(highPressureReading);
 }
@@ -495,11 +496,11 @@ void Brineomatic::setMembranePressureTarget(float pressure)
     membranePressurePID.Reset();
 
     // header for debugging.
-    Serial.println("Membrane Pressure Target,Current Membrane Pressure,Pterm,Iterm,Kterm,Output Sum, PID Output, Servo Angle");
+    YBP.println("Membrane Pressure Target,Current Membrane Pressure,Pterm,Iterm,Kterm,Output Sum, PID Output, Servo Angle");
   }
   // negative target, turn off the servo.
   else {
-    sendDebug("negative target, turn off the servo.");
+    YBP.println("negative target, turn off the servo.");
     highPressureValve->write(highPressureValveCloseMin); // neutral / stop
     highPressureValve->disable();
   }
@@ -1122,8 +1123,7 @@ void Brineomatic::manageHighPressureValve()
             membranePressurePID.Reset(); // keep our pid from winding up.
           }
 
-          // sendDebug("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
-          // Serial.printf("%f,%f,%f,%f,%f,%f,%f,%d\n", membranePressureTarget, currentMembranePressure, membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
+          // YBP.printf("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f\n", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
         }
       } else {
       }
@@ -1139,7 +1139,7 @@ void Brineomatic::runStateMachine()
     // STARTUP
     //
     case Status::STARTUP:
-      Serial.println("State: STARTUP");
+      YBP.println("State: STARTUP");
 
       initializeHardware();
 
@@ -1156,7 +1156,7 @@ void Brineomatic::runStateMachine()
     // PICKLED
     //
     case Status::PICKLED:
-      Serial.println("State: PICKLED");
+      YBP.println("State: PICKLED");
       break;
 
     //
@@ -1168,8 +1168,7 @@ void Brineomatic::runStateMachine()
     // IDLE
     //
     case Status::IDLE:
-      // sendDebug("State: IDLE");
-      //  Serial.println("State: IDLE");
+      // YBP.println("State: IDLE");
       if (autoFlushEnabled && esp_timer_get_time() > nextFlushTime)
         currentStatus = Status::FLUSHING;
       break;
@@ -1178,7 +1177,7 @@ void Brineomatic::runStateMachine()
     // RUNNING
     //
     case Status::RUNNING: {
-      // sendDebug("State: RUNNING");
+      // YBP.println("State: RUNNING");
 
       runtimeStart = esp_timer_get_time();
       currentVolume = 0;
@@ -1193,7 +1192,7 @@ void Brineomatic::runStateMachine()
 
       uint64_t boostPumpStart = esp_timer_get_time();
       if (hasBoostPump()) {
-        // sendDebug("Boost Pump Started");
+        // YBP.println("Boost Pump Started");
         enableBoostPump();
         while (getFilterPressure() < getFilterPressureMinimum()) {
           if (checkStopFlag())
@@ -1207,10 +1206,10 @@ void Brineomatic::runStateMachine()
 
           vTaskDelay(pdMS_TO_TICKS(100));
         }
-        // sendDebug("Boost Pump OK");
+        // YBP.println("Boost Pump OK");
       }
 
-      // sendDebug("High Pressure Pump Started");
+      // YBP.println("High Pressure Pump Started");
       enableHighPressurePump();
       setMembranePressureTarget(defaultMembranePressureTarget);
 
@@ -1233,14 +1232,14 @@ void Brineomatic::runStateMachine()
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 
-      // sendDebug("High Pressure Pump OK");
+      // YBP.println("High Pressure Pump OK");
 
       if (waitForProductFlowrate())
         return;
       if (waitForProductSalinity())
         return;
 
-      // sendDebug("Closing Diverter Valve.");
+      // YBP.println("Closing Diverter Valve.");
       closeDiverterValve();
 
       // opening the valve sometimes causes a small blip in either, let it stabilize again
@@ -1249,7 +1248,7 @@ void Brineomatic::runStateMachine()
       if (waitForProductSalinity())
         return;
 
-      // sendDebug("Product Flow and Salinity OK");
+      // YBP.println("Product Flow and Salinity OK");
 
       uint64_t productionStart = esp_timer_get_time();
       while (true) {
@@ -1309,7 +1308,7 @@ void Brineomatic::runStateMachine()
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 
-      // sendDebug("Finished making water.");
+      // YBP.println("Finished making water.");
 
       // save our total volume produced
       preferences.putFloat("bomTotVolume", totalVolume);
@@ -1328,7 +1327,7 @@ void Brineomatic::runStateMachine()
     // STOPPING
     //
     case Status::STOPPING: {
-      // sendDebug("State: STOPPING");
+      // YBP.println("State: STOPPING");
 
       if (initializeHardware())
         currentStatus = Status::IDLE;
@@ -1342,7 +1341,7 @@ void Brineomatic::runStateMachine()
     // FLUSHING
     //
     case Status::FLUSHING: {
-      // sendDebug("State: FLUSHING");
+      // YBP.println("State: FLUSHING");
 
       stopFlag = false;
       flushStart = esp_timer_get_time();
@@ -1409,7 +1408,7 @@ void Brineomatic::runStateMachine()
     // PICKLING
     //
     case Status::PICKLING:
-      // sendDebug("State: PICKLING");
+      // YBP.println("State: PICKLING");
 
       pickleStart = esp_timer_get_time();
 
@@ -1449,7 +1448,7 @@ void Brineomatic::runStateMachine()
     // DEPICKLING
     //
     case Status::DEPICKLING:
-      // sendDebug("State: DEPICKLING");
+      // YBP.println("State: DEPICKLING");
 
       depickleStart = esp_timer_get_time();
 

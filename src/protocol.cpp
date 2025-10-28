@@ -7,6 +7,7 @@
 */
 
 #include "protocol.h"
+#include "debug.h"
 
 #ifdef YB_HAS_ADC_CHANNELS
   #include "adc_channel.h"
@@ -1826,28 +1827,10 @@ void sendOTAProgressFinished()
   free(jsonBuffer);
 }
 
-void sendDebug(const char* format, ...)
+void sendDebug(const char* message)
 {
-  char msg[128];
-
-  va_list args;
-  va_start(args, format);
-
-  // Format the message into the msg buffer
-  int len = vsnprintf(msg, sizeof(msg), format, args);
-
-  va_end(args);
-
-  if (len < 0) {
-    // Handle encoding error
-    return;
-  } else if (len >= sizeof(msg)) {
-    // Message was truncated
-    // Optionally handle this case (e.g., log a warning or increase MSG_BUF_SIZE)
-  }
-
   JsonDocument output;
-  output["debug"] = msg;
+  output["debug"] = message;
 
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(output);

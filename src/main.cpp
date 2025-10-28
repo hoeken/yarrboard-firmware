@@ -66,26 +66,30 @@ void setup()
   // startup our serial
   Serial.begin(115200);
   Serial.setTimeout(50);
+  YBP.addPrinter(Serial);
+
+  // startup log logs to a string for getting later
+  YBP.addPrinter(startupLogger);
 
   if (!LittleFS.begin(true)) {
-    Serial.println("ERROR: Unable to mount LittleFS");
+    YBP.println("ERROR: Unable to mount LittleFS");
   }
-  Serial.printf("LittleFS Storage: %d / %d\n", LittleFS.usedBytes(), LittleFS.totalBytes());
+  YBP.printf("LittleFS Storage: %d / %d\n", LittleFS.usedBytes(), LittleFS.totalBytes());
 
-  Serial.println("Yarrboard");
-  Serial.print("Hardware Version: ");
-  Serial.println(YB_HARDWARE_VERSION);
-  Serial.print("Firmware Version: ");
-  Serial.println(YB_FIRMWARE_VERSION);
+  YBP.println("Yarrboard");
+  YBP.print("Hardware Version: ");
+  YBP.println(YB_HARDWARE_VERSION);
+  YBP.print("Firmware Version: ");
+  YBP.println(YB_FIRMWARE_VERSION);
 
-  Serial.printf("Firmware build: %s (%s)\n", GIT_HASH, BUILD_TIME);
+  YBP.printf("Firmware build: %s (%s)\n", GIT_HASH, BUILD_TIME);
 
   // get our prefs early on.
   prefs_setup();
-  Serial.println("Prefs ok");
+  YBP.println("Prefs ok");
 
   debug_setup();
-  Serial.println("Debug ok");
+  YBP.println("Debug ok");
 
   // audio visual notifications
   rgb_setup();
@@ -95,53 +99,53 @@ void setup()
 #endif
 
   network_setup();
-  Serial.println("Network ok");
+  YBP.println("Network ok");
 
   // ntp_setup();
-  // Serial.println("NTP ok");
+  // YBP.println("NTP ok");
 
   server_setup();
-  Serial.println("Server ok");
+  YBP.println("Server ok");
 
   protocol_setup();
-  Serial.println("Protocol ok");
+  YBP.println("Protocol ok");
 
   ota_setup();
-  Serial.println("OTA ok");
+  YBP.println("OTA ok");
 
 #ifdef YB_HAS_BUS_VOLTAGE
   bus_voltage_setup();
-  Serial.println("Bus voltage ok");
+  YBP.println("Bus voltage ok");
 #endif
 
 #ifdef YB_HAS_ADC_CHANNELS
   adc_channels_setup();
-  Serial.println("ADC channels ok");
+  YBP.println("ADC channels ok");
 #endif
 
 #ifdef YB_HAS_PWM_CHANNELS
   pwm_channels_setup();
-  Serial.println("PWM channels ok");
+  YBP.println("PWM channels ok");
 #endif
 
 #ifdef YB_HAS_RELAY_CHANNELS
   relay_channels_setup();
-  Serial.println("Relay channels ok");
+  YBP.println("Relay channels ok");
 #endif
 
 #ifdef YB_HAS_SERVO_CHANNELS
   servo_channels_setup();
-  Serial.println("Servo channels ok");
+  YBP.println("Servo channels ok");
 #endif
 
 #ifdef YB_HAS_STEPPER_CHANNELS
   stepper_channels_setup();
-  Serial.println("Stepper channels ok");
+  YBP.println("Stepper channels ok");
 #endif
 
 #ifdef YB_HAS_FANS
   fans_setup();
-  Serial.println("Fans ok");
+  YBP.println("Fans ok");
 #endif
 
 #ifdef YB_IS_BRINEOMATIC
@@ -150,9 +154,13 @@ void setup()
 
   // we need to do this last so that all our channels, etc are fully configured.
   mqtt_setup();
-  Serial.println("MQTT ok");
+  YBP.println("MQTT ok");
 
   rgb_set_status_color(0, 255, 0);
+
+  // we're done with startup log, switch to network print
+  YBP.removePrinter(startupLogger);
+  YBP.addPrinter(networkLogger);
 
   lastLoopMicros = micros();
 }

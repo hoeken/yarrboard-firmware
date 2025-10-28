@@ -10,7 +10,6 @@
 #define YARR_PROTOCOL_H
 
 #include "adchelper.h"
-#include "debug.h"
 #include "mqtt.h"
 #include "networking.h"
 #include "ota.h"
@@ -132,7 +131,7 @@ void sendThemeUpdate();
 void sendFastUpdate();
 void sendOTAProgressUpdate(float progress);
 void sendOTAProgressFinished();
-void sendDebug(const char* format, ...);
+void sendDebug(const char* message);
 void sendToAll(const char* jsonString, UserRole auth_level);
 
 const char* getRoleText(UserRole role);

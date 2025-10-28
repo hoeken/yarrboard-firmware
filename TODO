@@ -125,6 +125,10 @@
 * espwebtools?  https://esphome.github.io/esp-web-tools/
 * yarrboard framework
     * create YarrboardApp class
+    * move channel headers/classes to a channels/ folder
+    * rename foo_channel to FooChannel to match class names
+    * something something config
+    * setLogo() or #define to set the logo file
     * create callbacks:
         * onSetup() - main.cpp
         * onLoop() - main.cpp
@@ -136,9 +140,10 @@
         * onUpdate() - protocol.cpp
         * onFastUpdate() - protocol.cpp
         * onStats() - protocol.cpp
-        * registerNobodyCommand("command");
-        * registerGuestCommand("command");
-        * registerAdminCommand("command");
+        * onMessage() - gets called for every single message
+        * registerNobodyCommand("command", callback);
+        * registerGuestCommand("command", callback);
+        * registerAdminCommand("command", callback);
     * for looping only stuff it would be best to do something like this:
         * yba.registerChannels(channels);
         * yba.registerMQTTChannels(channels);
