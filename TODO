@@ -156,9 +156,6 @@
         * onConfig()
         * onPageOpen()
     * basechannel / extension classes
-        * loadConfig() // save data to self?
-        * checkConfig() // check if data is ok
-        * saveConfig() // json call
         * updateUI()
         * updateStatsUI()
         * updateGraphsUI()

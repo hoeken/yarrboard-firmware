@@ -38,8 +38,35 @@
     };
   };
 
+  BaseChannel.prototype.getConfig = function () {
+    return this.cfg;
+  };
+
   BaseChannel.prototype.validateConfig = function (cfg) {
     return validate(cfg, this.getConfigSchema());
+  };
+
+  BaseChannel.prototype.loadConfig = function (cfg) {
+    let errors = this.validateConfig(cfg);
+    if (!errors)
+      this.cfg = cfg;
+  };
+
+  BaseChannel.prototype.saveConfig = function () {
+    let errors = this.validateConfig(this.getConfig());
+    if (!errors) {
+      let command = this.getConfig();
+      command.cmd = `config_${this.channelType}_channel`;
+      YB.client.send(command, true);
+    }
+  };
+
+  BaseChannel.prototype.loadData = function (data) {
+    this.data = data;
+  };
+
+  BaseChannel.prototype.getData() = function () {
+    return this.data;
   };
 
   YB.BaseChannel = BaseChannel;
