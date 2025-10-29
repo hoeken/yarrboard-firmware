@@ -228,8 +228,11 @@ void StepperChannel::printDebug(unsigned int milliDelay)
 
 void StepperChannel::setSpeed(float rpm)
 {
-  float hz = (rpm * YB_STEPPER_STEPS_PER_REVOLUTION) / 60.0;
+  DUMP(rpm);
+  uint32_t hz = (rpm * (float)YB_STEPPER_STEPS_PER_REVOLUTION) / 60.0;
   _stepper->setSpeedInHz(hz);
+
+  YBP.printf("CH%d | RPM: %.1f | Hz: %d\n", this->id, rpm, hz);
 }
 
 void StepperChannel::gotoAngle(float angle, float rpm)
@@ -238,13 +241,15 @@ void StepperChannel::gotoAngle(float angle, float rpm)
   currentAngle = angle;
 
   int32_t position = angle * _steps_per_degree;
+
+  YBP.printf("CH%d | Angle: %.1f | Position: %d | RPM: %.1f\n", this->id, angle, position, rpm);
   gotoPosition(position, rpm);
 }
 
 void StepperChannel::gotoPosition(int32_t position, float rpm)
 {
   // optional set speed
-  if (rpm)
+  if (rpm > 0)
     setSpeed(rpm);
 
   // giddyup

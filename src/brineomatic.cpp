@@ -104,7 +104,7 @@ void brineomatic_setup()
   ds18b20.setWaitForConversion(false);
   ds18b20.requestTemperatures();
 
-  Wire.begin();
+  Wire.begin(YB_I2C_SDA_PIN, YB_I2C_SCL_PIN);
   Wire.setClock(YB_I2C_SPEED);
   brineomatic_adc.begin();
   if (brineomatic_adc.isConnected())

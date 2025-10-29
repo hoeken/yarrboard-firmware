@@ -36,8 +36,8 @@ class StepperChannel : public BaseChannel
     void setSpeed(float rpm);
     float getAngle();
     int32_t getPosition();
-    void gotoAngle(float angle, float rpm = 0);
-    void gotoPosition(int32_t position, float rpm = 0);
+    void gotoAngle(float angle, float rpm = -1);
+    void gotoPosition(int32_t position, float rpm = -1);
     bool home();
     bool homeWithSpeed(float rpm, bool debounce = true);
 
