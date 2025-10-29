@@ -7,10 +7,13 @@
     // Map of type keys to channel constructors
     // "pwm": YB.PWMChannel,
     // "relay": YB.RelayChannel,
-    // etc.
+    //  etc.
     channelConstructors: {},
 
     //this is where our actual channel objects will live
+    // "pwm": [{ch1}, {ch2}, etc],
+    // "relay": [{ch1}, {ch2}, etc]
+    //  etc.
     channels: {},
 
     // Register or override a channel type
@@ -105,6 +108,48 @@
       }
 
       return null;
-    }
+    },
+
+    loadAllChannels: function (cfg) {
+      foreach(this.channelConstructors.keys() as ctype) {
+        if (cfg.hasOwnProperty(ctype)) {
+          foreach(cfg[ctype] as channel_config) {
+            ch = this.channelFromConfig(channel_config, ctype);
+
+            ch.generateControlUI();
+            ch.setupControlUI();
+
+            ch.generateEditUI();
+            ch.setupEditUI();
+
+            ch.generateStatsUI();
+            ch.setupStatsUI();
+
+            ch.generateGraphsUI();
+            ch.setupGraphsUI();
+          }
+        }
+      }
+    },
+
+    updateAllChannels: function (update) {
+      foreach(this.channels.keys() as ctype) {
+        if (update.hasOwnProperty(ctype)) {
+          foreach(update[ctype] as chdata) {
+            let ch = this.getChannelById(chdata.id);
+            ch.loadData(chdata);
+
+            if (ch.updateControlUI)
+              ch.updateControlUI();
+            if (ch.updateEditUI)
+              ch.updateEditUI();
+            if (ch.updateStatsUI)
+              ch.updateStatsUI();
+            if (ch.updateGraphsUI)
+              ch.updateGraphsUI();
+          }
+        }
+      }
+    },
   };
 })(this); //private scope

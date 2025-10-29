@@ -93,59 +93,26 @@
   //
   // Functions for generating the html for various channel specific UI elements
   //
-  BaseChannel.prototype.generateControlUI() = function () {
-    throw new Error("generateControlUI() not implemented");
-  };
-
-  BaseChannel.prototype.generateEditUI() = function () {
-    throw new Error("generateEditUI() not implemented");
-  };
-
-  BaseChannel.prototype.generateStatsUI() = function () {
-    throw new Error("generateStatsUI() not implemented");
-  };
-
-  BaseChannel.prototype.generateGraphsUI() = function () {
-    throw new Error("generateStatsUI() not implemented");
-  };
+  BaseChannel.prototype.generateControlUI() = function () { };
+  BaseChannel.prototype.generateEditUI() = function () { };
+  BaseChannel.prototype.generateStatsUI() = function () { };
+  BaseChannel.prototype.generateGraphsUI() = function () { };
 
   //
   // Functions for updating the UI as new data/configs come in.
   //
-  BaseChannel.prototype.updateControlUI() = function () {
-    throw new Error("updateControlUI() not implemented");
-  };
-
-  BaseChannel.prototype.updateEditUI() = function () {
-    throw new Error("updateEditUI() not implemented");
-  };
-
-  BaseChannel.prototype.updateStatsUI() = function () {
-    throw new Error("updateStatsUI() not implemented");
-  };
-
-  BaseChannel.prototype.updateGraphsUI() = function () {
-    throw new Error("updateGraphsUI() not implemented");
-  };
+  BaseChannel.prototype.updateControlUI() = function () { };
+  BaseChannel.prototype.updateEditUI() = function () { };
+  BaseChannel.prototype.updateStatsUI() = function () { };
+  BaseChannel.prototype.updateGraphsUI() = function () { };
 
   //
   // Functions for setting up the UI hooks and callbacks
   //
-  BaseChannel.prototype.setupControlUI() = function () {
-    throw new Error("setupControlUI() not implemented");
-  };
-
-  BaseChannel.prototype.setupEditUI() = function () {
-    throw new Error("setupEditUI() not implemented");
-  };
-
-  BaseChannel.prototype.setupStatsUI() = function () {
-    throw new Error("setupStatsUI() not implemented");
-  };
-
-  BaseChannel.prototype.setupGraphsUI() = function () {
-    throw new Error("setupGraphsUI() not implemented");
-  };
+  BaseChannel.prototype.setupControlUI() = function () { };
+  BaseChannel.prototype.setupEditUI() = function () { };
+  BaseChannel.prototype.setupStatsUI() = function () { };
+  BaseChannel.prototype.setupGraphsUI() = function () { };
 
 
   YB.BaseChannel = BaseChannel;
