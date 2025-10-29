@@ -22,14 +22,8 @@
       numericality: {
         onlyInteger: true,
         greaterThanOrEqualTo: 0,
-        lessThanOrEqualTo: 6
+        lessThanOrEqualTo: 4
       }
-    };
-
-    // Optional units field
-    schema.units = {
-      type: "string",
-      length: { minimum: 0, maximum: 12 }
     };
 
     // Boolean flag for whether calibration is used
@@ -43,7 +37,7 @@
     // Optional calibrated units string
     schema.calibratedUnits = {
       type: "string",
-      length: { minimum: 0, maximum: 12 }
+      length: { minimum: 0, maximum: 7 }
     };
 
     // Optional calibration table — must be array if present

@@ -47,7 +47,7 @@ class ADCChannel : public BaseChannel
     low_volt_divider - 0-5v Input
     ten_k_pullup - 10k Pullup
     */
-    char type[30] = "raw";
+    char type[33] = "raw";
 
   #ifdef YB_ADC_DRIVER_ADS1115
     ADS1115Helper* adcHelper;

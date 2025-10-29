@@ -24,12 +24,12 @@
       name: {
         presence: { allowEmpty: false },
         type: "string",
-        length: { minimum: 1, maximum: 32 }
+        length: { minimum: 1, maximum: 63 }
       },
       key: {
         presence: { allowEmpty: false },
         type: "string",
-        length: { minimum: 1, maximum: 32 }
+        length: { minimum: 1, maximum: 63 }
       },
       enabled: {
         presence: true,

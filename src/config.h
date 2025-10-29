@@ -73,9 +73,9 @@
 #define YB_PREF_KEY_LENGTH             16
 #define YB_BOARD_NAME_LENGTH           32
 #define YB_USERNAME_LENGTH             32
-#define YB_PASSWORD_LENGTH             32
-#define YB_CHANNEL_NAME_LENGTH         32
-#define YB_CHANNEL_KEY_LENGTH          32
+#define YB_PASSWORD_LENGTH             64
+#define YB_CHANNEL_NAME_LENGTH         64
+#define YB_CHANNEL_KEY_LENGTH          64
 #define YB_TYPE_LENGTH                 32
 #define YB_WIFI_SSID_LENGTH            64
 #define YB_WIFI_PASSWORD_LENGTH        64
