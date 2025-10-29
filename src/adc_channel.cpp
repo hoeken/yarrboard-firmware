@@ -23,6 +23,7 @@ ADS1115Helper* adcHelper1;
 ADS1115Helper* adcHelper2;
   #elif defined YB_ADC_DRIVER_MCP3564
 MCP3564 _adcAnalogMCP3564(YB_ADC_CS, &SPI, YB_ADC_MOSI, YB_ADC_MISO, YB_ADC_SCK);
+MCP3564Helper* adcHelper1;
   #endif
 
 unsigned long previousHAUpdateMillis = 0;
@@ -67,9 +68,31 @@ void adc_channels_setup()
 
   #elif defined(YB_ADC_DRIVER_MCP3564)
 
+  // turn on our pullup on the IRQ pin.
+  pinMode(YB_ADC_IRQ, INPUT_PULLUP);
+
+  // start up our SPI and ADC objects
+  SPI.begin(YB_ADC_SCK, YB_ADC_MISO, YB_ADC_MOSI, YB_ADC_CS);
+  if (!_adcAnalogMCP3564.begin(0, 3.3)) {
+    YBP.println("failed to initialize MCP3564");
+  } else {
+    YBP.println("MCP3564 ok.");
+  }
+
   _adcAnalogMCP3564.singleEndedMode();
   _adcAnalogMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
   _adcAnalogMCP3564.setAveraging(MCP3x6x::osr::OSR_1024);
+
+  YBP.print("VDD: ");
+  YBP.println(_adcAnalogMCP3564.analogRead(MCP_AVDD));
+
+  YBP.print("TEMP: ");
+  YBP.println(_adcAnalogMCP3564.analogRead(MCP_TEMP));
+
+  _adcAnalogMCP3564.printConfig();
+
+  adcHelper1 = new MCP3564Helper(3.3, &_adcAnalogMCP3564, 50, 500);
+  adcHelper1->attachReadyPinInterrupt(YB_ADC_IRQ, FALLING);
   #endif
 
   // setup our channels
@@ -82,6 +105,8 @@ void adc_channels_loop()
   #ifdef YB_ADC_DRIVER_ADS1115
   adcHelper1->onLoop();
   adcHelper2->onLoop();
+  #elif defined(YB_ADC_DRIVER_MCP3564)
+  adcHelper1->onLoop();
   #endif
 }
 
@@ -95,6 +120,9 @@ void ADCChannel::setup()
     this->adcHelper = adcHelper2;
     _adcChannel = this->id - 5;
   }
+  #elif defined(YB_ADC_DRIVER_MCP3564)
+  this->adcHelper = adcHelper1;
+  _adcChannel = this->id - 1;
   #endif
 }
 

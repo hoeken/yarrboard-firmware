@@ -68,7 +68,7 @@ void setup()
   YBP.addPrinter(Serial);
 
   // startup log logs to a string for getting later
-  YBP.addPrinter(startupLogger);
+  // YBP.addPrinter(startupLogger);
 
   if (!LittleFS.begin(true)) {
     YBP.println("ERROR: Unable to mount LittleFS");
@@ -159,7 +159,7 @@ void setup()
 
   // we're done with startup log, switch to network print
   YBP.removePrinter(startupLogger);
-  YBP.addPrinter(networkLogger);
+  // YBP.addPrinter(networkLogger);
 
   lastLoopMicros = micros();
 }
@@ -230,7 +230,7 @@ void loop()
   }
 
   // our debug.
-  it.print(5000);
+  // it.print(5000);
 
   // calculate our framerate
   unsigned long loopDelta = micros() - lastLoopMicros;

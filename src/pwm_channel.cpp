@@ -44,19 +44,6 @@ MCP3564Helper* adcVoltageHelper;
     #endif
   #endif
 
-// void mcp_wrapper()
-// {
-//   YBP.print(".");
-
-//   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
-//   _adcCurrentMCP3564.IRQ_handler();
-//   #endif
-
-//   #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
-//   _adcVoltageMCP3564.IRQ_handler();
-//   #endif
-// }
-
 void pwm_channels_setup()
 {
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564

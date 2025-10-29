@@ -14,7 +14,6 @@
 #include "networking.h"
 #include "ota.h"
 #include "prefs.h"
-#include "server.h"
 #include "utility.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
