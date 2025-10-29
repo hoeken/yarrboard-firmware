@@ -156,17 +156,7 @@
         * onConfig()
         * onPageOpen()
     * basechannel / extension classes
-        * updateUI()
-        * updateStatsUI()
-        * updateGraphsUI()
-        * generateConfigJSON()
-        * generateControlUI()
-        * generateEditUI()
-        * generateStatsUI()
-        * setupControlUI()
-        * setupEditUI()
-        * setupStatsUI()
-
+        * test and roll out the new class code
 * other MFD integrations:
     * garmin?
     * raymarine?

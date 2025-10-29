@@ -4,18 +4,18 @@
 
   // Channel registry + factory under YB
   YB.ChannelRegistry = {
-    // Map of type keys to constructor functions
-    channels: {},
-    // "adc": YB.ADCChannel,
-    // "dio": YB.DigitalInputChannel,
+    // Map of type keys to channel constructors
     // "pwm": YB.PWMChannel,
     // "relay": YB.RelayChannel,
-    // "servo": YB.ServoChannel,
-    // "stepper": YB.StepperChannel
+    // etc.
+    channelConstructors: {},
+
+    //this is where our actual channel objects will live
+    channels: {},
 
     // Register or override a channel type
     registerChannelType: function (type, ctor) {
-      this.channels[type] = ctor;
+      this.channelConstructors[type] = ctor;
     },
 
     // Create a channel instance from a config object
@@ -24,7 +24,7 @@
         throw new Error('Invalid channel config.');
       }
 
-      var ctor = this.channels[type];
+      var ctor = this.channelConstructors[type];
       if (!ctor) {
         throw new Error("Unknown channel type: " + type);
       }
@@ -39,7 +39,72 @@
         ctor.parseConfig(cfg, instance);
       }
 
+      this.addChannel(instance);
+
       return instance;
+    },
+
+    addChannel(instance) {
+      if (typeof instance.channelType !== "string" || !instance.channelType.length) {
+        throw new Error("Invalid channel type.");
+      }
+      if (!instance) {
+        throw new Error("Channel instance is required.");
+      }
+
+      // Ensure array exists
+      if (!this.channels.hasOwnProperty(instance.channelType)) {
+        this.channels[instance.channelType] = [];
+      }
+
+      // Add it
+      this.channels[instance.channelType].push(instance);
+
+      return instance;
+    },
+
+    getChannelById(id, type) {
+      if (typeof type !== "string" || !type.length) {
+        throw new Error("Type must be a non-empty string.");
+      }
+      if (typeof id !== "number") {
+        throw new Error("ID must be a number.");
+      }
+
+      var arr = this.channels[type];
+      if (!arr || !arr.length) {
+        return null;
+      }
+
+      for (var i = 0; i < arr.length; i++) {
+        if (arr[i].id === id) {
+          return arr[i];
+        }
+      }
+
+      return null;
+    },
+
+    getChannelByKey(key, type) {
+      if (typeof type !== "string" || !type.length) {
+        throw new Error("Type must be a non-empty string.");
+      }
+      if (typeof key !== "string" || !key.length) {
+        throw new Error("Key must be a non-empty string.");
+      }
+
+      var arr = this.channels[type];
+      if (!arr || !arr.length) {
+        return null;
+      }
+
+      for (var i = 0; i < arr.length; i++) {
+        if (arr[i].key === key) {
+          return arr[i];
+        }
+      }
+
+      return null;
     }
   };
 })(this); //private scope
