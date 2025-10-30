@@ -122,7 +122,15 @@ const brineomatic_gauge_setup = {
     "thresholds": [300, 400, 1500],
     "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
   },
+  "brine_salinity": {
+    "thresholds": [300, 400, 1500],
+    "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
+  },
   "product_flowrate": {
+    "thresholds": [20, 100, 180, 200, 250],
+    "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
+  },
+  "brine_flowrate": {
     "thresholds": [20, 100, 180, 200, 250],
     "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
   },
@@ -182,6 +190,8 @@ let filterPressureGauge;
 let membranePressureGauge;
 let productSalinityGauge;
 let productFlowrateGauge;
+let brineSalinityGauge;
+let brineFlowrateGauge;
 let tankLevelGauge;
 
 let temperatureChart;
@@ -1076,6 +1086,37 @@ function start_websocket() {
             legend: { hide: true }
           });
 
+          brineSalinityGauge = c3.generate({
+            bindto: '#brineSalinityGauge',
+            data: {
+              columns: [
+                ['Brine Salinity', 0]
+              ],
+              type: 'gauge',
+            },
+            gauge: {
+              label: {
+                format: function (value, ratio) {
+                  return `${value} PPM`;
+                },
+                show: true
+              },
+              min: 0,
+              max: 1500,
+            },
+            color: {
+              pattern: brineomatic_gauge_setup.brine_salinity.colors,
+              threshold: {
+                unit: 'value',
+                values: brineomatic_gauge_setup.brine_salinity.thresholds
+              }
+            },
+            size: { height: 130, width: 200 },
+            interaction: { enabled: false },
+            transition: { duration: 0 },
+            legend: { hide: true }
+          });
+
           productFlowrateGauge = c3.generate({
             bindto: '#productFlowrateGauge',
             data: {
@@ -1099,6 +1140,37 @@ function start_websocket() {
               threshold: {
                 unit: 'value',
                 values: brineomatic_gauge_setup.product_flowrate.thresholds
+              }
+            },
+            size: { height: 130, width: 200 },
+            interaction: { enabled: false },
+            transition: { duration: 0 },
+            legend: { hide: true }
+          });
+
+          brineFlowrateGauge = c3.generate({
+            bindto: '#brineFlowrateGauge',
+            data: {
+              columns: [
+                ['Brine Flowrate', 0]
+              ],
+              type: 'gauge',
+            },
+            gauge: {
+              label: {
+                format: function (value, ratio) {
+                  return `${value} LPH`;
+                },
+                show: true
+              },
+              min: 0,
+              max: 250,
+            },
+            color: {
+              pattern: brineomatic_gauge_setup.brine_flowrate.colors,
+              threshold: {
+                unit: 'value',
+                values: brineomatic_gauge_setup.brine_flowrate.thresholds
               }
             },
             size: { height: 130, width: 200 },
@@ -1749,10 +1821,12 @@ function start_websocket() {
         let motor_temperature = Math.round(msg.motor_temperature);
         let water_temperature = Math.round(msg.water_temperature);
         let product_flowrate = Math.round(msg.product_flowrate);
+        let brine_flowrate = Math.round(msg.brine_flowrate);
         let volume = msg.volume.toFixed(1);
         if (volume >= 100)
           volume = Math.round(volume);
         let product_salinity = Math.round(msg.product_salinity);
+        let brine_salinity = Math.round(msg.brine_salinity);
         let filter_pressure = Math.round(msg.filter_pressure);
         if (filter_pressure < 0 && filter_pressure > -10)
           filter_pressure = 0;
@@ -1769,7 +1843,9 @@ function start_websocket() {
             filterPressureGauge.load({ columns: [['Filter Pressure', filter_pressure]] });
             membranePressureGauge.load({ columns: [['Membrane Pressure', membrane_pressure]] });
             productSalinityGauge.load({ columns: [['Product Salinity', product_salinity]] });
+            brineSalinityGauge.load({ columns: [['Brine Salinity', brine_salinity]] });
             productFlowrateGauge.load({ columns: [['Product Flowrate', product_flowrate]] });
+            brineFlowrateGauge.load({ columns: [['Brine Flowrate', brine_flowrate]] });
             tankLevelGauge.load({ columns: [['Tank Level', tank_level]] });
             volumeGauge.load({ columns: [['Volume', volume]] });
           }
@@ -1831,8 +1907,14 @@ function start_websocket() {
           $("#productSalinityData").html(product_salinity);
           bom_set_data_color("product_salinity", product_salinity, $("#productSalinityData"));
 
+          $("#brineSalinityData").html(brine_salinity);
+          bom_set_data_color("brine_salinity", brine_salinity, $("#brineSalinityData"));
+
           $("#productFlowrateData").html(product_flowrate);
           bom_set_data_color("product_flowrate", product_flowrate, $("#productFlowrateData"));
+
+          $("#brineFlowrateData").html(brine_flowrate);
+          bom_set_data_color("brine_flowrate", brine_flowrate, $("#brineFlowrateData"));
 
           $("#motorTemperatureData").html(motor_temperature);
           bom_set_data_color("motor_temperature", motor_temperature, $("#motorTemperatureData"));
