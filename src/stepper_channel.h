@@ -52,7 +52,7 @@ class StepperChannel : public BaseChannel
     HardwareSerial& _serial = Serial2;
     TMC2209 _tmc2209;
     byte _diag_pin;
-    uint8_t _run_current = 50;
+    uint8_t _run_current = 85;
     uint8_t _hold_current = 25;
     uint8_t _stall_guard = 30;
 
@@ -62,7 +62,7 @@ class StepperChannel : public BaseChannel
     byte _enable_pin;
 
     uint32_t _steps_per_degree = YB_STEPPER_STEPS_PER_REVOLUTION / 360;
-    uint32_t _acceleration = 8000;                    // steps/s^2
+    uint32_t _acceleration = _steps_per_degree * 180; // degrees/s^2
     uint32_t _move_speed_hz = 2000;                   // regular moving speed
     float _home_fast_speed_rpm = 5;                   // fast homing speed
     float _home_slow_speed_rpm = 1;                   // slow homing speed

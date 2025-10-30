@@ -1,7 +1,22 @@
 # GENERAL
 
+# SENDIT
+
+* dig into MCP3564R driver and figure out whats up with the strange readings
+* maybe try continuous mode
+
+# BRINEOMATIC
+
+* test flow meters
+* test pressure sensors
+* test tds sensors
+* test solenoids w/ real load
+* test temperature sensor
+* test servos
+
 # v2.0.0 Release
 
+* add a small text box for sending raw json commands
 * settings page is ugly af.
     * borders for each config area like channels
     * side bar that loads each config page?
