@@ -306,12 +306,6 @@ void measure_brine_flowmeter()
     // Convert to liters per hour
     float flowrate = liters_per_second * 3600;
 
-    // // update our volume
-    // if ((wm.hasDiverterValve() && !wm.isDiverterValveOpen()) || !wm.hasDiverterValve()) {
-    //   wm.currentVolume += pulse_counter / flowmeterPulsesPerLiter;
-    //   wm.totalVolume += pulse_counter / flowmeterPulsesPerLiter;
-    // }
-
     // reset counter
     brine_flowmeter_pulse_counter = 0;
 

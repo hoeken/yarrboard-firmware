@@ -101,15 +101,14 @@ void StepperChannel::setup()
   _tmc2209.setRunCurrent(_run_current);
   _tmc2209.setHoldCurrent(_hold_current);
   _tmc2209.setStallGuardThreshold(_stall_guard);
+  _tmc2209.enableAutomaticCurrentScaling();
+  _tmc2209.enableAutomaticGradientAdaptation();
+  _tmc2209.enableStealthChop();
   _tmc2209.enable();
 
   printDebug(0);
 
   #endif
-
-  YBP.printf("Step Pin: %d\n", _step_pin);
-  YBP.printf("Dir Pin: %d\n", _dir_pin);
-  YBP.printf("Enable Pin: %d\n", _enable_pin);
 
   // setup our actual stepper controller
   _stepper = engine.stepperConnectToPin(_step_pin);
@@ -232,12 +231,26 @@ void StepperChannel::printDebug(unsigned int milliDelay)
   YBP.println(status.standstill);
   YBP.println("*************************");
   YBP.println();
+
+  YBP.println("*************************");
+  YBP.printf("Step Pin: %d\n", _step_pin);
+  YBP.printf("Dir Pin: %d\n", _dir_pin);
+  YBP.printf("Enable Pin: %d\n", _enable_pin);
+    #ifdef YB_STEPPER_DIAG_PINS
+  YBP.printf("Diag Pin: %d\n", _diag_pin);
+    #endif
+  YBP.printf("Steps per degree: %.2f\n", _steps_per_degree);
+  YBP.printf("Acceleratation: %d steps/s^2\n", _acceleration);
+  YBP.printf("Default Speed: %.1fRPM\n", _default_speed_rpm);
+  YBP.printf("Fast Homing Speed: %.1fRPM\n", _home_fast_speed_rpm);
+  YBP.printf("Slow Homing Speed: %.1fRPM\n", _home_slow_speed_rpm);
+  YBP.println("*************************");
+  YBP.println();
   #endif
 }
 
 void StepperChannel::setSpeed(float rpm)
 {
-  DUMP(rpm);
   uint32_t hz = (rpm * (float)YB_STEPPER_STEPS_PER_REVOLUTION) / 60.0;
   _stepper->setSpeedInHz(hz);
 
@@ -282,7 +295,13 @@ int32_t StepperChannel::getPosition()
 
 bool StepperChannel::isEndstopHit()
 {
-  return digitalRead(_diag_pin) == HIGH;
+  uint16_t stall_guard_result = _tmc2209.getStallGuardResult();
+  // DUMP(stall_guard_result);
+
+  if (stall_guard_result < _stall_guard * 2)
+    return true;
+  else
+    return false;
 }
 
 bool StepperChannel::home()
@@ -293,38 +312,27 @@ bool StepperChannel::home()
   return false;
 }
 
-bool StepperChannel::homeWithSpeed(float rpm, bool debounce)
+bool StepperChannel::homeWithSpeed(float rpm)
 {
   // back off a tiny bit first
   setSpeed(rpm);
   _stepper->move(_backoff_steps);
-  while (!_stepper->isRunning())
+  while (_stepper->isRunning())
     delay(1);
-
-  // ensure released
-  if (isEndstopHit())
-    return false;
 
   // seek toward negative until endstop triggers
   _stepper->runBackward();
+  delay(100); // give it time to get started.
 
   // look for endstop with timeout
   uint32_t t1 = millis();
   while (!isEndstopHit()) {
     if (millis() - t1 > _timeout_ms) {
       _stepper->forceStop();
+      YBP.println("Stepper homing timeout.");
       return false;
     }
     delay(1);
-  }
-
-  // double check?
-  if (debounce) {
-    delay(_debounce_ms);
-    if (!isEndstopHit()) {
-      _stepper->forceStop();
-      return false;
-    }
   }
 
   // okay, zero us.

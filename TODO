@@ -7,13 +7,9 @@
 
 # BRINEOMATIC
 
-* test flow meters
-* test pressure sensors
-* test tds sensors
 * test solenoids w/ real load
 * test temperature sensor
 * test servos
-* test stepper homing
 
 # FROTHFET
 

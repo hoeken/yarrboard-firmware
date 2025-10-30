@@ -39,7 +39,7 @@ class StepperChannel : public BaseChannel
     void gotoAngle(float angle, float rpm = -1);
     void gotoPosition(int32_t position, float rpm = -1);
     bool home();
-    bool homeWithSpeed(float rpm, bool debounce = true);
+    bool homeWithSpeed(float rpm);
 
     bool isEndstopHit();
     void disable();
@@ -52,22 +52,21 @@ class StepperChannel : public BaseChannel
     HardwareSerial& _serial = Serial2;
     TMC2209 _tmc2209;
     byte _diag_pin;
-    uint8_t _run_current = 85;
-    uint8_t _hold_current = 25;
-    uint8_t _stall_guard = 30;
+    uint8_t _run_current = 50;
+    uint8_t _hold_current = 20;
+    uint8_t _stall_guard = 25;
 
     FastAccelStepper* _stepper = NULL;
     byte _step_pin;
     byte _dir_pin;
     byte _enable_pin;
 
-    uint32_t _steps_per_degree = YB_STEPPER_STEPS_PER_REVOLUTION / 360;
-    uint32_t _acceleration = _steps_per_degree * 180; // degrees/s^2
-    uint32_t _move_speed_hz = 2000;                   // regular moving speed
-    float _home_fast_speed_rpm = 5;                   // fast homing speed
-    float _home_slow_speed_rpm = 1;                   // slow homing speed
-    uint32_t _backoff_steps = 10 * _steps_per_degree; // release distance
-    uint32_t _debounce_ms = 5;                        // switch debounce
+    float _steps_per_degree = (float)YB_STEPPER_STEPS_PER_REVOLUTION / 360.0;
+    uint32_t _acceleration = _steps_per_degree * 720; // steps/s^2
+    float _default_speed_rpm = 100.0;                 // typical homing speed
+    float _home_fast_speed_rpm = 50.0;                // fast homing speed
+    float _home_slow_speed_rpm = 25.0;                // slow homing speed
+    uint32_t _backoff_steps = 45 * _steps_per_degree; // release distance
     uint32_t _timeout_ms = 15000;                     // homing timeout
 };
 
