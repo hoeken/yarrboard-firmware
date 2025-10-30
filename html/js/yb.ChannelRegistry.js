@@ -111,43 +111,45 @@
     },
 
     loadAllChannels: function (cfg) {
-      foreach(this.channelConstructors.keys() as ctype) {
-        if (cfg.hasOwnProperty(ctype)) {
-          foreach(cfg[ctype] as channel_config) {
-            ch = this.channelFromConfig(channel_config, ctype);
+      for (var ctype of this.channelConstructors) {
+        if (!cfg.hasOwnProperty(ctype))
+          continue;
 
-            ch.generateControlUI();
-            ch.setupControlUI();
+        for (var channel_config of list) {
+          let ch = this.channelFromConfig(channel_config, ctype);
 
-            ch.generateEditUI();
-            ch.setupEditUI();
+          ch.generateControlUI();
+          ch.setupControlUI();
 
-            ch.generateStatsUI();
-            ch.setupStatsUI();
+          ch.generateEditUI();
+          ch.setupEditUI();
 
-            ch.generateGraphsUI();
-            ch.setupGraphsUI();
-          }
+          ch.generateStatsUI();
+          ch.setupStatsUI();
+
+          ch.generateGraphsUI();
+          ch.setupGraphsUI();
         }
       }
     },
 
     updateAllChannels: function (update) {
-      foreach(this.channels.keys() as ctype) {
-        if (update.hasOwnProperty(ctype)) {
-          foreach(update[ctype] as chdata) {
-            let ch = this.getChannelById(chdata.id);
-            ch.loadData(chdata);
+      for (var ctype of this.channels) {
+        if (!update.hasOwnProperty(ctype))
+          continue;
 
-            if (ch.updateControlUI)
-              ch.updateControlUI();
-            if (ch.updateEditUI)
-              ch.updateEditUI();
-            if (ch.updateStatsUI)
-              ch.updateStatsUI();
-            if (ch.updateGraphsUI)
-              ch.updateGraphsUI();
-          }
+        for (chdata of update[ctype]) {
+          let ch = this.getChannelById(chdata.id);
+          ch.loadData(chdata);
+
+          if (ch.updateControlUI)
+            ch.updateControlUI();
+          if (ch.updateEditUI)
+            ch.updateEditUI();
+          if (ch.updateStatsUI)
+            ch.updateStatsUI();
+          if (ch.updateGraphsUI)
+            ch.updateGraphsUI();
         }
       }
     },
