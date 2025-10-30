@@ -13,6 +13,22 @@
 * test solenoids w/ real load
 * test temperature sensor
 * test servos
+* test stepper homing
+
+# FROTHFET
+
+* test mosfets
+* test pwm
+* test heater loads
+* test bus voltage
+* test voltage / current
+* test fans
+* test channel leds
+* test if bleeder circuit is still required
+    * no load pwm
+    * led load pwm
+    * heater load pwm
+    * motor load pwm
 
 # v2.0.0 Release
 
