@@ -70,8 +70,6 @@ class ADCHelper
       // ISR context — keep it tiny
       auto* self = static_cast<ADCHelper*>(arg);
       self->_isReady = true;
-
-      // Serial.print(".");
     }
 };
 

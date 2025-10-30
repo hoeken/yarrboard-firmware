@@ -81,6 +81,7 @@ void ADCHelper::printDebug()
       uint32_t avgr = getAverageReading(i);
       float avgv = getAverageVoltage(i);
       YBP.printf("CH%d: Window: %dms | Readings: %d/%d | Average: %d | Voltage: %.3f\n", i, window, cnt, cap, avgr, avgv);
+      _averages[i].print();
     }
 
     lastDebugTime = millis();
@@ -169,7 +170,7 @@ void ADCHelper::onLoop()
     requestReading(_currentChannel);
   }
 
-  printDebug();
+  // printDebug();
 }
 
 //
@@ -263,18 +264,22 @@ MCP3564Helper::MCP3564Helper(float vref, MCP3564* adc, uint16_t samples, uint32_
 
 void MCP3564Helper::requestADCReading(uint8_t channel)
 {
-  // return
   this->_adc->startMux(_channelAddresses[channel]);
 }
 
 bool MCP3564Helper::isADCReady()
 {
-  // return true;
   return this->_adc->isComplete();
 }
 
 uint32_t MCP3564Helper::loadReadingFromADC(uint8_t channel)
 {
-  // return this->_adc->analogRead(_channelAddresses[channel]);
-  return this->_adc->readResult();
+  int32_t result = this->_adc->readResult();
+  if (result < 0)
+    result = 0;
+
+  if (channel < 2)
+    YBP.printf("CH%d | VAL: %d\n", channel, result);
+
+  return result;
 }

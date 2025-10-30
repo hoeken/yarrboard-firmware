@@ -81,17 +81,11 @@ void adc_channels_setup()
 
   _adcAnalogMCP3564.singleEndedMode();
   _adcAnalogMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
-  _adcAnalogMCP3564.setAveraging(MCP3x6x::osr::OSR_1024);
-
-  YBP.print("VDD: ");
-  YBP.println(_adcAnalogMCP3564.analogRead(MCP_AVDD));
-
-  YBP.print("TEMP: ");
-  YBP.println(_adcAnalogMCP3564.analogRead(MCP_TEMP));
+  _adcAnalogMCP3564.setAveraging(MCP3x6x::osr::OSR_4096);
 
   _adcAnalogMCP3564.printConfig();
 
-  adcHelper1 = new MCP3564Helper(3.3, &_adcAnalogMCP3564, 50, 500);
+  adcHelper1 = new MCP3564Helper(3.3, &_adcAnalogMCP3564, 50, 5000);
   adcHelper1->attachReadyPinInterrupt(YB_ADC_IRQ, FALLING);
   #endif
 
