@@ -91,16 +91,25 @@ void StepperChannel::setup()
 {
   // setup our TMC2209 parameters
   #ifdef YB_STEPPER_DRIVER_TMC2209
-  HardwareSerial& serial_stream = Serial2;
-  Serial2.setPins(YB_STEPPER_RX_PIN, YB_STEPPER_TX_PIN);
-  _tmc2209.setup(serial_stream);
+  // setup our serial port
+  _serial = Serial2;
+  _tmc2209.setup(_serial, 115200, TMC2209::SERIAL_ADDRESS_0, YB_STEPPER_RX_PIN, YB_STEPPER_TX_PIN);
+
+  // setup our chip
   _tmc2209.setMicrostepsPerStep(YB_STEPPER_MICROSTEPS);
   _tmc2209.setStandstillMode(_tmc2209.FREEWHEELING);
   _tmc2209.setRunCurrent(_run_current);
   _tmc2209.setHoldCurrent(_hold_current);
   _tmc2209.setStallGuardThreshold(_stall_guard);
   _tmc2209.enable();
+
+  printDebug(0);
+
   #endif
+
+  YBP.printf("Step Pin: %d\n", _step_pin);
+  YBP.printf("Dir Pin: %d\n", _dir_pin);
+  YBP.printf("Enable Pin: %d\n", _enable_pin);
 
   // setup our actual stepper controller
   _stepper = engine.stepperConnectToPin(_step_pin);

@@ -81,7 +81,6 @@ void ADCHelper::printDebug()
       uint32_t avgr = getAverageReading(i);
       float avgv = getAverageVoltage(i);
       YBP.printf("CH%d: Window: %dms | Readings: %d/%d | Average: %d | Voltage: %.3f\n", i, window, cnt, cap, avgr, avgv);
-      _averages[i].print();
     }
 
     lastDebugTime = millis();

@@ -49,6 +49,7 @@ class StepperChannel : public BaseChannel
   private:
     unsigned long lastUpdateMillis = 0;
 
+    HardwareSerial& _serial = Serial2;
     TMC2209 _tmc2209;
     byte _diag_pin;
     uint8_t _run_current = 50;

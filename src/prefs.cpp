@@ -29,6 +29,10 @@
   #include "servo_channel.h"
 #endif
 
+#ifdef YB_HAS_STEPPER_CHANNELS
+  #include "stepper_channel.h"
+#endif
+
 String arduino_version = String(ESP_ARDUINO_VERSION_MAJOR) + "." +
                          String(ESP_ARDUINO_VERSION_MINOR) + "." +
                          String(ESP_ARDUINO_VERSION_PATCH);
@@ -87,6 +91,10 @@ void initializeChannels()
 
 #ifdef YB_HAS_SERVO_CHANNELS
   initChannels(servo_channels);
+#endif
+
+#ifdef YB_HAS_STEPPER_CHANNELS
+  initChannels(stepper_channels);
 #endif
 }
 

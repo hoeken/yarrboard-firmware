@@ -54,7 +54,7 @@
 #define YB_HAS_STEPPER_CHANNELS
 #define YB_STEPPER_DRIVER_TMC2209
 #define YB_STEPPER_CHANNEL_COUNT        1
-#define YB_STEPPER_MICROSTEPS           256
+#define YB_STEPPER_MICROSTEPS           8
 #define YB_STEPPER_STEPS_PER_REVOLUTION (200 * 256 * (80 / 20))
 #define YB_STEPPER_STEP_PINS            {7}
 #define YB_STEPPER_DIR_PINS             {6}
