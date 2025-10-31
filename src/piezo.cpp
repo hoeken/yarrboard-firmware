@@ -7,6 +7,7 @@
 */
 
 #include "piezo.h"
+#include "debug.h"
 
 #ifdef YB_HAS_PIEZO
 
@@ -14,7 +15,7 @@
   #define BUZZER_DUTY   512 // ~50% at 10-bit
 
 // Example melody (C scale up, rest, then down)
-static const Note MELODY_EXAMPLE[] = {
+static const Note PASSIVE_STARTUP[] = {
   {262, 100},
   {294, 100},
   {330, 100},
@@ -25,6 +26,15 @@ static const Note MELODY_EXAMPLE[] = {
   {523, 100},
 };
 
+// Example melody (C scale up, rest, then down)
+static const Note ACTIVE_STARTUP[] = {
+  {100, 50},
+  {0, 50},
+  {100, 50},
+  {0, 50},
+  {100, 50},
+};
+
 // ---------- Buzzer task control ----------
 static TaskHandle_t buzzerTaskHandle = nullptr;
 static const Note* g_seq = nullptr;
@@ -32,12 +42,29 @@ static size_t g_len = 0;
 static bool g_repeat = false;
 static portMUX_TYPE g_mux = portMUX_INITIALIZER_UNLOCKED;
 
+  #ifdef YB_PIEZO_ACTIVE
+bool piezoIsActive = true;
+  #elif defined(YB_PIEZO_PASSIVE)
+bool piezoIsActive = false;
+  #else
+bool piezoIsActive = false;
+  #endif
+
 void piezo_setup()
 {
   pinMode(YB_PIEZO_PIN, OUTPUT);
 
-  // LEDC once
-  ledcAttach(YB_PIEZO_PIN, 1000, LEDC_RES_BITS);
+  if (!piezoIsActive) {
+    // LEDC once
+    if (!ledcAttach(YB_PIEZO_PIN, 1000, LEDC_RES_BITS)) {
+      YBP.println("Error attaching piezo to LEDC channel.");
+      return;
+    } else {
+      piezoIsActive = false;
+    }
+  }
+
+  // shh.
   buzzerMute();
 
   // Create buzzer task (small stack, low priority)
@@ -51,7 +78,10 @@ void piezo_setup()
     &buzzerTaskHandle);
 
   // Kick an example (one-shot). Use true for repeat.
-  playMelody(MELODY_EXAMPLE, sizeof(MELODY_EXAMPLE) / sizeof(MELODY_EXAMPLE[0]), false);
+  if (piezoIsActive)
+    playMelody(ACTIVE_STARTUP, sizeof(ACTIVE_STARTUP) / sizeof(ACTIVE_STARTUP[0]), false);
+  else
+    playMelody(PASSIVE_STARTUP, sizeof(PASSIVE_STARTUP) / sizeof(PASSIVE_STARTUP[0]), false);
 }
 
 // Signal the task to start (or restart) a melody.
@@ -80,7 +110,10 @@ void stopMelody()
 // ---------- Low-level helpers ----------
 static inline void buzzerMute()
 {
-  ledcWrite(YB_PIEZO_PIN, 0);
+  if (piezoIsActive)
+    digitalWrite(YB_PIEZO_PIN, LOW);
+  else
+    ledcWrite(YB_PIEZO_PIN, 0);
 }
 
 static inline void buzzerTone(uint16_t freqHz)
@@ -88,8 +121,12 @@ static inline void buzzerTone(uint16_t freqHz)
   if (freqHz == 0) {
     buzzerMute(); // rest
   } else {
-    ledcWrite(YB_PIEZO_PIN, BUZZER_DUTY);
-    ledcWriteTone(YB_PIEZO_PIN, freqHz); // hardware retune
+    if (piezoIsActive) {
+      digitalWrite(YB_PIEZO_PIN, HIGH);
+    } else {
+      // ledcWrite(YB_PIEZO_PIN, BUZZER_DUTY);
+      ledcWriteTone(YB_PIEZO_PIN, freqHz); // hardware retune
+    }
   }
 }
 

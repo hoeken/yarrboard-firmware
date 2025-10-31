@@ -267,7 +267,8 @@ void PWMChannel::setupLedc()
   digitalWrite(this->pin, this->isInverted);
 
   // now attach ledc
-  ledcAttach(this->pin, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION);
+  if (!ledcAttach(this->pin, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION))
+    YBP.printf("PWM CH%d error attaching to LEDC\n");
   this->writePWM(0);
 }
 

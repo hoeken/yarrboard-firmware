@@ -14,13 +14,9 @@
 # FROTHFET
 
 * test heater loads
-* test voltage / current
 * test fans
 * test if bleeder circuit is still required
-    * no load pwm
-    * led load pwm
     * heater load pwm
-    * motor load pwm
 
 # v2.0.0 Release
 
