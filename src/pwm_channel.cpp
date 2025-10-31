@@ -263,8 +263,8 @@ void PWMChannel::setupLedc()
   this->fadeOver = false;
 
   // initialize our PWM channels
-  digitalWrite(this->pin, this->isInverted);
   pinMode(this->pin, OUTPUT);
+  digitalWrite(this->pin, this->isInverted);
 
   // now attach ledc
   ledcAttach(this->pin, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION);
@@ -281,16 +281,16 @@ void PWMChannel::setupOffset()
   // how many?
   byte readings = 10;
 
-  // average a bunch of readings
-  float tv = 0;
-  for (byte i = 0; i < readings; i++)
-    tv += this->voltageHelper->getNewVoltage(_adcVoltageChannel);
-  float v = this->toVoltage(tv / readings);
+  // // average a bunch of readings
+  // float tv = 0;
+  // for (byte i = 0; i < readings; i++)
+  //   tv += this->voltageHelper->getNewVoltage(_adcVoltageChannel);
+  // float v = this->toVoltage(tv / readings);
 
-  // low enough value to be an offset?
-  this->voltageOffset = 0.0;
-  if (v < (30.0 * 0.05))
-    this->voltageOffset = v;
+  // // low enough value to be an offset?
+  // this->voltageOffset = 0.0;
+  // if (v < (30.0 * 0.05))
+  //   this->voltageOffset = v;
 
   // average a bunch of readings
   float ta = 0;
@@ -433,9 +433,9 @@ float PWMChannel::toVoltage(float adcVoltage)
 
 void PWMChannel::checkStatus()
 {
-  // this->checkSoftFuse();
-  // this->checkFuseBlown();
-  // this->checkFuseBypassed();
+  this->checkSoftFuse();
+  this->checkFuseBlown();
+  this->checkFuseBypassed();
 }
 
 void PWMChannel::updateOutputLED()

@@ -104,8 +104,8 @@ class PWMChannel : public BaseChannel
     uint8_t _adcVoltageChannel = 0;
     uint8_t _adcAmperageChannel = 0;
 
-    float voltageOffset = 0;
-    float amperageOffset = 0;
+    float voltageOffset = 0.0;
+    float amperageOffset = 0.0;
 
     float voltage = 0.0;
     float amperage = 0.0;

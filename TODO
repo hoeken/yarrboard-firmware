@@ -13,12 +13,9 @@
 
 # FROTHFET
 
-* update code to invert pwm signal
-* test fading
 * test heater loads
 * test voltage / current
 * test fans
-* test channel leds
 * test if bleeder circuit is still required
     * no load pwm
     * led load pwm
@@ -27,6 +24,7 @@
 
 # v2.0.0 Release
 
+* convert ws2818 code to fastled
 * add a small text box for sending raw json commands
 * settings page is ugly af.
     * borders for each config area like channels
@@ -123,6 +121,7 @@
 # FROTHFET
 
 * fading code
+    * dimming needs some work - probably b/c of the invert code
     * saveThrottledDutyCycle needs reworked
 * slow vs fast blow
     * fast checks getLatestReading()
