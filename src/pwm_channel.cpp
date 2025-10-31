@@ -263,6 +263,10 @@ void PWMChannel::setupLedc()
   this->fadeOver = false;
 
   // initialize our PWM channels
+  digitalWrite(this->pin, this->isInverted);
+  pinMode(this->pin, OUTPUT);
+
+  // now attach ledc
   ledcAttach(this->pin, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION);
   this->writePWM(0);
 }
