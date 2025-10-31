@@ -23,9 +23,7 @@ etl::array<PWMChannel, YB_PWM_CHANNEL_COUNT> pwm_channels;
 byte _pwm_pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_PINS;
 
 /* Setting PWM Properties */
-// ledc library range is a little bit quirky:
-// https://github.com/espressif/arduino-esp32/issues/5089
-const unsigned int MAX_DUTY_CYCLE = (int)(pow(2, YB_PWM_CHANNEL_RESOLUTION));
+const unsigned int MAX_DUTY_CYCLE = (int)(pow(2, YB_PWM_CHANNEL_RESOLUTION)) - 1;
 
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
 MCP3564 _adcCurrentMCP3564(YB_PWM_CHANNEL_CURRENT_ADC_CS, &SPI, YB_PWM_CHANNEL_CURRENT_ADC_MOSI, YB_PWM_CHANNEL_CURRENT_ADC_MISO, YB_PWM_CHANNEL_CURRENT_ADC_SCK);
@@ -425,12 +423,9 @@ float PWMChannel::toVoltage(float adcVoltage)
 
 void PWMChannel::checkStatus()
 {
-  // this->voltage = this->getVoltage();
-  // this->amperage = this->getAmperage();
-
-  this->checkSoftFuse();
-  this->checkFuseBlown();
-  this->checkFuseBypassed();
+  // this->checkSoftFuse();
+  // this->checkFuseBlown();
+  // this->checkFuseBypassed();
 }
 
 void PWMChannel::updateOutputLED()

@@ -10,7 +10,8 @@
 #define YB_DEFAULT_AP_SSID  "sendit"
 
 #define YB_HAS_STATUS_WS2818
-#define YB_STATUS_WS2818_PIN 38
+#define YB_STATUS_WS2818_PIN  38
+#define YB_STATUS_WS2818_TYPE NEO_GRB
 
 // #define YB_HAS_PIEZO
 // #define YB_PIEZO_PASSIVE

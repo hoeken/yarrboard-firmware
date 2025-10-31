@@ -13,10 +13,9 @@
 
 # FROTHFET
 
-* test mosfets
-* test pwm
+* update code to invert pwm signal
+* test fading
 * test heater loads
-* test bus voltage
 * test voltage / current
 * test fans
 * test channel leds

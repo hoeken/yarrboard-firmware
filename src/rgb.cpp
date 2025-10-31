@@ -9,7 +9,7 @@
 #include "rgb.h"
 
 #ifdef YB_HAS_STATUS_WS2818
-Adafruit_NeoPixel status_led(YB_STATUS_WS2818_COUNT, YB_STATUS_WS2818_PIN, NEO_RGB + NEO_KHZ800);
+Adafruit_NeoPixel status_led(YB_STATUS_WS2818_COUNT, YB_STATUS_WS2818_PIN, YB_STATUS_WS2818_TYPE + NEO_KHZ800);
 #endif
 
 void rgb_setup()
