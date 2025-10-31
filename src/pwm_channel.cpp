@@ -252,13 +252,19 @@ void PWMChannel::setup()
 
 void PWMChannel::setupLedc()
 {
+  #ifdef YB_PWM_CHANNEL_INVERTED
+  this->isInverted = true;
+  #else
+  this->isInverted = false;
+  #endif
+
   // track our fades
   this->isFading = false;
   this->fadeOver = false;
 
   // initialize our PWM channels
   ledcAttach(this->pin, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION);
-  ledcWrite(this->pin, 0);
+  this->writePWM(0);
 }
 
 void PWMChannel::setupOffset()
@@ -332,16 +338,16 @@ void PWMChannel::updateOutput(bool check_status)
   // first of all, if its tripped or blown zero it out.
   if (this->status == Status::TRIPPED || this->status == Status::BLOWN) {
     this->outputState = false;
-    ledcWrite(this->pin, 0);
+    this->writePWM(0);
     return;
   }
 
   // regular on/off outputs just do it.
   if (!this->isDimmable) {
     if (this->outputState)
-      ledcWrite(this->pin, MAX_DUTY_CYCLE);
+      this->writePWM(MAX_DUTY_CYCLE);
     else
-      ledcWrite(this->pin, 0);
+      this->writePWM(0);
     return;
   }
 
@@ -349,9 +355,9 @@ void PWMChannel::updateOutput(bool check_status)
   if (strcmp(this->type, "light")) {
     int pwm = this->dutyCycle * MAX_DUTY_CYCLE;
     if (this->outputState)
-      ledcWrite(this->pin, pwm);
+      this->writePWM(pwm);
     else
-      ledcWrite(this->pin, 0);
+      this->writePWM(0);
     return;
   }
   // otherwise for lights, we need to deal with brightness, fading, etc.
@@ -376,14 +382,14 @@ void PWMChannel::updateOutput(bool check_status)
         if (this->rampOnMillis)
           this->startFade(duty, rampOnMillis);
         else
-          ledcWrite(this->pin, duty * MAX_DUTY_CYCLE);
+          this->writePWM(duty * MAX_DUTY_CYCLE);
       }
       // okay, turn it off.
       else {
         if (this->rampOffMillis)
           this->startFade(0, rampOffMillis);
         else
-          ledcWrite(this->pin, 0);
+          this->writePWM(0);
       }
     }
   }
@@ -557,8 +563,12 @@ void PWMChannel::startFade(float duty, int fade_time)
   if (!this->isFading) {
     // setup for our hardware fader
     fade_time = max(1, fade_time);
-    const uint32_t start_duty = ledcRead(this->pin);   // start from where you are
-    const uint32_t end_duty = (duty * MAX_DUTY_CYCLE); // we need it in native units
+    const uint32_t start_duty = ledcRead(this->pin); // start from where you are
+    uint32_t end_duty;
+    if (this->isInverted)
+      end_duty = MAX_DUTY_CYCLE - (duty * MAX_DUTY_CYCLE); // inverted
+    else
+      end_duty = (duty * MAX_DUTY_CYCLE); // regular
 
     // nothing happening.
     if (start_duty == end_duty)
@@ -749,6 +759,16 @@ void PWMChannel::setState(bool newState)
     // flag for update to clients
     this->sendFastUpdate = true;
   }
+}
+
+void PWMChannel::writePWM(uint16_t pwm)
+{
+  pwm = constrain(pwm, 0, MAX_DUTY_CYCLE);
+
+  if (this->isInverted)
+    ledcWrite(this->pin, MAX_DUTY_CYCLE - pwm);
+  else
+    ledcWrite(this->pin, pwm);
 }
 
 const char* PWMChannel::getStatus()
