@@ -107,8 +107,6 @@ class PWMChannel : public BaseChannel
     float voltageOffset = 0.0;
     float amperageOffset = 0.0;
 
-    float voltage = 0.0;
-    float amperage = 0.0;
     float softFuseAmperage = YB_PWM_CHANNEL_MAX_AMPS;
     float ampHours = 0.0;
     float wattHours = 0.0;

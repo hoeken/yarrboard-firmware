@@ -67,12 +67,15 @@ void fans_loop()
     for (auto& ch : pwm_channels) {
       // only count enabled channels
       if (ch.isEnabled) {
-        amps_avg += ch.amperage;
-        amps_max = max(amps_max, ch.amperage);
+        amps_avg += ch.getAmperage();
+        amps_max = max(amps_max, ch.getAmperage());
         enabled_count++;
       }
     }
     amps_avg = amps_avg / enabled_count;
+
+    DUMP(amps_avg);
+    DUMP(amps_max);
 
     // one channel on high?
     if (amps_max > YB_FAN_SINGLE_CHANNEL_THRESHOLD) {
@@ -113,6 +116,7 @@ void measure_fan_rpm(byte i)
 
 void set_fans_state(bool state)
 {
+  DUMP(state);
   for (byte i = 0; i < YB_FAN_COUNT; i++) {
     digitalWrite(fan_mosfet_pins[i], state);
   }

@@ -12,11 +12,7 @@
 * test servos
 
 # FROTHFET
-
-* test heater loads
-* test fans
-* test if bleeder circuit is still required
-    * heater load pwm
+    * test ina226 vs current setup
 
 # v2.0.0 Release
 
