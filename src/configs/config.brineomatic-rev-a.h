@@ -44,6 +44,8 @@
 #define YB_ADC_DRIVER_ADS1115
 #define YB_ADS1115_VREF       4.096
 #define YB_ADS1115_ADDRESS    0x49
+#define YB_I2C_SDA_PIN        8
+#define YB_I2C_SCL_PIN        9
 #define YB_THERMISTOR_CHANNEL 0
 #define YB_TDS_CHANNEL        1
 #define YB_LP_SENSOR_CHANNEL  2

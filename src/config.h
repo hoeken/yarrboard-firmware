@@ -54,6 +54,12 @@
   #endif
 #endif
 
+// default to rgb mode
+#ifndef YB_STATUS_WS2818_TYPE
+  #define YB_STATUS_WS2818_TYPE NEO_RGB
+#endif
+
+// default to 400khz
 #ifndef YB_I2C_SPEED
   #define YB_I2C_SPEED 400000
 #endif
