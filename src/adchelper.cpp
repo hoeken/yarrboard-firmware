@@ -277,8 +277,5 @@ uint32_t MCP3564Helper::loadReadingFromADC(uint8_t channel)
   if (result < 0)
     result = 0;
 
-  // if (channel < 2)
-  //   YBP.printf("CH%d | VAL: %d\n", channel, result);
-
   return result;
 }
