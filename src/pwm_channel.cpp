@@ -10,9 +10,13 @@
 
 #ifdef YB_HAS_PWM_CHANNELS
 
+  // #include "INA226.h"
   #include "debug.h"
   #include "pwm_channel.h"
   #include "rgb.h"
+
+// INA226 INA(0x40);
+// unsigned long previousINA226UpdateMillis = 0;
 
 unsigned long previousHAUpdateMillis = 0;
 
@@ -152,6 +156,33 @@ void pwm_channels_setup()
     ch.setupOffset();
     ch.setupDefaultState();
   }
+
+  // if (!INA.begin())
+  //   YBP.println("INA226 could not connect.");
+  // else
+  //   YBP.println("INA226 OK");
+
+  // YBP.print("MAN:\t");
+  // YBP.println(INA.getManufacturerID(), HEX);
+  // YBP.print("DIE:\t");
+  // YBP.println(INA.getDieID(), HEX);
+
+  // INA.setBusVoltageConversionTime(7);
+  // INA.setShuntVoltageConversionTime(7);
+
+  // int x = INA.setMaxCurrentShunt(20, 0.002);
+  // YBP.println("normalized = true (default)");
+  // YBP.println(x);
+
+  // YBP.print("LSB:\t");
+  // YBP.println(INA.getCurrentLSB(), 10);
+  // YBP.print("LSB_uA:\t");
+  // YBP.println(INA.getCurrentLSB_uA(), 3);
+  // YBP.print("shunt:\t");
+  // YBP.println(INA.getShunt(), 3);
+  // YBP.print("maxCur:\t");
+  // YBP.println(INA.getMaxCurrent(), 3);
+  // YBP.println();
 }
 
 void pwm_channels_loop()
@@ -204,6 +235,17 @@ void pwm_channels_loop()
       previousHAUpdateMillis = millis();
     }
   }
+
+  // if (millis() - previousINA226UpdateMillis > 1000) {
+  //   float v = INA.getBusVoltage();
+  //   float s = INA.getShuntVoltage_mV();
+  //   float a = INA.getCurrent();
+  //   float p = INA.getPower();
+
+  //   YBP.printf("V: %.3fv | S: %.3fmV | A: %.3fA | P: %.3fW\n", v, s, a, p);
+
+  //   previousINA226UpdateMillis = millis();
+  // }
 }
 
 void PWMChannel::setup()

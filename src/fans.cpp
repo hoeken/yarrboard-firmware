@@ -74,9 +74,6 @@ void fans_loop()
     }
     amps_avg = amps_avg / enabled_count;
 
-    DUMP(amps_avg);
-    DUMP(amps_max);
-
     // one channel on high?
     if (amps_max > YB_FAN_SINGLE_CHANNEL_THRESHOLD) {
       set_fans_state(true);
@@ -116,7 +113,6 @@ void measure_fan_rpm(byte i)
 
 void set_fans_state(bool state)
 {
-  DUMP(state);
   for (byte i = 0; i < YB_FAN_COUNT; i++) {
     digitalWrite(fan_mosfet_pins[i], state);
   }

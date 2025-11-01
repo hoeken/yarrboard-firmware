@@ -11,9 +11,6 @@
 * test temperature sensor
 * test servos
 
-# FROTHFET
-    * test ina226 vs current setup
-
 # v2.0.0 Release
 
 * convert ws2818 code to fastled
