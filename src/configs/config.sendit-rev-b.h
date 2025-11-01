@@ -13,11 +13,12 @@
 #define YB_STATUS_WS2818_PIN  38
 #define YB_STATUS_WS2818_TYPE NEO_GRB
 
-// #define YB_HAS_PIEZO
-// #define YB_PIEZO_PASSIVE
-// #define YB_PIEZO_PIN 14
+#define YB_HAS_PIEZO
+#define YB_PIEZO_PASSIVE
+#define YB_PIEZO_PIN 14
 
 #define YB_HAS_ADC_CHANNELS
+#define YB_ADC_CHANNEL_COUNT         8
 #define YB_ADC_DRIVER_MCP3564        1
 #define YB_ADC_RESOLUTION            23
 #define YB_ADC_UNIT_LENGTH           8
@@ -25,7 +26,6 @@
 #define YB_ADC_CALIBRATION_TABLE_MAX 255
 #define YB_ADC_VREF                  3.3
 #define YB_ADC_VCC                   3.3
-#define YB_ADC_CHANNEL_COUNT         8
 #define YB_ADC_SCK                   12
 #define YB_ADC_MOSI                  11
 #define YB_ADC_MISO                  10

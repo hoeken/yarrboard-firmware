@@ -3,12 +3,12 @@
 # SENDIT
 
 * dig into MCP3564R driver and figure out whats up with the strange readings
-* maybe try continuous mode
+    * try with other voltage dividers? 
+    * maybe try continuous mode
+* test passive piezos
 
 # BRINEOMATIC
 
-* test solenoids w/ real load
-* test temperature sensor
 * test servos
 
 # v2.0.0 Release
