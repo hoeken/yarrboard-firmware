@@ -8,40 +8,48 @@
 
 #include "rgb.h"
 
-#ifdef YB_HAS_STATUS_WS2818
-Adafruit_NeoPixel status_led(YB_STATUS_WS2818_COUNT, YB_STATUS_WS2818_PIN, YB_STATUS_WS2818_TYPE + NEO_KHZ800);
-#endif
+CRGB _leds[YB_STATUS_WS2818_COUNT];
 
 void rgb_setup()
 {
-#ifdef YB_HAS_STATUS_WS2818
-  status_led.begin();
-  status_led.setPixelColor(0, status_led.Color(0, 0, 255));
-  status_led.setBrightness(50);
-  status_led.show();
-#endif
+  FastLED.addLeds<YB_STATUS_WS2818_TYPE, YB_STATUS_WS2818_PIN, YB_STATUS_WS2818_ORDER>(_leds, YB_STATUS_WS2818_COUNT);
+  FastLED.setBrightness(32);
+  FastLED.clear();
+  rgb_set_status_color(CRGB::Blue);
+  FastLED.show();
 }
+
+unsigned long lastRGBUpdateMillis = 0;
 
 void rgb_loop()
 {
+  // 10hz refresh
+  if (millis() - lastRGBUpdateMillis > 100) {
+    FastLED.show();
+    lastRGBUpdateMillis = millis();
+  }
 }
 
 void rgb_set_status_color(uint8_t r, uint8_t g, uint8_t b)
 {
-#ifdef YB_HAS_STATUS_WS2818
-  status_led.setPixelColor(0, r, g, b);
-  status_led.show();
-#endif
+  rgb_set_pixel_color(0, r, g, b);
 }
 
 void rgb_set_pixel_color(uint8_t c, uint8_t r, uint8_t g, uint8_t b)
 {
-#ifdef YB_HAS_STATUS_WS2818
   // out of bounds?
   if (c >= YB_STATUS_WS2818_COUNT)
     return;
 
-  status_led.setPixelColor(c, r, g, b);
-  status_led.show();
-#endif
+  _leds[c].setRGB(r, g, b);
+}
+
+void rgb_set_status_color(const CRGB& color)
+{
+  rgb_set_pixel_color(0, color);
+}
+
+void rgb_set_pixel_color(uint8_t c, const CRGB& color)
+{
+  _leds[c] = color;
 }

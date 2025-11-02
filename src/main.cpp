@@ -91,8 +91,9 @@ void setup()
   YBP.println("Debug ok");
 
   // audio visual notifications
+#ifdef YB_HAS_STATUS_WS2818
   rgb_setup();
-
+#endif
 #ifdef YB_HAS_PIEZO
   piezo_setup();
 #endif
@@ -168,6 +169,11 @@ void loop()
 {
   // start our interval timer
   it.start();
+
+#ifdef YB_HAS_STATUS_WS2818
+  rgb_loop();
+  it.time("rgb_loop");
+#endif
 
 #ifdef YB_HAS_ADC_CHANNELS
   adc_channels_loop();

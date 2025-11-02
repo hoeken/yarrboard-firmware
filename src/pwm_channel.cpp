@@ -485,17 +485,17 @@ void PWMChannel::updateOutputLED()
 {
   #if (YB_STATUS_WS2818_COUNT > 1)
   if (this->status == Status::ON)
-    rgb_set_pixel_color(this->id, 0, 255, 0); // green
+    rgb_set_pixel_color(this->id, CRGB::Green);
   else if (this->status == Status::OFF)
-    rgb_set_pixel_color(this->id, 0, 0, 0); // off
+    rgb_set_pixel_color(this->id, CRGB::Black);
   else if (this->status == Status::TRIPPED)
-    rgb_set_pixel_color(this->id, 255, 255, 0); // yellow
+    rgb_set_pixel_color(this->id, CRGB::Yellow);
   else if (this->status == Status::BLOWN)
-    rgb_set_pixel_color(this->id, 255, 0, 0); // red
+    rgb_set_pixel_color(this->id, CRGB::Red);
   else if (this->status == Status::BYPASSED)
-    rgb_set_pixel_color(this->id, 0, 0, 255); // blue
+    rgb_set_pixel_color(this->id, CRGB::Blue);
   else
-    rgb_set_pixel_color(this->id, 0, 0, 0); // off
+    rgb_set_pixel_color(this->id, CRGB::Black);
   #endif
 }
 
