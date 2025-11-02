@@ -723,9 +723,13 @@ function start_websocket() {
           <ul><li>Firmware: ${msg.firmware_version}</li><li>Hardware: ${msg.hardware_version}</li></ul>
         `, "danger");
 
-      //debug our boot log
-      if (msg.boot_log)
-        yarrboard_log(msg.boot_log);
+      //send our boot log
+      if (msg.boot_log) {
+        var lines = msg.boot_log.split("\n");
+        yarrboard_log("Boot Log:");
+        for (var line of lines)
+          yarrboard_log(line);
+      }
 
       //let the people choose their own names!
       $('#boardName').html(msg.name);

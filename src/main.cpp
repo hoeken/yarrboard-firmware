@@ -68,7 +68,7 @@ void setup()
   YBP.addPrinter(Serial);
 
   // startup log logs to a string for getting later
-  // YBP.addPrinter(startupLogger);
+  YBP.addPrinter(startupLogger);
 
   if (!LittleFS.begin(true)) {
     YBP.println("ERROR: Unable to mount LittleFS");
