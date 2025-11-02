@@ -1,15 +1,14 @@
 # GENERAL
 
-# SENDIT
-
-* dig into MCP3564R driver and figure out whats up with the strange readings
-    * try with other voltage dividers? 
-    * maybe try continuous mode
-* test passive piezos
-
 # BRINEOMATIC
 
 * test servos
+* test QWIIC
+
+# FROTHFET
+
+* test INA226 sense resistors (mouser)
+* test individual fuse pins (mouser)
 
 # v2.0.0 Release
 

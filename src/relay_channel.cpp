@@ -27,10 +27,13 @@ void relay_channels_setup()
   Wire.begin();
   Wire.setPins(YB_I2C_SDA_PIN, YB_I2C_SCL_PIN);
   Wire.setClock(YB_I2C_SPEED);
-  TCA.begin();
+  TCA.begin(INPUT);
 
-  // todo: connect and config driver
+  YBP.printf("Is Connected: %d\n", TCA.isConnected());
+  YBP.printf("Type: 0x%02x\n", TCA.getType());
+  YBP.printf("Address: 0x%02x\n", TCA.getAddress());
   #endif
+
   // intitialize our channel
   for (auto& ch : relay_channels) {
     ch.setup();
