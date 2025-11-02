@@ -13,7 +13,6 @@
 # v2.0.0 Release
 
 * convert ws2818 code to fastled
-* add a small text box for sending raw json commands
 * settings page is ugly af.
     * borders for each config area like channels
     * side bar that loads each config page?
@@ -24,8 +23,6 @@
     * http server group
     * wifi group
     * users group
-* find a way to bubble up setup errors - config, mqtt, etc.
-    * use an error log and load it when we login (admin only)
 * wifi improvements:
     * add a RollingAverage to wifi rssi
     * switch to using improvwifi: https://registry.platformio.org/libraries/improv/Improv

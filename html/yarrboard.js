@@ -583,7 +583,44 @@ let currentPWMSliderID = -1;
 let currentServoSliderID = -1;
 let currentlyPickingBrightness = false;
 
+function console_send_json(e) {
+  e.preventDefault(); // stop real submission
+
+  let text = $("#json_console_payload").val().trim();
+
+  try {
+    // Try to parse the JSON
+    let obj = JSON.parse(text);
+
+    // Clear the input if successful
+    $("#json_console_payload").val("");
+
+    yarrboard_log("Sent: " + JSON.stringify(obj));
+
+    // Send the parsed object (convert back to string if client.send needs text)
+    client.send(obj);
+  } catch (err) {
+    yarrboard_log("Invalid JSON: " + err);
+  }
+}
+
+function setup_debug_terminal() {
+  $("#json_console_form").on("submit", console_send_json);
+  $("#json_console_send").on("click", console_send_json);
+
+  $("#json_payload").on("keydown", function (e) {
+    var key = e.key || e.keyCode || e.which;
+    if (key === "Enter" || key === 13) {
+      e.preventDefault();
+      console_send_json();
+    }
+  });
+}
+
 function start_yarrboard() {
+
+  setup_debug_terminal();
+
   yarrboard_log("User Agent: " + navigator.userAgent);
   yarrboard_log("Window Width: " + window.innerWidth);
   yarrboard_log("Window Height: " + window.innerHeight);
@@ -3906,6 +3943,12 @@ function compareVersions(first, second) {
 }
 
 function yarrboard_log(message) {
+
+  //real messages only
+  message = message.trim();
+  if (!message.length)
+    return;
+
   // Create a new Date object
   const currentDate = new Date();
 
@@ -3923,8 +3966,15 @@ function yarrboard_log(message) {
 
   //put it in our textarea - useful for debugging on non-computer interfaces
   let textarea = document.getElementById("debug_log_text");
-  textarea.append(`${formattedTimestamp} ${message}\n`);
-  textarea.scrollTop = textarea.scrollHeight;
+
+  //append our message
+  if (textarea.value)
+    textarea.value += "\n";
+  textarea.value += `${formattedTimestamp} ${message}`;
+
+  //autoscroll
+  if ($("#debug_log_autoscroll").is(':checked'))
+    textarea.scrollTop = textarea.scrollHeight;
 
   //standard log.
   console.log(`${formattedTimestamp} ${message}`);
