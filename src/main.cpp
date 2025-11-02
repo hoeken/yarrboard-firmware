@@ -159,7 +159,7 @@ void setup()
 
   // we're done with startup log, switch to network print
   YBP.removePrinter(startupLogger);
-  // YBP.addPrinter(networkLogger);
+  YBP.addPrinter(networkLogger);
 
   lastLoopMicros = micros();
 }
