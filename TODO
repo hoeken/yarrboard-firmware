@@ -12,8 +12,6 @@
 
 # v2.0.0 Release
 
-* wifi improvements:
-    * add a RollingAverage to wifi rssi
 * relaychannel -> move to boolean state only
 * channel edit UI rewrite
     * consolidate all the client side error checking to a single function per channel type
@@ -38,8 +36,11 @@
     * http server group
     * wifi group
     * users group
-* signalk frothfet plugin - use key for paths instead of id
-* signalk sendit plugin - use key for paths instead of id
+* signalk plugins
+    * should we move this to the firmware instead?
+    * frothfet plugin - use key for paths instead of id
+    * signalk sendit plugin - use key for paths instead of id
+    * brineomatic plugin
 * figure out why save config is crashing...
 * PsychicHttp release as well
 
