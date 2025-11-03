@@ -106,7 +106,7 @@ void StepperChannel::setup()
   _tmc2209.enableStealthChop();
   _tmc2209.enable();
 
-  printDebug(0);
+    // printDebug(0);
 
   #endif
 

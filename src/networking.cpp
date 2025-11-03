@@ -13,6 +13,7 @@
 #include "setup.h"
 
 ImprovWiFi improvSerial(&Serial);
+ImprovWiFiBLE improvBLE;
 
 // for making a captive portal
 //  The default android DNS
@@ -44,6 +45,9 @@ void improv_setup()
   device_url.concat(local_hostname);
   device_url.concat(".local");
 
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+
   // Identify this device
   improvSerial.setDeviceInfo(ImprovTypes::ChipFamily::CF_ESP32,
     board_name,
@@ -51,12 +55,20 @@ void improv_setup()
     board_name,
     device_url.c_str());
 
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
-
   improvSerial.onImprovError(onImprovWiFiErrorCb);
   improvSerial.onImprovConnected(onImprovWiFiConnectedCb);
   improvSerial.setCustomConnectWiFi(connectToWifi);
+
+  // Identify this device
+  improvBLE.setDeviceInfo(ImprovTypes::ChipFamily::CF_ESP32,
+    board_name,
+    YB_FIRMWARE_VERSION,
+    board_name,
+    device_url.c_str());
+
+  improvBLE.onImprovError(onImprovWiFiErrorCb);
+  improvBLE.onImprovConnected(onImprovWiFiConnectedCb);
+  improvBLE.setCustomConnectWiFi(connectToWifi);
 }
 
 void onImprovWiFiErrorCb(ImprovTypes::Error err)

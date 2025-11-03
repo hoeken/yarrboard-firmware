@@ -12,6 +12,7 @@
 #include "config.h"
 #include <DNSServer.h>
 #include <ESPmDNS.h>
+#include <ImprovWiFiBLE.h>
 #include <ImprovWiFiLibrary.h>
 #include <WiFi.h>
 
