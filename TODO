@@ -14,12 +14,20 @@
 
 * wifi improvements:
     * add a RollingAverage to wifi rssi
-    * switch to using improvwifi: https://registry.platformio.org/libraries/improv/Improv
-    * wifi should reconnect on failure?
-    * wifi authentication fail should default to using improv wifi
-    * switch to ap/sta mode and scan for list of ap's and put that in the dropdown.
-    * when in ap mode and switching to client, go to ap/sta mode and make sure we can connect first.
-    * let the client know and then reboot
+* relaychannel -> move to boolean state only
+* channel edit UI rewrite
+    * consolidate all the client side error checking to a single function per channel type
+        * add overlaps for standard channel stuff (name, key, etc.
+    * send entire channel config in one object (update in-memory object, then send it)
+    * consolidate all the server side error checking to a single place aka parseConfig()
+    * save if no errors.
+    * add edit key for each channel
+* test/update/fix the release script for ota
+* big cleanup of the javascript code:
+    * basic YarrboardApp object
+        * onConnect()
+        * onMessage()
+        * etc
 * settings page is ugly af.
     * borders for each config area like channels
     * side bar that loads each config page?
@@ -30,31 +38,13 @@
     * http server group
     * wifi group
     * users group
-* generic piezo buzzer support
-    * preset tone variables as part of piezo class
-    * passive just turns it on/off for the duration of the note
 * signalk frothfet plugin - use key for paths instead of id
 * signalk sendit plugin - use key for paths instead of id
-* channel edit UI rewrite
-    * consolidate all the client side error checking to a single function per channel type
-        * add overlaps for standard channel stuff (name, key, etc.
-    * send entire channel config in one object (update in-memory object, then send it)
-    * consolidate all the server side error checking to a single place aka parseConfig()
-    * save if no errors.
-    * add edit key for each channel
-* test/update/fix the release script for ota
-* relaychannel -> move to boolean state only
-* big cleanup of the javascript code:
-    * basic YarrboardApp object
-        * onConnect()
-        * onMessage()
-        * etc
+* PsychicHttp release as well
 
 # BRINEOMATIC
 
 * update code for new Rev B board:
-    * flowmeter and salinity rename to product_flowmeter and product_salinity
-    * add support for brine_flowmeter and brine_salinity
     * what new stuff can we do with brine_flowmeter and brine_salinity?
         * verify the main pump is working based on brine flow
         * verify the diverter valve is working based on brine vs product flow
@@ -65,7 +55,7 @@
         * might allow us to use the PID tuning code
         * need to redesign high pressure valve attachment
     * add support for the piezo on error or success.
-        * can we play tunes?
+        * need to add various piezo sounds we can play
 * add mid-level commands to set_watermaker
     * boost_pump
     * high_pressure_pump
@@ -114,17 +104,7 @@
 * update signalk plugin - same
 * go through and re-adjust the various page sizes for our different viewports
 * protocol documentation
-* Rev E: add LED color support to new ws2818b channel leds.
 * add buzzer support - enable alarms for tripped or bypassed on a per-channel basis
-* update current adc define for new chip
-
-# SENDIT
-
-* change adc driver to MCP3564
-* remove 1k pullup option, change to passthru
-* add piezo buzzer support?
-    * probaby best to do in node red
-* set the device_type a bit more intelligently based on our config.  
 
 # LONG TERM:
 
