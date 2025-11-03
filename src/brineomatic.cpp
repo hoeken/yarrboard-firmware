@@ -127,26 +127,26 @@ void brineomatic_setup()
   wm.highPressurePump = &relay_channels[0];
   wm.highPressurePump->setName("High Pressure Pump");
   wm.highPressurePump->setKey("hp_pump");
-  strncpy(wm.highPressurePump->defaultState, "OFF", sizeof(wm.highPressurePump->defaultState));
+  wm.highPressurePump->defaultState = false;
   strncpy(wm.highPressurePump->type, "water_pump", sizeof(wm.highPressurePump->type));
 
   wm.flushValve = &relay_channels[1];
   wm.flushValve->setName("Flush Valve");
   wm.flushValve->setKey("flush_valve");
-  strncpy(wm.flushValve->defaultState, "OFF", sizeof(wm.flushValve->defaultState));
+  wm.flushValve->defaultState = false;
   strncpy(wm.flushValve->type, "solenoid", sizeof(wm.flushValve->type));
 
   wm.coolingFan = &relay_channels[2];
   wm.coolingFan->setName("Cooling Fan");
   wm.coolingFan->setKey("cooling_fan");
-  strncpy(wm.coolingFan->defaultState, "OFF", sizeof(wm.coolingFan->defaultState));
+  wm.coolingFan->defaultState = false;
   strncpy(wm.coolingFan->type, "fan", sizeof(wm.coolingFan->type));
 
   // disabled until we implement config xml
   // wm.boostPump = &relay_channels[3];
   // wm.boostPump->setName("Boost Pump");
   // wm.boostPump->setKey("boost_pump");
-  // strncpy(wm.boostPump->defaultState, "OFF", sizeof(wm.boostPump->defaultState));
+  // wm.boostPump->defaultState = false;
   // strncpy(wm.boostPump->type, "water_pump", sizeof(wm.boostPump->type));
 
   wm.diverterValve = &servo_channels[0];

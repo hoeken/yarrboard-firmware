@@ -854,7 +854,7 @@ void handleConfigRelayChannel(JsonVariantConst input, JsonVariant output)
     }
 
     // save to our storage
-    strlcpy(ch->defaultState, input["defaultState"] | "OFF", sizeof(ch->defaultState));
+    ch->defaultState = input["defaultState"];
   }
 
   // enabled

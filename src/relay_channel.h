@@ -28,19 +28,11 @@ class RelayChannel : public BaseChannel
     char ha_topic_cmd_state[128];
     char ha_topic_state_state[128];
 
-  public:
-    /**
-     * @brief Potential status that channel might be in.
-     */
-    enum class Status {
-      ON,
-      OFF
-    };
-
-    Status status = Status::OFF;
     bool outputState = false;
-    char type[30];
-    char defaultState[10];
+
+  public:
+    bool defaultState = false;
+    char type[30] = "other";
     char source[YB_HOSTNAME_LENGTH];
 
     unsigned int stateChangeCount = 0;
