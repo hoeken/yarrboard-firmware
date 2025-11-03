@@ -22,6 +22,7 @@ extern String arduino_version;
 
 // storage for more permanent stuff.
 extern Preferences preferences;
+extern bool is_first_boot;
 
 bool prefs_setup();
 

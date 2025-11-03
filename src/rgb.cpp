@@ -42,6 +42,11 @@ void rgb_set_pixel_color(uint8_t c, uint8_t r, uint8_t g, uint8_t b)
     return;
 
   _leds[c].setRGB(r, g, b);
+
+  if (millis() - lastRGBUpdateMillis > 100) {
+    FastLED.show();
+    lastRGBUpdateMillis = millis();
+  }
 }
 
 void rgb_set_status_color(const CRGB& color)
@@ -52,4 +57,9 @@ void rgb_set_status_color(const CRGB& color)
 void rgb_set_pixel_color(uint8_t c, const CRGB& color)
 {
   _leds[c] = color;
+
+  if (millis() - lastRGBUpdateMillis > 100) {
+    FastLED.show();
+    lastRGBUpdateMillis = millis();
+  }
 }

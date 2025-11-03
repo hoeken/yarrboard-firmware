@@ -9,14 +9,16 @@
 #include "networking.h"
 #include "debug.h"
 #include "prefs.h"
-#include "yb_server.h"
+#include "rgb.h"
+#include "setup.h"
+
+ImprovWiFi improvSerial(&Serial);
 
 // for making a captive portal
 //  The default android DNS
 IPAddress apIP(8, 8, 4, 4);
 const byte DNS_PORT = 53;
 DNSServer dnsServer;
-
 // default config info for our wifi
 char wifi_ssid[YB_WIFI_SSID_LENGTH] = YB_DEFAULT_AP_SSID;
 char wifi_pass[YB_WIFI_PASSWORD_LENGTH] = YB_DEFAULT_AP_PASS;
@@ -25,35 +27,72 @@ char local_hostname[YB_HOSTNAME_LENGTH] = YB_DEFAULT_HOSTNAME;
 
 // identify yourself!
 char uuid[YB_UUID_LENGTH];
-bool is_first_boot = true;
 
 void network_setup()
 {
   uint64_t chipid = ESP.getEfuseMac(); // unique 48-bit MAC base ID
   snprintf(uuid, sizeof(uuid), "%04X%08X", (uint16_t)(chipid >> 32), (uint32_t)chipid);
 
-  // get an IP address
   setupWifi();
+}
+
+void improv_setup()
+{
+  YBP.println("First Boot: starting Improv");
+
+  String device_url = "http://";
+  device_url.concat(local_hostname);
+  device_url.concat(".local");
+
+  // Identify this device
+  improvSerial.setDeviceInfo(ImprovTypes::ChipFamily::CF_ESP32,
+    board_name,
+    YB_FIRMWARE_VERSION,
+    board_name,
+    device_url.c_str());
+
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+
+  improvSerial.onImprovError(onImprovWiFiErrorCb);
+  improvSerial.onImprovConnected(onImprovWiFiConnectedCb);
+  improvSerial.setCustomConnectWiFi(connectToWifi);
+}
+
+void onImprovWiFiErrorCb(ImprovTypes::Error err)
+{
+  YBP.printf("wifi error: %d\n", err);
+
+  rgb_set_status_color(CRGB::Red);
+}
+
+void onImprovWiFiConnectedCb(const char* ssid, const char* password)
+{
+  YBP.printf("Improv Successful: %s / %s\n", ssid, password);
+
+  strncpy(wifi_mode, "client", sizeof(wifi_mode));
+  strncpy(wifi_ssid, ssid, sizeof(wifi_ssid));
+  strncpy(wifi_pass, password, sizeof(wifi_pass));
+
+  char error[128];
+  saveConfig(error, sizeof(error));
+
+  full_setup();
+  is_first_boot = false;
 }
 
 void network_loop()
 {
-  // run our dns... for AP mode
-  if (!strcmp(wifi_mode, "ap"))
-    dnsServer.processNextRequest();
+}
+
+void improv_loop()
+{
+  if (is_first_boot)
+    improvSerial.handleSerial();
 }
 
 void setupWifi()
 {
-  // some global config
-  // WiFi.setSleep(false);
-  // WiFi.useStaticBuffers(true);  //from: https://github.com/espressif/arduino-esp32/issues/7183
-  WiFi.setHostname(local_hostname);
-
-  YBP.print("Hostname: ");
-  YBP.print(local_hostname);
-  YBP.println(".local");
-
   // which mode do we want?
   if (!strcmp(wifi_mode, "client")) {
     YBP.print("Client mode: ");
@@ -62,7 +101,8 @@ void setupWifi()
     YBP.println(wifi_pass);
 
     // try and connect
-    connectToWifi(wifi_ssid, wifi_pass);
+    if (connectToWifi(wifi_ssid, wifi_pass))
+      start_network_services();
   }
   // default to AP mode.
   else {
@@ -82,17 +122,12 @@ void setupWifi()
     // provided IP to all DNS request
     dnsServer.start(DNS_PORT, "*", apIP);
   }
-
-  // setup our local name.
-  if (!MDNS.begin(local_hostname)) {
-    YBP.println("Error starting mDNS");
-    return;
-  }
-  MDNS.addService("http", "tcp", 80);
 }
 
 bool connectToWifi(const char* ssid, const char* pass)
 {
+  rgb_set_status_color(CRGB::Yellow);
+
   YBP.print("[WiFi] Connecting to ");
   YBP.println(ssid);
 
@@ -133,6 +168,8 @@ bool connectToWifi(const char* ssid, const char* pass)
         //         status_led.show();
         // #endif
 
+        rgb_set_status_color(CRGB::Green);
+
         return true;
         break;
       default:
@@ -154,4 +191,19 @@ bool connectToWifi(const char* ssid, const char* pass)
   }
 
   return false;
+}
+
+void start_network_services()
+{
+  // some global config
+  WiFi.setHostname(local_hostname);
+
+  YBP.print("Hostname: ");
+  YBP.print(local_hostname);
+  YBP.println(".local");
+
+  // setup our local name.
+  if (!MDNS.begin(local_hostname))
+    YBP.println("Error starting mDNS");
+  MDNS.addService("http", "tcp", 80);
 }

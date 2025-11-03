@@ -39,6 +39,8 @@ String arduino_version = String(ESP_ARDUINO_VERSION_MAJOR) + "." +
 
 Preferences preferences;
 
+bool is_first_boot = true;
+
 bool prefs_setup()
 {
   if (preferences.begin("yarrboard", false)) {
