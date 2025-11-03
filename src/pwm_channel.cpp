@@ -509,13 +509,26 @@ void PWMChannel::checkFuseBlown()
   else
     duty = 1.0;
 
-  float busVoltage = getBusVoltage();
-  float minVoltage = busVoltage * duty * 0.3;
+  // we cant really detect much at low levels
+  if (duty < 0.1)
+    return;
 
-  // dimming lights are a special case...
+  // determine what our floor for a tripped fuse should be.
+  float busVoltage = getBusVoltage();
+  float minVoltage = busVoltage * duty * 0.1;
+
+  // so hard to measure that low accurately over time and not false
+  if (minVoltage <= 0.05)
+    return;
+
+  // dimming lights need more time.
   unsigned long firstCheckTime = 1000;
   if (isDimmable && !strcmp(this->type, "light"))
     firstCheckTime += rampOnMillis;
+
+  // fades are also really hard to measure.
+  if (this->isFading)
+    return;
 
   // we need bus voltage for our calculations.
   // it takes a little bit to populate on boot.
@@ -528,12 +541,7 @@ void PWMChannel::checkFuseBlown()
         if (this->getVoltage() >= minVoltage)
           return;
 
-        DUMP(this->id);
-        DUMP(voltageHelper->getReadingCount(_adcVoltageChannel));
-        DUMP(this->getVoltage());
-        DUMP(duty);
-        DUMP(busVoltage);
-        DUMP(minVoltage);
+        YBP.printf("CH%d BLOWN: %.3f < %.3f\n", this->id, this->getVoltage(), minVoltage);
 
         this->status = Status::BLOWN;
         this->outputState = false;
@@ -718,7 +726,7 @@ void PWMChannel::setDuty(float duty)
         sprintf(prefIndex, "pwmDuty%d", this->id);
         preferences.putFloat(prefIndex, duty);
         this->dutyCycleIsThrottled = false;
-        YBP.printf("saving %s: %f\n", prefIndex, this->dutyCycle);
+        // YBP.printf("saving %s: %f\n", prefIndex, this->dutyCycle);
 
         this->lastDutyCycle = this->dutyCycle;
       }

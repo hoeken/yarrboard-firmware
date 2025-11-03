@@ -103,6 +103,8 @@
 * go through and re-adjust the various page sizes for our different viewports
 * protocol documentation
 * add buzzer support - enable alarms for tripped or bypassed on a per-channel basis
+* add OVERHEAT as a state - similar to trip, must be turned off before turn on.
+    * if we have temperature, we should also check that before we enable the channel
 
 # LONG TERM:
 
