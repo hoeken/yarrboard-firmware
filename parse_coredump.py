@@ -1,29 +1,63 @@
 #!/usr/bin/env python3
 
-import argparse, os
+import argparse, os, sys
+from pathlib import Path
+from shutil import which
 
 if __name__ == '__main__':
 
-	parser = argparse.ArgumentParser()
+	description = """\
+Analyze and convert ESP32 coredump files for Yarrboard firmware.
+
+You need to install the ESP-IDF toolkit for it to work.
+Easiest way to install it through VSCode. The framework then should be installed in ~/esp/v5.x
+
+Then run:
+  chmod 755 install.sh export.sh
+  ./install.sh
+  . ./export.sh
+  esp-coredump --version
+
+You need to run this every time you open a new shell:
+
+  source ~/esp/v5.5.1/esp-idf/export.sh
+"""
+
+	parser = argparse.ArgumentParser(
+    description=description,
+    formatter_class=argparse.RawTextHelpFormatter
+	)
 	parser.add_argument("--version", help="Version of the firmware, eg. 1.2.3", default="dev")
+	parser.add_argument("--file", help="Path to the file.", default="coredump.txt");
 	parser.add_argument("board", help="Hardware board revision, eg. RGB_INPUT_REV_A")
 
 	args = parser.parse_args()
 
 	#we need a coredump file
-	if not os.path.isfile("coredump.txt"):
-		print("Error: coredump.txt not found")
+	if not os.path.isfile(args.file):
+		print(f'Error: {args.file} not found')
 	else:
 		#convert to binary format
 		print("Converting coredump to binary format.")
-		cmd = f'xxd -r -p coredump.txt coredump.bin'
+		cmd = f'xxd -r -p "{args.file}" coredump.bin'
 		os.system(cmd)
-		
-		#keep our ELF file for debugging later on....
-		print("Analyzing coredump")
-		if args.version == 'dev':
-			cmd = f'. ~/esp/esp-idf/export.sh && espcoredump.py info_corefile -c coredump.bin -t raw .pio/build/{args.board}/firmware.elf'
-		else:
-			cmd = f'. ~/esp/esp-idf/export.sh && espcoredump.py info_corefile -c coredump.bin -t raw releases/{args.board}-{args.version}.elf'
-		os.system(cmd)
-		#print(cmd)
+
+	# Determine ELF path
+	if (args.version == "dev"):
+		elf = f".pio/build/{args.board}/firmware.elf"
+	# Release ELF naming from your original script
+	else:
+		elf = f"releases/{args.board}-{args.version}.elf"
+
+	if not Path(elf).is_file():
+		print(f"Error: ELF not found: {elf}")
+		sys.exit(3)
+
+	#keep our ELF file for debugging later on....
+	print("Analyzing coredump")
+	if args.version == 'dev':
+		cmd = f'espcoredump.py info_corefile -c coredump.bin -t raw .pio/build/{args.board}/firmware.elf'
+	else:
+		cmd = f'espcoredump.py info_corefile -c coredump.bin -t raw releases/{args.board}-{args.version}.elf'
+	os.system(cmd)
+	#print(cmd)
