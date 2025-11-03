@@ -17,7 +17,7 @@
 * relaychannel -> move to boolean state only
 * channel edit UI rewrite
     * consolidate all the client side error checking to a single function per channel type
-        * add overlaps for standard channel stuff (name, key, etc.
+        * add overlaps for standard channel stuff - name, key, etc.
     * send entire channel config in one object (update in-memory object, then send it)
     * consolidate all the server side error checking to a single place aka parseConfig()
     * save if no errors.
@@ -40,6 +40,7 @@
     * users group
 * signalk frothfet plugin - use key for paths instead of id
 * signalk sendit plugin - use key for paths instead of id
+* figure out why save config is crashing...
 * PsychicHttp release as well
 
 # BRINEOMATIC
@@ -92,13 +93,9 @@
 
 # FROTHFET
 
-* fading code
-    * dimming needs some work - probably b/c of the invert code
-    * saveThrottledDutyCycle needs reworked
 * slow vs fast blow
     * fast checks getLatestReading()
     * slow checks getAverageReading()
-* add temperature, vdd support to adc library
 * update forms to be consistent style (float labels)
 * update yarrboard client if any changes needed - probably for state
 * update signalk plugin - same

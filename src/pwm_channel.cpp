@@ -294,23 +294,19 @@ void PWMChannel::setup()
 
 void PWMChannel::setupLedc()
 {
-  #ifdef YB_PWM_CHANNEL_INVERTED
-  this->isInverted = true;
-  #else
-  this->isInverted = false;
-  #endif
 
   // track our fades
   this->isFading = false;
   this->fadeOver = false;
 
-  // initialize our PWM channels
-  pinMode(this->pin, OUTPUT);
-  digitalWrite(this->pin, this->isInverted);
-
   // now attach ledc
   if (!ledcAttach(this->pin, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION))
     YBP.printf("PWM CH%d error attaching to LEDC\n");
+
+  #ifdef YB_PWM_CHANNEL_INVERTED
+  ledcOutputInvert(this->pin, true);
+  #endif
+
   this->writePWM(0);
 }
 
@@ -611,11 +607,7 @@ void PWMChannel::startFade(float duty, int fade_time)
     // setup for our hardware fader
     fade_time = max(1, fade_time);
     const uint32_t start_duty = ledcRead(this->pin); // start from where you are
-    uint32_t end_duty;
-    if (this->isInverted)
-      end_duty = MAX_DUTY_CYCLE - (duty * MAX_DUTY_CYCLE); // inverted
-    else
-      end_duty = (duty * MAX_DUTY_CYCLE); // regular
+    uint32_t end_duty = (duty * MAX_DUTY_CYCLE);     // end at desired duty
 
     // nothing happening.
     if (start_duty == end_duty)
@@ -811,11 +803,7 @@ void PWMChannel::setState(bool newState)
 void PWMChannel::writePWM(uint16_t pwm)
 {
   pwm = constrain(pwm, 0, MAX_DUTY_CYCLE);
-
-  if (this->isInverted)
-    ledcWrite(this->pin, MAX_DUTY_CYCLE - pwm);
-  else
-    ledcWrite(this->pin, pwm);
+  ledcWrite(this->pin, pwm);
 }
 
 const char* PWMChannel::getStatus()

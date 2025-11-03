@@ -79,7 +79,7 @@ class PWMChannel : public BaseChannel
     volatile bool isFading = false; // used to check if we're actively fading
     volatile bool fadeOver = false; // used for running code after a fade
 
-    bool isInverted = false; // determines whether our output pin is inverted or not
+    // bool isInverted = false; // determines whether our output pin is inverted or not
 
     float dutyCycle = 0.0;
     float lastDutyCycle = 0.0;
