@@ -7,10 +7,12 @@
   YB.App = {
     config: {},
 
-    messageHandlers: [],
+    messageHandlers: {},
 
     addMessageHandler: function (message, handler) {
-      this.messageHandlers.push({ message, handler })
+      if (!YB.App.messageHandlers[message])
+        YB.App.messageHandlers[message] = [];
+      YB.App.messageHandlers[message].push(handler);
     },
 
     onMessage: function (msg) {
@@ -18,16 +20,19 @@
         YB.log(`SERVER: ${msg.debug}`);
 
       if (msg.msg) {
-        let found = false;
-        for (let h of YB.App.messageHandlers) {
-          if (h.message === msg.msg) {
-            h.handler(msg);
-            found = true;
-          }
+        const handlers = YB.App.messageHandlers[msg.msg];
+        if (!handlers) {
+          YB.log("No handler for: " + JSON.stringify(msg));
+          return;
         }
 
-        if (!found)
-          YB.log("[socket] Unknown message: " + JSON.stringify(msg));
+        for (let handler of handlers) {
+          try {
+            handler(msg);
+          } catch (err) {
+            YB.log(`Handler for '${msg.msg}' failed:`, err);
+          }
+        }
       }
     },
 
@@ -490,7 +495,7 @@
     },
 
     updateThemeSwitch: function () {
-      if (this.checked)
+      if (YB.App.checked)
         YB.App.setTheme("dark");
       else
         YB.App.setTheme("light");
@@ -2204,7 +2209,7 @@
     },
 
     handleFullConfigMessage: function (msg) {
-      //YB.log("network config");
+      //YB.log("full config");
 
       //load our config
       const textarea = document.getElementById('configurationTextarea');
@@ -2293,7 +2298,7 @@
     },
 
     handleAppConfigMessage: function (msg) {
-      //YB.log("network config");
+      //YB.log("app config");
 
       //update some ui stuff
       YB.App.updateRoleUI();
