@@ -97,6 +97,46 @@
       var sDisplay = (s > 0 && d == 0 && h == 0 && m == 0) ? s + (s == 1 ? " second" : " seconds") : "";
 
       return (dDisplay + hDisplay + mDisplay + sDisplay).replace(/,\s*$/, "");
+    },
+
+    getQueryVariable: function (name) {
+      const query = window.location.search.substring(1);
+      const vars = query.split("&");
+      for (let i = 0; i < vars.length; i++) {
+        const pair = vars[i].split("=");
+        if (decodeURIComponent(pair[0]) === name) {
+          return decodeURIComponent(pair[1] || "");
+        }
+      }
+      return null; // Return null if the variable is not found
+    },
+
+    // return true if 'first' is greater than or equal to 'second'
+    compareVersions: function (first, second) {
+
+      var a = first.split('.');
+      var b = second.split('.');
+
+      for (var i = 0; i < a.length; ++i) {
+        a[i] = Number(a[i]);
+      }
+      for (var i = 0; i < b.length; ++i) {
+        b[i] = Number(b[i]);
+      }
+      if (a.length == 2) {
+        a[2] = 0;
+      }
+
+      if (a[0] > b[0]) return true;
+      if (a[0] < b[0]) return false;
+
+      if (a[1] > b[1]) return true;
+      if (a[1] < b[1]) return false;
+
+      if (a[2] > b[2]) return true;
+      if (a[2] < b[2]) return false;
+
+      return true;
     }
   };
 

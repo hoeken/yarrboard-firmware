@@ -410,17 +410,7 @@
         else
           wattage = wattage.toFixed(2);
         $('#pwmWattage' + this.id).html(`${wattage}W`);
-      } else if (msg.bus_voltage) {
-        wattage = this.data.current * msg.bus_voltage;
-        if (wattage > 10)
-          wattage = Math.round(wattage);
-        else if (wattage > 1)
-          wattage = wattage.toFixed(1);
-        else
-          wattage = wattage.toFixed(2);
-        $('#pwmWattage' + this.id).html(`${wattage}W`);
-      }
-      else
+      } else
         $('#pwmWattage' + this.id).hide();
     }
   };
@@ -446,7 +436,7 @@
 
     if (this.enabled) {
       $('#pwmAmpHours' + this.id).html(YB.Util.formatAmpHours(stats.aH));
-      $('#pwmWattHours' + this.id).html(YB.Util.formatAmpHours(stats.wH));
+      $('#pwmWattHours' + this.id).html(YB.Util.formatWattHours(stats.wH));
       $('#pwmOnCount' + this.id).html(stats.state_change_count.toLocaleString("en-US"));
       $('#pwmTripCount' + this.id).html(stats.soft_fuse_trip_count.toLocaleString("en-US"));
 
@@ -457,7 +447,7 @@
     }
 
     $('#pwmAmpHoursTotal').html(YB.Util.formatAmpHours(total_ah));
-    $('#pwmWattHoursTotal').html(YB.Util.formatAmpHours(total_wh));
+    $('#pwmWattHoursTotal').html(YB.Util.formatWattHours(total_wh));
     $('#pwmOnCountTotal').html(total_on_count.toLocaleString("en-US"));
     $('#pwmTripCountTotal').html(total_trip_count.toLocaleString("en-US"));
   };

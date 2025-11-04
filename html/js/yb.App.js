@@ -4,570 +4,7 @@
 
   const YarrboardClient = window.YarrboardClient;
 
-  let current_page = null;
-  let last_update;
-  let app_username;
-  let app_password;
-  let app_role = "nobody";
-  let default_app_role = "nobody";
-  let app_update_interval = 500;
-  let network_config;
-  let app_config;
-  let app_update_interval_id = null;
-
-  let ota_started = false;
-
-  let page_list = ["control", "config", "stats", "graphs", "network", "settings", "system"];
-  let page_ready = {
-    "control": false,
-    "config": false,
-    "stats": false,
-    "graphs": false,
-    "network": false,
-    "settings": false,
-    "system": true,
-    "login": true
-  };
-
-  let page_permissions = {
-    "nobody": [
-      "login"
-    ],
-    "admin": [
-      "control",
-      "config",
-      "stats",
-      "graphs",
-      "network",
-      "settings",
-      "system",
-      "login",
-      "logout"
-    ],
-    "guest": [
-      "control",
-      "stats",
-      "graphs",
-      "login",
-      "logout"
-    ]
-  };
-
-  function getBootstrapColors() {
-    const colors = {};
-    const styles = getComputedStyle(document.documentElement);
-
-    // List of Bootstrap color variable names
-    const colorNames = [
-      '--bs-primary',
-      '--bs-secondary',
-      '--bs-success',
-      '--bs-danger',
-      '--bs-warning',
-      '--bs-info',
-      '--bs-light',
-      '--bs-dark'
-    ];
-
-    // Loop through each variable and store its value without the `--bs-` prefix
-    colorNames.forEach(color => {
-      const name = color.replace('--bs-', ''); // Remove the prefix
-      colors[name] = styles.getPropertyValue(color).trim();
-    });
-
-    return colors;
-  }
-
-  const bootstrapColors = getBootstrapColors();
-
-  const brineomatic_result_text = {
-    "STARTUP": "Starting up.",
-    "SUCCESS": "Success",
-    "SUCCESS_TIME": "Success: Runtime reached.",
-    "SUCCESS_VOLUME": "Success: Volume reached",
-    "SUCCESS_TANK_LEVEL": "Success: Tank Full",
-    "USER_STOP": "Stopped by user",
-    "ERR_FLUSH_VALVE_TIMEOUT": "Flush Valve Timeout",
-    "ERR_FILTER_PRESSURE_TIMEOUT": "Filter Pressure Timeout",
-    "ERR_FILTER_PRESSURE_LOW": "Filter Pressure Low",
-    "ERR_FILTER_PRESSURE_HIGH": "Filter Pressure High",
-    "ERR_MEMBRANE_PRESSURE_TIMEOUT": "Membrane Pressure Timeout",
-    "ERR_MEMBRANE_PRESSURE_LOW": "Membrane Pressure Low",
-    "ERR_MEMBRANE_PRESSURE_HIGH": "Membrane Pressure High",
-    "ERR_FLOWRATE_TIMEOUT": "Product Flowrate Timeout",
-    "ERR_FLOWRATE_LOW": "Product Flowrate Low",
-    "ERR_SALINITY_TIMEOUT": "Product Salinity Timeout",
-    "ERR_SALINITY_HIGH": "Product Salinity High",
-    "ERR_PRODUCTION_TIMEOUT": "Production Timeout",
-    "ERR_MOTOR_TEMPERATURE_HIGH": "Motor Temperature High",
-  }
-
-  const brineomatic_gauge_setup = {
-    "motor_temperature": {
-      "thresholds": [60, 70, 100],
-      "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
-    },
-    "water_temperature": {
-      "thresholds": [10, 30, 40, 50],
-      "colors": [bootstrapColors.primary, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
-    },
-    "filter_pressure": {
-      "thresholds": [0, 5, 10, 40, 45, 50],
-      "colors": [bootstrapColors.secondary, bootstrapColors.danger, bootstrapColors.warning, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
-    },
-    "membrane_pressure": {
-      "thresholds": [0, 600, 700, 900, 1000],
-      "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.primary, bootstrapColors.success, bootstrapColors.danger]
-    },
-    "product_salinity": {
-      "thresholds": [300, 400, 1500],
-      "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
-    },
-    "brine_salinity": {
-      "thresholds": [300, 400, 1500],
-      "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
-    },
-    "product_flowrate": {
-      "thresholds": [20, 100, 180, 200, 250],
-      "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
-    },
-    "brine_flowrate": {
-      "thresholds": [20, 100, 180, 200, 250],
-      "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
-    },
-    "tank_level": {
-      "thresholds": [10, 20, 100],
-      "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.success]
-    },
-    "volume": {
-      "thresholds": [0, 1],
-      "colors": [bootstrapColors.secondary, bootstrapColors.success]
-    }
-  };
-
-  const adc_types = {
-    "raw": "Raw Output",
-    "digital_switch": "Digital Switching",
-    "thermistor": "Thermistor",
-    "4-20ma": "4-20mA Sensor",
-    "high_volt_divider": "0-32v Input",
-    "low_volt_divider": "0-5v Input",
-    "ten_k_pullup": "10k Pullup"
-  };
-
-  let adc_running_averages = {};
-
-  function bom_set_data_color(name, value, ele) {
-    // Check if the name exists in brineomatic_gauge_setup
-    const setup = brineomatic_gauge_setup[name];
-    if (!setup) {
-      console.warn(`No setup found for name: ${name}`);
-      return;
-    }
-
-    const { thresholds, colors } = setup;
-
-    // Ensure thresholds and colors arrays are of equal length
-    if (thresholds.length !== colors.length) {
-      console.error(`Thresholds and colors arrays length mismatch for name: ${name}`);
-      return;
-    }
-
-    // Iterate over thresholds to find the appropriate color
-    for (let i = 0; i < thresholds.length; i++) {
-      if (value <= thresholds[i]) {
-        ele.css("color", colors[i]);
-        return;
-      }
-    }
-
-    // If value exceeds all thresholds, set color to the last color
-    ele.css("color", colors[colors.length - 1]);
-  }
-
-  let motorTemperatureGauge;
-  let waterTemperatureGauge;
-  let filterPressureGauge;
-  let membranePressureGauge;
-  let productSalinityGauge;
-  let productFlowrateGauge;
-  let brineSalinityGauge;
-  let brineFlowrateGauge;
-  let tankLevelGauge;
-
-  let temperatureChart;
-  let pressureChart;
-  let productSalinityChart;
-  let productFlowrateChart;
-  let tankLevelChart;
-
-  let lastChartUpdate = Date.now();
-  let timeData;
-  let motorTemperatureData;
-  let waterTemperatureData;
-  let filterPressureData;
-  let membranePressureData;
-  let productSalinityData;
-  let productFlowrateData;
-  let tankLevelData;
-
-  const BoardNameEdit = (name) => `
-<div class="col-12">
-  <h4>Board Name</h4>
-  <input type="text" class="form-control" id="fBoardName" value="${name}">
-  <div class="valid-feedback">Saved!</div>
-  <div class="invalid-feedback">Must be 30 characters or less.</div>
-</div>
-`;
-
-  const RelayControlCard = (ch) => `
-<div id="relay${ch.id}" class="col-xs-12 col-sm-6">
-  <table class="w-100 h-100 p-2">
-    <tr>
-      <td>
-        <button id="relayState${ch.id}" type="button" class="btn relayButton text-center" onclick="toggle_relay_state(${ch.id})">
-          <table style="width: 100%">
-            <tbody>
-              <tr>
-                <td class="relayIcon text-center align-middle pe-2">
-                  ${pwm_type_images[ch.type]}
-                </td>
-                <td class="text-center" style="width: 99%">
-                  <div id="relayName${ch.id}">${ch.name}</div>
-                  <div id="relayStatus${ch.id}"></div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </button>
-      </td>
-    </tr>
-  </table>
-</div>
-`;
-
-  const RelayEditCard = (ch) => `
-<div id="relayEditCard${ch.id}" class="col-xs-12 col-sm-6">
-  <div class="p-3 border border-secondary rounded">
-    <h5>Relay Channel #${ch.id}</h5>
-    <div class="form-floating mb-3">
-      <input type="text" class="form-control" id="fRelayName${ch.id}" value="${ch.name}">
-      <label for="fRelayName${ch.id}">Name</label>
-    </div>
-    <div class="invalid-feedback">Must be 30 characters or less.</div>
-    <div class="form-check form-switch mb-3">
-      <input class="form-check-input" type="checkbox" id="fRelayEnabled${ch.id}">
-      <label class="form-check-label" for="fRelayEnabled${ch.id}">
-        Enabled
-      </label>
-    </div>
-    <div class="form-floating mb-3">
-      <select id="fRelayDefaultState${ch.id}" class="form-select" aria-label="Default State (on boot)">
-        <option value="ON">ON</option>
-        <option value="OFF">OFF</option>
-      </select>
-      <label for="fRelayDefaultState${ch.id}">Default State (on boot)</label>
-    </div>
-    <div class="form-floating">
-      <select id="fRelayType${ch.id}" class="form-select" aria-label="Output Type">
-        <option value="light">Light</option>
-        <option value="motor">Motor</option>
-        <option value="water_pump">Water Pump</option>
-        <option value="bilge_pump">Bilge Pump</option>
-        <option value="fuel_pump">Fuel Pump</option>
-        <option value="fan">Fan</option>
-        <option value="solenoid">Solenoid</option>
-        <option value="fridge">Refrigerator</option>
-        <option value="freezer">Freezer</option>
-        <option value="charger">Charger</option>
-        <option value="electronics">Electronics</option>
-        <option value="other">Other</option>
-      </select>
-      <label for="fRelayType${ch.id}">Output Type</label>
-    </div>
-  </div>
-</div>
-`;
-
-  const ServoControlCard = (ch) => `
-<div id="servo${ch.id}" class="col-xs-12 col-sm-6">
-  <table class="w-100 h-100 p-2">
-    <tr>
-      <td width="75%" id="servoName${ch.id}">${ch.name}</td>
-      <td id="servoAngle${ch.id}"></td>
-    </tr>
-    <tr>
-      <td colspan="2">
-        <input type="range" class="form-range" min="0" max="180" step="1" id="servoSlider${ch.id}" list="servoMarker${ch.id}">
-        <datalist id="servoMarker${ch.id}">
-          <option value="0"></option>
-          <option value="30"></option>
-          <option value="60"></option>
-          <option value="90"></option>
-          <option value="120"></option>
-          <option value="150"></option>
-          <option value="180"></option>
-        </datalist>
-      </td>
-    </tr>
-  </table>
-</div>
-`;
-
-  const ServoEditCard = (ch) => `
-<div id="servoEditCard${ch.id}" class="col-xs-12 col-sm-6">
-  <div class="p-3 border border-secondary rounded">
-    <h5>Servo Channel #${ch.id}</h5>
-    <div class="form-floating mb-3">
-      <input type="text" class="form-control" id="fServoName${ch.id}" value="${ch.name}">
-      <label for="fServoName${ch.id}">Name</label>
-    </div>
-    <div class="invalid-feedback">Must be 30 characters or less.</div>
-    <div class="form-check form-switch mb-3">
-      <input class="form-check-input" type="checkbox" id="fServoEnabled${ch.id}">
-      <label class="form-check-label" for="fServoEnabled${ch.id}">
-        Enabled
-      </label>
-    </div>
-  </div>
-</div>
-`;
-
-  const ADCControlRow = (id, name, type) => `
-<tr id="adc${id}" class="adcRow">
-  <td class="adcId align-middle">${id}</td>
-  <td class="adcName align-middle">${name}</td>
-  <td class="adcType align-middle">${adc_types[type]}</td>
-  <td class="adcValue" id="adcValue${id}"></td>
-  <!-- <td class="adcBar align-middle">
-     <div id="adcBar${id}" class="progress" role="progressbar" aria-label="ADC ${id} Reading" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-      <div class="progress-bar" style="width: 0%"></div>
-    </div>
-  </td> -->
-</tr>
-`;
-
-  const ADCCalibrationTableRow = (ch, output, calibrated, index) => {
-    return `
-      <tr id="fADCCalibrationTableRow${ch.id}_${index}">
-        <td>
-          <div class="input-group input-group-sm">
-            <input type="text" class="form-control" id="fADCCalibrationTableOutput${ch.id}_${index}" value="${output}" disabled>
-            <span class="input-group-text ADCUnits${ch.id}">${ch.units}</span>
-          </div>
-        </td>
-        <td>
-          <div class="input-group input-group-sm">
-            <input type="text" class="form-control" id="fADCCalibrationTableCalibrated${ch.id}_${index}" value="${calibrated}" disabled>
-            <span class="input-group-text ADCCalibratedUnits${ch.id}">${ch.calibratedUnits}</span>
-          </div>
-        </td>
-        <td>
-          <button type="button" class="btn btn-sm btn-outline-danger" id="fADCCalibrationTableRemove${ch.id}_${index}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
-  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
-  </svg>
-          </button>
-        </td>
-      </tr>
-    `;
-  };
-
-  const ADCEditCard = (ch) => {
-    // Build options from adc_types
-    const options = Object.entries(adc_types)
-      .map(([key, label]) => `<option value="${key}">${label}</option>`)
-      .join("\n");
-
-    let calibrationTableHtml = "";
-    if (YB.App.config.adc[ch.id - 1].hasOwnProperty("calibrationTable")) {
-      calibrationTableHtml = YB.App.config.adc[ch.id - 1].calibrationTable
-        .map(([output, calibrated], index) => ADCCalibrationTableRow(ch, output, calibrated, index))
-        .join("\n");
-    }
-
-    return `
-    <div id="adcEditCard${ch.id}" class="col-xs-12 col-sm-6">
-      <div class="p-3 border border-secondary rounded">
-        <h5>ADC #${ch.id}</h5>
-        <div class="form-floating mb-3">
-          <input type="text" class="form-control" id="fADCName${ch.id}" value="${ch.name}">
-          <label for="fADCName${ch.id}">Name</label>
-          <div class="invalid-feedback">Must be 30 characters or less.</div>
-        </div>
-        <div class="form-check form-switch mb-3">
-          <input class="form-check-input" type="checkbox" id="fADCEnabled${ch.id}">
-          <label class="form-check-label" for="fADCEnabled${ch.id}">Enabled</label>
-        </div>
-        <div class="form-floating mb-3">
-          <select id="fADCType${ch.id}" class="form-select" aria-label="Input Type">
-            ${options}
-          </select>
-          <label for="fADCType${ch.id}">Input Type</label>
-        </div>
-        <div class="form-floating mb-3">
-          <select id="fADCDisplayDecimals${ch.id}" class="form-select" aria-label="Display Format">
-            <option value="0">123,456</option>
-            <option value="1">123,456.1</option>
-            <option value="2">123,456.12</option>
-            <option value="3">123,456.123</option>
-            <option value="4">123,456.1234</option>
-          </select>
-          <label for="fADCDisplayDecimals${ch.id}">Display Format</label>
-        </div>
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" id="fADCUseCalibrationTable${ch.id}">
-          <label class="form-check-label" for="fADCUseCalibrationTable${ch.id}">Use Calibration Table</label>
-        </div>
-        <div id="fADCCalibrationTableUI${ch.id}" class="form-floating mt-3" style="display: none">
-          <h5>Calibration Setup</h5>
-          <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="fADCCalibratedUnits${ch.id}" value="${ch.calibratedUnits}">
-            <label for="fADCCalibratedUnits${ch.id}">Calibrated Units</label>
-            <div class="invalid-feedback">Must be 10 characters or less.</div>
-          </div>
-          <div class="form-floating mb-3">
-            <h6>Live Averaged Output <span id="fADCAverageOutputCount${ch.id}" class="small"></span></h6>
-            <div class="input-group">
-              <input id="fADCAverageOutput${ch.id}" type="text" class="form-control" value="0">
-              <span class="input-group-text ADCUnits${ch.id}">${ch.units}</span>
-              <button id="fADCAverageOutputCopy${ch.id}" type="button" class="btn btn-sm btn-primary">
-                Copy
-              </button>
-              <button id="fADCAverageOutputReset${ch.id}" type="button" class="btn btn-sm btn-secondary">
-                Reset
-              </button>
-            </div>
-          </div>
-          <table class="table table-sm">
-            <thead>
-              <tr>
-                <th>Output</th>
-                <th>Calibrated</th>
-                <th class="text-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
-  <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
-  <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
-</svg></th>
-              </tr>
-            </thead>
-            <tbody id="ADCCalibrationTableBody${ch.id}">
-              <tr>
-                <td>
-                  <div class="input-group input-group-sm">
-                    <input type="text" class="form-control" id="fADCCalibrationTableOutput${ch.id}" value="">
-                    <span class="input-group-text ADCUnits${ch.id}">${ch.units}</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="input-group input-group-sm">
-                    <input type="text" class="form-control" id="fADCCalibrationTableCalibrated${ch.id}" value="">
-                    <span class="input-group-text ADCCalibratedUnits${ch.id}">${ch.calibratedUnits}</span>
-                  </div>
-                </td>
-                <td>
-                  <button id="fADCCalibrationTableAdd${ch.id}" type="button" class="btn btn-sm btn-outline-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
-  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-</svg>
-                  </button>
-                </td>
-              </tr>
-              ${calibrationTableHtml}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  `;
-  };
-
-  const AlertBox = (message, type) => `
-<div>
-  <div class="mt-3 alert alert-${type} alert-dismissible" role="alert">
-    <div>${message}</div>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-</div>`;
-
-  let currentServoSliderID = -1;
-  let currentlyPickingBrightness = false;
-
-  function console_send_json(e) {
-    e.preventDefault(); // stop real submission
-
-    let text = $("#json_console_payload").val().trim();
-
-    try {
-      // Try to parse the JSON
-      let obj = JSON.parse(text);
-
-      // Clear the input if successful
-      $("#json_console_payload").val("");
-
-      YB.log("Sent: " + JSON.stringify(obj));
-
-      // Send the parsed object (convert back to string if YB.client.send needs text)
-      YB.client.send(obj);
-    } catch (err) {
-      YB.log("Invalid JSON: " + err);
-    }
-  }
-
-  function setup_debug_terminal() {
-    $("#json_console_form").on("submit", console_send_json);
-    $("#json_console_send").on("click", console_send_json);
-
-    $("#json_payload").on("keydown", function (e) {
-      var key = e.key || e.keyCode || e.which;
-      if (key === "Enter" || key === 13) {
-        e.preventDefault();
-        console_send_json();
-      }
-    });
-  }
-
-  function load_configs() {
-    if (app_role == "nobody")
-      return;
-
-    if (app_role == "admin") {
-      YB.client.getNetworkConfig();
-      YB.client.getAppConfig();
-
-      YB.client.send({
-        "cmd": "get_full_config"
-      });
-
-      check_for_updates();
-    }
-
-    YB.client.getConfig();
-  }
-
-  function check_connection_status() {
-    if (YB.client) {
-      let status = YB.client.status();
-
-      //our connection status
-      $(".connection_status").hide();
-
-      if (status == "CONNECTING")
-        $("#connection_startup").show();
-      else if (status == "CONNECTED")
-        $("#connection_good").show();
-      else if (status == "RETRYING")
-        $("#connection_retrying").show();
-      else if (status == "FAILED")
-        $("#connection_failed").show();
-    }
-  }
-
   function start_websocket() {
-    //close any old connections
-    // if (socket)
-    //   socket.close();
-
     //do we want ssl?
     let use_ssl = false;
     if (document.location.protocol == 'https:')
@@ -585,12 +22,12 @@
       if (msg.debug)
         YB.log(`SERVER: ${msg.debug}`);
       else if (msg.msg == 'hello') {
-        app_role = msg.role;
-        default_app_role = msg.default_role;
+        YB.App.role = msg.role;
+        YB.App.defaultRole = msg.default_role;
 
         //light/dark mode
         //let the mfd override with ?mode=night, etc.
-        if (!getQueryVariable("mode")) {
+        if (!YB.Util.getQueryVariable("mode")) {
           if (msg.theme)
             setTheme(msg.theme);
         }
@@ -600,7 +37,7 @@
           YB.client.login(Cookies.get("username"), Cookies.get("password"));
         } else {
           update_role_ui();
-          load_configs();
+          YB.App.loadConfigs();
           open_default_page();
         }
       }
@@ -611,12 +48,12 @@
         YB.App.config = msg;
 
         //is it our first boot?
-        if (msg.first_boot && current_page != "network")
-          show_alert(`Welcome to Yarrboard, head over to <a href="#network" onclick="YB.App.openPage('network')">Network</a> to setup your WiFi.`, "primary");
+        if (msg.first_boot && YB.App.currentPage != "network")
+          YB.App.showAlert(`Welcome to Yarrboard, head over to <a href="#network" onclick="YB.App.openPage('network')">Network</a> to setup your WiFi.`, "primary");
 
         //did we get a crash?
         if (msg.has_coredump)
-          show_admin_alert(`
+          YB.App.showAdminAlert(`
           <p>Oops, looks like Yarrboard crashed.</p>
           <p>Please download the <a href="/coredump.txt" target="_blank">coredump</a> and report it to our <a href="https://github.com/hoeken/yarrboard/issues">Github Issue Tracker</a> along with the following information:</p>
           <ul><li>Firmware: ${msg.firmware_version}</li><li>Hardware: ${msg.hardware_version}</li></ul>
@@ -741,8 +178,8 @@
           $('#adcControlDiv').show();
 
           //start our update poller.
-          if (current_page == 'config')
-            start_update_data();
+          if (YB.App.currentPage == 'config')
+            YB.App.startUpdateData();
         }
 
         //UI for brineomatic
@@ -1239,19 +676,19 @@
         else //non-brineomatic... no graphs
         {
           $(`#graphsNav`).remove(); //remove our graph element
-          page_list = page_list.filter(p => p !== "graphs");
-          delete page_ready.graphs;
-          for (const role in page_permissions) {
-            page_permissions[role] = page_permissions[role].filter(p => p !== "graphs");
+          YB.App.pageList = YB.App.pageList.filter(p => p !== "graphs");
+          delete YB.App.pageReady.graphs;
+          for (const role in YB.App.pagePermissions) {
+            YB.App.pagePermissions[role] = YB.App.pagePermissions[role].filter(p => p !== "graphs");
           }
         }
 
         //only do it as needed
-        if (!page_ready.config || current_page != "config") {
+        if (!YB.App.pageReady.config || YB.App.currentPage != "config") {
 
           //board name controls
-          $('#boardConfigForm').html(BoardNameEdit(msg.name));
-          $("#fBoardName").change(validate_board_name);
+          $('#boardConfigForm').html(YB.App.BoardNameEdit(msg.name));
+          $("#fBoardName").change(YB.App.validateBoardName);
 
           //edit controls for each relay
           $('#relayConfig').hide();
@@ -1343,7 +780,7 @@
         }
 
         //did we get brightness?
-        if (msg.brightness && !currentlyPickingBrightness)
+        if (msg.brightness && !YB.App.currentlyPickingBrightness)
           $('#brightnessSlider').val(Math.round(msg.brightness * 100));
 
         if (YB.App.isMFD()) {
@@ -1356,9 +793,9 @@
         }
 
         //ready!
-        page_ready.config = true;
+        YB.App.pageReady.config = true;
 
-        if (!current_page)
+        if (!YB.App.currentPage)
           YB.App.openPage('control');
       }
       else if (msg.msg == 'update') {
@@ -1449,7 +886,7 @@
               }
 
               //save it to our running average.
-              if (current_page == "config") {
+              if (YB.App.currentPage == "config") {
                 //manage our sliding window
                 adc_running_averages[ch.id].push(value);
                 if (adc_running_averages[ch.id].length > 1000)
@@ -1536,7 +973,7 @@
 
           //update our gauges.
           if (!YB.App.isMFD()) {
-            if (current_page == "control") {
+            if (YB.App.currentPage == "control") {
               motorTemperatureGauge.load({ columns: [['Motor Temperature', motor_temperature]] });
               waterTemperatureGauge.load({ columns: [['Water Temperature', water_temperature]] });
               filterPressureGauge.load({ columns: [['Filter Pressure', filter_pressure]] });
@@ -1549,7 +986,7 @@
               volumeGauge.load({ columns: [['Volume', volume]] });
             }
 
-            if (current_page == "graphs") {
+            if (YB.App.currentPage == "graphs") {
 
               //only occasionally update our graph to keep it responsive
               if (Date.now() - lastChartUpdate > 1000) {
@@ -1845,10 +1282,7 @@
           $(".mfdHide").show()
         }
 
-        //save it for later use.
-        last_update = msg;
-
-        page_ready.control = true;
+        YB.App.pageReady.control = true;
       }
       else if (msg.msg == "stats") {
         //YB.log("stats");
@@ -1925,9 +1359,9 @@
           $("#bomTotalRuntime").html(`${totalRuntime} hours`);
         }
 
-        page_ready.stats = true;
+        YB.App.pageReady.stats = true;
       } else if (msg.msg == "graph_data") {
-        if (current_page == "graphs") {
+        if (YB.App.currentPage == "graphs") {
           timeData = [timeData[0]];
           // Replace the rest of timeData with incremented timestamps
           const currentTime = new Date(); // Get current time in ISO format
@@ -2002,9 +1436,9 @@
           }
 
           //start getting updates too.
-          start_update_data();
+          YB.App.startUpdateData();
 
-          page_ready.graphs = true;
+          YB.App.pageReady.graphs = true;
         }
       }
       //load up our network config.
@@ -2082,14 +1516,11 @@
           URL.revokeObjectURL(url); // cleanup
         });
 
-        addConfigurationDragDropHandler();
+        YB.App.addConfigurationDragDropHandler();
       }
       //load up our network config.
       else if (msg.msg == "network_config") {
         //YB.log("network config");
-
-        //save our config.
-        network_config = msg;
 
         //YB.log(msg);
         $("#wifi_mode").val(msg.wifi_mode);
@@ -2097,14 +1528,11 @@
         $("#wifi_pass").val(msg.wifi_pass);
         $("#local_hostname").val(msg.local_hostname);
 
-        page_ready.network = true;
+        YB.App.pageReady.network = true;
       }
       //load up our network config.
       else if (msg.msg == "app_config") {
         //YB.log("network config");
-
-        //save our config.
-        app_config = msg;
 
         //update some ui stuff
         update_role_ui();
@@ -2112,7 +1540,7 @@
 
         //what is our update interval?
         if (msg.app_update_interval)
-          app_update_interval = msg.app_update_interval;
+          YB.App.updateInterval = msg.app_update_interval;
 
         //YB.log(msg);
         $("#admin_user").val(msg.admin_user);
@@ -2175,7 +1603,7 @@
           }
         });
 
-        page_ready.settings = true;
+        YB.App.pageReady.settings = true;
       }
       //load up our network config.
       else if (msg.msg == "ota_progress") {
@@ -2196,7 +1624,7 @@
 
         //was that the last?
         if (progress == 100) {
-          show_alert("Firmware update successful.", "success");
+          YB.App.showAlert("Firmware update successful.", "success");
 
           //reload our page
           setTimeout(function () {
@@ -2217,34 +1645,34 @@
         if (msg.message == "You must be logged in.")
           YB.App.openPage("login");
         else
-          show_alert(msg.message);
+          YB.App.showAlert(msg.message);
       }
       else if (msg.msg == "login") {
 
         //keep the login success stuff on the login page.
         if (msg.message == "Login successful.") {
           //once we know our role, we can load our other configs.
-          app_role = msg.role;
+          YB.App.role = msg.role;
 
-          // YB.log(`app_role: ${app_role}`);
-          // YB.log(`current_page: ${current_page}`);
+          // YB.log(`YB.App.role: ${YB.App.role}`);
+          // YB.log(`YB.App.currentPage: ${YB.App.currentPage}`);
 
           //only needed for login page, otherwise its autologin
-          if (current_page == "login") {
+          if (YB.App.currentPage == "login") {
             //save user/pass to cookies.
-            if (app_username && app_password) {
-              Cookies.set('username', app_username, { expires: 365 });
-              Cookies.set('password', app_password, { expires: 365 });
+            if (YB.App.username && YB.App.password) {
+              Cookies.set('username', YB.App.username, { expires: 365 });
+              Cookies.set('password', YB.App.password, { expires: 365 });
             }
           }
 
           //prep the site
           update_role_ui();
-          load_configs();
+          YB.App.loadConfigs();
           open_default_page();
         }
         else
-          show_alert(msg.message, "success");
+          YB.App.showAlert(msg.message, "success");
       }
       else if (msg.msg == "set_theme") {
         //light/dark mode
@@ -2252,7 +1680,7 @@
       }
       else if (msg.msg == "set_brightness") {
         //did we get brightness?
-        if (msg.brightness && !currentlyPickingBrightness)
+        if (msg.brightness && !YB.App.currentlyPickingBrightness)
           $('#brightnessSlider').val(Math.round(msg.brightness * 100));
       }
       else if (msg.msg) {
@@ -2264,352 +1692,6 @@
     YB.client.log = YB.log;
 
     YB.client.start();
-  }
-
-  function getQueryVariable(name) {
-    const query = window.location.search.substring(1);
-    const vars = query.split("&");
-    for (let i = 0; i < vars.length; i++) {
-      const pair = vars[i].split("=");
-      if (decodeURIComponent(pair[0]) === name) {
-        return decodeURIComponent(pair[1] || "");
-      }
-    }
-    return null; // Return null if the variable is not found
-  }
-
-  function show_alert(message, type = 'danger') {
-    //we only need one alert at a time.
-    $('#liveAlertPlaceholder').html(AlertBox(message, type))
-
-    console.log(`show_alert: ${message}`);
-
-    //make sure we can see it.
-    $('html').animate({
-      scrollTop: 0
-    },
-      750 //speed
-    );
-  }
-
-  function show_admin_alert(message, type = 'danger') {
-    //we only need one alert at a time.
-    $('#adminAlertPlaceholder').html(AlertBox(message, type))
-
-    console.log(`show_admin_alert: ${message}`);
-
-    //make sure we can see it.
-    $('html').animate({
-      scrollTop: 0
-    },
-      750 //speed
-    );
-  }
-
-
-  function show_brineomatic_result(result_div, result) {
-    if (result != "STARTUP") {
-      if (brineomatic_result_text[result])
-        $(result_div).html(brineomatic_result_text[result]);
-      else
-        $(result_div).html(result);
-
-      $(result_div).removeClass();
-      $(result_div).addClass("badge");
-      if (result.startsWith("SUCCESS"))
-        $(result_div).addClass("text-bg-success");
-      else if (result == "USER_STOP")
-        $(result_div).addClass("text-bg-primary");
-      else if (result.startsWith("ERR"))
-        $(result_div).addClass("text-bg-danger");
-      else
-        $(result_div).addClass("text-bg-warning");
-    }
-    else
-      $(`${result_div}Row`).hide();
-  }
-
-  function start_brineomatic_manual() {
-    YB.client.send({
-      "cmd": "start_watermaker",
-    }, true);
-  }
-
-  function start_brineomatic_duration() {
-
-    let duration = $("#bomRunDurationInput").val();
-
-    if (duration > 0) {
-      //hours to microseconds
-      let micros = duration * 60 * 60 * 1000000;
-
-      YB.client.send({
-        "cmd": "start_watermaker",
-        "duration": micros
-      }, true);
-    }
-  }
-
-  function start_brineomatic_volume() {
-    let volume = $("#bomRunVolumeInput").val();
-
-    if (volume > 0) {
-      YB.client.send({
-        "cmd": "start_watermaker",
-        "volume": volume
-      }, true);
-    }
-  }
-
-  function flush_brineomatic() {
-    let duration = $("#bomFlushDurationInput").val();
-
-    if (duration > 0) {
-      let micros = duration * 60 * 1000000;
-
-      YB.client.send({
-        "cmd": "flush_watermaker",
-        "duration": micros
-      }, true);
-    }
-  }
-
-  function pickle_brineomatic() {
-    let duration = $("#bomPickleDurationInput").val();
-
-    if (duration > 0) {
-      let micros = duration * 60 * 1000000;
-
-      YB.client.send({
-        "cmd": "pickle_watermaker",
-        "duration": micros
-      }, true);
-    }
-  }
-
-  function depickle_brineomatic() {
-    let duration = $("#bomDepickleDurationInput").val();
-
-    if (duration > 0) {
-      let micros = duration * 60 * 1000000;
-
-      YB.client.send({
-        "cmd": "depickle_watermaker",
-        "duration": micros
-      }, true);
-    }
-  }
-
-  function stop_brineomatic() {
-    YB.client.send({
-      "cmd": "stop_watermaker",
-    }, true);
-  }
-
-  function manual_brineomatic() {
-    YB.client.send({
-      "cmd": "manual_watermaker",
-    }, true);
-  }
-
-  function idle_brineomatic() {
-    YB.client.send({
-      "cmd": "idle_watermaker",
-    }, true);
-  }
-
-  function addConfigurationDragDropHandler() {
-    const ta = document.getElementById('configurationTextarea');
-    const invalid = document.getElementById('invalidConfigurationJSON');
-    const openBtn = document.getElementById('configurationOpen');
-    const fileInput = document.getElementById('configurationFileInput');
-    const MAX_BYTES = 1024 * 1024 * 2; // 2 MB cap
-
-    if (!ta) return;
-
-    function showInvalid(msg) {
-      if (invalid) {
-        invalid.style.display = '';
-        invalid.textContent = msg || 'Invalid JSON found.';
-      }
-    }
-    function hideInvalid() {
-      if (invalid) invalid.style.display = 'none';
-    }
-
-    async function handleFile(file) {
-      if (!file) return;
-
-      if (file.size > MAX_BYTES) {
-        showInvalid(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max ${(MAX_BYTES / 1024 / 1024)} MB.`);
-        return;
-      }
-
-      const isProbablyText = file.type.startsWith('text/') || /\.json$/i.test(file.name);
-      if (!isProbablyText) {
-        showInvalid('Please choose a .json or text file.');
-        return;
-      }
-
-      try {
-        const raw = await file.text();
-        try {
-          const obj = JSON.parse(raw);
-          ta.value = JSON.stringify(obj, null, 2);
-          hideInvalid();
-        } catch {
-          ta.value = raw;
-          showInvalid('Loaded file, but JSON is invalid.');
-        }
-        ta.dispatchEvent(new Event('input', { bubbles: true }));
-      } catch (err) {
-        showInvalid('Failed to read file.');
-        console.error(err);
-      }
-    }
-
-    // Drag & drop visuals
-    ['dragenter', 'dragover'].forEach(evt =>
-      ta.addEventListener(evt, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        ta.classList.add('is-drop-target');
-      })
-    );
-    ['dragleave', 'dragend'].forEach(evt =>
-      ta.addEventListener(evt, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        ta.classList.remove('is-drop-target');
-      })
-    );
-
-    // Drop handler
-    ta.addEventListener('drop', async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      ta.classList.remove('is-drop-target');
-
-      const files = e.dataTransfer && e.dataTransfer.files;
-      if (files && files.length > 0) {
-        handleFile(files[0]);
-      }
-    });
-
-    // Open button triggers hidden input
-    if (openBtn && fileInput) {
-      openBtn.addEventListener('click', () => fileInput.click());
-      fileInput.addEventListener('change', (e) => {
-        const file = e.target.files && e.target.files[0];
-        handleFile(file);
-        // allow re-selecting the same file later
-        e.target.value = '';
-      });
-    }
-  }
-
-  function toggle_relay_state(id) {
-    YB.client.send({
-      "cmd": "toggle_relay_channel",
-      "id": id,
-      "source": YB.App.config.hostname
-    }, true);
-  }
-
-  function on_page_ready() {
-    //is our page ready yet?
-    if (page_ready[current_page]) {
-      $("#loading").hide();
-      $(`#${current_page}Page`).show();
-    }
-    else {
-      $("#loading").show();
-      setTimeout(on_page_ready, 100);
-    }
-  }
-
-  function get_stats_data() {
-    if (YB.client.isOpen() && (app_role == 'guest' || app_role == 'admin')) {
-      //YB.log("get_stats");
-
-      YB.client.getStats();
-
-      //keep loading it while we are here.
-      if (current_page == "stats")
-        setTimeout(get_stats_data, app_update_interval);
-    }
-  }
-
-  function get_graph_data() {
-    if (YB.client.isOpen() && (app_role == 'guest' || app_role == 'admin')) {
-      YB.client.send({
-        "cmd": "get_graph_data"
-      });
-    }
-  }
-
-  function start_update_data() {
-    if (!app_update_interval_id) {
-      //YB.log("starting updates");
-      app_update_interval_id = setInterval(get_update_data, app_update_interval);
-    } else {
-      //YB.log("updates already running");
-    }
-  }
-
-  function get_update_data() {
-    if (YB.client.isOpen() && (app_role == 'guest' || app_role == 'admin')) {
-      //YB.log("get_update");
-
-      YB.client.getUpdate();
-
-      //keep loading it while we are here.
-      if (current_page == "control" || current_page == "graphs" || (current_page == "config" && YB.App.config && YB.App.config.hasOwnProperty("adc")))
-        return;
-      else {
-        //YB.log("stopping updates");
-        clearInterval(app_update_interval_id);
-        app_update_interval_id = 0;
-      }
-    }
-  }
-
-  function validate_board_name(e) {
-    let ele = e.target;
-    let value = ele.value;
-
-    if (value.length <= 0 || value.length > 30) {
-      $(ele).removeClass("is-valid");
-      $(ele).addClass("is-invalid");
-    }
-    else {
-      $(ele).removeClass("is-invalid");
-      $(ele).addClass("is-valid");
-
-      //set our new board name!
-      YB.client.send({
-        "cmd": "set_boardname",
-        "value": value
-      });
-    }
-  }
-
-  function set_servo_angle(e) {
-    let ele = e.target;
-    let id = ele.id.match(/\d+/)[0];
-    let value = ele.value;
-
-    //must be realistic.
-    if (value >= 0 && value <= 180) {
-      //update our button
-      $(`#servoAngle${id}`).html(`${value}°`);
-
-      YB.client.send({
-        "cmd": "set_servo_channel",
-        "id": id,
-        "angle": value
-      });
-    }
   }
 
   function set_brightness(e) {
@@ -2633,343 +1715,11 @@
       setTheme("light");
   }
 
-  function validate_relay_name(e) {
-    let ele = e.target;
-    let id = ele.id.match(/\d+/)[0];
-    let value = ele.value;
-
-    if (value.length <= 0 || value.length > 30) {
-      $(ele).removeClass("is-valid");
-      $(ele).addClass("is-invalid");
-    }
-    else {
-      $(ele).removeClass("is-invalid");
-      $(ele).addClass("is-valid");
-
-      YB.client.send({
-        "cmd": "config_relay_channel",
-        "id": id,
-        "name": value
-      });
-    }
-  }
-
-  function validate_relay_enabled(e) {
-    let ele = e.target;
-    let id = ele.id.match(/\d+/)[0];
-    let value = ele.checked;
-
-    $(ele).addClass("is-valid");
-
-    YB.client.send({
-      "cmd": "config_relay_channel",
-      "id": id,
-      "enabled": value
-    });
-  }
-
-  function validate_relay_type(e) {
-    let ele = e.target;
-    let id = ele.id.match(/\d+/)[0];
-    let value = ele.value;
-
-    if (value.length <= 0 || value.length > 30) {
-      $(ele).removeClass("is-valid");
-      $(ele).addClass("is-invalid");
-    }
-    else {
-      $(ele).removeClass("is-invalid");
-      $(ele).addClass("is-valid");
-
-      YB.client.send({
-        "cmd": "config_relay_channel",
-        "id": id,
-        "type": value
-      });
-    }
-  }
-
-  function validate_relay_default_state(e) {
-    let ele = e.target;
-    let id = ele.id.match(/\d+/)[0];
-    let value = ele.value;
-
-    if (value.length <= 0 || value.length > 10) {
-      $(ele).removeClass("is-valid");
-      $(ele).addClass("is-invalid");
-    }
-    else {
-      $(ele).removeClass("is-invalid");
-      $(ele).addClass("is-valid");
-
-      YB.client.send({
-        "cmd": "config_relay_channel",
-        "id": id,
-        "defaultState": value
-      });
-    }
-  }
-
-  function validate_servo_name(e) {
-    let ele = e.target;
-    let id = ele.id.match(/\d+/)[0];
-    let value = ele.value;
-
-    if (value.length <= 0 || value.length > 30) {
-      $(ele).removeClass("is-valid");
-      $(ele).addClass("is-invalid");
-    }
-    else {
-      $(ele).removeClass("is-invalid");
-      $(ele).addClass("is-valid");
-
-      YB.client.send({
-        "cmd": "config_servo_channel",
-        "id": id,
-        "name": value
-      });
-    }
-  }
-
-  function validate_servo_enabled(e) {
-    let ele = e.target;
-    let id = ele.id.match(/\d+/)[0];
-    let value = ele.checked;
-
-    $(ele).addClass("is-valid");
-
-    YB.client.send({
-      "cmd": "config_servo_channel",
-      "id": id,
-      "enabled": value
-    });
-  }
-
-  function validate_adc_name(e) {
-    let ele = e.target;
-    let id = ele.id.match(/\d+/)[0];
-    let value = ele.value;
-
-    if (value.length <= 0 || value.length > 30) {
-      $(ele).removeClass("is-valid");
-      $(ele).addClass("is-invalid");
-    }
-    else {
-      $(ele).removeClass("is-invalid");
-      $(ele).addClass("is-valid");
-
-      YB.client.send({
-        "cmd": "config_adc",
-        "id": id,
-        "name": value
-      });
-    }
-  }
-
-  function validate_adc_enabled(e) {
-    let ele = e.target;
-    let id = ele.id.match(/\d+/)[0];
-    let value = ele.checked;
-
-    //enable/disable other stuff.
-    $(`#fADCName${id}`).prop('disabled', !value);
-    $(`#fADCType${id}`).prop('disabled', !value);
-    $(`#fADCUseCalibrationTable${id}`).prop('disabled', !value);
-    if (value)
-      $(`#fADCCalibrationTableUI${id}`).show();
-    else
-      $(`#fADCCalibrationTableUI${id}`).hide();
-
-
-    //nothing really to validate here.
-    $(ele).addClass("is-valid");
-
-    //save it
-    YB.client.send({
-      "cmd": "config_adc",
-      "id": id,
-      "enabled": value
-    });
-  }
-
-  function validate_adc_use_calibration_table(e) {
-    let ele = e.target;
-    let id = ele.id.match(/\d+/)[0];
-    let value = ele.checked;
-
-    //nothing really to validate here.
-    $(ele).addClass("is-valid");
-
-    if (value)
-      $(`#fADCCalibrationTableUI${id}`).show();
-    else
-      $(`#fADCCalibrationTableUI${id}`).hide();
-
-    //save it
-    YB.client.send({
-      "cmd": "config_adc",
-      "id": id,
-      "useCalibrationTable": value
-    });
-  }
-
-  function validate_adc_calibrated_units(e) {
-    let ele = e.target;
-    let id = ele.id.match(/\d+/)[0];
-    let value = ele.value;
-
-    if (value.length <= 0 || value.length > 30) {
-      $(ele).removeClass("is-valid");
-      $(ele).addClass("is-invalid");
-    }
-    else {
-      $(ele).removeClass("is-invalid");
-      $(ele).addClass("is-valid");
-
-      YB.client.send({
-        "cmd": "config_adc",
-        "id": id,
-        "calibratedUnits": value
-      });
-
-      //update places that use this.
-      $(`.ADCCalibratedUnits${id}`).html(value);
-    }
-  }
-
-  function adc_calibration_average_copy(e) {
-    let ele = e.currentTarget;
-    let id = ele.id.match(/\d+/)[0];
-
-    let output = parseFloat($(`#fADCAverageOutput${id}`).val());
-    $(`#fADCCalibrationTableOutput${id}`).val(output);
-    $(`#fADCCalibrationTableCalibrated${id}`).focus();
-  }
-
-  function adc_calibration_average_reset(e) {
-    let ele = e.currentTarget;
-    let id = ele.id.match(/\d+/)[0];
-
-    $(`#fADCAverageOutput${id}`).val(0.0);
-    adc_running_averages[id] = [];
-  }
-
-  function validate_adc_add_calibration(e) {
-    let ele = e.currentTarget;
-    let id = ele.id.match(/\d+/)[0];
-
-    let output = parseFloat($(`#fADCCalibrationTableOutput${id}`).val());
-    let calibrated = parseFloat($(`#fADCCalibrationTableCalibrated${id}`).val());
-
-    if (false) {
-      $(ele).removeClass("is-valid");
-      $(ele).addClass("is-invalid");
-    }
-    else {
-      // $(ele).removeClass("is-invalid");
-      // $(ele).addClass("is-valid");
-
-      YB.client.send({
-        "cmd": "config_adc",
-        "id": id,
-        "add_calibration": [output, calibrated]
-      });
-
-      //re-initialize
-      $(`#fADCCalibrationTableOutput${id}`).val("");
-      $(`#fADCCalibrationTableCalibrated${id}`).val("");
-
-      //new row for the ui
-      let index = 0;
-      if (Array.isArray(YB.App.config.adc[id - 1].calibrationTable)) {
-        index = YB.App.config.adc[id - 1].calibrationTable.length;
-      }
-      let newRow = ADCCalibrationTableRow(YB.App.config.adc[id], output, calibrated, index);
-      $(`#ADCCalibrationTableBody${id}`).append(newRow);
-      $(`#fADCCalibrationTableRemove${id}_${index}`).click(validate_adc_remove_calibration);
-      YB.App.config.adc[id - 1].calibrationTable.push([output, calibrated]); //temporarily save it.
-    }
-  }
-
-  function validate_adc_remove_calibration(e) {
-    let ele = e.currentTarget;
-
-    const match = ele.id.match(/(\d+)_(\d+)/);
-    const id = parseInt(match[1], 10);
-    const index = parseInt(match[2], 10);
-
-    const output = parseFloat($(`#fADCCalibrationTableOutput${id}_${index}`).val());
-    const calibrated = parseFloat($(`#fADCCalibrationTableCalibrated${id}_${index}`).val());
-
-    if (false) {
-      $(ele).removeClass("is-valid");
-      $(ele).addClass("is-invalid");
-    }
-    else {
-      // $(ele).removeClass("is-invalid");
-      // $(ele).addClass("is-valid");
-
-      YB.client.send({
-        "cmd": "config_adc",
-        "id": id,
-        "remove_calibration": [output, calibrated]
-      });
-
-      //remove our row.
-      $(`#fADCCalibrationTableRow${id}_${index}`).remove();
-    }
-  }
-
-  function validate_adc_type(e) {
-    let ele = e.target;
-    let id = ele.id.match(/\d+/)[0];
-    let value = ele.value;
-
-    if (value.length <= 0 || value.length > 30) {
-      $(ele).removeClass("is-valid");
-      $(ele).addClass("is-invalid");
-    }
-    else {
-      $(ele).removeClass("is-invalid");
-      $(ele).addClass("is-valid");
-
-      YB.client.send({
-        "cmd": "config_adc",
-        "id": id,
-        "type": value
-      });
-    }
-  }
-
-  function validate_adc_display_decimals(e) {
-    let ele = e.target;
-    let id = ele.id.match(/\d+/)[0];
-    let value = parseInt(ele.value);
-
-    if (value.length <= 0 || value.length > 30) {
-      $(ele).removeClass("is-valid");
-      $(ele).addClass("is-invalid");
-    }
-    else {
-      $(ele).removeClass("is-invalid");
-      $(ele).addClass("is-valid");
-
-      YB.client.send({
-        "cmd": "config_adc",
-        "id": id,
-        "display_decimals": value
-      });
-
-      //update our current config.
-      YB.App.config.adc[id - 1].displayDecimals = value;
-    }
-  }
-
   function do_login(e) {
-    app_username = $('#username').val();
-    app_password = $('#password').val();
+    YB.App.username = $('#username').val();
+    YB.App.password = $('#password').val();
 
-    YB.client.login(app_username, app_password);
+    YB.client.login(YB.App.username, YB.App.password);
   }
 
   function save_network_settings() {
@@ -2982,7 +1732,7 @@
     //we should probably do a bit of verification here
 
     //if they are changing from client to client, we can't show a success.
-    show_alert("Yarrboard may be unresponsive while changing WiFi settings. Make sure you connect to the right network after updating.", "primary");
+    YB.App.showAlert("Yarrboard may be unresponsive while changing WiFi settings. Make sure you connect to the right network after updating.", "primary");
 
     //okay, send it off.
     YB.client.send({
@@ -3025,14 +1775,14 @@
     //we should probably do a bit of verification here
     update_interval = Math.max(100, update_interval);
     update_interval = Math.min(5000, update_interval);
-    app_update_interval = update_interval;
+    YB.App.updateInterval = update_interval;
 
     //remember it and update our UI
-    default_app_role = default_role;
+    YB.App.defaultRole = default_role;
     update_role_ui();
 
     //helper function to keep admin logged in.
-    if (default_app_role != "admin") {
+    if (YB.App.defaultRole != "admin") {
       Cookies.set('username', admin_user, { expires: 365 });
       Cookies.set('password', admin_pass, { expires: 365 });
     }
@@ -3048,7 +1798,7 @@
       "admin_pass": admin_pass,
       "guest_user": guest_user,
       "guest_pass": guest_pass,
-      "app_update_interval": app_update_interval,
+      "app_update_interval": YB.App.updateInterval,
       "default_role": default_role,
       "app_enable_mfd": app_enable_mfd,
       "app_enable_api": app_enable_api,
@@ -3066,14 +1816,14 @@
       "server_key": server_key
     });
 
-    show_alert("App settings have been updated.", "success");
+    YB.App.showAlert("App settings have been updated.", "success");
   }
 
   function restart_board() {
     if (confirm("Are you sure you want to restart your Yarrboard?")) {
       YB.client.restart();
 
-      show_alert("Yarrboard is now restarting, please be patient.", "primary");
+      YB.App.showAlert("Yarrboard is now restarting, please be patient.", "primary");
 
       setTimeout(function () {
         location.reload();
@@ -3085,7 +1835,7 @@
     if (confirm("WARNING! Are you sure you want to reset your Yarrboard to factory defaults?  This cannot be undone.")) {
       YB.client.factoryReset();
 
-      show_alert("Yarrboard is now resetting to factory defaults, please be patient.", "primary");
+      YB.App.showAlert("Yarrboard is now resetting to factory defaults, please be patient.", "primary");
     }
   }
 
@@ -3110,14 +1860,14 @@
               data = firmware;
 
           if (!data) {
-            //show_alert(`Could not find a firmware for this hardware.`, "danger");
+            //YB.App.showAlert(`Could not find a firmware for this hardware.`, "danger");
             return;
           }
 
           $("#firmware_checking").hide();
 
           //do we have a new version?
-          if (compareVersions(data.version, YB.App.config.firmware_version)) {
+          if (YB.Util.compareVersions(data.version, YB.App.config.firmware_version)) {
             if (data.changelog) {
               $("#firmware_changelog").append(marked.parse(data.changelog));
               $("#firmware_changelog").show();
@@ -3127,7 +1877,7 @@
             $("#firmware_bin").attr("href", `${data.url}`);
             $("#firmware_update_available").show();
 
-            show_alert(`There is a <a onclick="YB.App.openPage('system')" href="/#system">firmware update</a> available (${data.version}).`, "primary");
+            YB.App.showAlert(`There is a <a onclick="YB.App.openPage('system')" href="/#system">firmware update</a> available (${data.version}).`, "primary");
           }
           else
             $("#firmware_up_to_date").show();
@@ -3145,8 +1895,6 @@
 
     //okay, send it off.
     YB.client.startOTA();
-
-    ota_started = true;
   }
 
   function toggle_role_passwords(role) {
@@ -3166,14 +1914,14 @@
 
   function update_role_ui() {
     //what nav tabs should we be able to see?
-    if (app_role == "admin") {
+    if (YB.App.role == "admin") {
       $("#navbar").show();
       $(".nav-permission").show();
     }
-    else if (app_role == "guest") {
+    else if (YB.App.role == "guest") {
       $("#navbar").show();
       $(".nav-permission").hide();
-      page_permissions[app_role].forEach((page) => {
+      YB.App.pagePermissions[YB.App.role].forEach((page) => {
         $(`#${page}Nav`).show();
       });
     }
@@ -3184,25 +1932,25 @@
 
     //show login or not?
     $('#loginNav').hide();
-    if (default_app_role == 'nobody' && app_role == 'nobody')
+    if (YB.App.defaultRole == 'nobody' && YB.App.role == 'nobody')
       $('#loginNav').show();
-    if (default_app_role == 'guest' && app_role == 'guest')
+    if (YB.App.defaultRole == 'guest' && YB.App.role == 'guest')
       $('#loginNav').show();
 
     //show logout or not?
     $('#logoutNav').hide();
-    if (default_app_role == 'nobody' && app_role != 'nobody')
+    if (YB.App.defaultRole == 'nobody' && YB.App.role != 'nobody')
       $('#logoutNav').show();
-    if (default_app_role == 'guest' && app_role == 'admin')
+    if (YB.App.defaultRole == 'guest' && YB.App.role == 'admin')
       $('#logoutNav').show();
   }
 
   function open_default_page() {
-    if (app_role != 'nobody') {
+    if (YB.App.role != 'nobody') {
       //check to see if we want a certain page
       if (window.location.hash) {
         let page = window.location.hash.substring(1);
-        if (page != "login" && page_list.includes(page))
+        if (page != "login" && YB.App.pageList.includes(page))
           YB.App.openPage(page);
         else
           YB.App.openPage("control");
@@ -3214,33 +1962,7 @@
       YB.App.openPage('login');
   }
 
-  // return true if 'first' is greater than or equal to 'second'
-  function compareVersions(first, second) {
 
-    var a = first.split('.');
-    var b = second.split('.');
-
-    for (var i = 0; i < a.length; ++i) {
-      a[i] = Number(a[i]);
-    }
-    for (var i = 0; i < b.length; ++i) {
-      b[i] = Number(b[i]);
-    }
-    if (a.length == 2) {
-      a[2] = 0;
-    }
-
-    if (a[0] > b[0]) return true;
-    if (a[0] < b[0]) return false;
-
-    if (a[1] > b[1]) return true;
-    if (a[1] < b[1]) return false;
-
-    if (a[2] > b[2]) return true;
-    if (a[2] < b[2]) return false;
-
-    return true;
-  }
 
 
 
@@ -3249,7 +1971,7 @@
 
   function getPreferredTheme() {
     //did we get one passed in? b&g, etc pass in like this.
-    let mode = getQueryVariable("mode");
+    let mode = YB.Util.getQueryVariable("mode");
     // YB.log(`mode: ${mode}`);
     if (mode !== null) {
       if (mode == "night")
@@ -3351,9 +2073,56 @@
 
   YB.App = {
     config: {},
-    start: function () {
-      setup_debug_terminal();
 
+    updateInterval: 500,
+    updateIntervalId: null,
+
+    username: null,
+    password: null,
+    role: "nobody",
+    defaultRole: "nobody",
+
+    currentPage: null,
+    pageList: ["control", "config", "stats", "graphs", "network", "settings", "system"],
+    pageReady: {
+      "control": false,
+      "config": false,
+      "stats": false,
+      "graphs": false,
+      "network": false,
+      "settings": false,
+      "system": true,
+      "login": true
+    },
+
+    pagePermissions: {
+      "nobody": [
+        "login"
+      ],
+      "admin": [
+        "control",
+        "config",
+        "stats",
+        "graphs",
+        "network",
+        "settings",
+        "system",
+        "login",
+        "logout"
+      ],
+      "guest": [
+        "control",
+        "stats",
+        "graphs",
+        "login",
+        "logout"
+      ]
+    },
+
+    currentlyPickingBrightness: false,
+
+    start: function () {
+      YB.log.setupDebugTerminal();
       YB.log("User Agent: " + navigator.userAgent);
       YB.log("Window Width: " + window.innerWidth);
       YB.log("Window Height: " + window.innerHeight);
@@ -3365,7 +2134,7 @@
       start_websocket();
 
       //check our connection status.
-      setInterval(check_connection_status, 100);
+      setInterval(YB.App.checkConnectionStatus, 100);
 
       //light/dark theme init.
       let theme = getPreferredTheme();
@@ -3379,51 +2148,51 @@
 
       //stop updating the UI when we are choosing
       $("#brightnessSlider").on('focus', function (e) {
-        currentlyPickingBrightness = true;
+        YB.App.currentlyPickingBrightness = true;
       });
 
       //stop updating the UI when we are choosing
       $("#brightnessSlider").on('touchstart', function (e) {
-        currentlyPickingBrightness = true;
+        YB.App.currentlyPickingBrightness = true;
       });
 
       //restart the UI updates when slider is closed
       $("#brightnessSlider").on("blur", function (e) {
-        currentlyPickingBrightness = false;
+        YB.App.currentlyPickingBrightness = false;
       });
 
       //restart the UI updates when slider is closed
       $("#brightnessSlider").on("touchend", function (e) {
-        currentlyPickingBrightness = false;
+        YB.App.currentlyPickingBrightness = false;
       });
     },
 
     openPage: function (page) {
       //YB.log(`opening ${page}`);
 
-      if (!page_permissions[app_role].includes(page)) {
-        YB.log(`${page} not allowed for ${app_role}`);
+      if (!YB.App.pagePermissions[YB.App.role].includes(page)) {
+        YB.log(`${page} not allowed for ${YB.App.role}`);
         return;
       }
 
-      current_page = page;
+      YB.App.currentPage = page;
 
       //request our stats.
       if (page == "stats")
-        get_stats_data();
+        YB.App.getStatsData();
 
       //request our historical graph data (if any)
       if (page == "graphs") {
-        get_graph_data();
+        YB.App.getGraphData();
       }
 
       //request our control updates.
       if (page == "control")
-        start_update_data();
+        YB.App.startUpdateData();
 
       //we need updates for adc config page.
       if (page == "config" && YB.App.config && YB.App.config.hasOwnProperty("adc"))
-        start_update_data();
+        YB.App.startUpdateData();
 
       //hide all pages.
       $("div.pageContainer").hide();
@@ -3445,12 +2214,12 @@
         Cookies.remove("username");
         Cookies.remove("password");
 
-        app_role = default_app_role;
+        YB.App.role = YB.App.defaultRole;
         update_role_ui();
 
         YB.client.logout();
 
-        if (app_role == "nobody")
+        if (YB.App.role == "nobody")
           YB.App.openPage("login");
         else
           YB.App.openPage("control");
@@ -3461,18 +2230,263 @@
         $(`#${page}Nav a`).addClass("active");
 
         //is our new page ready?
-        on_page_ready();
+        YB.App.onPageReady();
       }
     },
 
-
     isMFD: function () {
-      if (getQueryVariable("mfd_name") !== null)
+      if (YB.Util.getQueryVariable("mfd_name") !== null)
         return true;
 
       return false;
     },
 
+    BoardNameEdit: (name) => `
+      <div class="col-12">
+        <h4>Board Name</h4>
+        <input type="text" class="form-control" id="fBoardName" value="${name}">
+        <div class="valid-feedback">Saved!</div>
+        <div class="invalid-feedback">Must be 30 characters or less.</div>
+      </div>`,
+
+    AlertBox: (message, type) => `
+      <div>
+        <div class="mt-3 alert alert-${type} alert-dismissible" role="alert">
+          <div>${message}</div>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      </div>`,
+
+    loadConfigs: function () {
+      if (YB.App.role == "nobody")
+        return;
+
+      if (YB.App.role == "admin") {
+        YB.client.getNetworkConfig();
+        YB.client.getAppConfig();
+
+        YB.client.send({
+          "cmd": "get_full_config"
+        });
+
+        check_for_updates();
+      }
+
+      YB.client.getConfig();
+    },
+
+    checkConnectionStatus: function () {
+      if (YB.client) {
+        let status = YB.client.status();
+
+        //our connection status
+        $(".connection_status").hide();
+
+        if (status == "CONNECTING")
+          $("#connection_startup").show();
+        else if (status == "CONNECTED")
+          $("#connection_good").show();
+        else if (status == "RETRYING")
+          $("#connection_retrying").show();
+        else if (status == "FAILED")
+          $("#connection_failed").show();
+      }
+    },
+
+    showAlert: function (message, type = 'danger') {
+      //we only need one alert at a time.
+      $('#liveAlertPlaceholder').html(YB.App.AlertBox(message, type))
+
+      console.log(`YB.App.showAlert: ${message}`);
+
+      //make sure we can see it.
+      $('html').animate({
+        scrollTop: 0
+      },
+        750 //speed
+      );
+    },
+
+    showAdminAlert: function (message, type = 'danger') {
+      //we only need one alert at a time.
+      $('#adminAlertPlaceholder').html(YB.App.AlertBox(message, type))
+
+      console.log(`YB.App.showAdminAlert: ${message}`);
+
+      //make sure we can see it.
+      $('html').animate({
+        scrollTop: 0
+      },
+        750 //speed
+      );
+    },
+
+    addConfigurationDragDropHandler: function () {
+      const ta = document.getElementById('configurationTextarea');
+      const invalid = document.getElementById('invalidConfigurationJSON');
+      const openBtn = document.getElementById('configurationOpen');
+      const fileInput = document.getElementById('configurationFileInput');
+      const MAX_BYTES = 1024 * 1024 * 2; // 2 MB cap
+
+      if (!ta) return;
+
+      function showInvalid(msg) {
+        if (invalid) {
+          invalid.style.display = '';
+          invalid.textContent = msg || 'Invalid JSON found.';
+        }
+      }
+      function hideInvalid() {
+        if (invalid) invalid.style.display = 'none';
+      }
+
+      async function handleFile(file) {
+        if (!file) return;
+
+        if (file.size > MAX_BYTES) {
+          showInvalid(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max ${(MAX_BYTES / 1024 / 1024)} MB.`);
+          return;
+        }
+
+        const isProbablyText = file.type.startsWith('text/') || /\.json$/i.test(file.name);
+        if (!isProbablyText) {
+          showInvalid('Please choose a .json or text file.');
+          return;
+        }
+
+        try {
+          const raw = await file.text();
+          try {
+            const obj = JSON.parse(raw);
+            ta.value = JSON.stringify(obj, null, 2);
+            hideInvalid();
+          } catch {
+            ta.value = raw;
+            showInvalid('Loaded file, but JSON is invalid.');
+          }
+          ta.dispatchEvent(new Event('input', { bubbles: true }));
+        } catch (err) {
+          showInvalid('Failed to read file.');
+          console.error(err);
+        }
+      }
+
+      // Drag & drop visuals
+      ['dragenter', 'dragover'].forEach(evt =>
+        ta.addEventListener(evt, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          ta.classList.add('is-drop-target');
+        })
+      );
+      ['dragleave', 'dragend'].forEach(evt =>
+        ta.addEventListener(evt, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          ta.classList.remove('is-drop-target');
+        })
+      );
+
+      // Drop handler
+      ta.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        ta.classList.remove('is-drop-target');
+
+        const files = e.dataTransfer && e.dataTransfer.files;
+        if (files && files.length > 0) {
+          handleFile(files[0]);
+        }
+      });
+
+      // Open button triggers hidden input
+      if (openBtn && fileInput) {
+        openBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+          const file = e.target.files && e.target.files[0];
+          handleFile(file);
+          // allow re-selecting the same file later
+          e.target.value = '';
+        });
+      }
+    },
+
+    onPageReady: function () {
+      //is our page ready yet?
+      if (YB.App.pageReady[YB.App.currentPage]) {
+        $("#loading").hide();
+        $(`#${YB.App.currentPage}Page`).show();
+      }
+      else {
+        $("#loading").show();
+        setTimeout(YB.App.onPageReady, 100);
+      }
+    },
+
+    getStatsData: function () {
+      if (YB.client.isOpen() && (YB.App.role == 'guest' || YB.App.role == 'admin')) {
+        //YB.log("get_stats");
+
+        YB.client.getStats();
+
+        //keep loading it while we are here.
+        if (YB.App.currentPage == "stats")
+          setTimeout(YB.App.getStatsData, YB.App.updateInterval);
+      }
+    },
+
+    getGraphData: function () {
+      if (YB.client.isOpen() && (YB.App.role == 'guest' || YB.App.role == 'admin')) {
+        YB.client.send({
+          "cmd": "get_graph_data"
+        });
+      }
+    },
+
+    startUpdateData: function () {
+      if (!YB.App.updateIntervalId) {
+        //YB.log("starting updates");
+        YB.App.updateIntervalId = setInterval(YB.App.getUpdateData, YB.App.updateInterval);
+      } else {
+        //YB.log("updates already running");
+      }
+    },
+
+    getUpdateData: function () {
+      if (YB.client.isOpen() && (YB.App.role == 'guest' || YB.App.role == 'admin')) {
+        //YB.log("get_update");
+
+        YB.client.getUpdate();
+
+        //keep loading it while we are here.
+        if (YB.App.currentPage == "control" || YB.App.currentPage == "graphs" || (YB.App.currentPage == "config" && YB.App.config && YB.App.config.hasOwnProperty("adc")))
+          return;
+        else {
+          //YB.log("stopping updates");
+          clearInterval(YB.App.updateIntervalId);
+          YB.App.updateIntervalId = 0;
+        }
+      }
+    },
+
+    validateBoardName: function (e) {
+      let ele = e.target;
+      let value = ele.value;
+
+      if (value.length <= 0 || value.length > 30) {
+        $(ele).removeClass("is-valid");
+        $(ele).addClass("is-invalid");
+      } else {
+        $(ele).removeClass("is-invalid");
+        $(ele).addClass("is-valid");
+
+        //set our new board name!
+        YB.client.send({
+          "cmd": "set_boardname",
+          "value": value
+        });
+      }
+    },
   };
 
   // expose to global

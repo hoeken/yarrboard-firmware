@@ -13,6 +13,7 @@
 # v2.0.0 Release
 
 * channel edit UI rewrite
+    * wattage calculation should reside on firmware for pwmchannel.  clean js only
     * consolidate all the client side error checking to a single function per channel type
         * add overlaps for standard channel stuff - name, key, etc.
     * send entire channel config in one object (update in-memory object, then send it)

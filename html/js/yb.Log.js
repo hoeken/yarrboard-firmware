@@ -54,6 +54,40 @@
     //autoscroll
     if ($("#debug_log_autoscroll").is(':checked'))
       textarea.scrollTop = textarea.scrollHeight;
+  };
+
+  YB.log.consoleSendJSON = function (e) {
+    e.preventDefault(); // stop real submission
+
+    let text = $("#json_console_payload").val().trim();
+
+    try {
+      // Try to parse the JSON
+      let obj = JSON.parse(text);
+
+      // Clear the input if successful
+      $("#json_console_payload").val("");
+
+      YB.log("Sent: " + JSON.stringify(obj));
+
+      // Send the parsed object (convert back to string if YB.client.send needs text)
+      YB.client.send(obj);
+    } catch (err) {
+      YB.log("Invalid JSON: " + err);
+    }
+  }
+
+  YB.log.setupDebugTerminal = function (e) {
+    $("#json_console_form").on("submit", YB.log.consoleSendJSON);
+    $("#json_console_send").on("click", YB.log.consoleSendJSON);
+
+    $("#json_payload").on("keydown", function (e) {
+      var key = e.key || e.keyCode || e.which;
+      if (key === "Enter" || key === 13) {
+        e.preventDefault();
+        YB.log.consoleSendJSON();
+      }
+    });
   }
 
   // expose to global
