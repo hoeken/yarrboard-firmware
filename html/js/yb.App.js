@@ -490,7 +490,6 @@
   </div>
 </div>`;
 
-  let currentPWMSliderID = -1;
   let currentServoSliderID = -1;
   let currentlyPickingBrightness = false;
 
@@ -667,36 +666,7 @@
         else
           $("#last_reboot_reason").parent().hide();
 
-        //populate our pwm control table
-        $('#controlDiv').hide();
-        $('#pwmStatsDiv').hide();
-
         YB.ChannelRegistry.loadAllChannels(msg);
-
-        //do we have pwm channels?
-        if (msg.pwm) {
-          $('#pwmStatsTableBody').html("");
-          for (ch of msg.pwm) {
-            if (ch.enabled) {
-              $('#pwmStatsTableBody').append(`<tr id="pwmStats${ch.id}"></tr>`);
-              $('#pwmStats' + ch.id).append(`<td class="pwmName">${ch.name}</td>`);
-              $('#pwmStats' + ch.id).append(`<td id="pwmAmpHours${ch.id}" class="text-end"></td>`);
-              $('#pwmStats' + ch.id).append(`<td id="pwmWattHours${ch.id}" class="text-end"></td>`);
-              $('#pwmStats' + ch.id).append(`<td id="pwmOnCount${ch.id}" class="text-end"></td>`);
-              $('#pwmStats' + ch.id).append(`<td id="pwmTripCount${ch.id}" class="text-end"></td>`);
-            }
-          }
-
-          $('#pwmStatsTableBody').append(`<tr id="pwmStatsTotal"></tr>`);
-          $('#pwmStatsTotal').append(`<th class="pwmName">Total</th>`);
-          $('#pwmStatsTotal').append(`<th id="pwmAmpHoursTotal" class="text-end"></th>`);
-          $('#pwmStatsTotal').append(`<th id="pwmWattHoursTotal" class="text-end"></th>`);
-          $('#pwmStatsTotal').append(`<th id="pwmOnCountTotal" class="text-end"></th>`);
-          $('#pwmStatsTotal').append(`<th id="pwmTripCountTotal" class="text-end"></th>`);
-
-          $('#controlDiv').show();
-          $('#pwmStatsDiv').show();
-        }
 
         //do we have relay channels?
         $('#relayControlDiv').hide();
@@ -1399,6 +1369,8 @@
         if (!YB.App.config)
           return;
 
+        YB.ChannelRegistry.updateAllChannels(msg);
+
         //update our clock.
         // let mytime = Date.parse(msg.time);
         // if (mytime)
@@ -1411,7 +1383,7 @@
         //   $('#time').hide();
 
         // if (msg.uptime)
-        //   $("#uptime").html(secondsToDhms(Math.round(msg.uptime/1000000)));
+        //   $("#uptime").html(YB.Util.secondsToDhms(Math.round(msg.uptime/1000000)));
 
         //or maybe voltage
         // if (msg.bus_voltage)
@@ -1421,105 +1393,6 @@
         // }
         // else
         //   $('#bus_voltage_main').hide();
-
-        //our pwm info
-        if (msg.pwm) {
-          for (ch of msg.pwm) {
-            if (YB.App.config.pwm[ch.id - 1].enabled) {
-              if (ch.state == "ON") {
-                $('#pwmState' + ch.id).addClass("btn-success");
-                $('#pwmState' + ch.id).removeClass("btn-primary");
-                $('#pwmState' + ch.id).removeClass("btn-warning");
-                $('#pwmState' + ch.id).removeClass("btn-danger");
-                $('#pwmState' + ch.id).removeClass("btn-secondary");
-                $(`#pwmStatus${ch.id}`).hide();
-                $(`#pwmData${ch.id}`).show();
-              }
-              else if (ch.state == "TRIPPED") {
-                $('#pwmState' + ch.id).addClass("btn-warning");
-                $('#pwmState' + ch.id).removeClass("btn-primary");
-                $('#pwmState' + ch.id).removeClass("btn-success");
-                $('#pwmState' + ch.id).removeClass("btn-danger");
-                $('#pwmState' + ch.id).removeClass("btn-secondary");
-                $(`#pwmStatus${ch.id}`).html("SOFT TRIP");
-                $(`#pwmStatus${ch.id}`).show();
-                $(`#pwmData${ch.id}`).hide();
-              }
-              else if (ch.state == "BLOWN") {
-                $('#pwmState' + ch.id).addClass("btn-danger");
-                $('#pwmState' + ch.id).removeClass("btn-primary");
-                $('#pwmState' + ch.id).removeClass("btn-warning");
-                $('#pwmState' + ch.id).removeClass("btn-success");
-                $('#pwmState' + ch.id).removeClass("btn-secondary");
-                $(`#pwmStatus${ch.id}`).html("FUSE BLOWN");
-                $(`#pwmStatus${ch.id}`).show();
-                $(`#pwmData${ch.id}`).hide();
-              }
-              else if (ch.state == "BYPASSED") {
-                $('#pwmState' + ch.id).addClass("btn-primary");
-                $('#pwmState' + ch.id).removeClass("btn-danger");
-                $('#pwmState' + ch.id).removeClass("btn-warning");
-                $('#pwmState' + ch.id).removeClass("btn-success");
-                $('#pwmState' + ch.id).removeClass("btn-secondary");
-                $(`#pwmStatus${ch.id}`).html("BYPASSED");
-                $(`#pwmStatus${ch.id}`).show();
-                $(`#pwmData${ch.id}`).show();
-              }
-              else if (ch.state == "OFF") {
-                $('#pwmState' + ch.id).addClass("btn-secondary");
-                $('#pwmState' + ch.id).removeClass("btn-primary");
-                $('#pwmState' + ch.id).removeClass("btn-warning");
-                $('#pwmState' + ch.id).removeClass("btn-success");
-                $('#pwmState' + ch.id).removeClass("btn-danger");
-                $(`#pwmStatus${ch.id}`).hide();
-                $(`#pwmData${ch.id}`).hide();
-              }
-
-              //duty is a bit of a special case.
-              let duty = Math.round(ch.duty * 100);
-              if (YB.App.config.pwm[ch.id - 1].isDimmable) {
-                if (currentPWMSliderID != ch.id) {
-                  $('#pwmDutySlider' + ch.id).val(duty);
-                }
-              }
-
-              let voltage = ch.voltage.toFixed(1);
-              let voltageHTML = `${voltage}V`;
-              $('#pwmVoltage' + ch.id).html(voltageHTML);
-
-              let current = ch.current;
-              if (current < 1)
-                current = current.toFixed(2);
-              else
-                current = current.toFixed(1);
-              let currentHTML = `${current}A`;
-              $('#pwmCurrent' + ch.id).html(currentHTML);
-
-              let wattage = 0;
-              if (ch.voltage) {
-                wattage = ch.voltage * ch.current;
-                if (wattage > 10)
-                  wattage = Math.round(wattage);
-                else if (wattage > 1)
-                  wattage = wattage.toFixed(1);
-                else
-                  wattage = wattage.toFixed(2);
-                $('#pwmWattage' + ch.id).html(`${wattage}W`);
-              } else if (msg.bus_voltage) {
-                wattage = ch.current * msg.bus_voltage;
-                if (wattage > 10)
-                  wattage = Math.round(wattage);
-                else if (wattage > 1)
-                  wattage = wattage.toFixed(1);
-                else
-                  wattage = wattage.toFixed(2);
-                $('#pwmWattage' + ch.id).html(`${wattage}W`);
-              }
-              else
-                $('#pwmWattage' + ch.id).hide();
-            }
-          }
-        }
 
         //our relay info
         if (msg.relay) {
@@ -1591,23 +1464,23 @@
 
               //how should we format our value?
               if (YB.App.config.adc[ch.id - 1].displayDecimals >= 0) {
-                calibrated_value = formatNumber(calibrated_value, YB.App.config.adc[ch.id - 1].displayDecimals);
+                calibrated_value = YB.Util.formatNumber(calibrated_value, YB.App.config.adc[ch.id - 1].displayDecimals);
               } else {
                 switch (YB.App.config.adc[ch.id - 1].type) {
                   case "thermistor":
-                    calibrated_value = formatNumber(calibrated_value, 1);
+                    calibrated_value = YB.Util.formatNumber(calibrated_value, 1);
                     break;
                   case "raw":
                   case "4-20ma":
                   case "high_volt_divider":
                   case "low_volt_divider":
-                    calibrated_value = formatNumber(calibrated_value, 2);
+                    calibrated_value = YB.Util.formatNumber(calibrated_value, 2);
                     break;
                   case "ten_k_pullup":
-                    calibrated_value = formatNumber(calibrated_value, 0);
+                    calibrated_value = YB.Util.formatNumber(calibrated_value, 0);
                     break;
                   default:
-                    calibrated_value = formatNumber(calibrated_value, 3);
+                    calibrated_value = YB.Util.formatNumber(calibrated_value, 3);
                 }
               }
 
@@ -1807,17 +1680,17 @@
             show_brineomatic_result("#bomDePickleResult", msg.depickle_result);
 
           if (msg.next_flush_countdown > 0)
-            $("#bomNextFlushCountdownData").html(secondsToDhms(Math.round(msg.next_flush_countdown / 1000000)));
+            $("#bomNextFlushCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.next_flush_countdown / 1000000)));
           else
             $("#bomNextFlushCountdown").hide();
 
           if (msg.runtime_elapsed > 0)
-            $("#bomRuntimeElapsedData").html(secondsToDhms(Math.round(msg.runtime_elapsed / 1000000)));
+            $("#bomRuntimeElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.runtime_elapsed / 1000000)));
           else
             $("#bomRuntimeElapsed").hide();
 
           if (msg.finish_countdown > 0)
-            $("#bomFinishCountdownData").html(secondsToDhms(Math.round(msg.finish_countdown / 1000000)));
+            $("#bomFinishCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.finish_countdown / 1000000)));
           else
             $("#bomFinishCountdown").hide();
 
@@ -1830,12 +1703,12 @@
           }
 
           if (msg.flush_elapsed > 0)
-            $("#bomFlushElapsedData").html(secondsToDhms(Math.round(msg.flush_elapsed / 1000000)));
+            $("#bomFlushElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.flush_elapsed / 1000000)));
           else
             $("#bomFlushElapsed").hide();
 
           if (msg.flush_countdown > 0)
-            $("#bomFlushCountdownData").html(secondsToDhms(Math.round(msg.flush_countdown / 1000000)));
+            $("#bomFlushCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.flush_countdown / 1000000)));
           else
             $("#bomFlushCountdown").hide();
 
@@ -1848,12 +1721,12 @@
           }
 
           if (msg.pickle_elapsed > 0)
-            $("#bomPickleElapsedData").html(secondsToDhms(Math.round(msg.pickle_elapsed / 1000000)));
+            $("#bomPickleElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.pickle_elapsed / 1000000)));
           else
             $("#bomPickleElapsed").hide();
 
           if (msg.pickle_countdown > 0)
-            $("#bomPickleCountdownData").html(secondsToDhms(Math.round(msg.pickle_countdown / 1000000)));
+            $("#bomPickleCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.pickle_countdown / 1000000)));
           else
             $("#bomPickleCountdown").hide();
 
@@ -1866,12 +1739,12 @@
           }
 
           if (msg.depickle_elapsed > 0)
-            $("#bomDepickleElapsedData").html(secondsToDhms(Math.round(msg.depickle_elapsed / 1000000)));
+            $("#bomDepickleElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.depickle_elapsed / 1000000)));
           else
             $("#bomDepickleElapsed").hide();
 
           if (msg.depickle_countdown > 0)
-            $("#bomDepickleCountdownData").html(secondsToDhms(Math.round(msg.depickle_countdown / 1000000)));
+            $("#bomDepickleCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.depickle_countdown / 1000000)));
           else
             $("#bomDepickleCountdown").hide();
 
@@ -1984,7 +1857,9 @@
         if (!YB.App.config)
           return;
 
-        $("#uptime").html(secondsToDhms(Math.round(msg.uptime / 1000000)));
+        YB.ChannelRegistry.updateAllStats(msg);
+
+        $("#uptime").html(YB.Util.secondsToDhms(Math.round(msg.uptime / 1000000)));
         if (msg.fps)
           $("#fps").html(msg.fps.toLocaleString("en-US") + " hz");
 
@@ -2000,15 +1875,15 @@
         $("#websocket_client_count").html(msg.websocket_client_count);
 
         //raw data
-        $("#heap_size").html(formatBytes(msg.heap_size, 0));
-        $("#free_heap").html(formatBytes(msg.free_heap, 0));
-        $("#min_free_heap").html(formatBytes(msg.min_free_heap, 0));
-        $("#max_alloc_heap").html(formatBytes(msg.max_alloc_heap, 0));
+        $("#heap_size").html(YB.Util.formatBytes(msg.heap_size, 0));
+        $("#free_heap").html(YB.Util.formatBytes(msg.free_heap, 0));
+        $("#min_free_heap").html(YB.Util.formatBytes(msg.min_free_heap, 0));
+        $("#max_alloc_heap").html(YB.Util.formatBytes(msg.max_alloc_heap, 0));
 
         //our memory bar
         let memory_used = ((msg.heap_size / (msg.heap_size + msg.free_heap)) * 100).toFixed(2); //esp32-s3 512kb ram
         $(`#memory_usage div`).css("width", memory_used + "%");
-        $(`#memory_usage div`).html(formatBytes(msg.heap_size, 0));
+        $(`#memory_usage div`).html(YB.Util.formatBytes(msg.heap_size, 0));
         $(`#memory_usage`).attr("aria-valuenow", memory_used);
 
         //wifi rssi.
@@ -2040,32 +1915,6 @@
         else
           $("#fan_rpm_row").remove();
 
-        if (msg.pwm) {
-          let total_ah = 0.0;
-          let total_wh = 0.0;
-          let total_on_count = 0;
-          let total_trip_count = 0;
-
-          for (ch of msg.pwm) {
-            if (YB.App.config.pwm[ch.id - 1].enabled) {
-              $('#pwmAmpHours' + ch.id).html(formatAmpHours(ch.aH));
-              $('#pwmWattHours' + ch.id).html(formatWattHours(ch.wH));
-              $('#pwmOnCount' + ch.id).html(ch.state_change_count.toLocaleString("en-US"));
-              $('#pwmTripCount' + ch.id).html(ch.soft_fuse_trip_count.toLocaleString("en-US"));
-
-              total_ah += parseFloat(ch.aH);
-              total_wh += parseFloat(ch.wH);
-              total_on_count += parseInt(ch.state_change_count);
-              total_trip_count += parseInt(ch.soft_fuse_trip_count);
-            }
-          }
-
-          $('#pwmAmpHoursTotal').html(formatAmpHours(total_ah));
-          $('#pwmWattHoursTotal').html(formatWattHours(total_wh));
-          $('#pwmOnCountTotal').html(total_on_count.toLocaleString("en-US"));
-          $('#pwmTripCountTotal').html(total_trip_count.toLocaleString("en-US"));
-        }
-
         if (msg.brineomatic) {
           let totalVolume = Math.round(msg.total_volume);
           totalVolume = totalVolume.toLocaleString('en-US');
@@ -2077,8 +1926,7 @@
         }
 
         page_ready.stats = true;
-      }
-      else if (msg.msg == "graph_data") {
+      } else if (msg.msg == "graph_data") {
         if (current_page == "graphs") {
           timeData = [timeData[0]];
           // Replace the rest of timeData with incremented timestamps
@@ -2668,10 +2516,6 @@
     }, true);
   }
 
-  function toggle_duty_cycle(id) {
-    $(`#pwmDutySliderRow${id}`).toggle();
-  }
-
   function on_page_ready() {
     //is our page ready yet?
     if (page_ready[current_page]) {
@@ -2766,10 +2610,6 @@
         "angle": value
       });
     }
-  }
-
-  function map_value(value, fromLow, fromHigh, toLow, toHigh) {
-    return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
   }
 
   function set_brightness(e) {
@@ -3374,93 +3214,6 @@
       YB.App.openPage('login');
   }
 
-  function secondsToDhms(seconds) {
-    seconds = Number(seconds);
-    var d = Math.floor(seconds / (3600 * 24));
-    var h = Math.floor(seconds % (3600 * 24) / 3600);
-    var m = Math.floor(seconds % 3600 / 60);
-    var s = Math.floor(seconds % 60);
-
-    var dDisplay = d > 0 ? d + (d == 1 ? " day, " : " days, ") : "";
-    var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
-    var mDisplay = (m > 0 && d == 0) ? m + (m == 1 ? " minute, " : " minutes, ") : "";
-    var sDisplay = (s > 0 && d == 0 && h == 0 && m == 0) ? s + (s == 1 ? " second" : " seconds") : "";
-
-    return (dDisplay + hDisplay + mDisplay + sDisplay).replace(/,\s*$/, "");
-  }
-
-  function formatAmpHours(aH) {
-    //low amp hours?
-    if (aH < 10)
-      return aH.toFixed(3) + "&nbsp;Ah";
-    else if (aH < 100)
-      return aH.toFixed(2) + "&nbsp;Ah";
-    else if (aH < 1000)
-      return aH.toFixed(1) + "&nbsp;Ah";
-
-    //okay, now its kilo time
-    aH = aH / 1000;
-    if (aH < 10)
-      return aH.toFixed(3) + "&nbsp;kAh";
-    else if (aH < 100)
-      return aH.toFixed(2) + "&nbsp;kAh";
-    else if (aH < 1000)
-      return aH.toFixed(1) + "&nbsp;kAh";
-
-    //okay, now its mega time
-    aH = aH / 1000;
-    if (aH < 10)
-      return aH.toFixed(3) + "&nbsp;MAh";
-    else if (aH < 100)
-      return aH.toFixed(2) + "&nbsp;MAh";
-    else if (aH < 1000)
-      return aH.toFixed(1) + "&nbsp;MAh";
-    else
-      return Math.round(aH) + "&nbsp;MAh";
-  }
-
-  function formatWattHours(wH) {
-    //low watt hours?
-    if (wH < 10)
-      return wH.toFixed(3) + "&nbsp;Wh";
-    else if (wH < 100)
-      return wH.toFixed(2) + "&nbsp;Wh";
-    else if (wH < 1000)
-      return wH.toFixed(1) + "&nbsp;Wh";
-
-    //okay, now its kilo time
-    wH = wH / 1000;
-    if (wH < 10)
-      return wH.toFixed(3) + "&nbsp;kWh";
-    else if (wH < 100)
-      return wH.toFixed(2) + "&nbsp;kWh";
-    else if (wH < 1000)
-      return wH.toFixed(1) + "&nbsp;kWh";
-
-    //okay, now its mega time
-    wH = wH / 1000;
-    if (wH < 10)
-      return wH.toFixed(3) + "&nbsp;MWh";
-    else if (wH < 100)
-      return wH.toFixed(2) + "&nbsp;MWh";
-    else if (wH < 1000)
-      return wH.toFixed(1) + "&nbsp;MWh";
-    else
-      return Math.round(wH) + "&nbsp;MWh";
-  }
-
-  function formatBytes(bytes, decimals = 1) {
-    if (!+bytes) return '0 Bytes'
-
-    const k = 1024
-    const dm = decimals < 0 ? 0 : decimals
-    const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
-
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
-  }
-
   // return true if 'first' is greater than or equal to 'second'
   function compareVersions(first, second) {
 
@@ -3489,59 +3242,7 @@
     return true;
   }
 
-  YB.log = function (message) {
 
-    //real messages only
-    message = message.trim();
-    if (!message.length)
-      return;
-
-    // Create a new Date object
-    const currentDate = new Date();
-
-    // Get the parts of the date and time
-    const year = currentDate.getFullYear();
-    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-    const day = String(currentDate.getDate()).padStart(2, '0');
-    const hours = String(currentDate.getHours()).padStart(2, '0');
-    const minutes = String(currentDate.getMinutes()).padStart(2, '0');
-    const seconds = String(currentDate.getSeconds()).padStart(2, '0');
-    const milliseconds = String(currentDate.getMilliseconds()).padStart(3, '0');
-
-    // Create the formatted timestamp
-    const formattedTimestamp = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}]`;
-
-    //standard log.
-    console.log(`${formattedTimestamp} ${message}`);
-
-    //put it in our textarea - useful for debugging on non-computer interfaces
-    let textarea = document.getElementById("debug_log_text");
-
-    //append our message
-    if (textarea.value)
-      textarea.value += "\n";
-    textarea.value += `${formattedTimestamp} ${message}`;
-
-    //autoscroll
-    if ($("#debug_log_autoscroll").is(':checked'))
-      textarea.scrollTop = textarea.scrollHeight;
-  }
-
-  window.onerror = function (errorMsg, url, lineNumber) {
-    YB.log(`Error: ${errorMsg} on ${url} line ${lineNumber}`);
-    return false;
-  }
-
-  window.addEventListener("error", function (e) {
-    YB.log(`Error Listener: ${e.error.message}`);
-    YB.log(e.error.stack);
-    return false;
-  });
-
-  window.addEventListener('unhandledrejection', function (e) {
-    YB.log(`Unhandled Rejection: ${e.reason.message}`);
-    return false;
-  });
 
   function getStoredTheme() { localStorage.getItem('theme'); }
   function setStoredTheme() { localStorage.setItem('theme', theme); }
@@ -3598,49 +3299,6 @@
     if (width <= 1200) return 'lg'
     if (width <= 1400) return 'xl'
     return 'xxl'
-  }
-
-  // $(document).ready(function () {
-  //   let viewport = getViewport()
-  //   let debounce
-  //   $(window).resize(() => {
-  //     debounce = setTimeout(() => {
-  //       const currentViewport = getViewport()
-  //       if (currentViewport !== viewport) {
-  //         viewport = currentViewport
-  //         $(window).trigger('newViewport', viewport)
-  //       }
-  //     }, 500)
-  //   })
-  //   $(window).on('newViewport', (viewport) => {
-  //     // do something with viewport
-  //   })
-  //   // run when page loads
-  //   $(window).trigger('newViewport', viewport)
-  // }
-
-  /* <option value="light">Light</option>
-  <option value="motor">Motor</option>
-  <option value="water_pump">Water Pump</option>
-  <option value="fuel_pump">Fuel Pump</option>
-  <option value="fan">Fan</option>
-  <option value="solenoid">Solenoid</option>
-  <option value="fridge">Refridgerator</option>
-  <option value="freezer">Freezer</option>
-  <option value="charger">Charger</option>
-  <option value="electronics">Electronics</option>
-  <option value="other">Other</option> */
-
-  function formatNumber(num, decimals) {
-    return Number(num).toLocaleString("en-US", {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
-    });
-  }
-
-  function pwm_get_type_image(ch) {
-    if (ch.type == "")
-      return;
   }
 
   function isCanvasSupported() {

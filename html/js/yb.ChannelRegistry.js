@@ -100,7 +100,9 @@
         $(`#${ctype}Cards`).html("");
         $(`#${ctype}Config`).hide();
         $(`#${ctype}ConfigForm`).html("");
-
+        $(`#${ctype}#StatsDiv`).hide();
+        $(`#${ctype}StatsTableBody`).html("");
+        $('#controlDiv').hide();
 
         //handle each individual channels setup
         for (var channel_config of cfg[ctype]) {
@@ -126,6 +128,8 @@
 
         //show our containers now.
         $(`#${ctype}Config`).show();
+        $(`#${ctype}#StatsDiv`).show();
+        $('#controlDiv').show();
       }
     },
 
@@ -135,20 +139,27 @@
           continue;
 
         for (chdata of update[ctype]) {
-          let ch = this.getChannelById(chdata.id);
+          let ch = this.getChannelById(chdata.id, ctype);
           ch.loadData(chdata);
 
           if (ch.updateControlUI)
             ch.updateControlUI();
-          if (ch.updateEditUI)
-            ch.updateEditUI();
-          if (ch.updateStatsUI)
-            ch.updateStatsUI();
-          if (ch.updateGraphsUI)
-            ch.updateGraphsUI();
         }
       }
     },
+
+    updateAllStats: function (update) {
+      for (var ctype of Object.keys(this.channels)) {
+        if (!update.hasOwnProperty(ctype))
+          continue;
+
+        for (chdata of update[ctype]) {
+          let ch = this.getChannelById(chdata.id, ctype);
+          ch.updateStatsUI(chdata);
+        }
+      }
+    },
+
   };
 
   // expose to global

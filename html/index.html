@@ -22,7 +22,7 @@
     <script src="c3.min.js"></script>
     <script src="libs/validate.min.js"></script>
 
-    <script src="yarrboard.js"></script>
+    <script src="js/yb.App.js"></script>
     <script src="js/yb.ChannelRegistry.js"></script>
     <script src="js/channels/yb.BaseChannel.js"></script>
     <!-- <script src="js/channels/yb.ADCChannel.js"></script> -->
@@ -31,7 +31,8 @@
     <!-- <script src="js/channels/yb.RelayChannel.js"></script> -->
     <!-- <script src="js/channels/yb.ServoChannel.js"></script> -->
     <!-- <script src="js/channels/yb.StepperChannel.js"></script> -->
-
+    <script src="js/yb.Log.js"></script>
+    <script src="js/yb.Util.js"></script>
 </head>
 
 <body>
@@ -790,6 +791,15 @@
                                         </tr>
                                     </thead>
                                     <tbody id="pwmStatsTableBody" class="table-group-divider"></tbody>
+                                    <tfoot>
+                                        <tr id="pwmStatsTotal"></tr>
+                                        <th class="pwmName">Total</th>
+                                        <th id="pwmAmpHoursTotal" class="text-end"></th>
+                                        <th id="pwmWattHoursTotal" class="text-end"></th>
+                                        <th id="pwmOnCountTotal" class="text-end"></th>
+                                        <th id="pwmTripCountTotal" class="text-end"></th>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                             <div id="bomStatsDiv">

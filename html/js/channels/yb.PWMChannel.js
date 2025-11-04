@@ -8,6 +8,8 @@
   PWMChannel.prototype = Object.create(YB.BaseChannel.prototype);
   PWMChannel.prototype.constructor = PWMChannel;
 
+  PWMChannel.currentSliderID = -1;
+
   PWMChannel.typeImages = {
     "light":
       `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-lightbulb" viewBox="0 0 16 16">
@@ -178,24 +180,24 @@
       $('#pwmDutySlider' + this.id).on('focus', function (e) {
         let ele = e.target;
         let id = ele.id.match(/\d+/)[0];
-        currentPWMSliderID = id;
+        PWMChannel.currentSliderID = id;
       });
 
       //stop updating the UI when we are choosing a duty
       $('#pwmDutySlider' + this.id).on('touchstart', function (e) {
         let ele = e.target;
         let id = ele.id.match(/\d+/)[0];
-        currentPWMSliderID = id;
+        PWMChannel.currentSliderID = id;
       });
 
       //restart the UI updates when slider is closed
       $('#pwmDutySlider' + this.id).on("blur", function (e) {
-        currentPWMSliderID = -1;
+        PWMChannel.currentSliderID = -1;
       });
 
       //restart the UI updates when slider is closed
       $('#pwmDutySlider' + this.id).on("touchend", function (e) {
-        currentPWMSliderID = -1;
+        PWMChannel.currentSliderID = -1;
       });
     }
   };
@@ -326,6 +328,139 @@
   PWMChannel.prototype.toggleState = function () {
     YB.client.togglePWMChannel(this.id, YB.App.config.hostname, true);
   }
+
+  PWMChannel.prototype.updateControlUI = function () {
+    if (this.enabled) {
+      if (this.data.state == "ON") {
+        $('#pwmState' + this.id).addClass("btn-success");
+        $('#pwmState' + this.id).removeClass("btn-primary");
+        $('#pwmState' + this.id).removeClass("btn-warning");
+        $('#pwmState' + this.id).removeClass("btn-danger");
+        $('#pwmState' + this.id).removeClass("btn-secondary");
+        $(`#pwmStatus${this.id}`).hide();
+        $(`#pwmData${this.id}`).show();
+      }
+      else if (this.data.state == "TRIPPED") {
+        $('#pwmState' + this.id).addClass("btn-warning");
+        $('#pwmState' + this.id).removeClass("btn-primary");
+        $('#pwmState' + this.id).removeClass("btn-success");
+        $('#pwmState' + this.id).removeClass("btn-danger");
+        $('#pwmState' + this.id).removeClass("btn-secondary");
+        $(`#pwmStatus${this.id}`).html("SOFT TRIP");
+        $(`#pwmStatus${this.id}`).show();
+        $(`#pwmData${this.id}`).hide();
+      }
+      else if (this.data.state == "BLOWN") {
+        $('#pwmState' + this.id).addClass("btn-danger");
+        $('#pwmState' + this.id).removeClass("btn-primary");
+        $('#pwmState' + this.id).removeClass("btn-warning");
+        $('#pwmState' + this.id).removeClass("btn-success");
+        $('#pwmState' + this.id).removeClass("btn-secondary");
+        $(`#pwmStatus${this.id}`).html("FUSE BLOWN");
+        $(`#pwmStatus${this.id}`).show();
+        $(`#pwmData${this.id}`).hide();
+      }
+      else if (this.data.state == "BYPASSED") {
+        $('#pwmState' + this.id).addClass("btn-primary");
+        $('#pwmState' + this.id).removeClass("btn-danger");
+        $('#pwmState' + this.id).removeClass("btn-warning");
+        $('#pwmState' + this.id).removeClass("btn-success");
+        $('#pwmState' + this.id).removeClass("btn-secondary");
+        $(`#pwmStatus${this.id}`).html("BYPASSED");
+        $(`#pwmStatus${this.id}`).show();
+        $(`#pwmData${this.id}`).show();
+      }
+      else if (this.data.state == "OFF") {
+        $('#pwmState' + this.id).addClass("btn-secondary");
+        $('#pwmState' + this.id).removeClass("btn-primary");
+        $('#pwmState' + this.id).removeClass("btn-warning");
+        $('#pwmState' + this.id).removeClass("btn-success");
+        $('#pwmState' + this.id).removeClass("btn-danger");
+        $(`#pwmStatus${this.id}`).hide();
+        $(`#pwmData${this.id}`).hide();
+      }
+
+      //duty is a bit of a special case.
+      let duty = Math.round(this.data.duty * 100);
+      if (this.cfg.isDimmable) {
+        if (PWMChannel.currentSliderID != this.id) {
+          $('#pwmDutySlider' + this.id).val(duty);
+        }
+      }
+
+      let voltage = this.data.voltage.toFixed(1);
+      let voltageHTML = `${voltage}V`;
+      $('#pwmVoltage' + this.id).html(voltageHTML);
+
+      let current = this.data.current;
+      if (current < 1)
+        current = current.toFixed(2);
+      else
+        current = current.toFixed(1);
+      let currentHTML = `${current}A`;
+      $('#pwmCurrent' + this.id).html(currentHTML);
+
+      let wattage = 0;
+      if (this.data.voltage) {
+        wattage = this.data.voltage * this.data.current;
+        if (wattage > 10)
+          wattage = Math.round(wattage);
+        else if (wattage > 1)
+          wattage = wattage.toFixed(1);
+        else
+          wattage = wattage.toFixed(2);
+        $('#pwmWattage' + this.id).html(`${wattage}W`);
+      } else if (msg.bus_voltage) {
+        wattage = this.data.current * msg.bus_voltage;
+        if (wattage > 10)
+          wattage = Math.round(wattage);
+        else if (wattage > 1)
+          wattage = wattage.toFixed(1);
+        else
+          wattage = wattage.toFixed(2);
+        $('#pwmWattage' + this.id).html(`${wattage}W`);
+      }
+      else
+        $('#pwmWattage' + this.id).hide();
+    }
+  };
+
+  PWMChannel.prototype.generateStatsUI = function () {
+    if (this.enabled) {
+      $('#pwmStatsTableBody').append(`
+        <tr id="pwmStats${this.id}">
+          <td class="pwmName" > ${this.name}</td >
+          <td id="pwmAmpHours${this.id}" class= "text-end"></td >
+          <td id="pwmWattHours${this.id}" class= "text-end"></td >
+          <td id="pwmOnCount${this.id}" class= "text-end"></td >
+          <td id="pwmTripCount${this.id}" class= "text-end"></td >
+        </tr>`);
+    }
+  };
+
+  PWMChannel.prototype.updateStatsUI = function (stats) {
+    let total_ah = 0.0;
+    let total_wh = 0.0;
+    let total_on_count = 0;
+    let total_trip_count = 0;
+
+    if (this.enabled) {
+      $('#pwmAmpHours' + this.id).html(YB.Util.formatAmpHours(stats.aH));
+      $('#pwmWattHours' + this.id).html(YB.Util.formatAmpHours(stats.wH));
+      $('#pwmOnCount' + this.id).html(stats.state_change_count.toLocaleString("en-US"));
+      $('#pwmTripCount' + this.id).html(stats.soft_fuse_trip_count.toLocaleString("en-US"));
+
+      total_ah += parseFloat(stats.aH);
+      total_wh += parseFloat(stats.wH);
+      total_on_count += parseInt(stats.state_change_count);
+      total_trip_count += parseInt(stats.soft_fuse_trip_count);
+    }
+
+    $('#pwmAmpHoursTotal').html(YB.Util.formatAmpHours(total_ah));
+    $('#pwmWattHoursTotal').html(YB.Util.formatAmpHours(total_wh));
+    $('#pwmOnCountTotal').html(total_on_count.toLocaleString("en-US"));
+    $('#pwmTripCountTotal').html(total_trip_count.toLocaleString("en-US"));
+  };
 
   YB.PWMChannel = PWMChannel;
   YB.ChannelRegistry.registerChannelType("pwm", YB.PWMChannel)
