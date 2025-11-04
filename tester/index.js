@@ -10,7 +10,7 @@ program
     .option('-h, --host <value>', 'Yarrboard hostname', 'yarrboard.local')
     .option('-u, --user <value>', 'Username', 'admin')
     .option('-p, --pass <value>', 'Password', 'admin')
-    .option('-c, --channels <value...>', 'Channel IDs', range(0,7))
+    .option('-c, --channels <value...>', 'Channel IDs', range(1, 8))
     .option('-d, --delay <value>', 'Delay in ms between commands', 25)
     .option('-l, --login', 'Enable login', true)
     .option('--rgb', 'RGB Fade Channel')
@@ -25,25 +25,25 @@ const yb = new YarrboardClient(options.host, options.user, options.pass, options
 
 function main() {
     yb.start();
-    
+
     setTimeout(yb.printMessageStats.bind(yb), 1);
     twerkIt();
 }
 
 function waitUntilOpen() {
     return new Promise(async (resolve) => {
-      // Check if yb.isOpen() is already true
-      if (yb.isOpen()) {
-        resolve();
-      } else {
-        // Set up a loop to periodically check yb.isOpen()
-        const intervalId = setInterval(() => {
-          if (yb.isOpen()) {
-            clearInterval(intervalId);
+        // Check if yb.isOpen() is already true
+        if (yb.isOpen()) {
             resolve();
-          }
-        }, 100); // You can adjust the interval as needed
-      }
+        } else {
+            // Set up a loop to periodically check yb.isOpen()
+            const intervalId = setInterval(() => {
+                if (yb.isOpen()) {
+                    clearInterval(intervalId);
+                    resolve();
+                }
+            }, 100); // You can adjust the interval as needed
+        }
     });
 }
 
@@ -61,38 +61,30 @@ async function testFadeInterrupt() {
 async function twerkIt() {
     await waitUntilOpen();
 
-    if (options.rgb)
-    {
+    if (options.rgb) {
         console.log(`RGB Fade on channel ${options.channels} / delay ${options.delay}ms`)
         rgbFade(options.channels, options.delay);
     }
-    else if (options.toggle)
-    {
+    else if (options.toggle) {
         console.log(`Pin Toggle on channel ${options.channels} / delay ${options.delay}ms`)
-        setTimeout(function (){togglePin(options.channels, options.delay)}, 50); 
+        setTimeout(function () { togglePin(options.channels, options.delay) }, 50);
     }
-    else if (options.fade)
-    {
+    else if (options.fade) {
         console.log(`Hardware Fade on channel ${options.channels} / delay ${options.delay}ms`)
-        setTimeout(function (){fadePinHardware(options.channels, options.delay)}, 50); 
-    }    
-    
+        setTimeout(function () { fadePinHardware(options.channels, options.delay) }, 50);
+    }
+
     if (options.update)
         yb.startUpdatePoller(options.update);
 }
 
 async function togglePin(channels, d = 10) {
-    while (true)
-    {
-        for (let j=0; j<channels.length; j++)
-        {
+    while (true) {
+        for (let j = 0; j < channels.length; j++) {
             let channel = channels[j];
 
-            yb.setPWMChannelDuty(channel, 1);
-            while (true) {
-                yb.togglePWMChannel(channel, options.host.split(".")[0]);
-                await delay(d)
-            }        
+            yb.togglePWMChannel(channel, options.host.split(".")[0]);
+            await delay(d)
         }
     }
 }
@@ -101,10 +93,8 @@ async function rgbFade(channels, d = 25) {
     let steps = 25;
     let max_duty = 1;
 
-    while (true)
-    {
-        for (let j=0; j<channels.length; j++)
-        {
+    while (true) {
+        for (let j = 0; j < channels.length; j++) {
             let channel = channels[j];
 
             for (i = 0; i <= steps; i++) {
@@ -112,37 +102,37 @@ async function rgbFade(channels, d = 25) {
                 yb.setRGB(channel, duty, 0, 0, false);
                 await delay(d)
             }
-        
+
             for (i = steps; i >= 0; i--) {
                 let duty = (i / steps) * max_duty;
                 yb.setRGB(channel, duty, 0, 0, false);
                 await delay(d)
             }
-        
+
             for (i = 0; i <= steps; i++) {
                 let duty = (i / steps) * max_duty;
                 yb.setRGB(channel, 0, duty, 0, false);
                 await delay(d)
             }
-        
+
             for (i = steps; i >= 0; i--) {
                 let duty = (i / steps) * max_duty;
                 yb.setRGB(channel, 0, duty, 0, false);
                 await delay(d)
             }
-        
+
             for (i = 0; i <= steps; i++) {
                 let duty = (i / steps) * max_duty;
                 yb.setRGB(channel, 0, 0, duty, false);
                 await delay(d)
             }
-        
+
             for (i = steps; i >= 0; i--) {
                 let duty = (i / steps) * max_duty;
                 yb.setRGB(channel, 0, 0, duty, false);
                 await delay(d)
             }
-        
+
             yb.setRGB(channel, 0, 0, 0);
             await delay(d);
         }
@@ -154,8 +144,7 @@ async function fadePinHardware(channels, d = 250, knee = 50) {
         knee = d / 2;
 
     while (true) {
-        for (let j=0; j<channels.length; j++)
-        {
+        for (let j = 0; j < channels.length; j++) {
             let channel = channels[j];
 
             //yb.log(`fading to 1 in ${d}ms`);
