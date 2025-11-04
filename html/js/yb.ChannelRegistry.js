@@ -1,6 +1,6 @@
-(function (global) { //private scope
-
-  var YB = typeof YB !== "undefined" ? YB : {};
+(function (global) { // private scope
+  // work in the global YB namespace.
+  var YB = global.YB || {};
 
   // Channel registry + factory under YB
   YB.ChannelRegistry = {
@@ -23,24 +23,15 @@
 
     // Create a channel instance from a config object
     channelFromConfig: function (cfg, type) {
-      if (!cfg) {
+      if (!cfg)
         throw new Error('Invalid channel config.');
-      }
 
       var ctor = this.channelConstructors[type];
-      if (!ctor) {
+      if (!ctor)
         throw new Error("Unknown channel type: " + type);
-      }
 
       var instance = new ctor();
-
-      // Prefer instance method if available
-      if (typeof instance.parseConfig === "function") {
-        instance.parseConfig(cfg);
-      } else if (typeof ctor.parseConfig === "function") {
-        // Fallback if you keep a static parseConfig on the constructor
-        ctor.parseConfig(cfg, instance);
-      }
+      instance.loadConfig(cfg);
 
       this.addChannel(instance);
 
@@ -48,17 +39,14 @@
     },
 
     addChannel(instance) {
-      if (typeof instance.channelType !== "string" || !instance.channelType.length) {
+      if (typeof instance.channelType !== "string" || !instance.channelType.length)
         throw new Error("Invalid channel type.");
-      }
-      if (!instance) {
+      if (!instance)
         throw new Error("Channel instance is required.");
-      }
 
       // Ensure array exists
-      if (!this.channels.hasOwnProperty(instance.channelType)) {
+      if (!this.channels.hasOwnProperty(instance.channelType))
         this.channels[instance.channelType] = [];
-      }
 
       // Add it
       this.channels[instance.channelType].push(instance);
@@ -67,74 +55,82 @@
     },
 
     getChannelById(id, type) {
-      if (typeof type !== "string" || !type.length) {
+      if (typeof type !== "string" || !type.length)
         throw new Error("Type must be a non-empty string.");
-      }
-      if (typeof id !== "number") {
+      if (typeof id !== "number")
         throw new Error("ID must be a number.");
-      }
 
       var arr = this.channels[type];
-      if (!arr || !arr.length) {
+      if (!arr || !arr.length)
         return null;
-      }
 
       for (var i = 0; i < arr.length; i++) {
-        if (arr[i].id === id) {
+        if (arr[i].id === id)
           return arr[i];
-        }
       }
 
       return null;
     },
 
     getChannelByKey(key, type) {
-      if (typeof type !== "string" || !type.length) {
+      if (typeof type !== "string" || !type.length)
         throw new Error("Type must be a non-empty string.");
-      }
-      if (typeof key !== "string" || !key.length) {
+      if (typeof key !== "string" || !key.length)
         throw new Error("Key must be a non-empty string.");
-      }
 
       var arr = this.channels[type];
-      if (!arr || !arr.length) {
+      if (!arr || !arr.length)
         return null;
-      }
 
       for (var i = 0; i < arr.length; i++) {
-        if (arr[i].key === key) {
+        if (arr[i].key === key)
           return arr[i];
-        }
       }
 
       return null;
     },
 
     loadAllChannels: function (cfg) {
-      for (var ctype of this.channelConstructors) {
+      //loop through all of our register channel types and see if we got config data
+      for (var ctype of Object.keys(this.channelConstructors)) {
         if (!cfg.hasOwnProperty(ctype))
           continue;
 
-        for (var channel_config of list) {
+        //initialize our containers
+        $(`#${ctype}Cards`).html("");
+        $(`#${ctype}Config`).hide();
+        $(`#${ctype}ConfigForm`).html("");
+
+
+        //handle each individual channels setup
+        for (var channel_config of cfg[ctype]) {
           let ch = this.channelFromConfig(channel_config, ctype);
 
-          ch.generateControlUI();
-          ch.setupControlUI();
+          if (ch.enabled) {
+            let ui_card = ch.generateControlUI();
+            $(`#${ctype}Cards`).append(ui_card);
+            ch.setupControlUI();
 
-          ch.generateEditUI();
+            ch.generateStatsUI();
+            ch.setupStatsUI();
+
+            ch.generateGraphsUI();
+            ch.setupGraphsUI();
+          }
+
+          //we always want edit.
+          let edit_card = ch.generateEditUI();
+          $(`#${ctype}ConfigForm`).append(edit_card);
           ch.setupEditUI();
-
-          ch.generateStatsUI();
-          ch.setupStatsUI();
-
-          ch.generateGraphsUI();
-          ch.setupGraphsUI();
         }
+
+        //show our containers now.
+        $(`#${ctype}Config`).show();
       }
     },
 
     updateAllChannels: function (update) {
-      for (var ctype of this.channels) {
+      for (var ctype of Object.keys(this.channels)) {
         if (!update.hasOwnProperty(ctype))
           continue;
 
@@ -154,4 +150,8 @@
       }
     },
   };
-})(this); //private scope
+
+  // expose to global
+  global.YB = YB;
+
+})(this);

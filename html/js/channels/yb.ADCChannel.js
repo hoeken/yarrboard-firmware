@@ -1,7 +1,8 @@
-(function (global) { //private scope
+(function (global) { // private scope
+  // work in the global YB namespace.
+  var YB = global.YB || {};
 
-  var YB = typeof YB !== "undefined" ? YB : {};
-
+  // ----- ADCChannel -----
   function ADCChannel() {
     YB.BaseChannel.call(this, "adc");
   }
@@ -9,8 +10,11 @@
   ADCChannel.prototype.constructor = ADCChannel;
 
   ADCChannel.prototype.getConfigSchema = function () {
-    let schema = YB.BaseChannel.prototype.getConfigSchema.call(this);
+    // copy base schema to avoid mutating the base literal
+    var base = YB.BaseChannel.prototype.getConfigSchema.call(this);
+    var schema = Object.assign({}, base);
 
+    // Channel-specific fields
     schema.type = {
       presence: { allowEmpty: false },
       type: "string",
@@ -46,9 +50,13 @@
     };
 
     return schema;
-  }
+  };
 
+  // Export
   YB.ADCChannel = ADCChannel;
+
   YB.ChannelRegistry.registerChannelType("adc", YB.ADCChannel)
 
-})(this); //private scope
+  // expose to global
+  global.YB = YB;
+})(this);

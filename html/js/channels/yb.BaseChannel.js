@@ -1,6 +1,6 @@
-(function (global) { //private scope
-
-  var YB = typeof YB !== "undefined" ? YB : {};
+(function (global) { // private scope
+  // work in the global YB namespace.
+  var YB = global.YB || {};
 
   // Base class for all channels
   function BaseChannel(type) {
@@ -16,17 +16,14 @@
     return {
       id: {
         presence: { allowEmpty: false },
-        numericality: {
-          onlyInteger: true,
-          greaterThan: 0
-        }
+        numericality: { onlyInteger: true, greaterThan: 0 }
       },
-      name: {
+      key: {
         presence: { allowEmpty: false },
         type: "string",
         length: { minimum: 1, maximum: 63 }
       },
-      key: {
+      name: {
         presence: { allowEmpty: false },
         type: "string",
         length: { minimum: 1, maximum: 63 }
@@ -53,68 +50,114 @@
   };
 
   BaseChannel.prototype.loadConfig = function (cfg) {
-    let errors = this.validateConfig(cfg);
+    var errors = this.validateConfig(cfg);
     if (!errors) {
-      this.cfg = cfg;
+      // keep existing keys unless overwritten
+      this.cfg = Object.assign({}, this.cfg, cfg);
+
+      this.id = cfg.id;
+      this.key = cfg.key;
+      this.enabled = cfg.enabled;
+      this.name = cfg.name;
     }
+    return errors;
   };
 
+  // validate and set a single config key
   BaseChannel.prototype.setConfigEntry = function (key, value) {
-    let schema = this.getConfigSchema();
-    let errors = validate(this.cfg, schema[key]);
-    if (!errors)
-      this.cfg[key] = value;
+    var schema = this.getConfigSchema()[key];
+    if (!schema) return { [key]: ["unknown config key"] };
+
+    // validate.js has validate.single(value, constraints)
+    var errors = validate.single(value, schema);
+    if (!errors) this.cfg[key] = value;
     return errors;
   };
 
   BaseChannel.prototype.saveConfig = function () {
-    let errors = this.validateConfig(this.getConfig());
+    var errors = this.validateConfig(this.getConfig());
     if (!errors) {
-      let command = {
+      var command = {
         cmd: "config_channel",
         type: this.channelType,
         config: this.getConfig(),
       };
-      YB.client.send(command, true);
+      if (YB.client && typeof YB.client.send === "function") {
+        YB.client.send(command, true);
+      } else {
+        console.warn("[YB] client.send not available; skipped send", command);
+      }
     }
+    return errors;
   };
 
   //
   // Data holds the non-config things about the channel eg. state
   //
   BaseChannel.prototype.loadData = function (data) {
-    this.data = data;
+    this.data = data || {};
   };
 
-  BaseChannel.prototype.getData() = function () {
+  BaseChannel.prototype.getData = function () {
     return this.data;
+  };
+
+  //
+  // Nitty gritty of form handling.
+  //
+  BaseChannel.prototype.handleEditForm = function (newcfg, event) {
+    //clear our errors
+    for (const f of Object.keys(newcfg)) {
+      $(`#f-${this.channelType}-${f}-${this.id}`).removeClass("is-valid is-invalid");
+    }
+
+    //check for errors, and then save it.
+    let errors = this.loadConfig(newcfg);
+    if (errors) {
+      for (const field of Object.keys(errors)) {
+
+        //add our invalid class
+        const $el = $(`#f-${this.channelType}-${field}-${this.id}`);
+        $el.removeClass("is-valid").addClass("is-invalid");
+
+        // Find the right feedback element (works for form-floating and form-switch)
+        const msg = errors[field][0];
+        const $fb = $el.siblings(".invalid-feedback")
+          .add($el.closest(".form-check, .form-floating").find(".invalid-feedback"))
+          .first();
+        $fb.text(msg);
+      }
+    } else {
+      $(event.target).addClass("is-valid");
+      this.saveConfig();
+    }
   };
 
   //
   // Functions for generating the html for various channel specific UI elements
   //
-  BaseChannel.prototype.generateControlUI() = function () { };
-  BaseChannel.prototype.generateEditUI() = function () { };
-  BaseChannel.prototype.generateStatsUI() = function () { };
-  BaseChannel.prototype.generateGraphsUI() = function () { };
+  BaseChannel.prototype.generateControlUI = function () { };
+  BaseChannel.prototype.generateEditUI = function () { };
+  BaseChannel.prototype.generateStatsUI = function () { };
+  BaseChannel.prototype.generateGraphsUI = function () { };
 
   //
   // Functions for updating the UI as new data/configs come in.
   //
-  BaseChannel.prototype.updateControlUI() = function () { };
-  BaseChannel.prototype.updateEditUI() = function () { };
-  BaseChannel.prototype.updateStatsUI() = function () { };
-  BaseChannel.prototype.updateGraphsUI() = function () { };
+  BaseChannel.prototype.updateControlUI = function () { };
+  BaseChannel.prototype.updateEditUI = function () { };
+  BaseChannel.prototype.updateStatsUI = function () { };
+  BaseChannel.prototype.updateGraphsUI = function () { };
 
   //
   // Functions for setting up the UI hooks and callbacks
   //
-  BaseChannel.prototype.setupControlUI() = function () { };
-  BaseChannel.prototype.setupEditUI() = function () { };
-  BaseChannel.prototype.setupStatsUI() = function () { };
-  BaseChannel.prototype.setupGraphsUI() = function () { };
-
+  BaseChannel.prototype.setupControlUI = function () { };
+  BaseChannel.prototype.setupEditUI = function () { };
+  BaseChannel.prototype.setupStatsUI = function () { };
+  BaseChannel.prototype.setupGraphsUI = function () { };
 
   YB.BaseChannel = BaseChannel;
+  global.YB = YB; // expose to global
 
-})(this); //private scope
+})(this);

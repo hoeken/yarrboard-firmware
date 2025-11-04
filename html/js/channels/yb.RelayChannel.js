@@ -1,6 +1,7 @@
 (function (global) { //private scope
 
-  var YB = typeof YB !== "undefined" ? YB : {};
+  // work in the global YB namespace.
+  var YB = window.YB || {};
 
   function RelayChannel() {
     YB.BaseChannel.call(this, "relay");
@@ -14,5 +15,7 @@
 
   YB.RelayChannel = RelayChannel;
   YB.ChannelRegistry.registerChannelType("relay", YB.RelayChannel)
+
+  window.YB = YB; // <-- this line makes it global
 
 })(this); //private scope

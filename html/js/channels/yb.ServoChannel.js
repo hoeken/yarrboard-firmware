@@ -1,6 +1,7 @@
 (function (global) { //private scope
 
-  var YB = typeof YB !== "undefined" ? YB : {};
+  // work in the global YB namespace.
+  var YB = window.YB || {};
 
   function ServoChannel() {
     YB.BaseChannel.call(this, "servo");
@@ -14,5 +15,7 @@
 
   YB.ServoChannel = ServoChannel;
   YB.ChannelRegistry.registerChannelType("servo", YB.ServoChannel)
+
+  window.YB = YB; // <-- this line makes it global
 
 })(this); //private scope

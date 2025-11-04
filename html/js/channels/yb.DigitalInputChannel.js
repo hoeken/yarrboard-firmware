@@ -1,6 +1,7 @@
 (function (global) { //private scope
 
-  var YB = typeof YB !== "undefined" ? YB : {};
+  // work in the global YB namespace.
+  var YB = window.YB || {};
 
   function DigitalInputChannel() {
     YB.BaseChannel.call(this, "dio");
@@ -14,5 +15,7 @@
 
   YB.DigitalInputChannel = DigitalInputChannel;
   YB.ChannelRegistry.registerChannelType("dio", YB.DigitalInputChannel)
+
+  window.YB = YB; // <-- this line makes it global
 
 })(this); //private scope
