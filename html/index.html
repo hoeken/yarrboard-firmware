@@ -22,6 +22,7 @@
     <script src="c3.min.js"></script>
     <script src="libs/validate.min.js"></script>
 
+    <script src="yarrboard.js"></script>
     <script src="js/yb.ChannelRegistry.js"></script>
     <script src="js/channels/yb.BaseChannel.js"></script>
     <!-- <script src="js/channels/yb.ADCChannel.js"></script> -->
@@ -31,20 +32,18 @@
     <!-- <script src="js/channels/yb.ServoChannel.js"></script> -->
     <!-- <script src="js/channels/yb.StepperChannel.js"></script> -->
 
-    <script src="yarrboard.js"></script>
 </head>
 
 <body>
     <script>
-        $(document).ready(start_yarrboard);
-        let FF_FOUC_FIX;
+        $(document).ready(YB.App.start);
     </script>
     <div class="col-xl-8 col-lg-10 mx-auto">
         <nav id="navbar"
             class="navbar sticky-top navbar-expand-md bg-body-tertiary navbar-light bg-light rounded-bottom"
             style="display: none">
             <div class="container-fluid">
-                <a class="navbar-brand" onclick="open_page('control')" href="#control">
+                <a class="navbar-brand" onclick="YB.App.openPage('control')" href="#control">
                     <img class="logo align-top me-3" src="logo-72.png" alt="Avast ye scurvy dog." width="30"
                         height="30">
                     <span id="boardName">Yarrboard</span>
@@ -56,32 +55,32 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav align-items-center">
                         <li id="controlNav" class="nav-item nav-permission">
-                            <a class="nav-link active" onclick="open_page('control')" aria-current="page"
+                            <a class="nav-link active" onclick="YB.App.openPage('control')" aria-current="page"
                                 href="#control">Control</a>
                         </li>
                         <li id="statsNav" class="nav-item nav-permission">
-                            <a class="nav-link" onclick="open_page('stats')" href="#stats">Status</a>
+                            <a class="nav-link" onclick="YB.App.openPage('stats')" href="#stats">Status</a>
                         </li>
                         <li id="graphsNav" class="nav-item nav-permission mfdHide" style="display: none">
-                            <a class="nav-link" onclick="open_page('graphs')" href="#graphs">Graphs</a>
+                            <a class="nav-link" onclick="YB.App.openPage('graphs')" href="#graphs">Graphs</a>
                         </li>
                         <li id="configNav" class="nav-item nav-permission">
-                            <a class="nav-link" onclick="open_page('config')" href="#config">Config</a>
+                            <a class="nav-link" onclick="YB.App.openPage('config')" href="#config">Config</a>
                         </li>
                         <li id="settingsNav" class="nav-item nav-permission">
-                            <a class="nav-link" onclick="open_page('settings')" href="#settings">Settings</a>
+                            <a class="nav-link" onclick="YB.App.openPage('settings')" href="#settings">Settings</a>
                         </li>
                         <li id="networkNav" class="nav-item nav-permission">
-                            <a class="nav-link" onclick="open_page('network')" href="#network">Network</a>
+                            <a class="nav-link" onclick="YB.App.openPage('network')" href="#network">Network</a>
                         </li>
                         <li id="systemNav" class="nav-item nav-permission">
-                            <a class="nav-link" onclick="open_page('system')" href="#system">System</a>
+                            <a class="nav-link" onclick="YB.App.openPage('system')" href="#system">System</a>
                         </li>
                         <li id="loginNav" class="nav-item" style="display: none">
-                            <a class="nav-link" onclick="open_page('login')" href="#login">Login</a>
+                            <a class="nav-link" onclick="YB.App.openPage('login')" href="#login">Login</a>
                         </li>
                         <li id="logoutNav" class="nav-item" style="display: none">
-                            <a class="nav-link" onclick="open_page('logout')" href="#logout">Logout</a>
+                            <a class="nav-link" onclick="YB.App.openPage('logout')" href="#logout">Logout</a>
                         </li>
                     </ul>
                 </div>

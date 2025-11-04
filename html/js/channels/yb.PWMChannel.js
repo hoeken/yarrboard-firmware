@@ -76,6 +76,8 @@
     var base = YB.BaseChannel.prototype.getConfigSchema.call(this);
 
     this.onEditForm = this.onEditForm.bind(this);
+    this.setDutyCycle = this.setDutyCycle.bind(this);
+    this.toggleState = this.toggleState.bind(this);
 
     var schema = Object.assign({}, base);
 
@@ -121,7 +123,7 @@
         <table class="w-100 h-100 p-2">
           <tr>
             <td>
-              <button id="pwmState${this.id}" type="button" class="btn pwmButton text-center" onclick="toggle_state(${this.id})">
+              <button id="pwmState${this.id}" type="button" class="btn pwmButton text-center">
                 <table style="width: 100%">
                   <tbody>
                     <tr>
@@ -155,8 +157,10 @@
 
   PWMChannel.prototype.setupControlUI = function () {
 
+    $(`#pwmState${this.id}`).on("click", this.toggleState);
+
     if (this.cfg.isDimmable) {
-      if (!isMFD())
+      if (!YB.App.isMFD())
         $(`#pwmDutySliderControl${this.id}`).show();
 
       //stop it from toggling
@@ -165,10 +169,10 @@
         event.stopPropagation();
       });
 
-      $('#pwmDutySlider' + this.id).change(set_duty_cycle);
+      $('#pwmDutySlider' + this.id).change(this.setDutyCycle);
 
       //update our duty when we move
-      $('#pwmDutySlider' + this.id).on("input", set_duty_cycle);
+      $('#pwmDutySlider' + this.id).on("input", this.setDutyCycle);
 
       //stop updating the UI when we are choosing a duty
       $('#pwmDutySlider' + this.id).on('focus', function (e) {
@@ -301,6 +305,27 @@
     $(`#f-pwm-type-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-defaultState-${this.id}`).prop('disabled', !this.enabled);
   };
+
+  PWMChannel.prototype.setDutyCycle = function (e) {
+    let ele = e.target;
+    let value = ele.value;
+
+    //must be realistic.
+    if (value >= 0 && value <= 100) {
+      //we want a duty value from 0 to 1
+      value = value / 100;
+
+      //update our duty cycle
+      YB.client.setPWMChannelDuty(this.id, value, false);
+    }
+
+    e.stopPropagation();
+    e.preventDefault();
+  }
+
+  PWMChannel.prototype.toggleState = function () {
+    YB.client.togglePWMChannel(this.id, YB.App.config.hostname, true);
+  }
 
   YB.PWMChannel = PWMChannel;
   YB.ChannelRegistry.registerChannelType("pwm", YB.PWMChannel)
