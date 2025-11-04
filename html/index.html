@@ -1059,7 +1059,7 @@
                     </div>
                 </div>
                 <div class="mb-3 text-center">
-                    <button type="button" class="btn btn-primary" onclick="save_network_settings()">Save
+                    <button type="button" class="btn btn-primary" onclick="YB.App.saveNetworkSettings()">Save
                         Settings</button>
                 </div>
             </div>
@@ -1217,7 +1217,7 @@
                     </div>
                 </div>
                 <div class="mb-3 text-center">
-                    <button type="button" class="btn btn-primary" onclick="save_app_settings()">Save
+                    <button type="button" class="btn btn-primary" onclick="YB.App.saveAppSettings()">Save
                         Settings</button>
                 </div>
             </div>
@@ -1305,7 +1305,7 @@
                                     <h1>Changelog</h1>
                                 </div>
                                 <button id="btn_update_firmware" type="button" class="btn btn-primary"
-                                    onclick="update_firmware()">Update Firmware</button>
+                                    onclick="YB.App.updateFirmware()">Update Firmware</button>
                                 <br />
                                 <div id="progress_wrapper" style="display: none" class="mt-4">
                                     <p>Update may take a while, please be patient. After an update, this page
@@ -1327,11 +1327,11 @@
                             <h5 class="mb-3">Danger Zone</h5>
                             <div class="d-flex justify-content-between">
                                 <button class="btn btn-primary btn-lg w-50 me-2" type="button"
-                                    onclick="restart_board()">
+                                    onclick="YB.App.restartBoard()">
                                     Restart Board
                                 </button>
                                 <button class="btn btn-danger btn-lg w-50 ms-2" type="button"
-                                    onclick="reset_to_factory()">
+                                    onclick="YB.App.resetToFactory()">
                                     Reset to Factory Defaults
                                 </button>
                             </div>
@@ -1350,7 +1350,7 @@
                     <input type="password" class="form-control" id="password" placeholder="admin">
                     <label for="password">Password</label>
                 </div>
-                <button class="btn btn-primary w-100 py-2" onclick="do_login()">Log in</button>
+                <button class="btn btn-primary w-100 py-2" onclick="YB.App.doLogin()">Log in</button>
                 <p class="text-center text-muted my-2">Default: admin/admin or guest/guest</p>
                 <div id="liveAlertPlaceholder"></div>
                 <script>

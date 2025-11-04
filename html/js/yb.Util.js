@@ -137,8 +137,59 @@
       if (a[2] < b[2]) return false;
 
       return true;
-    }
+    },
+
+    isCanvasSupported: function () {
+      var elem = document.createElement('canvas');
+      return !!(elem.getContext && elem.getContext('2d'));
+    },
+
+    // Function to update the progress bar
+    f: function (ele, progress) {
+      // Ensure the progress value is within bounds
+      const clampedProgress = Math.round(Math.min(Math.max(progress, 0), 100));
+
+      // Get the progress container and inner progress bar
+      const progressContainer = document.getElementById(ele);
+      const progressBar = progressContainer.querySelector(".progress-bar");
+
+      if (progressContainer && progressBar) {
+        // Update the width style property
+        progressBar.style.width = clampedProgress + "%";
+
+        // Update the aria-valuenow attribute for accessibility
+        progressContainer.setAttribute("aria-valuenow", clampedProgress);
+
+        // Optional: Update the text inside the progress bar
+        progressBar.textContent = clampedProgress + "%";
+      } else {
+        console.error("Progress bar element not found!");
+      }
+    },
+
+    getWifiIconForRSSI: function (rssi) {
+      let level;
+
+      if (rssi === null || rssi === undefined || rssi <= -100) {
+        level = 0; // No signal / disconnected
+      } else if (rssi >= -55) {
+        level = 4; // Excellent
+      } else if (rssi >= -65) {
+        level = 3; // Good
+      } else if (rssi >= -75) {
+        level = 2; // Fair
+      } else if (rssi >= -85) {
+        level = 1; // Weak
+      } else {
+        level = 0; // No signal
+      }
+
+      return `rssi_icon_${level}`;
+    },
+
   };
+
+
 
   // expose to global
   global.YB = YB;

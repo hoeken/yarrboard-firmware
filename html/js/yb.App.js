@@ -29,16 +29,16 @@
         //let the mfd override with ?mode=night, etc.
         if (!YB.Util.getQueryVariable("mode")) {
           if (msg.theme)
-            setTheme(msg.theme);
+            YB.App.setTheme(msg.theme);
         }
 
         //auto login?
         if (Cookies.get("username") && Cookies.get("password")) {
           YB.client.login(Cookies.get("username"), Cookies.get("password"));
         } else {
-          update_role_ui();
+          YB.App.updateRoleUI();
           YB.App.loadConfigs();
-          open_default_page();
+          YB.App.openDefaultPage();
         }
       }
       else if (msg.msg == 'config') {
@@ -1133,7 +1133,7 @@
 
           if (msg.runtime_elapsed > 0 && msg.finish_countdown > 0) {
             const runtimeProgress = (msg.runtime_elapsed / (msg.runtime_elapsed + msg.finish_countdown)) * 100;
-            updateProgressBar("bomRunProgressBar", runtimeProgress);
+            YB.Util.updateProgressBar("bomRunProgressBar", runtimeProgress);
             $('#bomRunProgressRow').show();
           } else {
             $('#bomRunProgressRow').hide();
@@ -1151,7 +1151,7 @@
 
           if (msg.flush_elapsed > 0 && msg.flush_countdown > 0) {
             const flushProgress = (msg.flush_elapsed / (msg.flush_elapsed + msg.flush_countdown)) * 100;
-            updateProgressBar("bomFlushProgressBar", flushProgress);
+            YB.Util.updateProgressBar("bomFlushProgressBar", flushProgress);
             $('#bomFlushProgressRow').show();
           } else {
             $('#bomFlushProgressRow').hide();
@@ -1169,7 +1169,7 @@
 
           if (msg.pickle_elapsed > 0 && msg.pickle_countdown > 0) {
             const pickleProgress = (msg.pickle_elapsed / (msg.pickle_elapsed + msg.pickle_countdown)) * 100;
-            updateProgressBar("bomPickleProgressBar", pickleProgress);
+            YB.Util.updateProgressBar("bomPickleProgressBar", pickleProgress);
             $('#bomPickleProgressRow').show();
           } else {
             $('#bomPickleProgressRow').hide();
@@ -1187,7 +1187,7 @@
 
           if (msg.depickle_elapsed > 0 && msg.depickle_countdown > 0) {
             const depickleProgress = (msg.depickle_elapsed / (msg.depickle_elapsed + msg.depickle_countdown)) * 100;
-            updateProgressBar("#bomDepickleProgressBar", depickleProgress);
+            YB.Util.updateProgressBar("#bomDepickleProgressBar", depickleProgress);
             $('#bomDepickleProgressRow').show();
           } else {
             $('#bomDepickleProgressRow').hide();
@@ -1324,7 +1324,7 @@
         if (msg.rssi) {
           $("#rssi").html(msg.rssi + "dBm");
           $(".rssi_icon").hide();
-          let rssi_icon = getWifiIconForRSSI(msg.rssi);
+          let rssi_icon = YB.Util.getWifiIconForRSSI(msg.rssi);
           $(`#${rssi_icon}`).show();
         }
         $("#uuid").html(msg.uuid);
@@ -1535,8 +1535,8 @@
         //YB.log("network config");
 
         //update some ui stuff
-        update_role_ui();
-        toggle_role_passwords(msg.default_role);
+        YB.App.updateRoleUI();
+        YB.App.toggleRolePasswords(msg.default_role);
 
         //what is our update interval?
         if (msg.app_update_interval)
@@ -1549,7 +1549,7 @@
         $("#guest_pass").val(msg.guest_pass);
         $("#app_update_interval").val(msg.app_update_interval);
         $("#default_role").val(msg.default_role);
-        $("#default_role").change(function () { toggle_role_passwords($(this).val()) });
+        $("#default_role").change(function () { YB.App.toggleRolePasswords($(this).val()) });
         $("#app_enable_mfd").prop("checked", msg.app_enable_mfd);
         $("#app_enable_api").prop("checked", msg.app_enable_api);
         $("#app_enable_serial").prop("checked", msg.app_enable_serial);
@@ -1667,16 +1667,16 @@
           }
 
           //prep the site
-          update_role_ui();
+          YB.App.updateRoleUI();
           YB.App.loadConfigs();
-          open_default_page();
+          YB.App.openDefaultPage();
         }
         else
           YB.App.showAlert(msg.message, "success");
       }
       else if (msg.msg == "set_theme") {
         //light/dark mode
-        setTheme(msg.theme);
+        YB.App.setTheme(msg.theme);
       }
       else if (msg.msg == "set_brightness") {
         //did we get brightness?
@@ -1692,383 +1692,6 @@
     YB.client.log = YB.log;
 
     YB.client.start();
-  }
-
-  function set_brightness(e) {
-    let ele = e.target;
-    let value = ele.value;
-
-    //must be realistic.
-    if (value >= 0 && value <= 100) {
-      //we want a duty value from 0 to 1
-      value = value / 100;
-
-      //update our duty cycle
-      YB.client.setBrightness(value, false);
-    }
-  }
-
-  function update_theme_switch() {
-    if (this.checked)
-      setTheme("dark");
-    else
-      setTheme("light");
-  }
-
-  function do_login(e) {
-    YB.App.username = $('#username').val();
-    YB.App.password = $('#password').val();
-
-    YB.client.login(YB.App.username, YB.App.password);
-  }
-
-  function save_network_settings() {
-    //get our data
-    let wifi_mode = $("#wifi_mode").val();
-    let wifi_ssid = $("#wifi_ssid").val();
-    let wifi_pass = $("#wifi_pass").val();
-    let local_hostname = $("#local_hostname").val();
-
-    //we should probably do a bit of verification here
-
-    //if they are changing from client to client, we can't show a success.
-    YB.App.showAlert("Yarrboard may be unresponsive while changing WiFi settings. Make sure you connect to the right network after updating.", "primary");
-
-    //okay, send it off.
-    YB.client.send({
-      "cmd": "set_network_config",
-      "wifi_mode": wifi_mode,
-      "wifi_ssid": wifi_ssid,
-      "wifi_pass": wifi_pass,
-      "local_hostname": local_hostname
-    });
-
-    //reload our page
-    setTimeout(function () {
-      location.reload();
-    }, 2500);
-  }
-
-  function save_app_settings() {
-    //get our data
-    let admin_user = $("#admin_user").val();
-    let admin_pass = $("#admin_pass").val();
-    let guest_user = $("#guest_user").val();
-    let guest_pass = $("#guest_pass").val();
-    let default_role = $("#default_role option:selected").val();
-    let app_enable_mfd = $("#app_enable_mfd").prop("checked");
-    let app_enable_api = $("#app_enable_api").prop("checked");
-    let app_enable_serial = $("#app_enable_serial").prop("checked");
-    let app_enable_ota = $("#app_enable_ota").prop("checked");
-    let app_enable_ssl = $("#app_enable_ssl").prop("checked");
-    let app_enable_mqtt = $("#app_enable_mqtt").prop("checked");
-    let app_enable_ha_integration = $("#app_enable_ha_integration").prop("checked");
-    let app_use_hostname_as_mqtt_uuid = $("#app_use_hostname_as_mqtt_uuid").prop("checked");
-    let mqtt_server = $("#mqtt_server").val();
-    let mqtt_user = $("#mqtt_user").val();
-    let mqtt_pass = $("#mqtt_pass").val();
-    let mqtt_cert = $("#mqtt_cert").val();
-    let server_cert = $("#server_cert").val();
-    let server_key = $("#server_key").val();
-    let update_interval = $("#app_update_interval").val();
-
-    //we should probably do a bit of verification here
-    update_interval = Math.max(100, update_interval);
-    update_interval = Math.min(5000, update_interval);
-    YB.App.updateInterval = update_interval;
-
-    //remember it and update our UI
-    YB.App.defaultRole = default_role;
-    update_role_ui();
-
-    //helper function to keep admin logged in.
-    if (YB.App.defaultRole != "admin") {
-      Cookies.set('username', admin_user, { expires: 365 });
-      Cookies.set('password', admin_pass, { expires: 365 });
-    }
-    else {
-      Cookies.remove("username");
-      Cookies.remove("password");
-    }
-
-    //okay, send it off.
-    YB.client.send({
-      "cmd": "set_app_config",
-      "admin_user": admin_user,
-      "admin_pass": admin_pass,
-      "guest_user": guest_user,
-      "guest_pass": guest_pass,
-      "app_update_interval": YB.App.updateInterval,
-      "default_role": default_role,
-      "app_enable_mfd": app_enable_mfd,
-      "app_enable_api": app_enable_api,
-      "app_enable_serial": app_enable_serial,
-      "app_enable_ota": app_enable_ota,
-      "app_enable_ssl": app_enable_ssl,
-      "app_enable_mqtt": app_enable_mqtt,
-      "app_enable_ha_integration": app_enable_ha_integration,
-      "app_use_hostname_as_mqtt_uuid": app_use_hostname_as_mqtt_uuid,
-      "mqtt_server": mqtt_server,
-      "mqtt_user": mqtt_user,
-      "mqtt_pass": mqtt_pass,
-      "mqtt_cert": mqtt_cert,
-      "server_cert": server_cert,
-      "server_key": server_key
-    });
-
-    YB.App.showAlert("App settings have been updated.", "success");
-  }
-
-  function restart_board() {
-    if (confirm("Are you sure you want to restart your Yarrboard?")) {
-      YB.client.restart();
-
-      YB.App.showAlert("Yarrboard is now restarting, please be patient.", "primary");
-
-      setTimeout(function () {
-        location.reload();
-      }, 5000);
-    }
-  }
-
-  function reset_to_factory() {
-    if (confirm("WARNING! Are you sure you want to reset your Yarrboard to factory defaults?  This cannot be undone.")) {
-      YB.client.factoryReset();
-
-      YB.App.showAlert("Yarrboard is now resetting to factory defaults, please be patient.", "primary");
-    }
-  }
-
-  function check_for_updates() {
-    //did we get a config yet?
-    if (YB.App.config) {
-      //dont look up firmware if we're in development mode.
-      if (YB.App.config.is_development) {
-        $("#firmware_checking").html("Development Mode, automatic firmware checking disabled.")
-        return;
-      }
-
-      $.ajax({
-        url: "https://raw.githubusercontent.com/hoeken/yarrboard-firmware/main/firmware.json",
-        cache: false,
-        dataType: "json",
-        success: function (jdata) {
-          //did we get anything?
-          let data;
-          for (firmware of jdata)
-            if (firmware.type == YB.App.config.hardware_version)
-              data = firmware;
-
-          if (!data) {
-            //YB.App.showAlert(`Could not find a firmware for this hardware.`, "danger");
-            return;
-          }
-
-          $("#firmware_checking").hide();
-
-          //do we have a new version?
-          if (YB.Util.compareVersions(data.version, YB.App.config.firmware_version)) {
-            if (data.changelog) {
-              $("#firmware_changelog").append(marked.parse(data.changelog));
-              $("#firmware_changelog").show();
-            }
-
-            $("#new_firmware_version").html(data.version);
-            $("#firmware_bin").attr("href", `${data.url}`);
-            $("#firmware_update_available").show();
-
-            YB.App.showAlert(`There is a <a onclick="YB.App.openPage('system')" href="/#system">firmware update</a> available (${data.version}).`, "primary");
-          }
-          else
-            $("#firmware_up_to_date").show();
-        }
-      });
-    }
-    //wait for it.
-    else
-      setTimeout(check_for_updates, 1000);
-  }
-
-  function update_firmware() {
-    $("#btn_update_firmware").prop("disabled", true);
-    $("#progress_wrapper").show();
-
-    //okay, send it off.
-    YB.client.startOTA();
-  }
-
-  function toggle_role_passwords(role) {
-    if (role == "admin") {
-      $(".admin_credentials").hide();
-      $(".guest_credentials").hide();
-    }
-    else if (role == "guest") {
-      $(".admin_credentials").show();
-      $(".guest_credentials").hide();
-    }
-    else {
-      $(".admin_credentials").show();
-      $(".guest_credentials").show();
-    }
-  }
-
-  function update_role_ui() {
-    //what nav tabs should we be able to see?
-    if (YB.App.role == "admin") {
-      $("#navbar").show();
-      $(".nav-permission").show();
-    }
-    else if (YB.App.role == "guest") {
-      $("#navbar").show();
-      $(".nav-permission").hide();
-      YB.App.pagePermissions[YB.App.role].forEach((page) => {
-        $(`#${page}Nav`).show();
-      });
-    }
-    else {
-      $("#navbar").hide();
-      $(".nav-permission").hide();
-    }
-
-    //show login or not?
-    $('#loginNav').hide();
-    if (YB.App.defaultRole == 'nobody' && YB.App.role == 'nobody')
-      $('#loginNav').show();
-    if (YB.App.defaultRole == 'guest' && YB.App.role == 'guest')
-      $('#loginNav').show();
-
-    //show logout or not?
-    $('#logoutNav').hide();
-    if (YB.App.defaultRole == 'nobody' && YB.App.role != 'nobody')
-      $('#logoutNav').show();
-    if (YB.App.defaultRole == 'guest' && YB.App.role == 'admin')
-      $('#logoutNav').show();
-  }
-
-  function open_default_page() {
-    if (YB.App.role != 'nobody') {
-      //check to see if we want a certain page
-      if (window.location.hash) {
-        let page = window.location.hash.substring(1);
-        if (page != "login" && YB.App.pageList.includes(page))
-          YB.App.openPage(page);
-        else
-          YB.App.openPage("control");
-      }
-      else
-        YB.App.openPage("control");
-    }
-    else
-      YB.App.openPage('login');
-  }
-
-
-
-
-
-  function getStoredTheme() { localStorage.getItem('theme'); }
-  function setStoredTheme() { localStorage.setItem('theme', theme); }
-
-  function getPreferredTheme() {
-    //did we get one passed in? b&g, etc pass in like this.
-    let mode = YB.Util.getQueryVariable("mode");
-    // YB.log(`mode: ${mode}`);
-    if (mode !== null) {
-      if (mode == "night")
-        return "dark";
-      else
-        return "light";
-    }
-
-    //do we have stored one?
-    const storedTheme = getStoredTheme();
-    if (storedTheme)
-      return storedTheme;
-
-    //prefs?
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-  }
-
-  function setTheme(theme) {
-    // YB.log(`set theme ${theme}`);
-    if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      document.documentElement.setAttribute('data-bs-theme', 'dark');
-    else
-      document.documentElement.setAttribute('data-bs-theme', theme);
-
-    let currentTheme = document.documentElement.getAttribute('data-bs-theme');
-    if (currentTheme == "light")
-      $("#darkSwitch").prop('checked', false);
-    else
-      $("#darkSwitch").prop('checked', true);
-  }
-
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    const storedTheme = getStoredTheme();
-    if (storedTheme !== 'light' && storedTheme !== 'dark')
-      setTheme(getPreferredTheme());
-  });
-
-  function getViewport() {
-    // https://stackoverflow.com/a/8876069
-    const width = Math.max(
-      document.documentElement.clientWidth,
-      window.innerWidth || 0
-    )
-    if (width <= 576) return 'xs'
-    if (width <= 768) return 'sm'
-    if (width <= 992) return 'md'
-    if (width <= 1200) return 'lg'
-    if (width <= 1400) return 'xl'
-    return 'xxl'
-  }
-
-  function isCanvasSupported() {
-    var elem = document.createElement('canvas');
-    return !!(elem.getContext && elem.getContext('2d'));
-  }
-
-  // Function to update the progress bar
-  function updateProgressBar(ele, progress) {
-    // Ensure the progress value is within bounds
-    const clampedProgress = Math.round(Math.min(Math.max(progress, 0), 100));
-
-    // Get the progress container and inner progress bar
-    const progressContainer = document.getElementById(ele);
-    const progressBar = progressContainer.querySelector(".progress-bar");
-
-    if (progressContainer && progressBar) {
-      // Update the width style property
-      progressBar.style.width = clampedProgress + "%";
-
-      // Update the aria-valuenow attribute for accessibility
-      progressContainer.setAttribute("aria-valuenow", clampedProgress);
-
-      // Optional: Update the text inside the progress bar
-      progressBar.textContent = clampedProgress + "%";
-    } else {
-      console.error("Progress bar element not found!");
-    }
-  }
-
-  function getWifiIconForRSSI(rssi) {
-    let level;
-
-    if (rssi === null || rssi === undefined || rssi <= -100) {
-      level = 0; // No signal / disconnected
-    } else if (rssi >= -55) {
-      level = 4; // Excellent
-    } else if (rssi >= -65) {
-      level = 3; // Good
-    } else if (rssi >= -75) {
-      level = 2; // Fair
-    } else if (rssi >= -85) {
-      level = 1; // Weak
-    } else {
-      level = 0; // No signal
-    }
-
-    return `rssi_icon_${level}`;
   }
 
   YB.App = {
@@ -2123,12 +1746,12 @@
 
     start: function () {
       YB.log.setupDebugTerminal();
-      YB.log("User Agent: " + navigator.userAgent);
-      YB.log("Window Width: " + window.innerWidth);
-      YB.log("Window Height: " + window.innerHeight);
-      YB.log("Window Location: " + window.location);
-      YB.log("Device Pixel Ratio: " + window.devicePixelRatio);
-      YB.log("Is canvas supported? " + isCanvasSupported());
+      // YB.log("User Agent: " + navigator.userAgent);
+      // YB.log("Window Width: " + window.innerWidth);
+      // YB.log("Window Height: " + window.innerHeight);
+      // YB.log("Window Location: " + window.location);
+      // YB.log("Device Pixel Ratio: " + window.devicePixelRatio);
+      // YB.log("Is canvas supported? " + YB.Util.isCanvasSupported());
 
       //main data connection
       start_websocket();
@@ -2137,14 +1760,21 @@
       setInterval(YB.App.checkConnectionStatus, 100);
 
       //light/dark theme init.
-      let theme = getPreferredTheme();
+      let theme = YB.App.getPreferredTheme();
       // YB.log(`preferred theme: ${theme}`);
-      setTheme(theme);
-      $("#darkSwitch").change(update_theme_switch);
+      YB.App.setTheme(theme);
+      $("#darkSwitch").change(YB.App.updateThemeSwitch);
+
+      // preferred scheme watcher
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        const storedTheme = YB.App.getStoredTheme();
+        if (storedTheme !== 'light' && storedTheme !== 'dark')
+          YB.App.setTheme(YB.App.getPreferredTheme());
+      });
 
       //brightness slider callbacks
-      $("#brightnessSlider").change(set_brightness);
-      $("#brightnessSlider").on("input", set_brightness);
+      $("#brightnessSlider").change(YB.App.setBrightness);
+      $("#brightnessSlider").on("input", YB.App.setBrightness);
 
       //stop updating the UI when we are choosing
       $("#brightnessSlider").on('focus', function (e) {
@@ -2205,7 +1835,7 @@
         //enter triggers login
         $(document).on('keypress', function (e) {
           if (e.which == 13)
-            do_login();
+            YB.App.doLogin();
         });
       }
 
@@ -2215,7 +1845,7 @@
         Cookies.remove("password");
 
         YB.App.role = YB.App.defaultRole;
-        update_role_ui();
+        YB.App.updateRoleUI();
 
         YB.client.logout();
 
@@ -2269,7 +1899,7 @@
           "cmd": "get_full_config"
         });
 
-        check_for_updates();
+        YB.App.checkForUpdates();
       }
 
       YB.client.getConfig();
@@ -2487,6 +2117,311 @@
         });
       }
     },
+
+    setBrightness: function (e) {
+      let ele = e.target;
+      let value = ele.value;
+
+      //must be realistic.
+      if (value >= 0 && value <= 100) {
+        //we want a duty value from 0 to 1
+        value = value / 100;
+
+        //update our duty cycle
+        YB.client.setBrightness(value, false);
+      }
+    },
+
+    updateThemeSwitch: function () {
+      if (this.checked)
+        YB.App.setTheme("dark");
+      else
+        YB.App.setTheme("light");
+    },
+
+    doLogin: function (e) {
+      YB.App.username = $('#username').val();
+      YB.App.password = $('#password').val();
+      YB.client.login(YB.App.username, YB.App.password);
+    },
+
+    saveNetworkSettings: function () {
+      //get our data
+      let wifi_mode = $("#wifi_mode").val();
+      let wifi_ssid = $("#wifi_ssid").val();
+      let wifi_pass = $("#wifi_pass").val();
+      let local_hostname = $("#local_hostname").val();
+
+      //we should probably do a bit of verification here
+
+      //if they are changing from client to client, we can't show a success.
+      YB.App.showAlert("Yarrboard may be unresponsive while changing WiFi settings. Make sure you connect to the right network after updating.", "primary");
+
+      //okay, send it off.
+      YB.client.send({
+        "cmd": "set_network_config",
+        "wifi_mode": wifi_mode,
+        "wifi_ssid": wifi_ssid,
+        "wifi_pass": wifi_pass,
+        "local_hostname": local_hostname
+      });
+
+      //reload our page
+      setTimeout(function () {
+        location.reload();
+      }, 2500);
+    },
+
+    saveAppSettings: function () {
+      //get our data
+      let admin_user = $("#admin_user").val();
+      let admin_pass = $("#admin_pass").val();
+      let guest_user = $("#guest_user").val();
+      let guest_pass = $("#guest_pass").val();
+      let default_role = $("#default_role option:selected").val();
+      let app_enable_mfd = $("#app_enable_mfd").prop("checked");
+      let app_enable_api = $("#app_enable_api").prop("checked");
+      let app_enable_serial = $("#app_enable_serial").prop("checked");
+      let app_enable_ota = $("#app_enable_ota").prop("checked");
+      let app_enable_ssl = $("#app_enable_ssl").prop("checked");
+      let app_enable_mqtt = $("#app_enable_mqtt").prop("checked");
+      let app_enable_ha_integration = $("#app_enable_ha_integration").prop("checked");
+      let app_use_hostname_as_mqtt_uuid = $("#app_use_hostname_as_mqtt_uuid").prop("checked");
+      let mqtt_server = $("#mqtt_server").val();
+      let mqtt_user = $("#mqtt_user").val();
+      let mqtt_pass = $("#mqtt_pass").val();
+      let mqtt_cert = $("#mqtt_cert").val();
+      let server_cert = $("#server_cert").val();
+      let server_key = $("#server_key").val();
+      let update_interval = $("#app_update_interval").val();
+
+      //we should probably do a bit of verification here
+      update_interval = Math.max(100, update_interval);
+      update_interval = Math.min(5000, update_interval);
+      YB.App.updateInterval = update_interval;
+
+      //remember it and update our UI
+      YB.App.defaultRole = default_role;
+      YB.App.updateRoleUI();
+
+      //helper function to keep admin logged in.
+      if (YB.App.defaultRole != "admin") {
+        Cookies.set('username', admin_user, { expires: 365 });
+        Cookies.set('password', admin_pass, { expires: 365 });
+      }
+      else {
+        Cookies.remove("username");
+        Cookies.remove("password");
+      }
+
+      //okay, send it off.
+      YB.client.send({
+        "cmd": "set_app_config",
+        "admin_user": admin_user,
+        "admin_pass": admin_pass,
+        "guest_user": guest_user,
+        "guest_pass": guest_pass,
+        "app_update_interval": YB.App.updateInterval,
+        "default_role": default_role,
+        "app_enable_mfd": app_enable_mfd,
+        "app_enable_api": app_enable_api,
+        "app_enable_serial": app_enable_serial,
+        "app_enable_ota": app_enable_ota,
+        "app_enable_ssl": app_enable_ssl,
+        "app_enable_mqtt": app_enable_mqtt,
+        "app_enable_ha_integration": app_enable_ha_integration,
+        "app_use_hostname_as_mqtt_uuid": app_use_hostname_as_mqtt_uuid,
+        "mqtt_server": mqtt_server,
+        "mqtt_user": mqtt_user,
+        "mqtt_pass": mqtt_pass,
+        "mqtt_cert": mqtt_cert,
+        "server_cert": server_cert,
+        "server_key": server_key
+      });
+
+      YB.App.showAlert("App settings have been updated.", "success");
+    },
+
+    restartBoard: function () {
+      if (confirm("Are you sure you want to restart your Yarrboard?")) {
+        YB.client.restart();
+
+        YB.App.showAlert("Yarrboard is now restarting, please be patient.", "primary");
+
+        setTimeout(function () {
+          location.reload();
+        }, 5000);
+      }
+    },
+
+    resetToFactory: function () {
+      if (confirm("WARNING! Are you sure you want to reset your Yarrboard to factory defaults?  This cannot be undone.")) {
+        YB.client.factoryReset();
+
+        YB.App.showAlert("Yarrboard is now resetting to factory defaults, please be patient.", "primary");
+      }
+    },
+
+    checkForUpdates: function () {
+      //did we get a config yet?
+      if (YB.App.config) {
+        //dont look up firmware if we're in development mode.
+        if (YB.App.config.is_development) {
+          $("#firmware_checking").html("Development Mode, automatic firmware checking disabled.")
+          return;
+        }
+
+        $.ajax({
+          url: "https://raw.githubusercontent.com/hoeken/yarrboard-firmware/main/firmware.json",
+          cache: false,
+          dataType: "json",
+          success: function (jdata) {
+            //did we get anything?
+            let data;
+            for (firmware of jdata)
+              if (firmware.type == YB.App.config.hardware_version)
+                data = firmware;
+
+            if (!data) {
+              //YB.App.showAlert(`Could not find a firmware for this hardware.`, "danger");
+              return;
+            }
+
+            $("#firmware_checking").hide();
+
+            //do we have a new version?
+            if (YB.Util.compareVersions(data.version, YB.App.config.firmware_version)) {
+              if (data.changelog) {
+                $("#firmware_changelog").append(marked.parse(data.changelog));
+                $("#firmware_changelog").show();
+              }
+
+              $("#new_firmware_version").html(data.version);
+              $("#firmware_bin").attr("href", `${data.url}`);
+              $("#firmware_update_available").show();
+
+              YB.App.showAlert(`There is a <a onclick="YB.App.openPage('system')" href="/#system">firmware update</a> available (${data.version}).`, "primary");
+            }
+            else
+              $("#firmware_up_to_date").show();
+          }
+        });
+      }
+      //wait for it.
+      else
+        setTimeout(YB.App.checkForUpdates, 1000);
+    },
+
+    updateFirmware: function () {
+      $("#btn_update_firmware").prop("disabled", true);
+      $("#progress_wrapper").show();
+
+      //okay, send it off.
+      YB.client.startOTA();
+    },
+
+    toggleRolePasswords: function (role) {
+      if (role == "admin") {
+        $(".admin_credentials").hide();
+        $(".guest_credentials").hide();
+      }
+      else if (role == "guest") {
+        $(".admin_credentials").show();
+        $(".guest_credentials").hide();
+      }
+      else {
+        $(".admin_credentials").show();
+        $(".guest_credentials").show();
+      }
+    },
+
+    updateRoleUI: function () {
+      //what nav tabs should we be able to see?
+      if (YB.App.role == "admin") {
+        $("#navbar").show();
+        $(".nav-permission").show();
+      }
+      else if (YB.App.role == "guest") {
+        $("#navbar").show();
+        $(".nav-permission").hide();
+        YB.App.pagePermissions[YB.App.role].forEach((page) => {
+          $(`#${page}Nav`).show();
+        });
+      }
+      else {
+        $("#navbar").hide();
+        $(".nav-permission").hide();
+      }
+
+      //show login or not?
+      $('#loginNav').hide();
+      if (YB.App.defaultRole == 'nobody' && YB.App.role == 'nobody')
+        $('#loginNav').show();
+      if (YB.App.defaultRole == 'guest' && YB.App.role == 'guest')
+        $('#loginNav').show();
+
+      //show logout or not?
+      $('#logoutNav').hide();
+      if (YB.App.defaultRole == 'nobody' && YB.App.role != 'nobody')
+        $('#logoutNav').show();
+      if (YB.App.defaultRole == 'guest' && YB.App.role == 'admin')
+        $('#logoutNav').show();
+    },
+
+    openDefaultPage: function () {
+      if (YB.App.role != 'nobody') {
+        //check to see if we want a certain page
+        if (window.location.hash) {
+          let page = window.location.hash.substring(1);
+          if (page != "login" && YB.App.pageList.includes(page))
+            YB.App.openPage(page);
+          else
+            YB.App.openPage("control");
+        }
+        else
+          YB.App.openPage("control");
+      }
+      else
+        YB.App.openPage('login');
+    },
+
+    getStoredTheme: function () { localStorage.getItem('theme'); },
+    setStoredTheme: function () { localStorage.setItem('theme', theme); },
+
+    getPreferredTheme: function () {
+      //did we get one passed in? b&g, etc pass in like this.
+      let mode = YB.Util.getQueryVariable("mode");
+      // YB.log(`mode: ${mode}`);
+      if (mode !== null) {
+        if (mode == "night")
+          return "dark";
+        else
+          return "light";
+      }
+
+      //do we have stored one?
+      const storedTheme = YB.App.getStoredTheme();
+      if (storedTheme)
+        return storedTheme;
+
+      //prefs?
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    },
+
+    setTheme: function (theme) {
+      // YB.log(`set theme ${theme}`);
+      if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.setAttribute('data-bs-theme', 'dark');
+      else
+        document.documentElement.setAttribute('data-bs-theme', theme);
+
+      let currentTheme = document.documentElement.getAttribute('data-bs-theme');
+      if (currentTheme == "light")
+        $("#darkSwitch").prop('checked', false);
+      else
+        $("#darkSwitch").prop('checked', true);
+    },
+
   };
 
   // expose to global
