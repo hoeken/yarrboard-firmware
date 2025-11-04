@@ -2124,6 +2124,8 @@
         $("#bomTotalVolume").html(`${totalVolume}L`);
         $("#bomTotalRuntime").html(`${totalRuntime} hours`);
       }
+
+      YB.App.pageReady.stats = true;
     },
 
     handleGraphDataMessage: function (msg) {

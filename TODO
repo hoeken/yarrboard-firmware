@@ -8,23 +8,22 @@
 # FROTHFET
 
 * test INA226 sense resistors (mouser)
-* test individual fuse pins (mouser)
 
 # v2.0.0 Release
 
 * channel edit UI rewrite
+    * implement these functions for BaseChannel:
+        * generateControlContainer()
+        * generateStatsContainer()
+        * generateGraphsContainer()
+        * resetStats()
+        * generateEditFields() <-- name, key, enabled
+    * finish converting handleConfigMessage()
+    * finish converting handleUpdateMessage();
+    * finish converting handleStatsMessage();
+    * finish converting handleGraphDataMessage();
     * wattage calculation should reside on firmware for pwmchannel.  clean js only
-    * consolidate all the client side error checking to a single function per channel type
-        * add overlaps for standard channel stuff - name, key, etc.
-    * send entire channel config in one object (update in-memory object, then send it)
-    * consolidate all the server side error checking to a single place aka parseConfig()
-    * save if no errors.
-    * add edit key for each channel
-* big cleanup of the javascript code:
-    * basic YarrboardApp object
-        * onConnect()
-        * onMessage()
-        * etc
+    * add key field to channel edit
 * settings page is ugly af.
     * borders for each config area like channels
     * side bar that loads each config page?
@@ -42,7 +41,6 @@
     * frothfet plugin - use key for paths instead of id
     * signalk sendit plugin - use key for paths instead of id
     * brineomatic plugin
-* figure out why save config is crashing...
 
 # BRINEOMATIC
 
