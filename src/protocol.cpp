@@ -715,21 +715,16 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
     return generateErrorJSON(output, error);
   }
 
-  TRACE();
-
-  if (ch->loadConfig(input["config"], error, sizeof(error)))
+  if (!ch->loadConfig(input["config"], error, sizeof(error))) {
     return generateErrorJSON(output, error);
-
-  TRACE();
+  }
 
   // write it to file
   if (!saveConfig(error, sizeof(error)))
     return generateErrorJSON(output, error);
 
-  TRACE();
-
-  // // give them the updated config
-  // generateConfigJSON(output);
+  // give them the updated config
+  generateConfigJSON(output);
 #else
   return generateErrorJSON(output, "Board does not have pwm channels.");
 #endif

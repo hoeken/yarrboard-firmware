@@ -65,13 +65,13 @@ void pwm_channels_setup()
   _adcCurrentMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
   _adcCurrentMCP3564.setAveraging(MCP3x6x::osr::OSR_1024);
 
-  _adcCurrentMCP3564.printConfig();
+  // _adcCurrentMCP3564.printConfig();
 
-  YBP.print("VDD: ");
-  YBP.println(_adcCurrentMCP3564.analogRead(MCP_AVDD));
+  // YBP.print("VDD: ");
+  // YBP.println(_adcCurrentMCP3564.analogRead(MCP_AVDD));
 
-  YBP.print("TEMP: ");
-  YBP.println(_adcCurrentMCP3564.analogRead(MCP_TEMP));
+  // YBP.print("TEMP: ");
+  // YBP.println(_adcCurrentMCP3564.analogRead(MCP_TEMP));
 
   adcCurrentHelper = new MCP3564Helper(3.3, &_adcCurrentMCP3564, 50, 500);
   adcCurrentHelper->attachReadyPinInterrupt(YB_PWM_CHANNEL_CURRENT_ADC_IRQ, FALLING);
@@ -94,7 +94,6 @@ void pwm_channels_setup()
   _adcVoltageADS1115_1.setGain(1);
   _adcVoltageADS1115_1.setDataRate(4);
 
-  TRACE();
   adcVoltageHelper1 = new ADS1115Helper(4.096, &_adcVoltageADS1115_1, 50, 500);
 
   _adcVoltageADS1115_2.begin();
@@ -126,13 +125,13 @@ void pwm_channels_setup()
   _adcVoltageMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
   _adcVoltageMCP3564.setAveraging(MCP3x6x::osr::OSR_1024);
 
-  _adcVoltageMCP3564.printConfig();
+  // _adcVoltageMCP3564.printConfig();
 
-  YBP.print("VDD: ");
-  YBP.println(_adcVoltageMCP3564.analogRead(MCP_AVDD));
+  // YBP.print("VDD: ");
+  // YBP.println(_adcVoltageMCP3564.analogRead(MCP_AVDD));
 
-  YBP.print("TEMP: ");
-  YBP.println(_adcVoltageMCP3564.analogRead(MCP_TEMP));
+  // YBP.print("TEMP: ");
+  // YBP.println(_adcVoltageMCP3564.analogRead(MCP_TEMP));
 
   adcVoltageHelper = new MCP3564Helper(3.3, &_adcVoltageMCP3564);
 
@@ -342,7 +341,7 @@ void PWMChannel::setupOffset()
   if (a < (YB_PWM_CHANNEL_MAX_AMPS * 0.05))
     this->amperageOffset = a;
 
-  YBP.printf("CH%d Voltage Offset: %0.3f / Amperage Offset: %0.3f\n", this->id, this->voltageOffset, this->amperageOffset);
+  // YBP.printf("CH%d Voltage Offset: %0.3f / Amperage Offset: %0.3f\n", this->id, this->voltageOffset, this->amperageOffset);
 }
 
 void PWMChannel::setupDefaultState()

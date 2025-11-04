@@ -77,7 +77,7 @@
   BaseChannel.prototype.saveConfig = function () {
     var errors = this.validateConfig(this.getConfig());
     if (!errors) {
-      var command = {
+      let command = {
         cmd: `config_${this.channelType}_channel`,
         id: this.id,
         config: this.getConfig(),
@@ -106,6 +106,7 @@
   // Nitty gritty of form handling.
   //
   BaseChannel.prototype.handleEditForm = function (newcfg, event) {
+
     //clear our errors
     for (const f of Object.keys(newcfg)) {
       $(`#f-${this.channelType}-${f}-${this.id}`).removeClass("is-valid is-invalid");

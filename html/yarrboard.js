@@ -3703,8 +3703,6 @@
       YB.log("Device Pixel Ratio: " + window.devicePixelRatio);
       YB.log("Is canvas supported? " + isCanvasSupported());
 
-      console.log("3");
-
       //main data connection
       start_websocket();
 
