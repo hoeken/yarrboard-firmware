@@ -667,6 +667,7 @@ bool PWMChannel::gammaFadeWithInterrupt(
   gamma.user_cb = final_cb;
   gamma.user_arg = final_arg;
   gamma.active = true;
+  gamma.owner = this;
 
   // even timing; remainder to last segment
   gamma.step_ms = (SEGMENTS > 1) ? (total_ms / SEGMENTS) : total_ms;
@@ -701,6 +702,42 @@ bool PWMChannel::gammaFadeWithInterrupt(
     first_ms,
     &PWMChannel::gammaISR,
     &gamma);
+}
+
+void ARDUINO_ISR_ATTR PWMChannel::gammaISR(void* arg)
+{
+  auto* S = static_cast<PWMChannel::GammaState*>(arg);
+  if (!S || !S->active)
+    return;
+
+  BaseType_t hpw = pdFALSE;
+  xTimerPendFunctionCallFromISR(&PWMChannel::continueGammaThunk, arg, 0, &hpw);
+  if (hpw)
+    portYIELD_FROM_ISR();
+}
+
+void PWMChannel::continueGammaThunk(void* arg, uint32_t)
+{
+  auto* S = static_cast<GammaState*>(arg);
+  if (!S || !S->active)
+    return;
+
+  constexpr uint8_t SEGMENTS = 16;
+
+  if (S->idx + 1 < SEGMENTS) {
+    const uint32_t from = S->targets[S->idx];
+    const uint32_t to = S->targets[S->idx + 1];
+    const bool lastSeg = (S->idx + 1 == SEGMENTS - 1);
+    const int dur_ms = lastSeg ? S->last_ms : S->step_ms;
+    S->idx++;
+
+    // SAFE here (task context):
+    ledcFadeWithInterruptArg(S->pin, from, to, dur_ms, &PWMChannel::gammaISR, S);
+  } else {
+    S->active = false;
+    if (S->user_cb)
+      S->user_cb(S->user_arg); // also safe here if you prefer
+  }
 }
 
 void PWMChannel::checkIfFadeOver()
