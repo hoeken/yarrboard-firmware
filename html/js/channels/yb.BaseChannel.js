@@ -78,8 +78,8 @@
     var errors = this.validateConfig(this.getConfig());
     if (!errors) {
       var command = {
-        cmd: "config_channel",
-        type: this.channelType,
+        cmd: `config_${this.channelType}_channel`,
+        id: this.id,
         config: this.getConfig(),
       };
       if (YB.client && typeof YB.client.send === "function") {

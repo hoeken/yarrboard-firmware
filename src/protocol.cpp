@@ -710,69 +710,28 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
   if (!ch)
     return;
 
-  // channel name
-  if (input["name"].is<String>()) {
-    // is it too long?
-    if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
-      sprintf(error, "Maximum channel name length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
-      return generateErrorJSON(output, error);
-    }
-
-    // save to our storage
-    strlcpy(ch->name, input["name"] | "Channel ?", sizeof(ch->name));
+  if (!input["config"].is<JsonObjectConst>()) {
+    snprintf(error, sizeof(error), "'config' is required parameter");
+    return generateErrorJSON(output, error);
   }
 
-  // channel type
-  if (input["type"].is<String>()) {
-    // is it too long?
-    if (strlen(input["type"]) > YB_TYPE_LENGTH - 1) {
-      sprintf(error, "Maximum channel type length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
-      return generateErrorJSON(output, error);
-    }
+  TRACE();
 
-    // save to our storage
-    strlcpy(ch->type, input["type"] | "other", sizeof(ch->type));
-  }
+  if (ch->loadConfig(input["config"], error, sizeof(error)))
+    return generateErrorJSON(output, error);
 
-  // default state
-  if (input["defaultState"].is<String>()) {
-    // is it too long?
-    if (strlen(input["defaultState"]) >
-        sizeof(ch->defaultState) - 1) {
-      sprintf(error, "Maximum default state length is %s characters.", sizeof(ch->defaultState) - 1);
-      return generateErrorJSON(output, error);
-    }
-
-    // save to our storage
-    strlcpy(ch->defaultState, input["defaultState"] | "OFF", sizeof(ch->defaultState));
-  }
-
-  // dimmability
-  if (input["isDimmable"].is<bool>())
-    ch->isDimmable = input["isDimmable"];
-
-  // enabled
-  if (input["enabled"].is<bool>())
-    ch->isEnabled = input["enabled"];
-
-  // soft fuse
-  if (input["softFuse"].is<float>()) {
-    // i crave validation!
-    float softFuse = input["softFuse"];
-    softFuse = constrain(softFuse, 0.01, 20.0);
-
-    // save right nwo.
-    ch->softFuseAmperage = softFuse;
-  }
+  TRACE();
 
   // write it to file
   if (!saveConfig(error, sizeof(error)))
     return generateErrorJSON(output, error);
 
-  // give them the updated config
-  generateConfigJSON(output);
+  TRACE();
+
+  // // give them the updated config
+  // generateConfigJSON(output);
 #else
-  return generateErrorJSON(output, "Board does not have output channels.");
+  return generateErrorJSON(output, "Board does not have pwm channels.");
 #endif
 }
 

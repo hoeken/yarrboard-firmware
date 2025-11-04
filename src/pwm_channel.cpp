@@ -1039,9 +1039,10 @@ bool PWMChannel::loadConfig(JsonVariantConst config, char* error, size_t len)
 
   isDimmable = config["isDimmable"] | true;
 
-  softFuseAmperage = config["softFuse"] | YB_PWM_CHANNEL_MAX_AMPS;
-  softFuseAmperage = max(0.0f, softFuseAmperage);
-  softFuseAmperage = min((float)YB_PWM_CHANNEL_MAX_AMPS, softFuseAmperage);
+  if (config["softFuse"]) {
+    softFuseAmperage = config["softFuse"];
+    softFuseAmperage = constrain(softFuseAmperage, 0, YB_PWM_CHANNEL_MAX_AMPS);
+  }
 
   strlcpy(this->type, config["type"] | "other", sizeof(this->type));
   strlcpy(this->defaultState, config["defaultState"] | "OFF", sizeof(this->defaultState));
