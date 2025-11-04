@@ -389,29 +389,23 @@
       }
 
       let voltage = this.data.voltage.toFixed(1);
-      let voltageHTML = `${voltage}V`;
-      $('#pwmVoltage' + this.id).html(voltageHTML);
+      $('#pwmVoltage' + this.id).html(`${voltage}V`);
 
       let current = this.data.current;
       if (current < 1)
         current = current.toFixed(2);
       else
         current = current.toFixed(1);
-      let currentHTML = `${current}A`;
-      $('#pwmCurrent' + this.id).html(currentHTML);
+      $('#pwmCurrent' + this.id).html(`${current}A`);
 
-      let wattage = 0;
-      if (this.data.voltage) {
-        wattage = this.data.voltage * this.data.current;
-        if (wattage > 10)
-          wattage = Math.round(wattage);
-        else if (wattage > 1)
-          wattage = wattage.toFixed(1);
-        else
-          wattage = wattage.toFixed(2);
-        $('#pwmWattage' + this.id).html(`${wattage}W`);
-      } else
-        $('#pwmWattage' + this.id).hide();
+      let wattage = this.data.wattage;
+      if (wattage > 10)
+        wattage = Math.round(wattage);
+      else if (wattage > 1)
+        wattage = wattage.toFixed(1);
+      else
+        wattage = wattage.toFixed(2);
+      $('#pwmWattage' + this.id).html(`${wattage}W`);
     }
   };
 

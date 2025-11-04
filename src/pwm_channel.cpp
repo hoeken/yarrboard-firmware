@@ -458,6 +458,14 @@ float PWMChannel::getAmperage()
   return this->toAmperage(this->amperageHelper->getAverageVoltage(this->_adcAmperageChannel));
 }
 
+float PWMChannel::getWattage()
+{
+  if (this->dutyCycle == 1.0)
+    return this->getVoltage() * this->getAmperage();
+  else
+    return getBusVoltage() * this->getAmperage();
+}
+
 float PWMChannel::toVoltage(float adcVoltage)
 {
   float v = adcVoltage / (YB_PWM_CHANNEL_VOLTAGE_R2 / (YB_PWM_CHANNEL_VOLTAGE_R2 + YB_PWM_CHANNEL_VOLTAGE_R1));
@@ -782,12 +790,7 @@ void PWMChannel::calculateAverages(unsigned int delta)
   // record our total consumption
   if (this->getAmperage() > 0) {
     this->ampHours += this->getAmperage() * ((float)delta / 3600000.0);
-
-    // only use our voltage if we're not pwming.
-    if (this->getVoltage() && this->dutyCycle == 1.0)
-      this->wattHours += this->getAmperage() * this->getVoltage() * ((float)delta / 3600000.0);
-    else
-      this->wattHours += this->getAmperage() * getBusVoltage() * ((float)delta / 3600000.0);
+    this->wattHours += this->getWattage() * ((float)delta / 3600000.0);
   }
 }
 
@@ -1070,6 +1073,7 @@ void PWMChannel::generateUpdate(JsonVariant config)
     config["duty"] = round2(this->dutyCycle);
   config["voltage"] = round2(this->getVoltage());
   config["current"] = round2(this->getAmperage());
+  config["wattage"] = round2(this->getWattage());
   config["aH"] = round3(this->ampHours);
   config["wH"] = round3(this->wattHours);
 }

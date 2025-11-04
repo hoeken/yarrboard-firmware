@@ -140,6 +140,8 @@ class PWMChannel : public BaseChannel
     float toAmperage(float voltage);
     void checkSoftFuse();
 
+    float getWattage();
+
     void checkIfFadeOver();
     void setState(const char* state);
     void setState(bool newState);
