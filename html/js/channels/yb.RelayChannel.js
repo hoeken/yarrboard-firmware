@@ -2,98 +2,175 @@
   // work in the global YB namespace.
   var YB = global.YB || {};
 
-  const RelayControlCard = (ch) => `
-<div id="relay${ch.id}" class="col-xs-12 col-sm-6">
-  <table class="w-100 h-100 p-2">
-    <tr>
-      <td>
-        <button id="relayState${ch.id}" type="button" class="btn relayButton text-center" onclick="toggle_relay_state(${ch.id})">
-          <table style="width: 100%">
-            <tbody>
-              <tr>
-                <td class="relayIcon text-center align-middle pe-2">
-                  ${pwm_type_images[ch.type]}
-                </td>
-                <td class="text-center" style="width: 99%">
-                  <div id="relayName${ch.id}">${ch.name}</div>
-                  <div id="relayStatus${ch.id}"></div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </button>
-      </td>
-    </tr>
-  </table>
-</div>
-`;
+  function RelayChannel() {
+    YB.BaseChannel.call(this, "relay", "Relay");
 
-  const RelayEditCard = (ch) => `
-<div id="relayEditCard${ch.id}" class="col-xs-12 col-sm-6">
-  <div class="p-3 border border-secondary rounded">
-    <h5>Relay Channel #${ch.id}</h5>
-    <div class="form-floating mb-3">
-      <input type="text" class="form-control" id="fRelayName${ch.id}" value="${ch.name}">
-      <label for="fRelayName${ch.id}">Name</label>
-    </div>
-    <div class="invalid-feedback">Must be 30 characters or less.</div>
-    <div class="form-check form-switch mb-3">
-      <input class="form-check-input" type="checkbox" id="fRelayEnabled${ch.id}">
-      <label class="form-check-label" for="fRelayEnabled${ch.id}">
-        Enabled
-      </label>
-    </div>
-    <div class="form-floating mb-3">
-      <select id="fRelayDefaultState${ch.id}" class="form-select" aria-label="Default State (on boot)">
-        <option value="ON">ON</option>
-        <option value="OFF">OFF</option>
-      </select>
-      <label for="fRelayDefaultState${ch.id}">Default State (on boot)</label>
-    </div>
-    <div class="form-floating">
-      <select id="fRelayType${ch.id}" class="form-select" aria-label="Output Type">
-        <option value="light">Light</option>
-        <option value="motor">Motor</option>
-        <option value="water_pump">Water Pump</option>
-        <option value="bilge_pump">Bilge Pump</option>
-        <option value="fuel_pump">Fuel Pump</option>
-        <option value="fan">Fan</option>
-        <option value="solenoid">Solenoid</option>
-        <option value="fridge">Refrigerator</option>
-        <option value="freezer">Freezer</option>
-        <option value="charger">Charger</option>
-        <option value="electronics">Electronics</option>
-        <option value="other">Other</option>
-      </select>
-      <label for="fRelayType${ch.id}">Output Type</label>
-    </div>
-  </div>
-</div>
-`;
+    this.onEditForm = this.onEditForm.bind(this);
+    this.toggleState = this.toggleState.bind(this);
+  }
 
-  function toggle_relay_state(id) {
+  RelayChannel.prototype = Object.create(YB.BaseChannel.prototype);
+  RelayChannel.prototype.constructor = RelayChannel;
+
+  RelayChannel.prototype.getConfigSchema = function () {
+    // copy base schema to avoid mutating the base literal
+    var base = YB.BaseChannel.prototype.getConfigSchema.call(this);
+
+    var schema = Object.assign({}, base);
+
+    // Channel-specific fields
+    schema.type = {
+      presence: { allowEmpty: false },
+      type: "string",
+      length: { minimum: 1, maximum: 30 }
+    };
+
+    // Optional calibrated units string
+    schema.defaultState = {
+      type: "string",
+      inclusion: {
+        within: ["ON", "OFF"],
+        message: "^defaultState must be ON or OFF"
+      }
+    };
+
+    return schema;
+  };
+
+  RelayChannel.prototype.generateControlUI = function () {
+    return `
+      <div id="relay${this.id}" class="col-xs-12 col-sm-6">
+        <table class="w-100 h-100 p-2">
+          <tr>
+            <td>
+              <button id="relayState${this.id}" type="button" class="btn relayButton text-center">
+                <table style="width: 100%">
+                  <tbody>
+                    <tr>
+                      <td class="relayIcon text-center align-middle pe-2">
+                        ${PWMChannel.typeImages[this.cfg.type]}
+                      </td>
+                      <td class="text-center" style="width: 99%">
+                        <div id="relayName${this.id}">${this.name}</div>
+                        <div id="relayStatus${this.id}"></div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </button>
+            </td>
+          </tr>
+        </table>
+      </div>
+    `;
+  };
+
+  RelayChannel.prototype.setupControlUI = function () {
+    $(`#relayState${this.id}`).on("click", this.toggleState);
+  };
+
+  RelayChannel.prototype.toggleState = function () {
     YB.client.send({
       "cmd": "toggle_relay_channel",
-      "id": id,
+      "id": this.id,
       "source": YB.App.config.hostname
     }, true);
   }
 
+  RelayChannel.prototype.generateEditUI = function () {
 
+    let standardFields = this.generateStandardEditFields();
 
-  function RelayChannel() {
-    YB.BaseChannel.call(this, "relay");
-  }
-  RelayChannel.prototype = Object.create(YB.BaseChannel.prototype);
-  RelayChannel.prototype.constructor = RelayChannel;
-
-  RelayChannel.prototype.parseConfig = function (cfg) {
-    YB.BaseChannel.prototype.parseConfig.call(this, cfg);
+    return `
+      <div id="relayEditCard${this.id}" class="col-xs-12 col-sm-6">
+        <div class="p-3 border border-secondary rounded">
+          <h5>Relay Channel #${this.id}</h5>
+          ${standardFields}
+          <div class="form-floating mb-3">
+            <select id="fRelayDefaultState${this.id}" class="form-select" aria-label="Default State (on boot)">
+              <option value="ON">ON</option>
+              <option value="OFF">OFF</option>
+            </select>
+            <label for="fRelayDefaultState${this.id}">Default State (on boot)</label>
+          </div>
+          <div class="form-floating">
+            <select id="fRelayType${this.id}" class="form-select" aria-label="Output Type">
+              <option value="light">Light</option>
+              <option value="motor">Motor</option>
+              <option value="water_pump">Water Pump</option>
+              <option value="bilge_pump">Bilge Pump</option>
+              <option value="fuel_pump">Fuel Pump</option>
+              <option value="fan">Fan</option>
+              <option value="solenoid">Solenoid</option>
+              <option value="fridge">Refrigerator</option>
+              <option value="freezer">Freezer</option>
+              <option value="charger">Charger</option>
+              <option value="electronics">Electronics</option>
+              <option value="other">Other</option>
+            </select>
+            <label for="fRelayType${this.id}">Output Type</label>
+          </div>
+        </div>
+      </div>
+    `;
   };
+
+  RelayChannel.prototype.setupEditUI = function () {
+    $(`#fRelayEnabled${this.id}`).prop("checked", this.enabled);
+    $(`#fRelayType${this.id}`).val(this.cfg.type);
+    $(`#fRelayDefaultState${this.id}`).val(this.cfg.defaultState);
+
+    //enable/disable other stuff.
+    $(`#fRelayName${this.id}`).prop('disabled', !this.enabled);
+    $(`#fRelayType${this.id}`).prop('disabled', !this.enabled);
+    $(`#fRelayDefaultState${this.id}`).prop('disabled', !this.enabled);
+
+    //validate + save
+    $(`#fRelayEnabled${this.id}`).change(this.onEditForm);
+    $(`#fRelayName${this.id}`).change(this.onEditForm);
+    $(`#fRelayType${this.id}`).change(this.onEditForm);
+    $(`#fRelayDefaultState${this.id}`).change(this.onEditForm);
+  };
+
+  RelayChannel.prototype.onEditForm = function (e) {
+
+    //layer our form data over our existing config.
+    let newcfg = this.cfg;
+    newcfg.name = $(`#f-relay-name-${this.id}`).val()
+    newcfg.enabled = $(`#f-relay-enabled-${this.id}`).prop("checked");
+    newcfg.key = $(`#f-relay-key-${this.id}`).val();
+    newcfg.type = $(`#f-relay-type-${this.id}`).val();
+    newcfg.defaultState = $(`#f-relay-defaultState-${this.id}`).val();
+
+    this.handleEditForm(newcfg, e);
+
+    //ui updates
+    $(`#f-relay-name-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-relay-key-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-relay-type-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-relay-defaultState-${this.id}`).prop('disabled', !this.enabled);
+  };
+
+  RelayChannel.prototype.updateControlUI = function () {
+    if (this.enabled) {
+      if (this.data.state == "ON") {
+        $('#relayState' + this.id).addClass("btn-success");
+        $('#relayState' + this.id).removeClass("btn-secondary");
+        $(`#relayStatus${this.id}`).hide();
+      }
+      else {
+        $('#relayState' + this.id).addClass("btn-secondary");
+        $('#relayState' + this.id).removeClass("btn-success");
+        $(`#relayStatus${this.id}`).hide();
+      }
+
+    }
+  };
+
 
   YB.RelayChannel = RelayChannel;
   YB.ChannelRegistry.registerChannelType("relay", YB.RelayChannel)
 
-  window.YB = YB; // <-- this line makes it global
+  global.YB = YB; // <-- this line makes it global
 
 })(this); //private scope

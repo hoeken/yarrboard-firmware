@@ -12,6 +12,7 @@
     * servo channels
     * stepper channels
     * brineomatic
+        * app.onOpenPage(page, callback);
     * dio channels
 * settings page is ugly af.
     * borders for each config area like channels

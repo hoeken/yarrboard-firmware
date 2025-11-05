@@ -878,67 +878,6 @@
 
       YB.ChannelRegistry.loadAllChannels(msg);
 
-      //do we have relay channels?
-      $('#relayControlDiv').hide();
-      $('#relayStatsDiv').hide();
-      if (msg.relay) {
-        //fresh slate
-        $('#relayCards').html("");
-        for (ch of msg.relay) {
-          if (ch.enabled) {
-            $('#relayCards').append(RelayControlCard(ch));
-          }
-        }
-
-        $('#relayControlDiv').show();
-        $('#relayStatsDiv').show();
-      }
-
-      //do we have servo channels?
-      $('#servoControlDiv').hide();
-      $('#servoStatsDiv').hide();
-      if (msg.servo) {
-        //fresh slate
-        $('#servoCards').html("");
-        for (ch of msg.servo) {
-          if (ch.enabled) {
-            $('#servoCards').append(ServoControlCard(ch));
-
-            $('#servoSlider' + ch.id).change(set_servo_angle);
-
-            //update our duty when we move
-            $('#servoSlider' + ch.id).on("input", set_servo_angle);
-
-            //stop updating the UI when we are choosing a duty
-            $('#servoSlider' + ch.id).on('focus', function (e) {
-              let ele = e.target;
-              let id = ele.id.match(/\d+/)[0];
-              currentServoSliderID = id;
-            });
-
-            //stop updating the UI when we are choosing a duty
-            $('#servoSlider' + ch.id).on('touchstart', function (e) {
-              let ele = e.target;
-              let id = ele.id.match(/\d+/)[0];
-              currentServoSliderID = id;
-            });
-
-            //restart the UI updates when slider is closed
-            $('#servoSlider' + ch.id).on("blur", function (e) {
-              currentServoSliderID = -1;
-            });
-
-            //restart the UI updates when slider is closed
-            $('#servoSlider' + ch.id).on("touchend", function (e) {
-              currentServoSliderID = -1;
-            });
-          }
-        }
-
-        $('#servoControlDiv').show();
-        $('#servoStatsDiv').show();
-      }
-
       //populate our adc control table
       $('#adcControlDiv').hide();
       if (msg.adc) {
@@ -1463,48 +1402,6 @@
         $('#boardConfigForm').html(YB.App.BoardNameEdit(msg.name));
         $("#fBoardName").change(YB.App.validateBoardName);
 
-        //edit controls for each relay
-        $('#relayConfig').hide();
-        if (msg.relay) {
-          $('#relayConfigForm').html("");
-          for (ch of msg.relay) {
-            $('#relayConfigForm').append(RelayEditCard(ch));
-            $(`#fRelayEnabled${ch.id}`).prop("checked", ch.enabled);
-            $(`#fRelayType${ch.id}`).val(ch.type);
-            $(`#fRelayDefaultState${ch.id}`).val(ch.defaultState);
-
-            //enable/disable other stuff.
-            $(`#fRelayName${ch.id}`).prop('disabled', !ch.enabled);
-            $(`#fRelayType${ch.id}`).prop('disabled', !ch.enabled);
-            $(`#fRelayDefaultState${ch.id}`).prop('disabled', !ch.enabled);
-
-            //validate + save
-            $(`#fRelayEnabled${ch.id}`).change(validate_relay_enabled);
-            $(`#fRelayName${ch.id}`).change(validate_relay_name);
-            $(`#fRelayType${ch.id}`).change(validate_relay_type);
-            $(`#fRelayDefaultState${ch.id}`).change(validate_relay_default_state);
-          }
-          $('#relayConfig').show();
-        }
-
-        //edit controls for each servo
-        $('#servoConfig').hide();
-        if (msg.servo) {
-          $('#servoConfigForm').html("");
-          for (ch of msg.servo) {
-            $('#servoConfigForm').append(ServoEditCard(ch));
-            $(`#fServoEnabled${ch.id}`).prop("checked", ch.enabled);
-
-            //enable/disable other stuff.
-            $(`#fServoName${ch.id}`).prop('disabled', !ch.enabled);
-
-            //validate + save
-            $(`#fServoEnabled${ch.id}`).change(validate_servo_enabled);
-            $(`#fServoName${ch.id}`).change(validate_servo_name);
-          }
-          $('#servoConfig').show();
-        }
-
         //edit controls for each adc
         $('#adcConfig').hide();
         if (msg.adc) {
@@ -1604,36 +1501,6 @@
       // }
       // else
       //   $('#bus_voltage_main').hide();
-
-      //our relay info
-      if (msg.relay) {
-        for (ch of msg.relay) {
-          if (YB.App.config.relay[ch.id - 1].enabled) {
-            if (ch.state == "ON") {
-              $('#relayState' + ch.id).addClass("btn-success");
-              $('#relayState' + ch.id).removeClass("btn-secondary");
-              $(`#relayStatus${ch.id}`).hide();
-            }
-            else {
-              $('#relayState' + ch.id).addClass("btn-secondary");
-              $('#relayState' + ch.id).removeClass("btn-success");
-              $(`#relayStatus${ch.id}`).hide();
-            }
-          }
-        }
-      }
-
-      //our servo info
-      if (msg.servo) {
-        for (ch of msg.servo) {
-          if (YB.App.config.servo[ch.id - 1].enabled) {
-            if (currentServoSliderID != ch.id) {
-              $('#servoSlider' + ch.id).val(ch.angle);
-              $('#servoAngle' + ch.id).html(`${ch.angle}°`);
-            }
-          }
-        }
-      }
 
       //our adc info
       if (msg.adc) {

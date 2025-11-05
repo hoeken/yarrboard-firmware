@@ -60,7 +60,7 @@ bool BaseChannel::loadConfig(JsonVariantConst config, char* error, size_t err_si
     strlcpy(this->name, config["name"], sizeof(this->name));
   }
 
-  // optional key - must not be an empty string.
+  // key - must not be an empty string.
   snprintf(this->key, sizeof(this->key), "%d", this->id);
   const char* val = config["key"].as<const char*>();
   if (val && *val && strlen(val)) {
@@ -79,8 +79,6 @@ bool BaseChannel::loadConfig(JsonVariantConst config, char* error, size_t err_si
 
     // okay save it to our object
     strlcpy(this->key, val, sizeof(this->key));
-  } else {
-    YBP.println("empty key");
   }
 
   return true;

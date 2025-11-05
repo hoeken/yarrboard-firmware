@@ -4,6 +4,10 @@
 
   function PWMChannel() {
     YB.BaseChannel.call(this, "pwm", "PWM");
+
+    this.onEditForm = this.onEditForm.bind(this);
+    this.setDutyCycle = this.setDutyCycle.bind(this);
+    this.toggleState = this.toggleState.bind(this);
   }
 
   PWMChannel.prototype = Object.create(YB.BaseChannel.prototype);
@@ -114,9 +118,7 @@
     // copy base schema to avoid mutating the base literal
     var base = YB.BaseChannel.prototype.getConfigSchema.call(this);
 
-    this.onEditForm = this.onEditForm.bind(this);
-    this.setDutyCycle = this.setDutyCycle.bind(this);
-    this.toggleState = this.toggleState.bind(this);
+
 
     var schema = Object.assign({}, base);
 
