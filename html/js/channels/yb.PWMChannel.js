@@ -5,6 +5,7 @@
   function PWMChannel() {
     YB.BaseChannel.call(this, "pwm");
   }
+
   PWMChannel.prototype = Object.create(YB.BaseChannel.prototype);
   PWMChannel.prototype.constructor = PWMChannel;
 

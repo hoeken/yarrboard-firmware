@@ -96,13 +96,13 @@
         if (!cfg.hasOwnProperty(ctype))
           continue;
 
-        //initialize our containers
-        $(`#${ctype}Cards`).html("");
+        //initialize our control container
+        this.createControlContainer(ctype);
+
         $(`#${ctype}Config`).hide();
         $(`#${ctype}ConfigForm`).html("");
-        $(`#${ctype}#StatsDiv`).hide();
+        $(`#${ctype}StatsDiv`).hide();
         $(`#${ctype}StatsTableBody`).html("");
-        $('#controlDiv').hide();
 
         //handle each individual channels setup
         for (var channel_config of cfg[ctype]) {
@@ -128,8 +128,8 @@
 
         //show our containers now.
         $(`#${ctype}Config`).show();
-        $(`#${ctype}#StatsDiv`).show();
-        $('#controlDiv').show();
+        $(`#${ctype}StatsDiv`).show();
+        $(`#${ctype}ControlDiv`).show();
       }
     },
 
@@ -158,6 +158,20 @@
           ch.updateStatsUI(chdata);
         }
       }
+    },
+
+    createControlContainer: function (ctype) {
+      if (!$(`#${ctype}ControlDiv`).length) {
+        var ctor = this.channelConstructors[ctype];
+        if (!ctor)
+          throw new Error("Unknown channel type: " + ctype);
+
+        let ch = new ctor();
+        $(`#controlPage`).append(ch.generateControlContainer());
+      }
+
+      $(`#${ctype}ControlDiv`).hide();
+      $(`#${ctype}Cards`).html("");
     },
 
   };

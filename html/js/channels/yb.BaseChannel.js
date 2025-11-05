@@ -9,6 +9,14 @@
     this.data = {};
   }
 
+  BaseChannel.prototype.generateControlContainer = function () {
+    return `
+      <div id="${this.channelType}ControlDiv" style="display:none" class="col-md-12">
+          <div id="${this.channelType}Cards" class="row g-3"></div>
+      </div>
+    `;
+  }
+
   //
   // Schema for validation of the config object.
   //

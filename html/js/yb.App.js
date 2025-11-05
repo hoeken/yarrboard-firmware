@@ -27,11 +27,7 @@
         }
 
         for (let handler of handlers) {
-          try {
-            handler(msg);
-          } catch (err) {
-            YB.log(`Handler for '${msg.msg}' failed:`, err);
-          }
+          handler(msg);
         }
       }
     },
@@ -100,15 +96,17 @@
 
       //light/dark theme init.
       let theme = YB.App.getPreferredTheme();
-      // YB.log(`preferred theme: ${theme}`);
+      YB.log(`preferred theme: ${theme}`);
       YB.App.setTheme(theme);
       $("#darkSwitch").change(YB.App.updateThemeSwitch);
 
       // preferred scheme watcher
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
         const storedTheme = YB.App.getStoredTheme();
-        if (storedTheme !== 'light' && storedTheme !== 'dark')
+        if (storedTheme !== 'light' && storedTheme !== 'dark') {
+          YB.log(`Theme watcher triggered`);
           YB.App.setTheme(YB.App.getPreferredTheme());
+        }
       });
 
       //brightness slider callbacks
@@ -751,9 +749,25 @@
     setStoredTheme: function () { localStorage.setItem('theme', theme); },
 
     getPreferredTheme: function () {
+
+      // if browser supports prefers-color-scheme
+      if (window.matchMedia('(prefers-color-scheme: dark)').media !== 'not all') {
+        YB.log(`prefers color scheme`);
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches)
+          return "dark";
+        if (window.matchMedia('(prefers-color-scheme: light)').matches)
+          return "light";
+      }
+
+      //do we have stored one?
+      const storedTheme = YB.App.getStoredTheme();
+      YB.log(`stored: ${storedTheme}`);
+      if (storedTheme)
+        return storedTheme;
+
       //did we get one passed in? b&g, etc pass in like this.
       let mode = YB.Util.getQueryVariable("mode");
-      // YB.log(`mode: ${mode}`);
+      YB.log(`mode: ${mode}`);
       if (mode !== null) {
         if (mode == "night")
           return "dark";
@@ -761,17 +775,12 @@
           return "light";
       }
 
-      //do we have stored one?
-      const storedTheme = YB.App.getStoredTheme();
-      if (storedTheme)
-        return storedTheme;
-
-      //prefs?
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      //default to light mode
+      return "light";
     },
 
     setTheme: function (theme) {
-      // YB.log(`set theme ${theme}`);
+      YB.log(`set theme ${theme}`);
       if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
         document.documentElement.setAttribute('data-bs-theme', 'dark');
       else
