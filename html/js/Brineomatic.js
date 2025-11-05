@@ -1077,14 +1077,15 @@
       $(`${result_div}Row`).hide();
   }
 
-  Brineomatic.prototype.startAutomatic = function () {
-    console.log("start automatic");
+  Brineomatic.prototype.startAutomatic = function (e) {
+    $(e.currentTarget).blur();
     YB.client.send({
       "cmd": "start_watermaker",
     }, true);
   }
 
-  Brineomatic.prototype.startDuration = function () {
+  Brineomatic.prototype.startDuration = function (e) {
+    $(e.currentTarget).blur();
     let duration = $("#bomRunDurationInput").val();
 
     if (duration > 0) {
@@ -1098,7 +1099,8 @@
     }
   }
 
-  Brineomatic.prototype.startVolume = function () {
+  Brineomatic.prototype.startVolume = function (e) {
+    $(e.currentTarget).blur();
     let volume = $("#bomRunVolumeInput").val();
 
     if (volume > 0) {
@@ -1109,7 +1111,8 @@
     }
   }
 
-  Brineomatic.prototype.flush = function () {
+  Brineomatic.prototype.flush = function (e) {
+    $(e.currentTarget).blur();
     let duration = $("#bomFlushDurationInput").val();
 
     if (duration > 0) {
@@ -1122,7 +1125,8 @@
     }
   }
 
-  Brineomatic.prototype.pickle = function () {
+  Brineomatic.prototype.pickle = function (e) {
+    $(e.currentTarget).blur();
     let duration = $("#bomPickleDurationInput").val();
 
     if (duration > 0) {
@@ -1135,7 +1139,8 @@
     }
   }
 
-  Brineomatic.prototype.depickle = function () {
+  Brineomatic.prototype.depickle = function (e) {
+    $(e.currentTarget).blur();
     let duration = $("#bomDepickleDurationInput").val();
 
     if (duration > 0) {
@@ -1148,19 +1153,22 @@
     }
   }
 
-  Brineomatic.prototype.stop = function () {
+  Brineomatic.prototype.stop = function (e) {
+    $(e.currentTarget).blur();
     YB.client.send({
       "cmd": "stop_watermaker",
     }, true);
   }
 
-  Brineomatic.prototype.manual = function () {
+  Brineomatic.prototype.manual = function (e) {
+    $(e.currentTarget).blur();
     YB.client.send({
       "cmd": "manual_watermaker",
     }, true);
   }
 
-  Brineomatic.prototype.idle = function () {
+  Brineomatic.prototype.idle = function (e) {
+    $(e.currentTarget).blur();
     YB.client.send({
       "cmd": "idle_watermaker",
     }, true);
