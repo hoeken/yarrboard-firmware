@@ -18,19 +18,17 @@
 
     var schema = Object.assign({}, base);
 
-    // Channel-specific fields
     schema.type = {
       presence: { allowEmpty: false },
       type: "string",
       length: { minimum: 1, maximum: 30 }
     };
 
-    // Optional calibrated units string
     schema.defaultState = {
-      type: "string",
+      presence: true,
       inclusion: {
-        within: ["ON", "OFF"],
-        message: "^defaultState must be ON or OFF"
+        within: [true, false],
+        message: "^defaultState must be boolean"
       }
     };
 
@@ -48,7 +46,7 @@
                   <tbody>
                     <tr>
                       <td class="relayIcon text-center align-middle pe-2">
-                        ${PWMChannel.typeImages[this.cfg.type]}
+                        ${YB.PWMChannel.typeImages[this.cfg.type]}
                       </td>
                       <td class="text-center" style="width: 99%">
                         <div id="relayName${this.id}">${this.name}</div>
@@ -87,14 +85,15 @@
           <h5>Relay Channel #${this.id}</h5>
           ${standardFields}
           <div class="form-floating mb-3">
-            <select id="fRelayDefaultState${this.id}" class="form-select" aria-label="Default State (on boot)">
+            <select id="f-relay-defaultState-${this.id}" class="form-select" aria-label="Default State (on boot)">
               <option value="ON">ON</option>
               <option value="OFF">OFF</option>
             </select>
-            <label for="fRelayDefaultState${this.id}">Default State (on boot)</label>
+            <label for="f-relay-defaultState-${this.id}">Default State (on boot)</label>
+            <div class="invalid-feedback"></div>
           </div>
           <div class="form-floating">
-            <select id="fRelayType${this.id}" class="form-select" aria-label="Output Type">
+            <select id="f-relay-type-${this.id}" class="form-select" aria-label="Output Type">
               <option value="light">Light</option>
               <option value="motor">Motor</option>
               <option value="water_pump">Water Pump</option>
@@ -108,7 +107,8 @@
               <option value="electronics">Electronics</option>
               <option value="other">Other</option>
             </select>
-            <label for="fRelayType${this.id}">Output Type</label>
+            <label for="f-relay-type-${this.id}">Output Type</label>
+            <div class="invalid-feedback"></div>
           </div>
         </div>
       </div>
@@ -116,20 +116,20 @@
   };
 
   RelayChannel.prototype.setupEditUI = function () {
-    $(`#fRelayEnabled${this.id}`).prop("checked", this.enabled);
-    $(`#fRelayType${this.id}`).val(this.cfg.type);
-    $(`#fRelayDefaultState${this.id}`).val(this.cfg.defaultState);
+
+    YB.BaseChannel.prototype.setupEditUI.call(this);
+
+    //populate our data
+    $(`#f-relay-type-${this.id}`).val(this.cfg.type);
+    $(`#f-relay-defaultState-${this.id}`).val(this.cfg.defaultState ? "ON" : "OFF");
 
     //enable/disable other stuff.
-    $(`#fRelayName${this.id}`).prop('disabled', !this.enabled);
-    $(`#fRelayType${this.id}`).prop('disabled', !this.enabled);
-    $(`#fRelayDefaultState${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-relay-type-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-relay-defaultState-${this.id}`).prop('disabled', !this.enabled);
 
     //validate + save
-    $(`#fRelayEnabled${this.id}`).change(this.onEditForm);
-    $(`#fRelayName${this.id}`).change(this.onEditForm);
-    $(`#fRelayType${this.id}`).change(this.onEditForm);
-    $(`#fRelayDefaultState${this.id}`).change(this.onEditForm);
+    $(`#f-relay-type-${this.id}`).change(this.onEditForm);
+    $(`#f-relay-defaultState-${this.id}`).change(this.onEditForm);
   };
 
   RelayChannel.prototype.onEditForm = function (e) {
@@ -140,7 +140,7 @@
     newcfg.enabled = $(`#f-relay-enabled-${this.id}`).prop("checked");
     newcfg.key = $(`#f-relay-key-${this.id}`).val();
     newcfg.type = $(`#f-relay-type-${this.id}`).val();
-    newcfg.defaultState = $(`#f-relay-defaultState-${this.id}`).val();
+    newcfg.defaultState = $(`#f-relay-defaultState-${this.id}`).val() === "ON";
 
     this.handleEditForm(newcfg, e);
 

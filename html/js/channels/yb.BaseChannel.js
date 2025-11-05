@@ -202,7 +202,21 @@
   // Functions for setting up the UI hooks and callbacks
   //
   BaseChannel.prototype.setupControlUI = function () { };
-  BaseChannel.prototype.setupEditUI = function () { };
+  BaseChannel.prototype.setupEditUI = function () {
+    //populate our data
+    $(`#f-${this.channelType}-name-${this.id}`).val(this.name);
+    $(`#f-${this.channelType}-key-${this.id}`).val(this.key);
+    $(`#f-${this.channelType}-enabled-${this.id}`).prop("checked", this.enabled);
+
+    //enable/disable other stuff.
+    $(`#f-${this.channelType}-name-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-${this.channelType}-key-${this.id}`).prop('disabled', !this.enabled);
+
+    //validate + save
+    $(`#f-${this.channelType}-name-${this.id}`).change(this.onEditForm);
+    $(`#f-${this.channelType}-enabled-${this.id}`).change(this.onEditForm);
+    $(`#f-${this.channelType}-key-${this.id}`).change(this.onEditForm);
+  };
   BaseChannel.prototype.setupStatsUI = function () { };
   BaseChannel.prototype.setupGraphsUI = function () { };
 

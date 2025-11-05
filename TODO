@@ -8,12 +8,14 @@
 # v2.0.0 Release
 
 * UI Rewrite
-    * relay channels
-    * servo channels
-    * stepper channels
+    * relay channels - backend edit
+    * servo channels - backend edit
     * brineomatic
         * app.onOpenPage(page, callback);
+        * app.addPage("page", "content", openCallback);
+    * stepper channels
     * dio channels
+    * fan channels?
 * settings page is ugly af.
     * borders for each config area like channels
     * side bar that loads each config page?

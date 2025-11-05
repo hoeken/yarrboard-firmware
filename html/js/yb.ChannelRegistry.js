@@ -31,9 +31,11 @@
         throw new Error("Unknown channel type: " + type);
 
       var instance = new ctor();
-      instance.loadConfig(cfg);
-
-      this.addChannel(instance);
+      let errors = instance.loadConfig(cfg);
+      if (!errors)
+        this.addChannel(instance);
+      else
+        console.error(errors);
 
       return instance;
     },

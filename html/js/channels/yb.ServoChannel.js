@@ -73,16 +73,16 @@
 
     //restart the UI updates when slider is closed
     $('#servoSlider' + this.id).on("blur", function (e) {
-      ServoChannel.currentSliderID = id;
+      ServoChannel.currentSliderID = -1;
     });
 
     //restart the UI updates when slider is closed
     $('#servoSlider' + this.id).on("touchend", function (e) {
-      ServoChannel.currentSliderID = id;
+      ServoChannel.currentSliderID = -1;
     });
   };
 
-  ServoChannel.prototype.setAngle = function () {
+  ServoChannel.prototype.setAngle = function (e) {
     let ele = e.target;
     let value = ele.value;
 
@@ -113,38 +113,30 @@
     `;
   };
 
-
   ServoChannel.prototype.setupEditUI = function () {
-    $(`#fRelayEnabled${this.id}`).prop("checked", this.enabled);
-
-    //enable/disable other stuff.
-    $(`#fRelayName${this.id}`).prop('disabled', !this.enabled);
-
-    //validate + save
-    $(`#fRelayEnabled${this.id}`).change(this.onEditForm);
-    $(`#fRelayName${this.id}`).change(this.onEditForm);
+    YB.BaseChannel.prototype.setupEditUI.call(this);
   };
 
   ServoChannel.prototype.onEditForm = function (e) {
 
     //layer our form data over our existing config.
     let newcfg = this.cfg;
-    newcfg.name = $(`#f-relay-name-${this.id}`).val()
-    newcfg.enabled = $(`#f-relay-enabled-${this.id}`).prop("checked");
-    newcfg.key = $(`#f-relay-key-${this.id}`).val();
+    newcfg.name = $(`#f-servo-name-${this.id}`).val()
+    newcfg.enabled = $(`#f-servo-enabled-${this.id}`).prop("checked");
+    newcfg.key = $(`#f-servo-key-${this.id}`).val();
 
     this.handleEditForm(newcfg, e);
 
     //ui updates
-    $(`#f-relay-name-${this.id}`).prop('disabled', !this.enabled);
-    $(`#f-relay-key-${this.id}`).prop('disabled', !this.enabled);
-    $(`#f-relay-type-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-servo-name-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-servo-key-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-servo-type-${this.id}`).prop('disabled', !this.enabled);
   };
 
-  RelayChannel.prototype.updateControlUI = function () {
-    if (RelayChannel.currentSliderID != this.id) {
-      $('#servoSlider' + this.id).val(ch.angle);
-      $('#servoAngle' + this.id).html(`${ch.angle}°`);
+  ServoChannel.prototype.updateControlUI = function () {
+    if (ServoChannel.currentSliderID != this.id) {
+      $('#servoSlider' + this.id).val(this.data.angle);
+      $('#servoAngle' + this.id).html(`${this.data.angle}°`);
     }
   };
 

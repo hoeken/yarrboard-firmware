@@ -118,8 +118,6 @@
     // copy base schema to avoid mutating the base literal
     var base = YB.BaseChannel.prototype.getConfigSchema.call(this);
 
-
-
     var schema = Object.assign({}, base);
 
     // Channel-specific fields
@@ -295,23 +293,19 @@
 
   PWMChannel.prototype.setupEditUI = function () {
 
+    YB.BaseChannel.prototype.setupEditUI.call(this);
+
     $(`#f-pwm-isDimmable-${this.id}`).prop("checked", this.cfg.isDimmable);
-    $(`#f-pwm-enabled-${this.id}`).prop("checked", this.enabled);
     $(`#f-pwm-type-${this.id}`).val(this.cfg.type);
     $(`#f-pwm-defaultState-${this.id}`).val(this.cfg.defaultState);
 
     //enable/disable other stuff.
-    $(`#f-pwm-name-${this.id}`).prop('disabled', !this.enabled);
-    $(`#f-pwm-key-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-isDimmable-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-softFuse-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-type-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-defaultState-${this.id}`).prop('disabled', !this.enabled);
 
     //validate + save
-    $(`#f-pwm-enabled-${this.id}`).change(this.onEditForm);
-    $(`#f-pwm-name-${this.id}`).change(this.onEditForm);
-    $(`#f-pwm-key-${this.id}`).change(this.onEditForm);
     $(`#f-pwm-isDimmable-${this.id}`).change(this.onEditForm);
     $(`#f-pwm-softFuse-${this.id}`).change(this.onEditForm);
     $(`#f-pwm-type-${this.id}`).change(this.onEditForm);
