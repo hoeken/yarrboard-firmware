@@ -7,11 +7,12 @@
 
 # v2.0.0 Release
 
-* channel edit UI rewrite
-    * finish converting handleConfigMessage()
-    * finish converting handleUpdateMessage();
-    * finish converting handleStatsMessage();
-    * finish converting handleGraphDataMessage();
+* UI Rewrite
+    * relay channels
+    * servo channels
+    * stepper channels
+    * brineomatic
+    * dio channels
 * settings page is ugly af.
     * borders for each config area like channels
     * side bar that loads each config page?
