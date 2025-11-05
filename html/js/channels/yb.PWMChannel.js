@@ -240,22 +240,14 @@
   };
 
   PWMChannel.prototype.generateEditUI = function () {
+
+    let standardFields = this.generateStandardEditFields();
+
     return `
       <div id="pwmEditCard${this.id}" class="col-xs-12 col-sm-6">
         <div class="p-3 border border-secondary rounded">
-          <h5>Output Channel #${this.id}</h5>
-          <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="f-pwm-name-${this.id}" value="${this.name}">
-            <label for="f-pwm-name-${this.id}">Name</label>
-            <div class="invalid-feedback"></div>
-          </div>
-          <div class="form-check form-switch mb-3">
-            <input class="form-check-input" type="checkbox" id="f-pwm-enabled-${this.id}">
-            <label class="form-check-label" for="f-pwm-enabled-${this.id}">
-              Enabled
-            </label>
-            <div class="invalid-feedback"></div>
-          </div>
+          <h5>PWM Channel #${this.id}</h5>
+          ${standardFields}
           <div class="form-check form-switch mb-3">
             <input class="form-check-input" type="checkbox" id="f-pwm-isDimmable-${this.id}">
             <label class="form-check-label" for="f-pwm-isDimmable-${this.id}">
@@ -308,6 +300,7 @@
 
     //enable/disable other stuff.
     $(`#f-pwm-name-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-pwm-key-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-isDimmable-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-softFuse-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-type-${this.id}`).prop('disabled', !this.enabled);
@@ -316,6 +309,7 @@
     //validate + save
     $(`#f-pwm-enabled-${this.id}`).change(this.onEditForm);
     $(`#f-pwm-name-${this.id}`).change(this.onEditForm);
+    $(`#f-pwm-key-${this.id}`).change(this.onEditForm);
     $(`#f-pwm-isDimmable-${this.id}`).change(this.onEditForm);
     $(`#f-pwm-softFuse-${this.id}`).change(this.onEditForm);
     $(`#f-pwm-type-${this.id}`).change(this.onEditForm);
@@ -328,7 +322,7 @@
     let newcfg = this.cfg;
     newcfg.name = $(`#f-pwm-name-${this.id}`).val()
     newcfg.enabled = $(`#f-pwm-enabled-${this.id}`).prop("checked");
-    // newcfg.key = $(`#f-pwm-key-${this.id}`).val();
+    newcfg.key = $(`#f-pwm-key-${this.id}`).val();
     newcfg.isDimmable = $(`#f-pwm-isDimmable-${this.id}`).prop("checked");
     newcfg.name = $(`#f-pwm-name-${this.id}`).val();
     newcfg.softFuse = $(`#f-pwm-softFuse-${this.id}`).val();
@@ -339,6 +333,7 @@
 
     //ui updates
     $(`#f-pwm-name-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-pwm-key-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-isDimmable-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-softFuse-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-type-${this.id}`).prop('disabled', !this.enabled);

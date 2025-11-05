@@ -5,21 +5,13 @@
 * test servos
 * test QWIIC
 
-# FROTHFET
-
-* test INA226 sense resistors (mouser)
-
 # v2.0.0 Release
 
 * channel edit UI rewrite
-    * implement these functions for BaseChannel:
-        * generateEditFields() <-- name, key, enabled
     * finish converting handleConfigMessage()
     * finish converting handleUpdateMessage();
     * finish converting handleStatsMessage();
     * finish converting handleGraphDataMessage();
-    * wattage calculation should reside on firmware for pwmchannel.  clean js only
-    * add key field to channel edit
 * settings page is ugly af.
     * borders for each config area like channels
     * side bar that loads each config page?

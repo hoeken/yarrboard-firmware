@@ -27,6 +27,29 @@
     `;
   };
 
+
+  BaseChannel.prototype.generateStandardEditFields = function () {
+    return `
+      <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="f-${this.channelType}-name-${this.id}" value="${this.name}">
+        <label for="f-${this.channelType}-name-${this.id}">Name</label>
+        <div class="invalid-feedback"></div>
+      </div>
+      <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="f-${this.channelType}-key-${this.id}" value="${this.key}">
+        <label for="f-${this.channelType}-key-${this.id}">Key</label>
+        <div class="invalid-feedback"></div>
+      </div>
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="f-${this.channelType}-enabled-${this.id}">
+        <label class="form-check-label" for="f-${this.channelType}-enabled-${this.id}">
+          Enabled
+        </label>
+        <div class="invalid-feedback"></div>
+      </div>
+    `;
+  }
+
   BaseChannel.prototype.resetStats = function () { };
   BaseChannel.prototype.generateStatsContainer = function () { };
 
@@ -42,7 +65,11 @@
       key: {
         presence: { allowEmpty: false },
         type: "string",
-        length: { minimum: 1, maximum: 63 }
+        length: { minimum: 1, maximum: 63 },
+        format: {
+          pattern: /^[A-Za-z0-9_-]+$/,
+          message: "can only contain letters, numbers, hyphens (-), or underscores (_)"
+        }
       },
       name: {
         presence: { allowEmpty: false },
