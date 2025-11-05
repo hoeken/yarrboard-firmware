@@ -7,9 +7,10 @@
 # v2.0.0 Release
 
 * UI Rewrite
-    * brineomatic
-        * app.onOpenPage(page, callback);
-        * app.addPage("page", "content", openCallback);
+    * brineomatic graphs
+    * move brineomatic UI html to Brineomatic class
+    * app.onOpenPage(page, callback);
+    * app.addPage("page", "content", openCallback);
     * stepper channels
     * dio channels
     * fan channels?
