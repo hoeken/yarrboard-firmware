@@ -774,48 +774,13 @@ void handleConfigRelayChannel(JsonVariantConst input, JsonVariant output)
   if (!ch)
     return;
 
-  // channel name
-  if (input["name"].is<String>()) {
-    // is it too long?
-    if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
-      sprintf(error, "Maximum channel name length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
-      return generateErrorJSON(output, error);
-    }
-
-    // save to our storage
-    strlcpy(ch->name, input["name"] | "Relay ?", sizeof(ch->name));
+  if (!input["config"].is<JsonObjectConst>()) {
+    snprintf(error, sizeof(error), "'config' is required parameter");
+    return generateErrorJSON(output, error);
   }
 
-  // channel type
-  if (input["type"].is<String>()) {
-    // is it too long?
-    if (strlen(input["type"]) > YB_TYPE_LENGTH - 1) {
-      sprintf(error, "Maximum channel type length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
-      return generateErrorJSON(output, error);
-    }
-
-    // save to our storage
-    strlcpy(ch->type, input["type"] | "other", sizeof(ch->type));
-  }
-
-  // default state
-  if (input["defaultState"].is<String>()) {
-    // is it too long?
-    if (strlen(input["defaultState"]) >
-        sizeof(ch->defaultState) - 1) {
-      sprintf(error, "Maximum default state length is %s characters.", sizeof(ch->defaultState) - 1);
-      return generateErrorJSON(output, error);
-    }
-
-    // save to our storage
-    ch->defaultState = input["defaultState"];
-  }
-
-  // enabled
-  if (input["enabled"].is<bool>()) {
-    // save right nwo.
-    bool enabled = input["enabled"];
-    ch->isEnabled = enabled;
+  if (!ch->loadConfig(input["config"], error, sizeof(error))) {
+    return generateErrorJSON(output, error);
   }
 
   // write it to file
@@ -917,23 +882,13 @@ void handleConfigServoChannel(JsonVariantConst input, JsonVariant output)
   if (!ch)
     return;
 
-  // channel name
-  if (input["name"].is<String>()) {
-    // is it too long?
-    if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
-      sprintf(error, "Maximum channel name length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
-      return generateErrorJSON(output, error);
-    }
-
-    // save to our storage
-    strlcpy(ch->name, input["name"] | "Servo ?", sizeof(ch->name));
+  if (!input["config"].is<JsonObjectConst>()) {
+    snprintf(error, sizeof(error), "'config' is required parameter");
+    return generateErrorJSON(output, error);
   }
 
-  // enabled
-  if (input["enabled"].is<bool>()) {
-    // save right nwo.
-    bool enabled = input["enabled"];
-    ch->isEnabled = enabled;
+  if (!ch->loadConfig(input["config"], error, sizeof(error))) {
+    return generateErrorJSON(output, error);
   }
 
   // write it to file
@@ -942,7 +897,6 @@ void handleConfigServoChannel(JsonVariantConst input, JsonVariant output)
 
   // give them the updated config
   generateConfigJSON(output);
-
 #else
   return generateErrorJSON(output, "Board does not have servo channels.");
 #endif
@@ -960,23 +914,15 @@ void handleSetServoChannel(JsonVariantConst input, JsonVariant output)
   if (!ch->isEnabled)
     return generateErrorJSON(output, "Channel is not enabled.");
 
-  if (input["usec"].is<JsonVariantConst>()) {
-    float usec = input["usec"];
-
-    if (usec >= 500 && usec <= 2500)
-      ch->write(usec);
-    else
-      return generateErrorJSON(output, "'usec' must be between 500 and 2500");
-  } else if (input["angle"].is<JsonVariantConst>()) {
+  if (input["angle"].is<JsonVariantConst>()) {
     float angle = input["angle"];
 
     if (angle >= 0 && angle <= 180)
       ch->write(angle);
     else
       return generateErrorJSON(output, "'angle' must be between 0 and 180");
-
   } else
-    return generateErrorJSON(output, "'usec' or 'angle' parameter is required.");
+    return generateErrorJSON(output, "'angle' parameter is required.");
 #else
   return generateErrorJSON(output, "Board does not have servo channels.");
 #endif

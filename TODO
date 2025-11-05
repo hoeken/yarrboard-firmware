@@ -2,14 +2,11 @@
 
 # BRINEOMATIC
 
-* test servos
 * test QWIIC
 
 # v2.0.0 Release
 
 * UI Rewrite
-    * relay channels - backend edit
-    * servo channels - backend edit
     * brineomatic
         * app.onOpenPage(page, callback);
         * app.addPage("page", "content", openCallback);
