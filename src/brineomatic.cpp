@@ -1353,7 +1353,7 @@ void Brineomatic::runStateMachine()
           break;
 
         if (esp_timer_get_time() - flushValveStart > filterPressureTimeout) {
-          currentStatus = Status::STOPPING;
+          currentStatus = Status::IDLE;
           runResult = Result::ERR_FLUSH_VALVE_TIMEOUT;
           return;
         }
