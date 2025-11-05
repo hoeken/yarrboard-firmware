@@ -7,15 +7,11 @@
 # v2.0.0 Release
 
 * UI Rewrite
-    * app.addPage("page", "content", openCallback);
-    * brineomatic graphs
-    * app.onOpenPage(page, callback);
+    * dont return new config on backend somehow refresh the ui with our newly stored config.
     * stepper channels
     * dio channels
     * fan channels?
-    * dont return new config on backend somehow refresh the ui with our newly stored config.
     * dark mode switcher doesnt seem to be working
-    * remove all onclick calls from the html.
 * settings page is ugly af.
     * borders for each config area like channels
     * side bar that loads each config page?
@@ -27,13 +23,8 @@
     * wifi group
     * users group
 * sporadic crash when fading and saving to prefs at the same time.
-* PsychicHttp release as well
 * test/update/fix the release script for ota
-* signalk plugins
-    * should we move this to the firmware instead?
-    * frothfet plugin - use key for paths instead of id
-    * signalk sendit plugin - use key for paths instead of id
-    * brineomatic plugin
+* PsychicHttp release as well
 
 # BRINEOMATIC
 
@@ -88,7 +79,6 @@
 * slow vs fast blow
     * fast checks getLatestReading()
     * slow checks getAverageReading()
-* update forms to be consistent style (float labels)
 * update yarrboard client if any changes needed - probably for state
 * update signalk plugin - same
 * go through and re-adjust the various page sizes for our different viewports
@@ -99,14 +89,26 @@
 
 # LONG TERM:
 
+* signalk plugins
+    * should we move this to the firmware instead?
+    * frothfet plugin - use key for paths instead of id
+    * signalk sendit plugin - use key for paths instead of id
+    * brineomatic plugin
+* brineomatic graphs
+    * app.addPage("page", "content", openCallback);
+    * app.onOpenPage(page, callback);
+* remove all onclick calls from the html.
 * global cleanup of strcpy, sprintf, etc.
 * espwebtools?  https://esphome.github.io/esp-web-tools/
 * yarrboard c++ framework
     * create YarrboardApp class
+    * copy the ChannelRegistry style from JS and port to c++
     * move channel headers/classes to a channels/ folder
-    * rename foo_channel to FooChannel to match class names
-    * something something config
-    * setLogo() or #define to set the logo file
+    * rename foo_channel.cpp to FooChannel.cpp to match class names
+    * misc functons:
+        * setLogo() or #define to set the logo file
+        * addJS(); -> how do we dynamically add in our js to a precompiled file? gulp?
+        * addCSS(); -> how do we dynamically add in our css to a precompiled file? gulp?
     * create callbacks:
         * onSetup() - main.cpp
         * onLoop() - main.cpp
@@ -126,15 +128,6 @@
         * yba.registerChannels(channels);
         * yba.registerMQTTChannels(channels);
         * yba.registerHAChannels(channels);
-* yarrboard javascript framework
-    * move most of the logic to a YarrboardUI class
-    * generic event handlers:
-        * onMessage()
-        * onUpdate()
-        * onConfig()
-        * onPageOpen()
-    * basechannel / extension classes
-        * test and roll out the new class code
 * other MFD integrations:
     * garmin?
     * raymarine?
