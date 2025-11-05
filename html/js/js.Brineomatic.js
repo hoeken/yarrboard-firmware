@@ -33,6 +33,21 @@
     this.handleUpdateMessage = this.handleUpdateMessage.bind(this);
     this.handleStatsMessage = this.handleStatsMessage.bind(this);
     this.handleGraphDataMessage = this.handleGraphDataMessage.bind(this);
+
+    YB.App.addMessageHandler("config", this.handleConfigMessage);
+    YB.App.addMessageHandler("update", this.handleUpdateMessage);
+    YB.App.addMessageHandler("stats", this.handleStatsMessage);
+    YB.App.addMessageHandler("graph_data", this.handleGraphDataMessage);
+
+    this.idle = this.idle.bind(this);
+    this.startAutomatic = this.startAutomatic.bind(this);
+    this.startDuration = this.startDuration.bind(this);
+    this.startVolume = this.startVolume.bind(this);
+    this.flush = this.flush.bind(this);
+    this.pickle = this.pickle.bind(this);
+    this.depickle = this.depickle.bind(this);
+    this.stop = this.stop.bind(this);
+    this.manual = this.manual.bind(this);
   }
 
   Brineomatic.prototype.buildGaugeSetup = function () {
@@ -95,6 +110,17 @@
       $('#bomControlDiv').show();
       $('#bomStatsDiv').show();
       $('#brightnessUI').hide();
+
+      //our UI handlers
+      $("#brineomaticIdle").on("click", this.idle);
+      $("#brineomaticStartAutomatic").on("click", this.startAutomatic);
+      $("#brineomaticStartDuration").on("click", this.startDuration);
+      $("#brineomaticStartVolume").on("click", this.startVolume);
+      $("#brineomaticFlush").on("click", this.flush);
+      $("#brineomaticPickle").on("click", this.pickle);
+      $("#brineomaticDepickle").on("click", this.depickle);
+      $("#brineomaticStop").on("click", this.stop);
+      $("#brineomaticManual").on("click", this.manual);
 
       this.buildGaugeSetup();
 
@@ -579,8 +605,6 @@
   Brineomatic.prototype.handleUpdateMessage = function (msg) {
     if (msg.brineomatic) {
 
-      console.log("update message");
-
       let motor_temperature = Math.round(msg.motor_temperature);
       let water_temperature = Math.round(msg.water_temperature);
       let product_flowrate = Math.round(msg.product_flowrate);
@@ -1044,7 +1068,8 @@
       $(`${result_div}Row`).hide();
   }
 
-  Brineomatic.prototype.startManual = function () {
+  Brineomatic.prototype.startAutomatic = function () {
+    console.log("start automatic");
     YB.client.send({
       "cmd": "start_watermaker",
     }, true);
@@ -1133,13 +1158,7 @@
   }
 
   YB.Brineomatic = Brineomatic;
-
   YB.bom = new Brineomatic();
-
-  YB.App.addMessageHandler("config", YB.bom.handleConfigMessage);
-  YB.App.addMessageHandler("update", YB.bom.handleUpdateMessage);
-  YB.App.addMessageHandler("stats", YB.bom.handleStatsMessage);
-  YB.App.addMessageHandler("graph_data", YB.bom.handleGraphDataMessage);
 
   // expose to global
   global.YB = YB;

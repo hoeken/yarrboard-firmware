@@ -290,8 +290,8 @@
                                     </button>
                                 </div>
                                 <div id="idleBrineomatic" class="col-6 bomMANUAL">
-                                    <button class="btn btn-primary brineomaticControlButton" type="button"
-                                        onclick="idle_brineomatic()">
+                                    <button id="brineomaticIdle" class="btn btn-primary brineomaticControlButton"
+                                        type="button">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
                                             fill="currentColor" class="bi bi-arrow-counterclockwise"
                                             viewBox="0 0 16 16">
@@ -352,9 +352,9 @@
                                                         <div class="small" style="height: 110px">
                                                             Run until full.
                                                         </div>
-                                                        <button type="button" class="btn btn-success my-3"
-                                                            data-bs-dismiss="modal" style="width: 100%"
-                                                            onclick="start_brineomatic_manual()">Start</button>
+                                                        <button id="brineomaticStartAutomatic" type="button"
+                                                            class="btn btn-success my-3" data-bs-dismiss="modal"
+                                                            style="width: 100%">Start</button>
                                                     </div>
                                                     <div class="col-md-4">
                                                         <h5>Duration</h5>
@@ -368,9 +368,9 @@
                                                                 <span class="input-group-text">hours</span>
                                                             </div>
                                                         </div>
-                                                        <button type="button" class="btn btn-success my-3"
-                                                            data-bs-dismiss="modal" style="width: 100%"
-                                                            onclick="start_brineomatic_duration()">Start</button>
+                                                        <button id="brineomaticStartDuration" type="button"
+                                                            class="btn btn-success my-3" data-bs-dismiss="modal"
+                                                            style="width: 100%">Start</button>
                                                     </div>
                                                     <div class="col-md-4">
                                                         <h5>Volume</h5>
@@ -384,9 +384,9 @@
                                                                 <span class="input-group-text">liters</span>
                                                             </div>
                                                         </div>
-                                                        <button type="button" class="btn btn-success my-3"
-                                                            data-bs-dismiss="modal" style="width: 100%"
-                                                            onclick="start_brineomatic_volume()">Start</button>
+                                                        <button id="brineomaticStartVolume" type="button"
+                                                            class="btn btn-success my-3" data-bs-dismiss="modal"
+                                                            style="width: 100%">Start</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -425,8 +425,8 @@
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary"
                                                 data-bs-dismiss="modal">Cancel</button>
-                                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
-                                                onclick="flush_brineomatic()">Flush</button>
+                                            <button id="brineomaticFlush" type="button" class="btn btn-primary"
+                                                data-bs-dismiss="modal">Flush</button>
                                         </div>
                                     </div>
                                 </div>
@@ -465,8 +465,8 @@
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary"
                                                 data-bs-dismiss="modal">Cancel</button>
-                                            <button type="button" class="btn btn-warning" data-bs-dismiss="modal"
-                                                onclick="pickle_brineomatic()">Pickle</button>
+                                            <button id="brineomaticPickle" type="button" class="btn btn-warning"
+                                                data-bs-dismiss="modal">Pickle</button>
                                         </div>
                                     </div>
                                 </div>
@@ -504,8 +504,8 @@
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary"
                                                 data-bs-dismiss="modal">Cancel</button>
-                                            <button type="button" class="btn btn-warning" data-bs-dismiss="modal"
-                                                onclick="depickle_brineomatic()">De-Pickle</button>
+                                            <button id="brineomaticDepickle" type="button" class="btn btn-warning"
+                                                data-bs-dismiss="modal">De-Pickle</button>
                                         </div>
                                     </div>
                                 </div>
@@ -528,8 +528,8 @@
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary"
                                                 data-bs-dismiss="modal">Cancel</button>
-                                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
-                                                onclick="stop_brineomatic()">Stop</button>
+                                            <button id="brineomaticStop" type="button" class="btn btn-danger"
+                                                data-bs-dismiss="modal">Stop</button>
                                         </div>
                                     </div>
                                 </div>
@@ -557,8 +557,8 @@
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary"
                                                 data-bs-dismiss="modal">Cancel</button>
-                                            <button type="button" class="btn btn-success" data-bs-dismiss="modal"
-                                                onclick="manual_brineomatic()">Continue</button>
+                                            <button id="brineomaticManual" type="button" class="btn btn-success"
+                                                data-bs-dismiss="modal">Continue</button>
                                         </div>
                                     </div>
                                 </div>
