@@ -187,9 +187,31 @@
       return `rssi_icon_${level}`;
     },
 
+    getBootstrapColors: function () {
+      const colors = {};
+      const styles = getComputedStyle(document.documentElement);
+
+      // List of Bootstrap color variable names
+      const colorNames = [
+        '--bs-primary',
+        '--bs-secondary',
+        '--bs-success',
+        '--bs-danger',
+        '--bs-warning',
+        '--bs-info',
+        '--bs-light',
+        '--bs-dark'
+      ];
+
+      // Loop through each variable and store its value without the `--bs-` prefix
+      colorNames.forEach(color => {
+        const name = color.replace('--bs-', ''); // Remove the prefix
+        colors[name] = styles.getPropertyValue(color).trim();
+      });
+
+      return colors;
+    },
   };
-
-
 
   // expose to global
   global.YB = YB;

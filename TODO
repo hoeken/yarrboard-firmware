@@ -13,6 +13,8 @@
     * stepper channels
     * dio channels
     * fan channels?
+    * dont return new config on backend somehow refresh the ui with our newly stored config.
+    * dark mode switcher doesnt seem to be working
 * settings page is ugly af.
     * borders for each config area like channels
     * side bar that loads each config page?
