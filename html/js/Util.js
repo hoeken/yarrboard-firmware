@@ -145,7 +145,7 @@
     },
 
     // Function to update the progress bar
-    f: function (ele, progress) {
+    updateProgressBar: function (ele, progress) {
       // Ensure the progress value is within bounds
       const clampedProgress = Math.round(Math.min(Math.max(progress, 0), 100));
 
