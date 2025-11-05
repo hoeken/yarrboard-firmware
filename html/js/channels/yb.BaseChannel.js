@@ -3,8 +3,9 @@
   var YB = global.YB || {};
 
   // Base class for all channels
-  function BaseChannel(type) {
+  function BaseChannel(type, name) {
     this.channelType = type;
+    this.channelName = name;
     this.cfg = {};
     this.data = {};
   }
@@ -15,7 +16,19 @@
           <div id="${this.channelType}Cards" class="row g-3"></div>
       </div>
     `;
-  }
+  };
+
+  BaseChannel.prototype.generateEditContainer = function () {
+    return `
+      <div id="${this.channelType}Config" style="display:none" class="col-md-12">
+        <h4>${this.channelName} Configuration</h4>
+        <div id="${this.channelType}ConfigForm" class="row g-3"></div>
+      </div>
+    `;
+  };
+
+  BaseChannel.prototype.resetStats = function () { };
+  BaseChannel.prototype.generateStatsContainer = function () { };
 
   //
   // Schema for validation of the config object.

@@ -13,10 +13,6 @@
 
 * channel edit UI rewrite
     * implement these functions for BaseChannel:
-        * generateControlContainer()
-        * generateStatsContainer()
-        * generateGraphsContainer()
-        * resetStats()
         * generateEditFields() <-- name, key, enabled
     * finish converting handleConfigMessage()
     * finish converting handleUpdateMessage();
@@ -34,6 +30,7 @@
     * http server group
     * wifi group
     * users group
+* sporadic crash when fading and saving to prefs at the same time.
 * PsychicHttp release as well
 * test/update/fix the release script for ota
 * signalk plugins

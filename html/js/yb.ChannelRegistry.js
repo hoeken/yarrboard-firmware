@@ -97,8 +97,10 @@
           continue;
 
         //initialize our control container
-        this.createControlContainer(ctype);
+        this.createChannelContainers(ctype);
 
+        $(`#${ctype}ControlDiv`).hide();
+        $(`#${ctype}Cards`).html("");
         $(`#${ctype}Config`).hide();
         $(`#${ctype}ConfigForm`).html("");
         $(`#${ctype}StatsDiv`).hide();
@@ -153,6 +155,10 @@
         if (!update.hasOwnProperty(ctype))
           continue;
 
+        var ctor = this.channelConstructors[ctype];
+        let ch = new ctor();
+        ch.resetStats();
+
         for (chdata of update[ctype]) {
           let ch = this.getChannelById(chdata.id, ctype);
           ch.updateStatsUI(chdata);
@@ -160,18 +166,20 @@
       }
     },
 
-    createControlContainer: function (ctype) {
-      if (!$(`#${ctype}ControlDiv`).length) {
-        var ctor = this.channelConstructors[ctype];
-        if (!ctor)
-          throw new Error("Unknown channel type: " + ctype);
+    createChannelContainers: function (ctype) {
+      var ctor = this.channelConstructors[ctype];
+      if (!ctor)
+        throw new Error("Unknown channel type: " + ctype);
+      let ch = new ctor();
 
-        let ch = new ctor();
+      if (!$(`#${ctype}ControlDiv`).length)
         $(`#controlPage`).append(ch.generateControlContainer());
-      }
 
-      $(`#${ctype}ControlDiv`).hide();
-      $(`#${ctype}Cards`).html("");
+      if (!$(`#${ctype}Config`).length)
+        $(`#ConfigForm`).append(ch.generateEditContainer());
+
+      if (!$(`#${ctype}StatsDiv`).length)
+        $(`#statsContainer`).append(ch.generateStatsContainer());
     },
 
   };
