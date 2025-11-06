@@ -76,6 +76,11 @@ tr.pwmRow #statsTable tbody tr {
     font-size: 1.3rem !important;
 }
 
+.servoName {
+    font-weight: bold;
+    font-size: 1.3rem !important;
+}
+
 .pwmButton .pwmDutySlider {
     height: 75px;
 }

@@ -26,26 +26,31 @@
     return `
       <div id="servoControlCard${this.id}" class="col-xs-12 col-sm-6">
         <div class="p-3 bg-secondary border border-secondary rounded text-white">
-        <table class="w-100 h-100 p-2">
-            <tr>
-              <td width="75%" id="servoName${this.id}">${this.name}</td>
-              <td id="servoAngle${this.id}"></td>
-            </tr>
-            <tr>
-              <td colspan="2">
-                <input type="range" class="form-range" min="0" max="180" step="1" id="servoSlider${this.id}" list="servoMarker${this.id}">
-                <datalist id="servoMarker${this.id}">
-                  <option value="0"></option>
-                  <option value="30"></option>
-                  <option value="60"></option>
-                  <option value="90"></option>
-                  <option value="120"></option>
-                  <option value="150"></option>
-                  <option value="180"></option>
-                </datalist>
-              </td>
-            </tr>
-          </table>
+          <!-- Header row -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 id="servoName${this.id}" class="mb-0 servoName">${this.name}</h6>
+            <div class="input-group input-group-sm" style="width: 90px;">
+              <input class="form-control text-end" id="servoAngle${this.id}">
+              <span class="input-group-text">°</span>
+            </div>
+          </div>
+
+          <!-- Slider -->
+          <input type="range" class="form-range" min="0" max="180" step="1" id="servoSlider${this.id}" list="servoMarker${this.id}">
+          <datalist id="servoMarker${this.id}">
+            <option value="0"></option>
+            <option value="30"></option>
+            <option value="60"></option>
+            <option value="90"></option>
+            <option value="120"></option>
+            <option value="150"></option>
+            <option value="180"></option>
+          </datalist>
+
+          <!-- Optional tick labels under slider -->
+          <div class="d-flex justify-content-between small text-white-50 mt-1">
+            <span>0</span><span>30</span><span>60</span><span>90</span><span>120</span><span>150</span><span>180</span>
+          </div>
         </div>
       </div>
     `;
@@ -54,49 +59,58 @@
   ServoChannel.prototype.setupControlUI = function () {
     YB.BaseChannel.prototype.setupControlUI.call(this);
 
-    $('#servoSlider' + this.id).change(this.setAngle);
+    const $slider = $('#servoSlider' + this.id);
+    const $angle = $('#servoAngle' + this.id);
 
-    //update our duty when we move
-    $('#servoSlider' + this.id).on("input", this.setAngle);
+    //clear previous handlers
+    $slider.off();
+    $angle.off();
 
-    //stop updating the UI when we are choosing a duty
-    $('#servoSlider' + this.id).on('focus', function (e) {
-      let ele = e.target;
-      let id = ele.id.match(/\d+/)[0];
-      ServoChannel.currentSliderID = id;
+    // update while dragging
+    $slider.on('input', this.setAngle);
+
+    // on release: guarantee send
+    $slider.on('change', (e) => {
+      this._lastSend = Date.now() - 1000;
+      this.setAngle(e);
     });
 
-    //stop updating the UI when we are choosing a duty
-    $('#servoSlider' + this.id).on('touchstart', function (e) {
-      let ele = e.target;
-      let id = ele.id.match(/\d+/)[0];
-      ServoChannel.currentSliderID = id;
-    });
+    // numeric input changes
+    $angle.on('change', this.setAngle);
 
-    //restart the UI updates when slider is closed
-    $('#servoSlider' + this.id).on("blur", function (e) {
-      ServoChannel.currentSliderID = -1;
-    });
+    // mark active while interacting
+    $angle.on('focus', () => { ServoChannel.currentSliderID = this.id; });
+    $slider.on('focus', () => { ServoChannel.currentSliderID = this.id; });
 
-    //restart the UI updates when slider is closed
-    $('#servoSlider' + this.id).on("touchend", function (e) {
-      ServoChannel.currentSliderID = -1;
-    });
+    //jquery doesnt allow passive
+    document.getElementById('servoSlider' + this.id).addEventListener('touchstart', () => {
+      ServoChannel.currentSliderID = this.id;
+    }, { passive: true });
+
+    // clear on stop
+    const clearActive = () => { ServoChannel.currentSliderID = -1; };
+    $angle.on('blur', clearActive);
+    $slider.on('blur', clearActive);
+    document.getElementById('servoSlider' + this.id).addEventListener('touchend', clearActive, { passive: true });
   };
 
   ServoChannel.prototype.setAngle = function (e) {
-    let ele = e.target;
-    let value = ele.value;
+    let angle = parseFloat(e.target.value);
+    if (isNaN(angle))
+      angle = 0;
+    angle = Math.min(180, Math.max(0, angle));
 
-    //must be realistic.
-    if (value >= 0 && value <= 180) {
-      //update our button
-      $(`#servoAngle${this.id}`).html(`${value}°`);
+    //update our UI - its coming from two sources
+    $(`#servoAngle${this.id}`).val(angle);
+    $(`#servoSlider${this.id}`).val(angle);
 
+    const now = Date.now();
+    if (!this._lastSend || now - this._lastSend > 500) {
+      this._lastSend = now;
       YB.client.send({
         "cmd": "set_servo_channel",
         "id": this.id,
-        "angle": value
+        "angle": angle
       });
     }
   }
@@ -122,7 +136,7 @@
   ServoChannel.prototype.updateControlUI = function () {
     if (ServoChannel.currentSliderID != this.id) {
       $('#servoSlider' + this.id).val(this.data.angle);
-      $('#servoAngle' + this.id).html(`${this.data.angle}°`);
+      $('#servoAngle' + this.id).val(this.data.angle);
     }
 
     $(`#servoControlCard${this.id}`).toggle(this.enabled);
