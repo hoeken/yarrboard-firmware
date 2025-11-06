@@ -12,7 +12,6 @@
 * YB_HAS_STATUS_WS2818 -> YB_HAS_STATUS_RGB
 * PsychicHttp release
 * test/update/fix the release script for ota
-* hello message should include board name for titles, headers, etc.
 
 # BRINEOMATIC
 

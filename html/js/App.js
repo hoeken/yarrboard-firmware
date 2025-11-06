@@ -808,6 +808,11 @@
       YB.App.role = msg.role;
       YB.App.defaultRole = msg.default_role;
 
+      //custom board names.
+      $('#boardName').html(msg.name);
+      $('#loginTitle').html(msg.name);
+      document.title = msg.name;
+
       //light/dark mode
       //let the mfd override with ?mode=night, etc.
       if (!YB.Util.getQueryVariable("mode")) {
@@ -862,6 +867,7 @@
 
       //let the people choose their own names!
       $('#boardName').html(msg.name);
+      $('#loginTitle').html(msg.name);
       document.title = msg.name;
 
       //update our footer automatically.
