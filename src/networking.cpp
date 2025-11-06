@@ -20,6 +20,7 @@ ImprovWiFiBLE improvBLE;
 IPAddress apIP(8, 8, 4, 4);
 const byte DNS_PORT = 53;
 DNSServer dnsServer;
+
 // default config info for our wifi
 char wifi_ssid[YB_WIFI_SSID_LENGTH] = YB_DEFAULT_AP_SSID;
 char wifi_pass[YB_WIFI_PASSWORD_LENGTH] = YB_DEFAULT_AP_PASS;

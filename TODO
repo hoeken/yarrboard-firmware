@@ -8,7 +8,6 @@
         * main config box should be green/red highlight on success/error
             * same with fields + errors
         * add a function to fade/clear form success colors on a timeout
-* do we still need YB_DEFAULT_AP_SSID?
 * YB_HAS_STATUS_WS2818 -> YB_HAS_STATUS_RGB
 * PsychicHttp release
 * test/update/fix the release script for ota

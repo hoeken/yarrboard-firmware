@@ -4,11 +4,9 @@
 #define YB_HARDWARE_VERSION "FROTHFET_REV_E"
 #define YB_MANUFACTURER     "Yarrboard"
 
-#define YB_IS_FROTHFET 1
-#define YB_BOARD_NAME  "Frothfet"
-
+#define YB_IS_FROTHFET      1
+#define YB_BOARD_NAME       "Frothfet"
 #define YB_DEFAULT_HOSTNAME "frothfet"
-#define YB_DEFAULT_AP_SSID  "Frothfet"
 
 #define YB_HAS_STATUS_WS2818
 #define YB_STATUS_WS2818_PIN   38

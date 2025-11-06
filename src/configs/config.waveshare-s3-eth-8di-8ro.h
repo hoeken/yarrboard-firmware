@@ -4,9 +4,6 @@
 #define YB_HARDWARE_VERSION "ESP32-S3-ETH-8DI-8RO"
 #define YB_MANUFACTURER     "Waveshare"
 
-#define YB_DEFAULT_HOSTNAME "yarrboard"
-#define YB_DEFAULT_AP_SSID  "Yarrboard"
-
 #define YB_HAS_STATUS_WS2818
 #define YB_STATUS_WS2818_PIN 38
 

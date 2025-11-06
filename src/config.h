@@ -35,15 +35,14 @@
 #ifndef YB_BOARD_NAME
   #define YB_BOARD_NAME "Yarrboard"
 #endif
-
 #ifndef YB_DEFAULT_HOSTNAME
   #define YB_DEFAULT_HOSTNAME "yarrboard"
 #endif
 
+// this isnt really used anymore since we have improv
 #ifndef YB_DEFAULT_AP_SSID
   #define YB_DEFAULT_AP_SSID "Yarrboard"
 #endif
-
 #ifndef YB_DEFAULT_AP_PASS
   #define YB_DEFAULT_AP_PASS ""
 #endif

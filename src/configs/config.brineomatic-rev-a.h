@@ -4,11 +4,9 @@
 #define YB_HARDWARE_VERSION "BRINEOMATIC_REV_A"
 #define YB_MANUFACTURER     "Yarrboard"
 
-#define YB_IS_BRINEOMATIC 1
-#define YB_BOARD_NAME     "Brineomatic"
-
+#define YB_IS_BRINEOMATIC   1
+#define YB_BOARD_NAME       "Brineomatic"
 #define YB_DEFAULT_HOSTNAME "brineomatic"
-#define YB_DEFAULT_AP_SSID  "Brineomatic"
 
 #define YB_BOM_DATA_SIZE     300
 #define YB_BOM_DATA_INTERVAL 5000000
