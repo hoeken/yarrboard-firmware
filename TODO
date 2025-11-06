@@ -3,13 +3,15 @@
 # v2.0.0 Release
 
 * UI Rewrite
-    * settings page is ugly af.
-        * side bar that loads each config page?
-        * remove update_interval
+    * break settings update calls into auth / web server / mqtt / network / misc
+    * use validate.js for form validation
+    * main config box should be green/red highlight on success/error
+        * same with fields + errors
+    * add a function to fade/clear form success colors on a timeout
 * do we still need YB_DEFAULT_AP_SSID?
 * YB_HAS_STATUS_WS2818 -> YB_HAS_STATUS_RGB
+* PsychicHttp release
 * test/update/fix the release script for ota
-* PsychicHttp release as well
 
 # BRINEOMATIC
 
