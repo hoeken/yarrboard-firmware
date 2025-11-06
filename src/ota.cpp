@@ -124,3 +124,9 @@ void ota_loop()
     ArduinoOTA.handle();
   }
 }
+
+void ota_end()
+{
+  if (!app_enable_ota)
+    ArduinoOTA.end();
+}

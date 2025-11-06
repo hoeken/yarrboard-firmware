@@ -238,8 +238,14 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleSetNetworkConfig(input, output);
     else if (!strcmp(cmd, "get_app_config"))
       return generateAppConfigMessage(output);
-    else if (!strcmp(cmd, "set_app_config"))
-      return handleSetAppConfig(input, output);
+    else if (!strcmp(cmd, "set_authentication_config"))
+      return handleSetAuthenticationConfig(input, output);
+    else if (!strcmp(cmd, "set_webserver_config"))
+      return handleSetWebServerConfig(input, output);
+    else if (!strcmp(cmd, "set_mqtt_config"))
+      return handleSetMQTTConfig(input, output);
+    else if (!strcmp(cmd, "set_misc_config"))
+      return handleSetMiscellaneousConfig(input, output);
     else if (!strcmp(cmd, "restart"))
       return handleRestart(input, output);
     else if (!strcmp(cmd, "factory_reset"))
@@ -404,10 +410,8 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output)
   }
 }
 
-void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
+void handleSetAuthenticationConfig(JsonVariantConst input, JsonVariant output)
 {
-  bool old_app_enable_ssl = app_enable_ssl;
-
   if (!input["admin_user"].is<String>())
     return generateErrorJSON(output, "'admin_user' is a required parameter");
   if (!input["admin_pass"].is<String>())
@@ -460,25 +464,20 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   else
     app_default_role = NOBODY;
 
+  // save it to file.
+  char error[128] = "Unknown";
+  if (!saveConfig(error, sizeof(error)))
+    return generateErrorJSON(output, error);
+}
+
+void handleSetWebServerConfig(JsonVariantConst input, JsonVariant output)
+{
+  bool old_app_enable_ssl = app_enable_ssl;
+
   app_enable_mfd = input["app_enable_mfd"];
   app_enable_api = input["app_enable_api"];
-  app_enable_serial = input["app_enable_serial"];
   app_enable_ota = input["app_enable_ota"];
   app_enable_ssl = input["app_enable_ssl"];
-  app_enable_mqtt = input["app_enable_mqtt"];
-  app_enable_ha_integration = input["app_enable_ha_integration"];
-  app_use_hostname_as_mqtt_uuid = input["app_use_hostname_as_mqtt_uuid"];
-
-  strlcpy(mqtt_server, input["mqtt_server"] | "", sizeof(mqtt_server));
-  strlcpy(mqtt_user, input["mqtt_user"] | "", sizeof(mqtt_user));
-  strlcpy(mqtt_pass, input["mqtt_pass"] | "", sizeof(mqtt_pass));
-  mqtt_cert = input["mqtt_cert"].as<String>();
-
-  if (input["app_update_interval"].is<JsonVariantConst>()) {
-    app_update_interval = input["app_update_interval"] | 500;
-    app_update_interval = max(100, (int)app_update_interval);
-    app_update_interval = min(5000, (int)app_update_interval);
-  }
 
   server_cert = input["server_cert"].as<String>();
   server_key = input["server_key"].as<String>();
@@ -488,19 +487,49 @@ void handleSetAppConfig(JsonVariantConst input, JsonVariant output)
   if (!saveConfig(error, sizeof(error)))
     return generateErrorJSON(output, error);
 
-  // init our ota.
-  if (app_enable_ota)
-    ota_setup();
+  // restart the board.
+  if (old_app_enable_ssl != app_enable_ssl)
+    ESP.restart();
+}
+
+void handleSetMQTTConfig(JsonVariantConst input, JsonVariant output)
+{
+  app_enable_mqtt = input["app_enable_mqtt"];
+  app_enable_ha_integration = input["app_enable_ha_integration"];
+  app_use_hostname_as_mqtt_uuid = input["app_use_hostname_as_mqtt_uuid"];
+
+  strlcpy(mqtt_server, input["mqtt_server"] | "", sizeof(mqtt_server));
+  strlcpy(mqtt_user, input["mqtt_user"] | "", sizeof(mqtt_user));
+  strlcpy(mqtt_pass, input["mqtt_pass"] | "", sizeof(mqtt_pass));
+  mqtt_cert = input["mqtt_cert"].as<String>();
+
+  // save it to file.
+  char error[128] = "Unknown";
+  if (!saveConfig(error, sizeof(error)))
+    return generateErrorJSON(output, error);
 
   // init our mqtt
   if (app_enable_mqtt)
     mqtt_setup();
   else
     mqtt_disconnect();
+}
 
-  // restart the board.
-  if (old_app_enable_ssl != app_enable_ssl)
-    ESP.restart();
+void handleSetMiscellaneousConfig(JsonVariantConst input, JsonVariant output)
+{
+  app_enable_serial = input["app_enable_serial"];
+  app_enable_ota = input["app_enable_ota"];
+
+  // save it to file.
+  char error[128] = "Unknown";
+  if (!saveConfig(error, sizeof(error)))
+    return generateErrorJSON(output, error);
+
+  // init our ota.
+  if (app_enable_ota)
+    ota_setup();
+  else
+    ota_end();
 }
 
 void handleSaveConfig(JsonVariantConst input, JsonVariant output)

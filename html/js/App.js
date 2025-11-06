@@ -129,6 +129,12 @@
       $("#brightnessSlider").on("touchend", function (e) {
         YB.App.currentlyPickingBrightness = false;
       });
+
+      $("#saveAuthenticationSettings").on('click', YB.App.saveAuthenticationSettings);
+      $("#saveWebServerSettings").on('click', YB.App.saveWebServerSettings);
+      $("#saveMQTTSettings").on('click', YB.App.saveMQTTSettings);
+      $("#saveNetworkSettings").on('click', YB.App.saveNetworkSettings);
+      $("#saveMiscellaneousSettings").on('click', YB.App.saveMiscellaneousSettings);
     },
 
     startWebsocket: function () {
@@ -499,6 +505,76 @@
       YB.client.login(YB.App.username, YB.App.password);
     },
 
+    saveAuthenticationSettings: function () {
+      let admin_user = $("#admin_user").val();
+      let admin_pass = $("#admin_pass").val();
+      let guest_user = $("#guest_user").val();
+      let guest_pass = $("#guest_pass").val();
+      let default_role = $("#default_role option:selected").val();
+
+      //remember it and update our UI
+      YB.App.defaultRole = default_role;
+      YB.App.updateRoleUI();
+
+      //helper function to keep admin logged in.
+      if (YB.App.defaultRole != "admin") {
+        Cookies.set('username', admin_user, { expires: 365 });
+        Cookies.set('password', admin_pass, { expires: 365 });
+      }
+      else {
+        Cookies.remove("username");
+        Cookies.remove("password");
+      }
+
+      //okay, send it off.
+      YB.client.send({
+        "cmd": "set_authentication_config",
+        "admin_user": admin_user,
+        "admin_pass": admin_pass,
+        "guest_user": guest_user,
+        "guest_pass": guest_pass,
+        "default_role": default_role
+      });
+    },
+
+    saveWebServerSettings: function () {
+      let app_enable_mfd = $("#app_enable_mfd").prop("checked");
+      let app_enable_api = $("#app_enable_api").prop("checked");
+      let app_enable_ssl = $("#app_enable_ssl").prop("checked");
+      let server_cert = $("#server_cert").val();
+      let server_key = $("#server_key").val();
+
+      YB.client.send({
+        "cmd": "set_webserver_config",
+        "app_enable_mfd": app_enable_mfd,
+        "app_enable_api": app_enable_api,
+        "app_enable_ssl": app_enable_ssl,
+        "server_cert": server_cert,
+        "server_key": server_key
+      });
+    },
+
+    saveMQTTSettings: function () {
+      let app_enable_mqtt = $("#app_enable_mqtt").prop("checked");
+      let app_enable_ha_integration = $("#app_enable_ha_integration").prop("checked");
+      let app_use_hostname_as_mqtt_uuid = $("#app_use_hostname_as_mqtt_uuid").prop("checked");
+      let mqtt_server = $("#mqtt_server").val();
+      let mqtt_user = $("#mqtt_user").val();
+      let mqtt_pass = $("#mqtt_pass").val();
+      let mqtt_cert = $("#mqtt_cert").val();
+
+      YB.client.send({
+        "cmd": "set_mqtt_config",
+        "app_enable_mqtt": app_enable_mqtt,
+        "app_enable_ha_integration": app_enable_ha_integration,
+        "app_use_hostname_as_mqtt_uuid": app_use_hostname_as_mqtt_uuid,
+        "mqtt_server": mqtt_server,
+        "mqtt_user": mqtt_user,
+        "mqtt_pass": mqtt_pass,
+        "mqtt_cert": mqtt_cert
+      });
+    },
+
     saveNetworkSettings: function () {
       //get our data
       let wifi_mode = $("#wifi_mode").val();
@@ -526,74 +602,16 @@
       }, 2500);
     },
 
-    saveAppSettings: function () {
-      //get our data
-      let admin_user = $("#admin_user").val();
-      let admin_pass = $("#admin_pass").val();
-      let guest_user = $("#guest_user").val();
-      let guest_pass = $("#guest_pass").val();
-      let default_role = $("#default_role option:selected").val();
-      let app_enable_mfd = $("#app_enable_mfd").prop("checked");
-      let app_enable_api = $("#app_enable_api").prop("checked");
+    saveMiscellaneousSettings: function () {
       let app_enable_serial = $("#app_enable_serial").prop("checked");
       let app_enable_ota = $("#app_enable_ota").prop("checked");
-      let app_enable_ssl = $("#app_enable_ssl").prop("checked");
-      let app_enable_mqtt = $("#app_enable_mqtt").prop("checked");
-      let app_enable_ha_integration = $("#app_enable_ha_integration").prop("checked");
-      let app_use_hostname_as_mqtt_uuid = $("#app_use_hostname_as_mqtt_uuid").prop("checked");
-      let mqtt_server = $("#mqtt_server").val();
-      let mqtt_user = $("#mqtt_user").val();
-      let mqtt_pass = $("#mqtt_pass").val();
-      let mqtt_cert = $("#mqtt_cert").val();
-      let server_cert = $("#server_cert").val();
-      let server_key = $("#server_key").val();
-      let update_interval = $("#app_update_interval").val();
-
-      //we should probably do a bit of verification here
-      update_interval = Math.max(100, update_interval);
-      update_interval = Math.min(5000, update_interval);
-      YB.App.updateInterval = update_interval;
-
-      //remember it and update our UI
-      YB.App.defaultRole = default_role;
-      YB.App.updateRoleUI();
-
-      //helper function to keep admin logged in.
-      if (YB.App.defaultRole != "admin") {
-        Cookies.set('username', admin_user, { expires: 365 });
-        Cookies.set('password', admin_pass, { expires: 365 });
-      }
-      else {
-        Cookies.remove("username");
-        Cookies.remove("password");
-      }
 
       //okay, send it off.
       YB.client.send({
-        "cmd": "set_app_config",
-        "admin_user": admin_user,
-        "admin_pass": admin_pass,
-        "guest_user": guest_user,
-        "guest_pass": guest_pass,
-        "app_update_interval": YB.App.updateInterval,
-        "default_role": default_role,
-        "app_enable_mfd": app_enable_mfd,
-        "app_enable_api": app_enable_api,
+        "cmd": "set_misc_config",
         "app_enable_serial": app_enable_serial,
-        "app_enable_ota": app_enable_ota,
-        "app_enable_ssl": app_enable_ssl,
-        "app_enable_mqtt": app_enable_mqtt,
-        "app_enable_ha_integration": app_enable_ha_integration,
-        "app_use_hostname_as_mqtt_uuid": app_use_hostname_as_mqtt_uuid,
-        "mqtt_server": mqtt_server,
-        "mqtt_user": mqtt_user,
-        "mqtt_pass": mqtt_pass,
-        "mqtt_cert": mqtt_cert,
-        "server_cert": server_cert,
-        "server_key": server_key
+        "app_enable_ota": app_enable_ota
       });
-
-      YB.App.showAlert("App settings have been updated.", "success");
     },
 
     restartBoard: function () {
@@ -805,6 +823,15 @@
         YB.App.loadConfigs();
         YB.App.openDefaultPage();
       }
+    },
+
+    handleStatusMessage: function (msg) {
+      if (msg.status == "error")
+        YB.App.showAlert(msg.message, "danger");
+      else if (msg.status == "success")
+        YB.App.showAlert(msg.message, "success");
+      else
+        YB.App.showAlert(msg.message, "primary");
     },
 
     handleConfigMessage: function (msg) {
@@ -1416,6 +1443,7 @@
 
   //setup all of our message handlers.
   YB.App.addMessageHandler("hello", YB.App.handleHelloMessage);
+  YB.App.addMessageHandler("status", YB.App.handleStatusMessage);
   YB.App.addMessageHandler("config", YB.App.handleConfigMessage);
   YB.App.addMessageHandler("update", YB.App.handleUpdateMessage);
   YB.App.addMessageHandler("stats", YB.App.handleStatsMessage);
