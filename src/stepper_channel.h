@@ -24,6 +24,7 @@ class StepperChannel : public BaseChannel
   protected:
   public:
     float currentAngle = 0.0;
+    float currentSpeed = 0.0;
     uint32_t currentPosition = 0;
     float autoDisableMillis = 5000;
 
@@ -34,6 +35,7 @@ class StepperChannel : public BaseChannel
 
     void setup();
     void setSpeed(float rpm);
+    float getSpeed();
     float getAngle();
     int32_t getPosition();
     void gotoAngle(float angle, float rpm = -1);

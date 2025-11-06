@@ -76,7 +76,8 @@ tr.pwmRow #statsTable tbody tr {
     font-size: 1.3rem !important;
 }
 
-.servoName {
+.servoName,
+.stepperName {
     font-weight: bold;
     font-size: 1.3rem !important;
 }

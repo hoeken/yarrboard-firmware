@@ -85,6 +85,7 @@ void StepperChannel::generateUpdate(JsonVariant config)
 
   config["position"] = this->getPosition();
   config["angle"] = this->getAngle();
+  config["speed"] = this->getSpeed();
 }
 
 void StepperChannel::setup()
@@ -254,7 +255,14 @@ void StepperChannel::setSpeed(float rpm)
   uint32_t hz = (rpm * (float)YB_STEPPER_STEPS_PER_REVOLUTION) / 60.0;
   _stepper->setSpeedInHz(hz);
 
-  YBP.printf("CH%d | RPM: %.1f | Hz: %d\n", this->id, rpm, hz);
+  currentSpeed = rpm;
+
+  // YBP.printf("CH%d | Set RPM: %.1f | Hz: %d\n", this->id, rpm, hz);
+}
+
+float StepperChannel::getSpeed()
+{
+  return currentSpeed;
 }
 
 void StepperChannel::gotoAngle(float angle, float rpm)
@@ -262,9 +270,12 @@ void StepperChannel::gotoAngle(float angle, float rpm)
   lastUpdateMillis = millis();
   currentAngle = angle;
 
+  if (rpm <= 0)
+    rpm = currentSpeed;
+
   int32_t position = angle * _steps_per_degree;
 
-  YBP.printf("CH%d | Angle: %.1f | Position: %d | RPM: %.1f\n", this->id, angle, position, rpm);
+  // YBP.printf("CH%d | Go To Angle: %.1f | Position: %d | RPM: %.1f\n", this->id, angle, position, rpm);
   gotoPosition(position, rpm);
 }
 
@@ -273,6 +284,8 @@ void StepperChannel::gotoPosition(int32_t position, float rpm)
   // optional set speed
   if (rpm > 0)
     setSpeed(rpm);
+
+  // YBP.printf("CH%d | Go To Position: %d | RPM: %.1f\n", this->id, position, rpm);
 
   // giddyup
   _stepper->moveTo(position);
@@ -285,7 +298,8 @@ void StepperChannel::disable()
 
 float StepperChannel::getAngle()
 {
-  return this->getPosition() / _steps_per_degree;
+  return currentAngle;
+  // return this->getPosition() / _steps_per_degree;
 }
 
 int32_t StepperChannel::getPosition()

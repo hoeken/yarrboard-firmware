@@ -29,7 +29,8 @@
           <!-- Header row -->
           <div class="d-flex justify-content-between align-items-center mb-2">
             <h6 id="servoName${this.id}" class="mb-0 servoName">${this.name}</h6>
-            <div class="input-group input-group-sm" style="width: 90px;">
+            <div class="input-group input-group-sm" style="width: 150px;">
+              <span class="input-group-text">Angle</span>
               <input class="form-control text-end" id="servoAngle${this.id}">
               <span class="input-group-text">°</span>
             </div>

@@ -3,9 +3,6 @@
 # v2.0.0 Release
 
 * UI Rewrite
-    * stepper channels
-    * dio channels
-    * fan channels?
     * dark mode switcher doesnt seem to be working
 * settings page is ugly af.
     * borders for each config area like channels
@@ -17,7 +14,6 @@
     * http server group
     * wifi group
     * users group
-* sporadic crash when fading and saving to prefs at the same time.
 * test/update/fix the release script for ota
 * PsychicHttp release as well
 
@@ -71,6 +67,7 @@
 
 # FROTHFET
 
+* sporadic crash when fading and saving to prefs at the same time.
 * slow vs fast blow
     * fast checks getLatestReading()
     * slow checks getAverageReading()
@@ -84,6 +81,9 @@
 
 # LONG TERM:
 
+* UI
+    * dio channels
+    * fan channels?
 * signalk plugins
     * should we move this to the firmware instead?
     * frothfet plugin - use key for paths instead of id

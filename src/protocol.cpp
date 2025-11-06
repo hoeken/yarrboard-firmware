@@ -929,24 +929,13 @@ void handleConfigStepperChannel(JsonVariantConst input, JsonVariant output)
   if (!ch)
     return;
 
-  // channel name
-  if (input["name"].is<String>()) {
-    // is it too long?
-    if (strlen(input["name"]) > YB_CHANNEL_NAME_LENGTH - 1) {
-      sprintf(error, "Maximum channel name length is %s characters.", YB_CHANNEL_NAME_LENGTH - 1);
-      return generateErrorJSON(output, error);
-    }
-
-    // save to our storage
-    strlcpy(ch->name, input["name"] | "Stepper ?", sizeof(ch->name));
+  if (!input["config"].is<JsonObjectConst>()) {
+    snprintf(error, sizeof(error), "'config' is required parameter");
+    return generateErrorJSON(output, error);
   }
 
-  // enabled
-  if (input["enabled"].is<bool>()) {
-    // save right nwo.
-    bool enabled = input["enabled"];
-    ch->isEnabled = enabled;
-  }
+  if (!ch->loadConfig(input["config"], error, sizeof(error)))
+    return generateErrorJSON(output, error);
 
   // write it to file
   if (!saveConfig(error, sizeof(error)))
@@ -984,10 +973,7 @@ void handleSetStepperChannel(JsonVariantConst input, JsonVariant output)
   // move to an angle
   if (input["angle"].is<JsonVariantConst>()) {
     float angle = input["angle"];
-    if (angle >= 0)
-      ch->gotoAngle(angle);
-    else
-      return generateErrorJSON(output, "'angle' must be greater than 0");
+    ch->gotoAngle(angle);
   }
 #else
   return generateErrorJSON(output, "Board does not have stepper channels.");

@@ -223,7 +223,15 @@ void generateBoardConfigJSON(JsonVariant output)
   }
 #endif
 
-// input / analog ADC channesl
+#ifdef YB_HAS_STEPPER_CHANNELS
+  JsonArray st_channels = output["stepper"].to<JsonArray>();
+  for (auto& ch : stepper_channels) {
+    JsonObject jo = st_channels.add<JsonObject>();
+    ch.generateConfig(jo);
+  }
+#endif
+
+// input / analog ADC channels
 #ifdef YB_HAS_ADC_CHANNELS
   output["adc_resolution"] = YB_ADC_RESOLUTION;
   JsonArray channels = output["adc"].to<JsonArray>();
@@ -480,6 +488,11 @@ bool loadBoardConfigFromJSON(JsonVariantConst config, char* error, size_t len)
 
 #ifdef YB_HAS_SERVO_CHANNELS
   if (!loadChannelsConfigFromJSON("servo", servo_channels, config, error, len))
+    return false;
+#endif
+
+#ifdef YB_HAS_STEPPER_CHANNELS
+  if (!loadChannelsConfigFromJSON("stepper", stepper_channels, config, error, len))
     return false;
 #endif
 
