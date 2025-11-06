@@ -114,8 +114,6 @@ void handleSerialJson()
 {
   JsonDocument input;
   DeserializationError err = deserializeJson(input, Serial);
-
-  // StaticJsonDocument<YB_LARGE_JSON_SIZE> output;
   JsonDocument output;
 
   // ignore newlines with serial.

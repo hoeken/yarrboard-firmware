@@ -44,7 +44,7 @@ void setup()
   YBP.println("Debug ok");
 
   // audio visual notifications
-#ifdef YB_HAS_STATUS_RGB7
+#ifdef YB_HAS_STATUS_RGB
   rgb_setup();
 #endif
 #ifdef YB_HAS_PIEZO
