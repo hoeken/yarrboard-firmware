@@ -112,17 +112,12 @@
         for (var channel_config of cfg[ctype]) {
           let ch = this.channelFromConfig(channel_config, ctype);
 
-          if (ch.enabled) {
-            let ui_card = ch.generateControlUI();
-            $(`#${ctype}Cards`).append(ui_card);
-            ch.setupControlUI();
+          let ui_card = ch.generateControlUI();
+          $(`#${ctype}Cards`).append(ui_card);
+          ch.setupControlUI();
 
-            ch.generateStatsUI();
-            ch.setupStatsUI();
-
-            ch.generateGraphsUI();
-            ch.setupGraphsUI();
-          }
+          ch.generateStatsUI();
+          ch.setupStatsUI();
 
           //we always want edit.
           let edit_card = ch.generateEditUI();

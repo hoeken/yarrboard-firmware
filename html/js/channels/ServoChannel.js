@@ -6,7 +6,6 @@
   function ServoChannel() {
     YB.BaseChannel.call(this, "servo", "Servo");
 
-    this.onEditForm = this.onEditForm.bind(this);
     this.setAngle = this.setAngle.bind(this);
   }
 
@@ -25,7 +24,7 @@
 
   ServoChannel.prototype.generateControlUI = function () {
     return `
-      <div id="servo${this.id}" class="col-xs-12 col-sm-6">
+      <div id="servoControlCard${this.id}" class="col-xs-12 col-sm-6">
         <table class="w-100 h-100 p-2">
           <tr>
             <td width="75%" id="servoName${this.id}">${this.name}</td>
@@ -51,6 +50,7 @@
   };
 
   ServoChannel.prototype.setupControlUI = function () {
+    YB.BaseChannel.prototype.setupControlUI.call(this);
 
     $('#servoSlider' + this.id).change(this.setAngle);
 
@@ -117,27 +117,13 @@
     YB.BaseChannel.prototype.setupEditUI.call(this);
   };
 
-  ServoChannel.prototype.onEditForm = function (e) {
-
-    //layer our form data over our existing config.
-    let newcfg = this.cfg;
-    newcfg.name = $(`#f-servo-name-${this.id}`).val()
-    newcfg.enabled = $(`#f-servo-enabled-${this.id}`).prop("checked");
-    newcfg.key = $(`#f-servo-key-${this.id}`).val();
-
-    this.handleEditForm(newcfg, e);
-
-    //ui updates
-    $(`#f-servo-name-${this.id}`).prop('disabled', !this.enabled);
-    $(`#f-servo-key-${this.id}`).prop('disabled', !this.enabled);
-    $(`#f-servo-type-${this.id}`).prop('disabled', !this.enabled);
-  };
-
   ServoChannel.prototype.updateControlUI = function () {
     if (ServoChannel.currentSliderID != this.id) {
       $('#servoSlider' + this.id).val(this.data.angle);
       $('#servoAngle' + this.id).html(`${this.data.angle}°`);
     }
+
+    $(`#servoControlCard${this.id}`).toggle(this.enabled);
   };
 
   YB.ServoChannel = ServoChannel;

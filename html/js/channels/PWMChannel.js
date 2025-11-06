@@ -5,7 +5,7 @@
   function PWMChannel() {
     YB.BaseChannel.call(this, "pwm", "PWM");
 
-    this.onEditForm = this.onEditForm.bind(this);
+    // this.onEditForm = this.onEditForm.bind(this);
     this.setDutyCycle = this.setDutyCycle.bind(this);
     this.toggleState = this.toggleState.bind(this);
   }
@@ -158,7 +158,7 @@
 
   PWMChannel.prototype.generateControlUI = function () {
     return `
-      <div id="pwm${this.id}" class="col-xs-12 col-sm-6">
+      <div id="pwmControlCard${this.id}" class="col-xs-12 col-sm-6">
         <table class="w-100 h-100 p-2">
           <tr>
             <td>
@@ -195,6 +195,7 @@
   };
 
   PWMChannel.prototype.setupControlUI = function () {
+    YB.BaseChannel.prototype.setupControlUI.call(this);
 
     $(`#pwmState${this.id}`).on("click", this.toggleState);
 
@@ -312,24 +313,19 @@
     $(`#f-pwm-defaultState-${this.id}`).change(this.onEditForm);
   };
 
-  PWMChannel.prototype.onEditForm = function (e) {
-
-    //layer our form data over our existing config.
-    let newcfg = this.cfg;
-    newcfg.name = $(`#f-pwm-name-${this.id}`).val()
-    newcfg.enabled = $(`#f-pwm-enabled-${this.id}`).prop("checked");
-    newcfg.key = $(`#f-pwm-key-${this.id}`).val();
+  PWMChannel.prototype.getConfigFormData = function () {
+    let newcfg = YB.BaseChannel.prototype.getConfigFormData.call(this);
     newcfg.isDimmable = $(`#f-pwm-isDimmable-${this.id}`).prop("checked");
-    newcfg.name = $(`#f-pwm-name-${this.id}`).val();
     newcfg.softFuse = $(`#f-pwm-softFuse-${this.id}`).val();
     newcfg.type = $(`#f-pwm-type-${this.id}`).val();
     newcfg.defaultState = $(`#f-pwm-defaultState-${this.id}`).val();
+    return newcfg;
+  }
 
-    this.handleEditForm(newcfg, e);
+  PWMChannel.prototype.onEditForm = function (e) {
+    YB.BaseChannel.prototype.onEditForm.call(this, e);
 
     //ui updates
-    $(`#f-pwm-name-${this.id}`).prop('disabled', !this.enabled);
-    $(`#f-pwm-key-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-isDimmable-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-softFuse-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-type-${this.id}`).prop('disabled', !this.enabled);
@@ -358,96 +354,95 @@
   }
 
   PWMChannel.prototype.updateControlUI = function () {
-    if (this.enabled) {
-      if (this.data.state == "ON") {
-        $('#pwmState' + this.id).addClass("btn-success");
-        $('#pwmState' + this.id).removeClass("btn-primary");
-        $('#pwmState' + this.id).removeClass("btn-warning");
-        $('#pwmState' + this.id).removeClass("btn-danger");
-        $('#pwmState' + this.id).removeClass("btn-secondary");
-        $(`#pwmStatus${this.id}`).hide();
-        $(`#pwmData${this.id}`).show();
-      }
-      else if (this.data.state == "TRIPPED") {
-        $('#pwmState' + this.id).addClass("btn-warning");
-        $('#pwmState' + this.id).removeClass("btn-primary");
-        $('#pwmState' + this.id).removeClass("btn-success");
-        $('#pwmState' + this.id).removeClass("btn-danger");
-        $('#pwmState' + this.id).removeClass("btn-secondary");
-        $(`#pwmStatus${this.id}`).html("SOFT TRIP");
-        $(`#pwmStatus${this.id}`).show();
-        $(`#pwmData${this.id}`).hide();
-      }
-      else if (this.data.state == "BLOWN") {
-        $('#pwmState' + this.id).addClass("btn-danger");
-        $('#pwmState' + this.id).removeClass("btn-primary");
-        $('#pwmState' + this.id).removeClass("btn-warning");
-        $('#pwmState' + this.id).removeClass("btn-success");
-        $('#pwmState' + this.id).removeClass("btn-secondary");
-        $(`#pwmStatus${this.id}`).html("FUSE BLOWN");
-        $(`#pwmStatus${this.id}`).show();
-        $(`#pwmData${this.id}`).hide();
-      }
-      else if (this.data.state == "BYPASSED") {
-        $('#pwmState' + this.id).addClass("btn-primary");
-        $('#pwmState' + this.id).removeClass("btn-danger");
-        $('#pwmState' + this.id).removeClass("btn-warning");
-        $('#pwmState' + this.id).removeClass("btn-success");
-        $('#pwmState' + this.id).removeClass("btn-secondary");
-        $(`#pwmStatus${this.id}`).html("BYPASSED");
-        $(`#pwmStatus${this.id}`).show();
-        $(`#pwmData${this.id}`).show();
-      }
-      else if (this.data.state == "OFF") {
-        $('#pwmState' + this.id).addClass("btn-secondary");
-        $('#pwmState' + this.id).removeClass("btn-primary");
-        $('#pwmState' + this.id).removeClass("btn-warning");
-        $('#pwmState' + this.id).removeClass("btn-success");
-        $('#pwmState' + this.id).removeClass("btn-danger");
-        $(`#pwmStatus${this.id}`).hide();
-        $(`#pwmData${this.id}`).hide();
-      }
-
-      //duty is a bit of a special case.
-      let duty = Math.round(this.data.duty * 100);
-      if (this.cfg.isDimmable) {
-        if (PWMChannel.currentSliderID != this.id) {
-          $('#pwmDutySlider' + this.id).val(duty);
-        }
-      }
-
-      let voltage = this.data.voltage.toFixed(1);
-      $('#pwmVoltage' + this.id).html(`${voltage}V`);
-
-      let current = this.data.current;
-      if (current < 1)
-        current = current.toFixed(2);
-      else
-        current = current.toFixed(1);
-      $('#pwmCurrent' + this.id).html(`${current}A`);
-
-      let wattage = this.data.wattage;
-      if (wattage > 10)
-        wattage = Math.round(wattage);
-      else if (wattage > 1)
-        wattage = wattage.toFixed(1);
-      else
-        wattage = wattage.toFixed(2);
-      $('#pwmWattage' + this.id).html(`${wattage}W`);
+    if (this.data.state == "ON") {
+      $('#pwmState' + this.id).addClass("btn-success");
+      $('#pwmState' + this.id).removeClass("btn-primary");
+      $('#pwmState' + this.id).removeClass("btn-warning");
+      $('#pwmState' + this.id).removeClass("btn-danger");
+      $('#pwmState' + this.id).removeClass("btn-secondary");
+      $(`#pwmStatus${this.id}`).hide();
+      $(`#pwmData${this.id}`).show();
     }
+    else if (this.data.state == "TRIPPED") {
+      $('#pwmState' + this.id).addClass("btn-warning");
+      $('#pwmState' + this.id).removeClass("btn-primary");
+      $('#pwmState' + this.id).removeClass("btn-success");
+      $('#pwmState' + this.id).removeClass("btn-danger");
+      $('#pwmState' + this.id).removeClass("btn-secondary");
+      $(`#pwmStatus${this.id}`).html("SOFT TRIP");
+      $(`#pwmStatus${this.id}`).show();
+      $(`#pwmData${this.id}`).hide();
+    }
+    else if (this.data.state == "BLOWN") {
+      $('#pwmState' + this.id).addClass("btn-danger");
+      $('#pwmState' + this.id).removeClass("btn-primary");
+      $('#pwmState' + this.id).removeClass("btn-warning");
+      $('#pwmState' + this.id).removeClass("btn-success");
+      $('#pwmState' + this.id).removeClass("btn-secondary");
+      $(`#pwmStatus${this.id}`).html("FUSE BLOWN");
+      $(`#pwmStatus${this.id}`).show();
+      $(`#pwmData${this.id}`).hide();
+    }
+    else if (this.data.state == "BYPASSED") {
+      $('#pwmState' + this.id).addClass("btn-primary");
+      $('#pwmState' + this.id).removeClass("btn-danger");
+      $('#pwmState' + this.id).removeClass("btn-warning");
+      $('#pwmState' + this.id).removeClass("btn-success");
+      $('#pwmState' + this.id).removeClass("btn-secondary");
+      $(`#pwmStatus${this.id}`).html("BYPASSED");
+      $(`#pwmStatus${this.id}`).show();
+      $(`#pwmData${this.id}`).show();
+    }
+    else if (this.data.state == "OFF") {
+      $('#pwmState' + this.id).addClass("btn-secondary");
+      $('#pwmState' + this.id).removeClass("btn-primary");
+      $('#pwmState' + this.id).removeClass("btn-warning");
+      $('#pwmState' + this.id).removeClass("btn-success");
+      $('#pwmState' + this.id).removeClass("btn-danger");
+      $(`#pwmStatus${this.id}`).hide();
+      $(`#pwmData${this.id}`).hide();
+    }
+
+    //duty is a bit of a special case.
+    let duty = Math.round(this.data.duty * 100);
+    if (this.cfg.isDimmable) {
+      if (PWMChannel.currentSliderID != this.id) {
+        $('#pwmDutySlider' + this.id).val(duty);
+      }
+    }
+
+    let voltage = this.data.voltage.toFixed(1);
+    $('#pwmVoltage' + this.id).html(`${voltage}V`);
+
+    let current = this.data.current;
+    if (current < 1)
+      current = current.toFixed(2);
+    else
+      current = current.toFixed(1);
+    $('#pwmCurrent' + this.id).html(`${current}A`);
+
+    let wattage = this.data.wattage;
+    if (wattage > 10)
+      wattage = Math.round(wattage);
+    else if (wattage > 1)
+      wattage = wattage.toFixed(1);
+    else
+      wattage = wattage.toFixed(2);
+    $('#pwmWattage' + this.id).html(`${wattage}W`);
+
+    $(`#pwmControlCard${this.id}`).toggle(this.enabled);
   };
 
   PWMChannel.prototype.generateStatsUI = function () {
-    if (this.enabled) {
-      $('#pwmStatsTableBody').append(`
-        <tr id="pwmStats${this.id}">
-          <td class="pwmName" > ${this.name}</td >
-          <td id="pwmAmpHours${this.id}" class= "text-end"></td >
-          <td id="pwmWattHours${this.id}" class= "text-end"></td >
-          <td id="pwmOnCount${this.id}" class= "text-end"></td >
-          <td id="pwmTripCount${this.id}" class= "text-end"></td >
-        </tr>`);
-    }
+    $('#pwmStatsTableBody').append(`
+      <tr id="pwmStats${this.id}">
+        <td class="pwmName" > ${this.name}</td >
+        <td id="pwmAmpHours${this.id}" class= "text-end"></td >
+        <td id="pwmWattHours${this.id}" class= "text-end"></td >
+        <td id="pwmOnCount${this.id}" class= "text-end"></td >
+        <td id="pwmTripCount${this.id}" class= "text-end"></td >
+      </tr>
+    `);
   };
 
   PWMChannel.prototype.updateStatsUI = function (stats) {

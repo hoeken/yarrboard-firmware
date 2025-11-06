@@ -722,9 +722,6 @@ void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
   // write it to file
   if (!saveConfig(error, sizeof(error)))
     return generateErrorJSON(output, error);
-
-  // give them the updated config
-  generateConfigJSON(output);
 #else
   return generateErrorJSON(output, "Board does not have pwm channels.");
 #endif
@@ -786,9 +783,6 @@ void handleConfigRelayChannel(JsonVariantConst input, JsonVariant output)
   // write it to file
   if (!saveConfig(error, sizeof(error)))
     return generateErrorJSON(output, error);
-
-  // give them the updated config
-  generateConfigJSON(output);
 #else
   return generateErrorJSON(output, "Board does not have relay channels.");
 #endif
@@ -894,9 +888,6 @@ void handleConfigServoChannel(JsonVariantConst input, JsonVariant output)
   // write it to file
   if (!saveConfig(error, sizeof(error)))
     return generateErrorJSON(output, error);
-
-  // give them the updated config
-  generateConfigJSON(output);
 #else
   return generateErrorJSON(output, "Board does not have servo channels.");
 #endif
@@ -960,10 +951,6 @@ void handleConfigStepperChannel(JsonVariantConst input, JsonVariant output)
   // write it to file
   if (!saveConfig(error, sizeof(error)))
     return generateErrorJSON(output, error);
-
-  // give them the updated config
-  generateConfigJSON(output);
-
 #else
   return generateErrorJSON(output, "Board does not have stepper channels.");
 #endif
@@ -1122,10 +1109,6 @@ void handleConfigADC(JsonVariantConst input, JsonVariant output)
   // write it to file
   if (!saveConfig(error, sizeof(error)))
     return generateErrorJSON(output, error);
-
-  // give them the updated config
-  generateConfigJSON(output);
-
 #else
   return generateErrorJSON(output, "Board does not have ADC channels.");
 #endif

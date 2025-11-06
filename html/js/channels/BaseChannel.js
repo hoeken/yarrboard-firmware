@@ -8,6 +8,8 @@
     this.channelName = name;
     this.cfg = {};
     this.data = {};
+
+    this.onEditForm = this.onEditForm.bind(this);
   }
 
   BaseChannel.prototype.generateControlContainer = function () {
@@ -179,7 +181,33 @@
     } else {
       $(event.target).addClass("is-valid");
       this.saveConfig();
+      this.onConfigSuccess();
     }
+  };
+
+  BaseChannel.prototype.getConfigFormData = function () {
+    // shallow copy so we don’t mutate this.cfg until save
+    const newcfg = Object.assign({}, this.cfg);
+    newcfg.name = $(`#f-${this.channelType}-name-${this.id}`).val();
+    newcfg.enabled = $(`#f-${this.channelType}-enabled-${this.id}`).prop("checked");
+    newcfg.key = $(`#f-${this.channelType}-key-${this.id}`).val();
+    return newcfg;
+  }
+
+  BaseChannel.prototype.onEditForm = function (e) {
+
+    //layer our form data over our existing config.
+    let newcfg = this.getConfigFormData();
+
+    this.handleEditForm(newcfg, e);
+
+    $(`#f-${this.channelType}-name-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-${this.channelType}-key-${this.id}`).prop('disabled', !this.enabled);
+  }
+
+  BaseChannel.prototype.onConfigSuccess = function () {
+    $(`#${this.channelType}ControlCard${this.id}`).replaceWith(this.generateControlUI());
+    this.setupControlUI();
   };
 
   //
@@ -188,7 +216,6 @@
   BaseChannel.prototype.generateControlUI = function () { };
   BaseChannel.prototype.generateEditUI = function () { };
   BaseChannel.prototype.generateStatsUI = function () { };
-  BaseChannel.prototype.generateGraphsUI = function () { };
 
   //
   // Functions for updating the UI as new data/configs come in.
@@ -196,12 +223,12 @@
   BaseChannel.prototype.updateControlUI = function () { };
   BaseChannel.prototype.updateEditUI = function () { };
   BaseChannel.prototype.updateStatsUI = function () { };
-  BaseChannel.prototype.updateGraphsUI = function () { };
 
   //
   // Functions for setting up the UI hooks and callbacks
   //
   BaseChannel.prototype.setupControlUI = function () { };
+
   BaseChannel.prototype.setupEditUI = function () {
     //populate our data
     $(`#f-${this.channelType}-name-${this.id}`).val(this.name);
@@ -217,8 +244,10 @@
     $(`#f-${this.channelType}-enabled-${this.id}`).change(this.onEditForm);
     $(`#f-${this.channelType}-key-${this.id}`).change(this.onEditForm);
   };
-  BaseChannel.prototype.setupStatsUI = function () { };
-  BaseChannel.prototype.setupGraphsUI = function () { };
+  BaseChannel.prototype.setupStatsUI = function () {
+    if (!this.enabled)
+      $(`${this.channelType}Stats${this.id}`).hide();
+  };
 
   YB.BaseChannel = BaseChannel;
   global.YB = YB; // expose to global

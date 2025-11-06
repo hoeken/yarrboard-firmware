@@ -5,7 +5,7 @@
   function RelayChannel() {
     YB.BaseChannel.call(this, "relay", "Relay");
 
-    this.onEditForm = this.onEditForm.bind(this);
+    // this.onEditForm = this.onEditForm.bind(this);
     this.toggleState = this.toggleState.bind(this);
   }
 
@@ -37,7 +37,7 @@
 
   RelayChannel.prototype.generateControlUI = function () {
     return `
-      <div id="relay${this.id}" class="col-xs-12 col-sm-6">
+      <div id="relayControlCard${this.id}" class="col-xs-12 col-sm-6">
         <table class="w-100 h-100 p-2">
           <tr>
             <td>
@@ -64,6 +64,8 @@
   };
 
   RelayChannel.prototype.setupControlUI = function () {
+    YB.BaseChannel.prototype.setupControlUI.call(this);
+
     $(`#relayState${this.id}`).on("click", this.toggleState);
   };
 
@@ -132,39 +134,34 @@
     $(`#f-relay-defaultState-${this.id}`).change(this.onEditForm);
   };
 
-  RelayChannel.prototype.onEditForm = function (e) {
-
-    //layer our form data over our existing config.
-    let newcfg = this.cfg;
-    newcfg.name = $(`#f-relay-name-${this.id}`).val()
-    newcfg.enabled = $(`#f-relay-enabled-${this.id}`).prop("checked");
-    newcfg.key = $(`#f-relay-key-${this.id}`).val();
+  RelayChannel.prototype.getConfigFormData = function () {
+    let newcfg = YB.BaseChannel.prototype.getConfigFormData.call(this);
     newcfg.type = $(`#f-relay-type-${this.id}`).val();
     newcfg.defaultState = $(`#f-relay-defaultState-${this.id}`).val() === "ON";
+    return newcfg;
+  };
 
-    this.handleEditForm(newcfg, e);
+  RelayChannel.prototype.onEditForm = function (e) {
+    YB.BaseChannel.prototype.onEditForm.call(this, e);
 
     //ui updates
-    $(`#f-relay-name-${this.id}`).prop('disabled', !this.enabled);
-    $(`#f-relay-key-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-relay-type-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-relay-defaultState-${this.id}`).prop('disabled', !this.enabled);
   };
 
   RelayChannel.prototype.updateControlUI = function () {
-    if (this.enabled) {
-      if (this.data.state == "ON") {
-        $('#relayState' + this.id).addClass("btn-success");
-        $('#relayState' + this.id).removeClass("btn-secondary");
-        $(`#relayStatus${this.id}`).hide();
-      }
-      else {
-        $('#relayState' + this.id).addClass("btn-secondary");
-        $('#relayState' + this.id).removeClass("btn-success");
-        $(`#relayStatus${this.id}`).hide();
-      }
-
+    if (this.data.state == "ON") {
+      $('#relayState' + this.id).addClass("btn-success");
+      $('#relayState' + this.id).removeClass("btn-secondary");
+      $(`#relayStatus${this.id}`).hide();
     }
+    else {
+      $('#relayState' + this.id).addClass("btn-secondary");
+      $('#relayState' + this.id).removeClass("btn-success");
+      $(`#relayStatus${this.id}`).hide();
+    }
+
+    $(`#relayControlCard${this.id}`).toggle(this.enabled);
   };
 
 

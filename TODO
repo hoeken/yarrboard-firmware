@@ -3,7 +3,6 @@
 # v2.0.0 Release
 
 * UI Rewrite
-    * dont return new config on backend refresh the ui with our newly stored config.
     * stepper channels
     * dio channels
     * fan channels?
