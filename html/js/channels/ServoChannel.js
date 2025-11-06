@@ -83,24 +83,23 @@
     $slider.on('focus', () => { ServoChannel.currentSliderID = this.id; });
 
     //jquery doesnt allow passive
-    document.getElementById('servoSlider' + this.id).addEventListener('touchstart', () => {
-      ServoChannel.currentSliderID = this.id;
-    }, { passive: true });
+    // document.getElementById('servoSlider' + this.id).addEventListener('touchstart', () => {
+    //   ServoChannel.currentSliderID = this.id;
+    // }, { passive: true });
 
     // clear on stop
     const clearActive = () => { ServoChannel.currentSliderID = -1; };
     $angle.on('blur', clearActive);
     $slider.on('blur', clearActive);
-    document.getElementById('servoSlider' + this.id).addEventListener('touchend', clearActive, { passive: true });
+    // document.getElementById('servoSlider' + this.id).addEventListener('touchend', clearActive, { passive: true });
   };
 
   ServoChannel.prototype.setAngle = function (e) {
-    let angle = parseFloat(e.target.value);
+    let angle = parseInt(e.target.value);
     if (isNaN(angle))
       angle = 0;
     angle = Math.min(180, Math.max(0, angle));
 
-    //update our UI - its coming from two sources
     $(`#servoAngle${this.id}`).val(angle);
     $(`#servoSlider${this.id}`).val(angle);
 

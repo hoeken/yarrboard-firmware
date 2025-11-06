@@ -609,6 +609,9 @@
         });
       }
     };
+
+    //finally, show our interface.
+    $('#bomInterface').css('visibility', 'visible');
   }
 
   Brineomatic.prototype.handleUpdateMessage = function (msg) {
@@ -750,18 +753,11 @@
       else
         $("#bomStatus").addClass("text-bg-danger");
 
-      //default to hide all.
-      $(".bomSTARTUP").hide();
-      $(".bomIDLE").hide();
-      $(".bomMANUAL").hide();
-      $(".bomRUNNING").hide();
-      $(".bomFLUSHING").hide();
-      $(".bomPICKLING").hide();
-      $(".bomPICKLED").hide();
-      $(".bomDEPICKLING").hide();
-      $(".bomSTOPPING").hide();
+      // hide all BOM states except the one we want
+      $(`.bomSTARTUP, .bomIDLE, .bomMANUAL, .bomRUNNING, .bomFLUSHING, .bomPICKLING, .bomPICKLED, .bomDEPICKLING, .bomSTOPPING`)
+        .not(`.bom${msg.status}`)
+        .hide();
 
-      //show everything for our state
       $(`.bom${msg.status}`).show();
 
       if (msg.run_result)
@@ -927,9 +923,6 @@
       }
       else
         $('#bomFanStatus').hide();
-
-      //finally, show our interface.
-      $('#bomInterface').css('visibility', 'visible');
     }
   }
 
