@@ -3,17 +3,18 @@
 # v2.0.0 Release
 
 * UI Rewrite
-    * dark mode switcher doesnt seem to be working
-* settings page is ugly af.
-    * borders for each config area like channels
-    * side bar that loads each config page?
-    * combine network and app config
-        * move hostname from network to app
-        * rename network to wifi
-    * mqtt group
-    * http server group
-    * wifi group
-    * users group
+    * settings page is ugly af.
+        * borders for each config area like channels
+        * side bar that loads each config page?
+        * combine network and app config
+            * move hostname from network to app
+            * rename network to wifi
+        * mqtt group
+        * http server group
+        * wifi group
+        * user/auth group
+* do we still need YB_DEFAULT_AP_SSID?
+* YB_HAS_STATUS_WS2818 -> YB_HAS_STATUS_RGB
 * test/update/fix the release script for ota
 * PsychicHttp release as well
 

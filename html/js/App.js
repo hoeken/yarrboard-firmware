@@ -489,11 +489,8 @@
       }
     },
 
-    updateThemeSwitch: function () {
-      if (YB.App.checked)
-        YB.App.setTheme("dark");
-      else
-        YB.App.setTheme("light");
+    updateThemeSwitch: function (e) {
+      YB.App.setTheme(e.target.checked ? "dark" : "light");
     },
 
     doLogin: function (e) {
@@ -777,7 +774,6 @@
     },
 
     setTheme: function (theme) {
-      YB.log(`set theme ${theme}`);
       if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
         document.documentElement.setAttribute('data-bs-theme', 'dark');
       else
