@@ -486,7 +486,7 @@ void PWMChannel::checkStatus()
 
 void PWMChannel::updateOutputLED()
 {
-  #if (YB_STATUS_WS2818_COUNT > 1)
+  #if (YB_STATUS_RGB_COUNT > 1)
   if (this->status == Status::ON)
     rgb_set_pixel_color(this->id, CRGB::Green);
   else if (this->status == Status::OFF)

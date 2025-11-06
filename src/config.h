@@ -51,15 +51,18 @@
 #define YB_DUTY_SAVE_TIMEOUT 5000
 
 // if we have a status led, default it to one.
-#ifdef YB_HAS_STATUS_WS2818
-  #ifndef YB_STATUS_WS2818_COUNT
-    #define YB_STATUS_WS2818_COUNT 1
+#ifdef YB_HAS_STATUS_RGB
+  #ifndef YB_STATUS_RGB_COUNT
+    #define YB_STATUS_RGB_COUNT 1
   #endif
 #endif
 
-// default to rgb mode
-#ifndef YB_STATUS_WS2818_TYPE
-  #define YB_STATUS_WS2818_TYPE NEO_RGB
+// default standard rgb led.
+#ifndef YB_STATUS_RGB_TYPE
+  #define YB_STATUS_RGB_TYPE WS2812B
+#endif
+#ifndef YB_STATUS_RGB_ORDER
+  #define YB_STATUS_RGB_ORDER GRB
 #endif
 
 // default to 400khz

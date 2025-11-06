@@ -176,11 +176,6 @@ bool connectToWifi(const char* ssid, const char* pass)
         YBP.print("[WiFi] IP address: ");
         YBP.println(WiFi.localIP());
 
-        // #ifdef YB_HAS_STATUS_WS2818
-        //         status_led.setPixelColor(0, status_led.Color(0, 255, 0));
-        //         status_led.show();
-        // #endif
-
         rgb_set_status_color(CRGB::Green);
 
         return true;

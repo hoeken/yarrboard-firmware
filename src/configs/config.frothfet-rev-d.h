@@ -8,9 +8,8 @@
 #define YB_BOARD_NAME       "Frothfet"
 #define YB_DEFAULT_HOSTNAME "frothfet"
 
-#define YB_HAS_STATUS_WS2818
-#define YB_STATUS_WS2818_PIN  38
-#define YB_STATUS_WS2818_TYPE NEO_RGB
+#define YB_HAS_STATUS_RGB
+#define YB_STATUS_RGB_PIN 38
 
 #define YB_HAS_PWM_CHANNELS
 #define YB_PWM_CHANNEL_COUNT      8

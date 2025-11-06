@@ -8,11 +8,11 @@
 
 #include "rgb.h"
 
-CRGB _leds[YB_STATUS_WS2818_COUNT];
+CRGB _leds[YB_STATUS_RGB_COUNT];
 
 void rgb_setup()
 {
-  FastLED.addLeds<YB_STATUS_WS2818_TYPE, YB_STATUS_WS2818_PIN, YB_STATUS_WS2818_ORDER>(_leds, YB_STATUS_WS2818_COUNT);
+  FastLED.addLeds<YB_STATUS_RGB_TYPE, YB_STATUS_RGB_PIN, YB_STATUS_RGB_ORDER>(_leds, YB_STATUS_RGB_COUNT);
   FastLED.setBrightness(32);
   FastLED.clear();
   rgb_set_status_color(CRGB::Blue);
@@ -38,7 +38,7 @@ void rgb_set_status_color(uint8_t r, uint8_t g, uint8_t b)
 void rgb_set_pixel_color(uint8_t c, uint8_t r, uint8_t g, uint8_t b)
 {
   // out of bounds?
-  if (c >= YB_STATUS_WS2818_COUNT)
+  if (c >= YB_STATUS_RGB_COUNT)
     return;
 
   _leds[c].setRGB(r, g, b);

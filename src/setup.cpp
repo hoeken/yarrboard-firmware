@@ -111,8 +111,6 @@ void full_setup()
   mqtt_setup();
   YBP.println("MQTT ok");
 
-  // rgb_set_status_color(0, 255, 0);
-
   // we're done with startup log, switch to network print
   YBP.removePrinter(startupLogger);
   YBP.addPrinter(networkLogger);
@@ -125,7 +123,7 @@ void full_loop()
   // start our interval timer
   it.start();
 
-#ifdef YB_HAS_STATUS_WS2818
+#ifdef YB_HAS_STATUS_RGB
   rgb_loop();
   it.time("rgb_loop");
 #endif
