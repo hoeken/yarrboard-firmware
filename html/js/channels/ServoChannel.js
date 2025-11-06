@@ -104,7 +104,7 @@
     $(`#servoSlider${this.id}`).val(angle);
 
     const now = Date.now();
-    if (!this._lastSend || now - this._lastSend > 500) {
+    if (!this._lastSend || now - this._lastSend > 250) {
       this._lastSend = now;
       YB.client.send({
         "cmd": "set_servo_channel",
