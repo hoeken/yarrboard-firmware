@@ -32,6 +32,10 @@
   #error "No board config has been defined"
 #endif
 
+#ifndef YB_BOARD_NAME
+  #define YB_BOARD_NAME "Yarrboard"
+#endif
+
 #ifndef YB_DEFAULT_HOSTNAME
   #define YB_DEFAULT_HOSTNAME "yarrboard"
 #endif

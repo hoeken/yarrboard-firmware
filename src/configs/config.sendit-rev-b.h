@@ -4,7 +4,8 @@
 #define YB_HARDWARE_VERSION "SENDIT_REV_B"
 #define YB_MANUFACTURER     "Yarrboard"
 
-#define YB_IS_SENDIT 1
+#define YB_IS_SENDIT  1
+#define YB_BOARD_NAME "Sendit"
 
 #define YB_DEFAULT_HOSTNAME "sendit"
 #define YB_DEFAULT_AP_SSID  "sendit"

@@ -5,6 +5,7 @@
 #define YB_MANUFACTURER     "Yarrboard"
 
 #define YB_IS_BRINEOMATIC 1
+#define YB_BOARD_NAME     "Brineomatic"
 
 #define YB_DEFAULT_HOSTNAME "brineomatic"
 #define YB_DEFAULT_AP_SSID  "Brineomatic"

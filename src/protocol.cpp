@@ -33,7 +33,7 @@
   #include "stepper_channel.h"
 #endif
 
-char board_name[YB_BOARD_NAME_LENGTH] = "Yarrboard";
+char board_name[YB_BOARD_NAME_LENGTH] = YB_BOARD_NAME;
 char admin_user[YB_USERNAME_LENGTH] = "admin";
 char admin_pass[YB_PASSWORD_LENGTH] = "admin";
 char guest_user[YB_USERNAME_LENGTH] = "guest";
