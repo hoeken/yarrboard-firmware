@@ -82,6 +82,12 @@ tr.pwmRow #statsTable tbody tr {
     font-size: 1.3rem !important;
 }
 
+#mqtt_cert,
+#server_key,
+#server_cert {
+    height: 150px;
+}
+
 .pwmButton .pwmDutySlider {
     height: 75px;
 }

@@ -4,15 +4,8 @@
 
 * UI Rewrite
     * settings page is ugly af.
-        * borders for each config area like channels
         * side bar that loads each config page?
-        * combine network and app config
-            * move hostname from network to app
-            * rename network to wifi
-        * mqtt group
-        * http server group
-        * wifi group
-        * user/auth group
+        * remove update_interval
 * do we still need YB_DEFAULT_AP_SSID?
 * YB_HAS_STATUS_WS2818 -> YB_HAS_STATUS_RGB
 * test/update/fix the release script for ota
@@ -65,6 +58,7 @@
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker
     * sensors for each output type...
+* dark mode gauge text color is wrong
 
 # FROTHFET
 
