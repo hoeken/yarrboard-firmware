@@ -1636,43 +1636,43 @@
           <div id="bomGauges" class="row gx-0 my-3 mfdHide">
               <div class=" col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Filter Pressure</h6>
-                  <div id="filterPressureGauge"></div>
+                  <div id="filterPressureGauge" class="d-flex justify-content-center"></div>
               </div>
               <div class="col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Membrane Pressure</h6>
-                  <div id="membranePressureGauge"></div>
+                  <div id="membranePressureGauge" class="d-flex justify-content-center"></div>
               </div>
               <div class=" col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Product Salinity</h6>
-                  <div id="productSalinityGauge"></div>
+                  <div id="productSalinityGauge" class="d-flex justify-content-center"></div>
               </div>
               <div class=" col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Brine Salinity</h6>
-                  <div id="brineSalinityGauge"></div>
+                  <div id="brineSalinityGauge" class="d-flex justify-content-center"></div>
               </div>
               <div class="col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Product Flowrate</h6>
-                  <div id="productFlowrateGauge"></div>
+                  <div id="productFlowrateGauge" class="d-flex justify-content-center"></div>
               </div>
               <div class="col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Brine Flowrate</h6>
-                  <div id="brineFlowrateGauge"></div>
+                  <div id="brineFlowrateGauge" class="d-flex justify-content-center"></div>
               </div>
               <div class="col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Motor Temperature</h6>
-                  <div id="motorTemperatureGauge"></div>
+                  <div id="motorTemperatureGauge" class="d-flex justify-content-center"></div>
               </div>
               <div class="col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Water Temperature</h6>
-                  <div id="waterTemperatureGauge"></div>
+                  <div id="waterTemperatureGauge" class="d-flex justify-content-center"></div>
               </div>
               <div class="col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Tank Level</h6>
-                  <div id="tankLevelGauge"></div>
+                  <div id="tankLevelGauge" class="d-flex justify-content-center"></div>
               </div>
               <div class="col-md-3 col-sm-4 col-6 text-center">
                   <h6 class="my-0" class="my-0">Volume Produced</h6>
-                  <div id="volumeGauge"></div>
+                  <div id="volumeGauge" class="d-flex justify-content-center"></div>
               </div>
           </div>
           <div id="bomGaugesMFD" class="mfdShow row gx-0 gy-3 my-3 text-center">
