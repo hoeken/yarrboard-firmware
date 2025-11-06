@@ -25,26 +25,28 @@
   ServoChannel.prototype.generateControlUI = function () {
     return `
       <div id="servoControlCard${this.id}" class="col-xs-12 col-sm-6">
+        <div class="p-3 bg-secondary border border-secondary rounded text-white">
         <table class="w-100 h-100 p-2">
-          <tr>
-            <td width="75%" id="servoName${this.id}">${this.name}</td>
-            <td id="servoAngle${this.id}"></td>
-          </tr>
-          <tr>
-            <td colspan="2">
-              <input type="range" class="form-range" min="0" max="180" step="1" id="servoSlider${this.id}" list="servoMarker${this.id}">
-              <datalist id="servoMarker${this.id}">
-                <option value="0"></option>
-                <option value="30"></option>
-                <option value="60"></option>
-                <option value="90"></option>
-                <option value="120"></option>
-                <option value="150"></option>
-                <option value="180"></option>
-              </datalist>
-            </td>
-          </tr>
-        </table>
+            <tr>
+              <td width="75%" id="servoName${this.id}">${this.name}</td>
+              <td id="servoAngle${this.id}"></td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <input type="range" class="form-range" min="0" max="180" step="1" id="servoSlider${this.id}" list="servoMarker${this.id}">
+                <datalist id="servoMarker${this.id}">
+                  <option value="0"></option>
+                  <option value="30"></option>
+                  <option value="60"></option>
+                  <option value="90"></option>
+                  <option value="120"></option>
+                  <option value="150"></option>
+                  <option value="180"></option>
+                </datalist>
+              </td>
+            </tr>
+          </table>
+        </div>
       </div>
     `;
   };
