@@ -10,6 +10,14 @@ boards = [
 
 if __name__ == '__main__':
 
+	# --- parse arguments ---
+	parser = argparse.ArgumentParser(description="Build Yarrboard firmware release")
+	parser.add_argument("--test", action="store_true",
+											help="Run in test mode (do not actually do anything, but print the results)")
+	args = parser.parse_args()
+
+	test_mode = args.test  # boolean True/False
+
 	#look up our version #
 	version = False
 	dev_mode = False
@@ -50,9 +58,21 @@ if __name__ == '__main__':
 
 	config = []
 
-	#get our changelog
-	with open("CHANGELOG") as f:
-		changelog = f.read()
+	# get only the latest version section from CHANGELOG
+	with open("CHANGELOG", "r") as f:
+		content = f.read()
+
+	# Extract the *first* version block
+	# This grabs:
+	#   ## Version <something>
+	#   ...lines...
+	# up until the next `## Version` OR end of file
+	m = re.search(r"(## Version [^\n]+(?:\n(?!## Version).*)*)", content, re.MULTILINE)
+	if not m:
+		print("🔴 Could not extract latest version block from CHANGELOG 🔴")
+		sys.exit(1)
+
+	changelog = m.group(1).strip()
 
 	print (f'Making firmware release for version {version}')
 
@@ -69,30 +89,46 @@ if __name__ == '__main__':
 		
 		#build the firmware
 		cmd = f'pio run -e "{board}" -s'
-		os.system(cmd)
+		if test_mode:
+			print (cmd)
+		else:
+			os.system(cmd)
 
 		#sign the firmware
 		cmd = f'openssl dgst -sign ~/Dropbox/misc/yarrboard/priv_key.pem -keyform PEM -sha256 -out .pio/build/{board}/firmware.sign -binary .pio/build/{board}/firmware.bin'
-		os.system(cmd)
+		if test_mode:
+			print (cmd)
+		else:
+			os.system(cmd)
 
 		#combine the signatures
 		cmd = f'cat .pio/build/{board}/firmware.sign .pio/build/{board}/firmware.bin > .pio/build/{board}/signed.bin'
-		os.system(cmd)
+		if test_mode:
+			print (cmd)
+		else:
+			os.system(cmd)
 
 		#copy our fimrware to releases directory
 		cmd = f'cp .pio/build/{board}/signed.bin releases/{board}-{version}.bin'
-		#print (cmd)
-		os.system(cmd)
+		if test_mode:
+			print (cmd)
+		else:
+			os.system(cmd)
 
 		#keep our ELF file for debugging later on....
 		cmd = f'cp .pio/build/{board}/firmware.elf releases/{board}-{version}.elf'
-		#print (cmd)
-		os.system(cmd)
+		if test_mode:
+			print (cmd)
+		else:
+			os.system(cmd)
 
 	#write our config json file
 	config_str = json.dumps(config, indent=4)
-	with open("firmware.json", "w") as text_file:
-			text_file.write(config_str)
+	if test_mode:
+		print (config_str)
+	else:
+		with open("firmware.json", "w") as text_file:
+				text_file.write(config_str)
 
 	#some info to the user to finish the release
 	print("Build complete.\n")
