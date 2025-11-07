@@ -234,7 +234,7 @@
 			}
 
 			startOTA() {
-				client.send({ "cmd": "ota_start" }, true);
+				return this.send({ "cmd": "ota_start" }, true);
 			}
 
 			setBrightness(brightness, requireConfirmation = true) {
