@@ -212,6 +212,28 @@
       return colors;
     },
 
+    showFormValidationResults: function (data, errors) {
+      //clear our errors
+      for (const field of Object.keys(data)) {
+        const el = $(`#${field}`);
+        el.removeClass("is-valid is-invalid");
+
+        if (errors && errors[field]) {
+          //add our invalid class
+          el.addClass("is-invalid");
+
+          // Find the right feedback element (works for form-floating and form-switch)
+          const msg = errors[field][0];
+          const $fb = el.siblings(".invalid-feedback")
+            .add(el.closest(".form-check, .form-floating").find(".invalid-feedback"))
+            .first();
+          $fb.text(msg);
+        } else {
+          YB.Util.flashClass(el, "is-valid");
+        }
+      }
+    },
+
     flashClass: function (el, myclass, ms = 1000) {
       el.addClass(myclass);
       setTimeout(() => el.removeClass(myclass), ms);

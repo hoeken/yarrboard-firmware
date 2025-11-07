@@ -81,7 +81,7 @@
 #define YB_CHANNEL_NAME_LENGTH         64
 #define YB_CHANNEL_KEY_LENGTH          64
 #define YB_TYPE_LENGTH                 32
-#define YB_WIFI_SSID_LENGTH            64
+#define YB_WIFI_SSID_LENGTH            33
 #define YB_WIFI_PASSWORD_LENGTH        64
 #define YB_WIFI_MODE_LENGTH            16
 #define YB_HOSTNAME_LENGTH             64

@@ -383,8 +383,6 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output)
       // save it to file.
       if (!saveConfig(error, sizeof(error)))
         return generateErrorJSON(output, error);
-
-      return generateSuccessJSON(output, "Network settings updated.");
     }
   }
   // okay, AP mode is easier

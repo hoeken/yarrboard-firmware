@@ -3,11 +3,8 @@
 # v2.0.0 Release
 
 * UI Rewrite
-    * settings
-        * use validate.js for form validation
-        * main config box should be green/red highlight on success/error
-            * same with fields + errors
-        * add a function to fade/clear form success colors on a timeout
+    * make sure network fails safe when changing networks
+    * restart mdns for network?  then redirect with javascript?
 * PsychicHttp release
 * test/update/fix the release script for ota
 

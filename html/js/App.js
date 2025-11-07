@@ -501,28 +501,6 @@
       YB.client.login(YB.App.username, YB.App.password);
     },
 
-    showFormValidationResults: function (data, errors) {
-      //clear our errors
-      for (const field of Object.keys(data)) {
-        const el = $(`#${field}`);
-        el.removeClass("is-valid is-invalid");
-
-        if (errors && errors[field]) {
-          //add our invalid class
-          el.addClass("is-invalid");
-
-          // Find the right feedback element (works for form-floating and form-switch)
-          const msg = errors[field][0];
-          const $fb = el.siblings(".invalid-feedback")
-            .add(el.closest(".form-check, .form-floating").find(".invalid-feedback"))
-            .first();
-          $fb.text(msg);
-        } else {
-          YB.Util.flashClass(el, "is-valid");
-        }
-      }
-    },
-
     getAuthenticationSettingsSchema: function () {
       return {
         admin_user: {
@@ -571,7 +549,7 @@
 
       //validate it.
       const errors = validate(settings, YB.App.getAuthenticationSettingsSchema());
-      YB.App.showFormValidationResults(settings, errors);
+      YB.Util.showFormValidationResults(settings, errors);
 
       //bail on fail.
       if (errors) {
@@ -609,80 +587,264 @@
       });
     },
 
-    saveWebServerSettings: function () {
-      let app_enable_mfd = $("#app_enable_mfd").prop("checked");
-      let app_enable_api = $("#app_enable_api").prop("checked");
-      let app_enable_ssl = $("#app_enable_ssl").prop("checked");
-      let server_cert = $("#server_cert").val();
-      let server_key = $("#server_key").val();
+    getWebServerSettingsSchema: function () {
+      return {
+        // checkboxes
+        app_enable_mfd: {},
+        app_enable_api: {},
+        app_enable_ssl: {},
 
+        // required only if SSL is enabled
+        server_cert: function (value, attrs) {
+          if (attrs.app_enable_ssl) {
+            return { presence: { allowEmpty: false, message: "^is required when SSL is enabled" } };
+          }
+          return {};
+        },
+        server_key: function (value, attrs) {
+          if (attrs.app_enable_ssl) {
+            return { presence: { allowEmpty: false, message: "^is required when SSL is enabled" } };
+          }
+          return {};
+        }
+      };
+    },
+
+    saveWebServerSettings: function () {
+      // pull our form data
+      const settings = {
+        app_enable_mfd: $("#app_enable_mfd").prop("checked"),
+        app_enable_api: $("#app_enable_api").prop("checked"),
+        app_enable_ssl: $("#app_enable_ssl").prop("checked"),
+        server_cert: $("#server_cert").val().trim(),
+        server_key: $("#server_key").val().trim()
+      };
+
+      // validate it
+      const errors = validate(settings, YB.App.getWebServerSettingsSchema());
+      YB.Util.showFormValidationResults(settings, errors);
+
+      // bail on fail
+      if (errors) {
+        YB.Util.flashClass($("#webServerSettingsForm"), "border-danger");
+        YB.Util.flashClass($("#saveWebServerSettings"), "btn-danger");
+        return;
+      }
+
+      // flash whole form green
+      YB.Util.flashClass($("#webServerSettingsForm"), "border-success");
+      YB.Util.flashClass($("#saveWebServerSettings"), "btn-success");
+
+      // okay, send it off.
       YB.client.send({
-        "cmd": "set_webserver_config",
-        "app_enable_mfd": app_enable_mfd,
-        "app_enable_api": app_enable_api,
-        "app_enable_ssl": app_enable_ssl,
-        "server_cert": server_cert,
-        "server_key": server_key
+        cmd: "set_webserver_config",
+        app_enable_mfd: settings.app_enable_mfd,
+        app_enable_api: settings.app_enable_api,
+        app_enable_ssl: settings.app_enable_ssl,
+        server_cert: settings.server_cert,
+        server_key: settings.server_key
       });
+    },
+
+    getMQTTSettingsSchema: function () {
+      return {
+        //checkboxes
+        app_enable_mqtt: {},
+        app_enable_ha_integration: {},
+        app_use_hostname_as_mqtt_uuid: {},
+
+        // required if MQTT is enabled; must be protocol://host[:port]
+        mqtt_server: function (value, attrs) {
+          if (!attrs.app_enable_mqtt) return {};
+          return {
+            presence: { allowEmpty: false, message: "^is required when MQTT is enabled" },
+            format: {
+              // scheme://hostname[:port] — allows IPv4/hostname/IPv6([::]) and optional port
+              pattern: /^[a-zA-Z][a-zA-Z0-9+.\-]*:\/\/(?:\[[A-Fa-f0-9:]+\]|[A-Za-z0-9.-]+)(?::\d{1,5})?$/,
+              message: "^must be a URL like mqtt://host[:port]"
+            }
+          };
+        },
+
+        // optional creds
+        mqtt_user: {
+          length: { maximum: 31 }
+        },
+        mqtt_pass: {
+          length: { maximum: 63 }
+        },
+
+        // optional cert (no constraints)
+        mqtt_cert: {}
+      };
     },
 
     saveMQTTSettings: function () {
-      let app_enable_mqtt = $("#app_enable_mqtt").prop("checked");
-      let app_enable_ha_integration = $("#app_enable_ha_integration").prop("checked");
-      let app_use_hostname_as_mqtt_uuid = $("#app_use_hostname_as_mqtt_uuid").prop("checked");
-      let mqtt_server = $("#mqtt_server").val();
-      let mqtt_user = $("#mqtt_user").val();
-      let mqtt_pass = $("#mqtt_pass").val();
-      let mqtt_cert = $("#mqtt_cert").val();
+      // pull our form data
+      const settings = {
+        app_enable_mqtt: $("#app_enable_mqtt").prop("checked"),
+        app_enable_ha_integration: $("#app_enable_ha_integration").prop("checked"),
+        app_use_hostname_as_mqtt_uuid: $("#app_use_hostname_as_mqtt_uuid").prop("checked"),
+        mqtt_server: $("#mqtt_server").val().trim(),
+        mqtt_user: $("#mqtt_user").val().trim(),
+        mqtt_pass: $("#mqtt_pass").val().trim(),
+        mqtt_cert: $("#mqtt_cert").val().trim()
+      };
 
+      // validate it
+      const errors = validate(settings, YB.App.getMQTTSettingsSchema());
+      YB.Util.showFormValidationResults(settings, errors);
+
+      // bail on fail
+      if (errors) {
+        YB.Util.flashClass($("#mqttSettingsForm"), "border-danger");
+        YB.Util.flashClass($("#saveMQTTSettings"), "btn-danger");
+        return;
+      }
+
+      // flash whole form green
+      YB.Util.flashClass($("#mqttSettingsForm"), "border-success");
+      YB.Util.flashClass($("#saveMQTTSettings"), "btn-success");
+
+      // okay, send it off
       YB.client.send({
-        "cmd": "set_mqtt_config",
-        "app_enable_mqtt": app_enable_mqtt,
-        "app_enable_ha_integration": app_enable_ha_integration,
-        "app_use_hostname_as_mqtt_uuid": app_use_hostname_as_mqtt_uuid,
-        "mqtt_server": mqtt_server,
-        "mqtt_user": mqtt_user,
-        "mqtt_pass": mqtt_pass,
-        "mqtt_cert": mqtt_cert
+        cmd: "set_mqtt_config",
+        app_enable_mqtt: settings.app_enable_mqtt,
+        app_enable_ha_integration: settings.app_enable_ha_integration,
+        app_use_hostname_as_mqtt_uuid: settings.app_use_hostname_as_mqtt_uuid,
+        mqtt_server: settings.mqtt_server,
+        mqtt_user: settings.mqtt_user,
+        mqtt_pass: settings.mqtt_pass,
+        mqtt_cert: settings.mqtt_cert
       });
     },
 
+    getNetworkSettingsSchema: function () {
+      return {
+        // either 'ap' or 'client'
+        wifi_mode: {
+          presence: { allowEmpty: false },
+          inclusion: {
+            within: ["ap", "client"],
+            message: "^must be either 'ap' or 'client'"
+          }
+        },
+
+        // required, valid Wi-Fi SSID (1–32 chars)
+        wifi_ssid: {
+          presence: { allowEmpty: false },
+          length: { minimum: 1, maximum: 32 },
+          format: {
+            // disallow leading/trailing whitespace and newlines
+            pattern: /^(?!\s)(?:[\s\S]*\S)$/,
+            message: "^can't be only whitespace"
+          }
+        },
+
+        // optional; if provided, validate WPA2 PSK length 8–63 chars
+        wifi_pass: function (value/*, attrs */) {
+          if (value == null || value === "") return {};
+          return {
+            length: {
+              minimum: 8,
+              maximum: 63,
+              message: "^must be 8–63 characters"
+            }
+          };
+        },
+
+        // required; valid single-label mDNS hostname (before .local)
+        local_hostname: {
+          presence: { allowEmpty: false },
+          length: { minimum: 1, maximum: 63 },
+          format: {
+            // RFC 1035 label: alnum + hyphen allowed, no leading/trailing hyphen
+            pattern: /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/,
+            message: "^must be a valid hostname label (e.g., 'brineomatic')"
+          }
+        }
+      };
+    },
+
     saveNetworkSettings: function () {
-      //get our data
-      let wifi_mode = $("#wifi_mode").val();
-      let wifi_ssid = $("#wifi_ssid").val();
-      let wifi_pass = $("#wifi_pass").val();
-      let local_hostname = $("#local_hostname").val();
+      // pull our form data
+      const settings = {
+        wifi_mode: $("#wifi_mode").val(),
+        wifi_ssid: $("#wifi_ssid").val().trim(),
+        wifi_pass: $("#wifi_pass").val().trim(),
+        local_hostname: $("#local_hostname").val().trim()
+      };
 
-      //we should probably do a bit of verification here
+      // validate it
+      const errors = validate(settings, YB.App.getNetworkSettingsSchema());
+      YB.Util.showFormValidationResults(settings, errors);
 
-      //if they are changing from client to client, we can't show a success.
-      YB.App.showAlert("Yarrboard may be unresponsive while changing WiFi settings. Make sure you connect to the right network after updating.", "primary");
+      // bail on fail
+      if (errors) {
+        YB.Util.flashClass($("#networkSettingsForm"), "border-danger");
+        YB.Util.flashClass($("#saveNetworkSettings"), "btn-danger");
+        return;
+      }
 
-      //okay, send it off.
+      // warn user before applying network changes
+      YB.App.showAlert(
+        "Yarrboard may be unresponsive while changing WiFi settings. Make sure you connect to the right network after updating.",
+        "primary"
+      );
+
+      // flash success
+      YB.Util.flashClass($("#networkSettingsForm"), "border-success");
+      YB.Util.flashClass($("#saveNetworkSettings"), "btn-success");
+
+      // send it off
       YB.client.send({
-        "cmd": "set_network_config",
-        "wifi_mode": wifi_mode,
-        "wifi_ssid": wifi_ssid,
-        "wifi_pass": wifi_pass,
-        "local_hostname": local_hostname
+        cmd: "set_network_config",
+        wifi_mode: settings.wifi_mode,
+        wifi_ssid: settings.wifi_ssid,
+        wifi_pass: settings.wifi_pass,
+        local_hostname: settings.local_hostname
       });
 
-      //reload our page
+      // reload page after delay
       setTimeout(function () {
         location.reload();
       }, 2500);
     },
 
-    saveMiscellaneousSettings: function () {
-      let app_enable_serial = $("#app_enable_serial").prop("checked");
-      let app_enable_ota = $("#app_enable_ota").prop("checked");
+    getMiscSettingsSchema: function () {
+      return {
+        app_enable_serial: {},
+        app_enable_ota: {}
+      };
+    },
 
-      //okay, send it off.
+    saveMiscellaneousSettings: function () {
+      // pull our form data
+      const settings = {
+        app_enable_serial: $("#app_enable_serial").prop("checked"),
+        app_enable_ota: $("#app_enable_ota").prop("checked")
+      };
+
+      // validate it
+      const errors = validate(settings, YB.App.getMiscSettingsSchema());
+      YB.Util.showFormValidationResults(settings, errors);
+
+      // bail on fail
+      if (errors) {
+        YB.Util.flashClass($("#miscSettingsForm"), "border-danger");
+        YB.Util.flashClass($("#saveMiscSettings"), "btn-danger");
+        return;
+      }
+
+      // flash success
+      YB.Util.flashClass($("#miscSettingsForm"), "border-success");
+      YB.Util.flashClass($("#saveMiscSettings"), "btn-success");
+
+      // send it off
       YB.client.send({
-        "cmd": "set_misc_config",
-        "app_enable_serial": app_enable_serial,
-        "app_enable_ota": app_enable_ota
+        cmd: "set_misc_config",
+        app_enable_serial: settings.app_enable_serial,
+        app_enable_ota: settings.app_enable_ota
       });
     },
 
