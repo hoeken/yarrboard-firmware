@@ -64,12 +64,13 @@ if __name__ == '__main__':
 
 	# Extract the *first* version block
 	# This grabs:
-	#   ## Version <something>
+	#   ## Version <version>
 	#   ...lines...
 	# up until the next `## Version` OR end of file
-	m = re.search(r"(## Version [^\n]+(?:\n(?!## Version).*)*)", content, re.MULTILINE)
+	pattern = rf"(## Version {re.escape(version)}(?:\n(?!## Version).*)*)"
+	m = re.search(pattern, content, re.MULTILINE)
 	if not m:
-		print("🔴 Could not extract latest version block from CHANGELOG 🔴")
+		print("🔴 Could not extract latest version block from CHANGELOG.  Needs this format: ## Version x.y.z 🔴")
 		sys.exit(1)
 
 	changelog = m.group(1).strip()
