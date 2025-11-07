@@ -354,11 +354,16 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output)
   strlcpy(new_wifi_pass, input["wifi_pass"] | "PASS", sizeof(new_wifi_pass));
   strlcpy(local_hostname, input["local_hostname"] | "yarrboard", sizeof(local_hostname));
 
+  YBP.println(new_wifi_mode);
+  YBP.println(new_wifi_ssid);
+  YBP.println(new_wifi_pass);
+
   // make sure we can connect before we save
   if (!strcmp(new_wifi_mode, "client")) {
     // did we change username/password?
     if (strcmp(new_wifi_ssid, wifi_ssid) || strcmp(new_wifi_pass, wifi_pass)) {
       // try connecting.
+      YBP.printf("Trying new wifi %s / %s\n", new_wifi_ssid, new_wifi_pass);
       if (connectToWifi(new_wifi_ssid, new_wifi_pass)) {
         // changing modes?
         if (!strcmp(wifi_mode, "ap"))
@@ -372,13 +377,13 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output)
         // save it to file.
         if (!saveConfig(error, sizeof(error)))
           return generateErrorJSON(output, error);
-
-        // let the client know.
-        return generateSuccessJSON(output, "Connected to new WiFi.");
       }
       // nope, setup our wifi back to default.
-      else
+      else {
+        connectToWifi(wifi_ssid, wifi_pass); // go back to our old wifi.
+        start_network_services();
         return generateErrorJSON(output, "Can't connect to new WiFi.");
+      }
     } else {
       // save it to file.
       if (!saveConfig(error, sizeof(error)))
@@ -387,10 +392,6 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output)
   }
   // okay, AP mode is easier
   else {
-    // changing modes?
-    // if (wifi_mode.equals("client"))
-    //   WiFi.disconnect();
-
     // save for local use.
     strlcpy(wifi_mode, new_wifi_mode, sizeof(wifi_mode));
     strlcpy(wifi_ssid, new_wifi_ssid, sizeof(wifi_ssid));

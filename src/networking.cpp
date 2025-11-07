@@ -141,62 +141,53 @@ bool connectToWifi(const char* ssid, const char* pass)
 {
   rgb_set_status_color(CRGB::Yellow);
 
-  YBP.print("[WiFi] Connecting to ");
-  YBP.println(ssid);
-
+  // reset our wifi to a clean state
   WiFi.mode(WIFI_STA);
+  WiFi.disconnect(true, true);
+  WiFi.mode(WIFI_OFF);
+  delay(50);
+  WiFi.mode(WIFI_STA);
+
+  // some tuning
+  WiFi.persistent(false);
   WiFi.setAutoReconnect(true);
-  WiFi.begin(ssid, pass);
+  WiFi.setSleep(false); // optional but usually helps reliability
 
   // How long to try for?
-  int tryDelay = 500;
-  int numberOfTries = 60;
+  int tryDuration = 15000;
+  int tryDelay = 50;
+  int numberOfTries = tryDuration / tryDelay;
 
-  // Wait for the WiFi event
-  while (true) {
-    switch (WiFi.status()) {
-      case WL_NO_SSID_AVAIL:
-        YBP.println("[WiFi] SSID not found");
-        return false;
-        break;
-      case WL_CONNECT_FAILED:
-        YBP.print("[WiFi] Failed");
-        break;
-      case WL_CONNECTION_LOST:
-        YBP.println("[WiFi] Connection was lost");
-        break;
-      case WL_SCAN_COMPLETED:
-        YBP.println("[WiFi] Scan is completed");
-        break;
-      case WL_DISCONNECTED:
-        YBP.println("[WiFi] WiFi is disconnected");
-        break;
-      case WL_CONNECTED:
-        YBP.println("[WiFi] WiFi is connected!");
-        YBP.print("[WiFi] IP address: ");
-        YBP.println(WiFi.localIP());
+  YBP.print("[WiFi] Connecting to ");
+  YBP.println(ssid);
+  WiFi.begin(ssid, pass);
 
-        rgb_set_status_color(CRGB::Green);
-
-        return true;
-        break;
-      default:
-        YBP.print("[WiFi] WiFi Status: ");
-        YBP.println(WiFi.status());
-        break;
+  // attempt to connect
+  while (numberOfTries > 0) {
+    if (WiFi.status() == WL_CONNECTED) {
+      YBP.println("\n[WiFi] WiFi is connected!");
+      YBP.print("[WiFi] IP address: ");
+      YBP.println(WiFi.localIP());
+      rgb_set_status_color(CRGB::Green);
+      return true;
     }
 
-    // have we hit our limit?
-    if (numberOfTries <= 0) {
-      // Use disconnect function to force stop trying to connect
-      WiFi.disconnect();
-      return false;
-    } else {
-      numberOfTries--;
+    if (WiFi.status() == WL_NO_SSID_AVAIL) {
+      YBP.println("[WiFi] SSID not found");
+      break;
     }
+
+    YBP.print(".");
+
+    numberOfTries--;
 
     delay(tryDelay);
+    yield();
   }
+
+  YBP.println("\n[WiFi] WiFi failed to connect");
+  WiFi.disconnect(true, true);
+  rgb_set_status_color(CRGB::Red);
 
   return false;
 }
