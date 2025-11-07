@@ -24,19 +24,19 @@ if __name__ == '__main__':
 			break
 
 		# Development mode lookup
-		m = re.search(r'#define\s+YB_IS_DEVELOPMENT\s+(\w+)', line)
+		m = re.search(r'#define\s+YB_IS_DEVELOPMENT\s+([A-Za-z0-9_]+)', line)
 		if m:
 			val = m.group(1).lower()
-			dev_mode = (val == "true" or val == "1")  # normalize to boolean
+			dev_mode = val in ("true", "1")
 
  	#only proceed if we found the version
 	if not version:
-		print("Error: YB_FIRMWARE_VERSION not #defined in src/config.h")
+		print("🔴 YB_FIRMWARE_VERSION not #defined in src/config.h 🔴")
 		sys.exit(1)   # bail out
 
  	#turn off dev mode
-	if not dev_mode:
-		print("Error: YB_IS_DEVELOPMENT set to true in src/config.h")
+	if dev_mode:
+		print("🔴 YB_IS_DEVELOPMENT set to true in src/config.h 🔴")
 		sys.exit(1)   # bail out
 
 	#check that we are on the "main" branch
@@ -45,7 +45,8 @@ if __name__ == '__main__':
 		text=True
 	).strip()
 	if branch != "main":
-		print(f"Error: You are on '{branch}', not 'main'.")
+		print(f"🔴 You are on '{branch}', not 'main' 🔴")
+		sys.exit(1)   # bail out
 
 	config = []
 
