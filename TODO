@@ -2,9 +2,6 @@
 
 # v2.0.0 Release
 
-* test/update/fix the release script for ota
-    * confirm if we're on main git branch
-    * check if IS_DEV_MODE is cleared
 * test actual ota updating flow
 
 # BRINEOMATIC

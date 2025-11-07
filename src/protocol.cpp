@@ -1313,9 +1313,7 @@ void generateConfigJSON(JsonVariant output)
 
   generateBoardConfigJSON(output);
 
-#ifdef YB_IS_DEVELOPMENT
-  output["is_development"] = true;
-#endif
+  output["is_development"] = YB_IS_DEVELOPMENT;
 
   // some debug info
   output["last_restart_reason"] = getResetReason();
