@@ -211,6 +211,11 @@
 
       return colors;
     },
+
+    flashClass: function (el, myclass, ms = 1000) {
+      el.addClass(myclass);
+      setTimeout(() => el.removeClass(myclass), ms);
+    },
   };
 
   // expose to global

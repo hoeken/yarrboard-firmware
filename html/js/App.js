@@ -290,8 +290,6 @@
       //we only need one alert at a time.
       $('#liveAlertPlaceholder').html(YB.App.AlertBox(message, type))
 
-      console.log(`YB.App.showAlert: ${message}`);
-
       //make sure we can see it.
       $('html').animate({
         scrollTop: 0
@@ -303,8 +301,6 @@
     showAdminAlert: function (message, type = 'danger') {
       //we only need one alert at a time.
       $('#adminAlertPlaceholder').html(YB.App.AlertBox(message, type))
-
-      console.log(`YB.App.showAdminAlert: ${message}`);
 
       //make sure we can see it.
       $('html').animate({
@@ -505,35 +501,111 @@
       YB.client.login(YB.App.username, YB.App.password);
     },
 
+    showFormValidationResults: function (data, errors) {
+      //clear our errors
+      for (const field of Object.keys(data)) {
+        const el = $(`#${field}`);
+        el.removeClass("is-valid is-invalid");
+
+        if (errors && errors[field]) {
+          //add our invalid class
+          el.addClass("is-invalid");
+
+          // Find the right feedback element (works for form-floating and form-switch)
+          const msg = errors[field][0];
+          const $fb = el.siblings(".invalid-feedback")
+            .add(el.closest(".form-check, .form-floating").find(".invalid-feedback"))
+            .first();
+          $fb.text(msg);
+        } else {
+          YB.Util.flashClass(el, "is-valid");
+        }
+      }
+    },
+
+    getAuthenticationSettingsSchema: function () {
+      return {
+        admin_user: {
+          presence: { allowEmpty: false },
+          length: { maximum: 31 },
+          format: {
+            pattern: "^[a-zA-Z0-9]+$",
+            message: "can only contain letters and numbers"
+          }
+        },
+        admin_pass: {
+          presence: { allowEmpty: false },
+          length: { maximum: 63 }
+        },
+        guest_user: {
+          presence: { allowEmpty: false },
+          length: { maximum: 31 },
+          format: {
+            pattern: "^[a-zA-Z0-9]+$",
+            message: "can only contain letters and numbers"
+          }
+        },
+        guest_pass: {
+          presence: { allowEmpty: false },
+          length: { maximum: 63 }
+        },
+        default_role: {
+          presence: true,
+          inclusion: {
+            within: ["nobody", "guest", "admin"],
+            message: "^Default role must be one of: nobody, guest, or admin"
+          }
+        }
+      };
+    },
+
     saveAuthenticationSettings: function () {
-      let admin_user = $("#admin_user").val();
-      let admin_pass = $("#admin_pass").val();
-      let guest_user = $("#guest_user").val();
-      let guest_pass = $("#guest_pass").val();
-      let default_role = $("#default_role option:selected").val();
+      //pull our form data
+      const settings = {
+        admin_user: $("#admin_user").val().trim(),
+        admin_pass: $("#admin_pass").val().trim(),
+        guest_user: $("#guest_user").val().trim(),
+        guest_pass: $("#guest_pass").val().trim(),
+        default_role: $("#default_role option:selected").val()
+      };
+
+      //validate it.
+      const errors = validate(settings, YB.App.getAuthenticationSettingsSchema());
+      YB.App.showFormValidationResults(settings, errors);
+
+      //bail on fail.
+      if (errors) {
+        YB.Util.flashClass($("#authenticationSettingsForm"), "border-danger");
+        YB.Util.flashClass($("#saveAuthenticationSettings"), "btn-danger");
+        return;
+      }
 
       //remember it and update our UI
-      YB.App.defaultRole = default_role;
+      YB.App.defaultRole = settings.default_role;
       YB.App.updateRoleUI();
 
       //helper function to keep admin logged in.
       if (YB.App.defaultRole != "admin") {
-        Cookies.set('username', admin_user, { expires: 365 });
-        Cookies.set('password', admin_pass, { expires: 365 });
+        Cookies.set('username', settings.admin_user, { expires: 365 });
+        Cookies.set('password', settings.admin_pass, { expires: 365 });
       }
       else {
         Cookies.remove("username");
         Cookies.remove("password");
       }
 
+      //flash whole form green.
+      YB.Util.flashClass($("#authenticationSettingsForm"), "border-success");
+      YB.Util.flashClass($("#saveAuthenticationSettings"), "btn-success");
+
       //okay, send it off.
       YB.client.send({
         "cmd": "set_authentication_config",
-        "admin_user": admin_user,
-        "admin_pass": admin_pass,
-        "guest_user": guest_user,
-        "guest_pass": guest_pass,
-        "default_role": default_role
+        "admin_user": settings.admin_user,
+        "admin_pass": settings.admin_pass,
+        "guest_user": settings.guest_user,
+        "guest_pass": settings.guest_pass,
+        "default_role": settings.default_role
       });
     },
 
