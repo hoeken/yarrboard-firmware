@@ -1,26 +1,14 @@
 [
     {
-        "type": "BRINEOMATIC_REV_A",
-        "version": "1.2.0",
-        "url": "https://raw.githubusercontent.com/hoeken/yarrboard/main/firmware/releases/FROTHFET_REV_D-1.2.0.bin",
-        "changelog": "## Version 1.1.1\n\n* Minor ui improvements for debugging\n\n## Version 1.1.0\n\n* New crash handler and coredump recording.\n\n## Version 1.0.1\n\n* Better release automation.\n\n## Version 1.0.0\n\n* First 'official' release into the wild."
+        "type": "FROTHFET_REV_E",
+        "version": "2.0.0",
+        "url": "https://raw.githubusercontent.com/hoeken/yarrboard-firmware/main/firmware/releases/FROTHFET_REV_E-2.0.0.bin",
+        "changelog": "## Version 2.0.0\n\nMassive under the hood rewrite of just about everything.\nMore stability, better UI, setting the stage for good things to come.\n\n### Frontend\n\n* Split the app into multiple files and classes, with a new BaseChannel system\n* Much cleaner UI for editing configurations and settings\n* added app hooks for registering message handlers for a more modular system\n* Added Improv Wifi provisioning support\n\n### Backend\n\n* Updated channels to have a BaseChannel class with lots of deduplication of code\n* Lots of stability fixes\n* Added support for FrothFET, Brineomatic, and SendIt\n* Added MQTT + Home Assistant support.\n* Laid the groundwork for making yarrboard-firmware into a library\n\n## Version 1.1.1\n\n* Minor ui improvements for debugging\n\n## Version 1.1.0\n\n* New crash handler and coredump recording.\n\n## Version 1.0.1\n\n* Better release automation.\n\n## Version 1.0.0\n\n* First 'official' release into the wild."
     },
     {
-        "type": "FROTHFET_REV_D",
-        "version": "1.2.0",
-        "url": "https://raw.githubusercontent.com/hoeken/yarrboard/main/firmware/releases/FROTHFET_REV_D-1.2.0.bin",
-        "changelog": "## Version 1.1.1\n\n* Minor ui improvements for debugging\n\n## Version 1.1.0\n\n* New crash handler and coredump recording.\n\n## Version 1.0.1\n\n* Better release automation.\n\n## Version 1.0.0\n\n* First 'official' release into the wild."
-    },
-    {
-        "type": "8CH_MOSFET_REV_C",
-        "version": "1.2.0",
-        "url": "https://raw.githubusercontent.com/hoeken/yarrboard/main/firmware/releases/8CH_MOSFET_REV_C-1.2.0.bin",
-        "changelog": "## Version 1.1.1\n\n* Minor ui improvements for debugging\n\n## Version 1.1.0\n\n* New crash handler and coredump recording.\n\n## Version 1.0.1\n\n* Better release automation.\n\n## Version 1.0.0\n\n* First 'official' release into the wild."
-    },
-    {
-        "type": "RGB_INPUT_REV_B",
-        "version": "1.2.0",
-        "url": "https://raw.githubusercontent.com/hoeken/yarrboard/main/firmware/releases/RGB_INPUT_REV_B-1.2.0.bin",
-        "changelog": "## Version 1.1.1\n\n* Minor ui improvements for debugging\n\n## Version 1.1.0\n\n* New crash handler and coredump recording.\n\n## Version 1.0.1\n\n* Better release automation.\n\n## Version 1.0.0\n\n* First 'official' release into the wild."
+        "type": "BRINEOMATIC_REV_B",
+        "version": "2.0.0",
+        "url": "https://raw.githubusercontent.com/hoeken/yarrboard-firmware/main/firmware/releases/BRINEOMATIC_REV_B-2.0.0.bin",
+        "changelog": "## Version 2.0.0\n\nMassive under the hood rewrite of just about everything.\nMore stability, better UI, setting the stage for good things to come.\n\n### Frontend\n\n* Split the app into multiple files and classes, with a new BaseChannel system\n* Much cleaner UI for editing configurations and settings\n* added app hooks for registering message handlers for a more modular system\n* Added Improv Wifi provisioning support\n\n### Backend\n\n* Updated channels to have a BaseChannel class with lots of deduplication of code\n* Lots of stability fixes\n* Added support for FrothFET, Brineomatic, and SendIt\n* Added MQTT + Home Assistant support.\n* Laid the groundwork for making yarrboard-firmware into a library\n\n## Version 1.1.1\n\n* Minor ui improvements for debugging\n\n## Version 1.1.0\n\n* New crash handler and coredump recording.\n\n## Version 1.0.1\n\n* Better release automation.\n\n## Version 1.0.0\n\n* First 'official' release into the wild."
     }
 ]
