@@ -2,11 +2,10 @@
 
 # v2.0.0 Release
 
-* UI Rewrite
-    * make sure network fails safe when changing networks
-    * restart mdns for network?  then redirect with javascript?
-* PsychicHttp release
 * test/update/fix the release script for ota
+    * confirm if we're on main git branch
+    * check if IS_DEV_MODE is cleared
+* test actual ota updating flow
 
 # BRINEOMATIC
 
