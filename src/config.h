@@ -119,4 +119,9 @@ typedef enum { YBP_MODE_WEBSOCKET,
   #define YB_INPUT_DEBOUNCE_RATE_MS 20
 #endif
 
+// Detect whether this build environment provides UsbSerial
+#if defined(ARDUINO_USB_MODE) && ARDUINO_USB_MODE == 1
+  #define YB_USB_SERIAL 1
+#endif
+
 #endif // YARR_CONFIG_H

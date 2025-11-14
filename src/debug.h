@@ -17,6 +17,11 @@
 #include <esp_partition.h>
 #include <esp_system.h>
 
+#ifdef YB_USB_SERIAL
+  #include "USB.h"
+extern USBCDC USBSerial;
+#endif
+
 extern bool has_coredump;
 
 void debug_setup();

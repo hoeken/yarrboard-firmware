@@ -882,6 +882,7 @@
           cache: false,
           dataType: "json",
           success: function (jdata) {
+            console.log(jdata);
             //did we get anything?
             let data;
             for (firmware of jdata)
@@ -889,7 +890,7 @@
                 data = firmware;
 
             if (!data) {
-              //YB.App.showAlert(`Could not find a firmware for this hardware.`, "danger");
+              YB.App.showAlert(`Could not find a firmware for this hardware.`, "danger");
               return;
             }
 

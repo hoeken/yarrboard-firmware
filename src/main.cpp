@@ -6,6 +6,7 @@
   License: GPLv3
 */
 
+#include "Arduino.h"
 #include "config.h"
 #include "debug.h"
 #include "piezo.h"
@@ -20,6 +21,12 @@ void setup()
   Serial.begin(115200);
   Serial.setTimeout(50);
   YBP.addPrinter(Serial);
+
+#ifdef YB_USB_SERIAL
+  USBSerial.begin();
+  YBP.addPrinter(USBSerial);
+  YBP.println("USB Serial Started");
+#endif
 
   // startup log logs to a string for getting later
   YBP.addPrinter(startupLogger);
@@ -43,7 +50,7 @@ void setup()
   debug_setup();
   YBP.println("Debug ok");
 
-  // audio visual notifications
+// audio visual notifications
 #ifdef YB_HAS_STATUS_RGB
   rgb_setup();
 #endif

@@ -8,6 +8,10 @@
 
 #include "debug.h"
 
+#ifdef YB_USB_SERIAL
+USBCDC USBSerial;
+#endif
+
 bool has_coredump = false;
 
 YarrboardPrint YBP;
