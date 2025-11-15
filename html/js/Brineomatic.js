@@ -84,7 +84,11 @@
         "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
       },
       "brine_flowrate": {
-        "thresholds": [20, 500],
+        "thresholds": [100, 300],
+        "colors": [bootstrapColors.secondary, bootstrapColors.success]
+      },
+      "total_flowrate": {
+        "thresholds": [100, 500],
         "colors": [bootstrapColors.secondary, bootstrapColors.success]
       },
       "tank_level": {
@@ -382,6 +386,37 @@
           legend: { hide: true }
         });
 
+        this.totalFlowrateGauge = c3.generate({
+          bindto: '#totalFlowrateGauge',
+          data: {
+            columns: [
+              ['Total Flowrate', 0]
+            ],
+            type: 'gauge',
+          },
+          gauge: {
+            label: {
+              format: function (value, ratio) {
+                return `${value} LPH`;
+              },
+              show: true
+            },
+            min: 0,
+            max: 500,
+          },
+          color: {
+            pattern: this.gaugeSetup.total_flowrate.colors,
+            threshold: {
+              unit: 'value',
+              values: this.gaugeSetup.total_flowrate.thresholds
+            }
+          },
+          size: { height: 130, width: 200 },
+          interaction: { enabled: false },
+          transition: { duration: 0 },
+          legend: { hide: true }
+        });
+
         this.tankLevelGauge = c3.generate({
           bindto: '#tankLevelGauge',
           data: {
@@ -621,6 +656,7 @@
       let water_temperature = Math.round(msg.water_temperature);
       let product_flowrate = Math.round(msg.product_flowrate);
       let brine_flowrate = Math.round(msg.brine_flowrate);
+      let total_flowrate = Math.round(msg.total_flowrate);
       let volume = msg.volume.toFixed(1);
       if (volume >= 100)
         volume = Math.round(volume);
@@ -645,6 +681,7 @@
           this.brineSalinityGauge.load({ columns: [['Brine Salinity', brine_salinity]] });
           this.productFlowrateGauge.load({ columns: [['Product Flowrate', product_flowrate]] });
           this.brineFlowrateGauge.load({ columns: [['Brine Flowrate', brine_flowrate]] });
+          this.totalFlowrateGauge.load({ columns: [['Total Flowrate', total_flowrate]] });
           this.tankLevelGauge.load({ columns: [['Tank Level', tank_level]] });
           this.volumeGauge.load({ columns: [['Volume', volume]] });
         }
@@ -714,6 +751,9 @@
 
         $("#brineFlowrateData").html(brine_flowrate);
         this.setDataColor("brine_flowrate", brine_flowrate, $("#brineFlowrateData"));
+
+        $("#totalFlowrateData").html(total_flowrate);
+        this.setDataColor("total_flowrate", total_flowrate, $("#totalFlowrateData"));
 
         $("#motorTemperatureData").html(motor_temperature);
         this.setDataColor("motor_temperature", motor_temperature, $("#motorTemperatureData"));
@@ -1652,6 +1692,10 @@
                   <div id="brineFlowrateGauge" class="d-flex justify-content-center"></div>
               </div>
               <div class="col-md-3 col-sm-4 col-6">
+                  <h6 class="my-0 text-center">Total Flowrate</h6>
+                  <div id="totalFlowrateGauge" class="d-flex justify-content-center"></div>
+              </div>
+              <div class="col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Motor Temperature</h6>
                   <div id="motorTemperatureGauge" class="d-flex justify-content-center"></div>
               </div>
@@ -1698,6 +1742,11 @@
                   <h6 class="my-0">Brine Flowrate</h6>
                   <h1 id="brineFlowrateData" class="my-0"></h1>
                   <h5 id="brineFlowrateUnits" class="text-body-tertiary">LPH</h5>
+              </div>
+              <div class="col-md-3 col-sm-4 col-6">
+                  <h6 class="my-0">Total Flowrate</h6>
+                  <h1 id="totalFlowrateData" class="my-0"></h1>
+                  <h5 id="totalFlowrateUnits" class="text-body-tertiary">LPH</h5>
               </div>
               <div class="col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Motor Temperature</h6>
