@@ -175,3 +175,10 @@ input[type=range][orient=vertical] {
     width: 16px;
     vertical-align: bottom;
 }
+
+/* When Bootstrap dark theme is active */
+html[data-bs-theme="dark"] .c3 .c3-gauge-value,
+html[data-bs-theme="dark"] .c3 .c3-gauge-units,
+html[data-bs-theme="dark"] .c3 .c3-axis text {
+    fill: var(--bs-body-color) !important;
+}

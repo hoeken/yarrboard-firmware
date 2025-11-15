@@ -76,16 +76,16 @@
         "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
       },
       "brine_salinity": {
-        "thresholds": [300, 400, 1500],
-        "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
+        "thresholds": [750, 1500],
+        "colors": [bootstrapColors.primary, bootstrapColors.success]
       },
       "product_flowrate": {
         "thresholds": [20, 100, 180, 200, 250],
         "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
       },
       "brine_flowrate": {
-        "thresholds": [20, 100, 180, 200, 250],
-        "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
+        "thresholds": [20, 500],
+        "colors": [bootstrapColors.secondary, bootstrapColors.success]
       },
       "tank_level": {
         "thresholds": [10, 20, 100],
@@ -367,7 +367,7 @@
               show: true
             },
             min: 0,
-            max: 250,
+            max: 500,
           },
           color: {
             pattern: this.gaugeSetup.brine_flowrate.colors,
