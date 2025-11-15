@@ -20,6 +20,29 @@ WebsocketPrint networkLogger;
 
 void debug_setup()
 {
+  // startup our serial
+  Serial.begin(115200);
+  Serial.setTimeout(50);
+  YBP.addPrinter(Serial);
+
+  // native usb serial too
+#ifdef YB_USB_SERIAL
+  USBSerial.begin();
+  YBP.addPrinter(USBSerial);
+  YBP.println("USB Serial Started");
+#endif
+
+  // startup log logs to a string for getting later
+  YBP.addPrinter(startupLogger);
+  esp_log_set_vprintf(debug_log_vprintf);
+
+  YBP.println("Yarrboard");
+  YBP.print("Hardware Version: ");
+  YBP.println(YB_HARDWARE_VERSION);
+  YBP.print("Firmware Version: ");
+  YBP.println(YB_FIRMWARE_VERSION);
+  YBP.printf("Firmware build: %s (%s)\n", GIT_HASH, BUILD_TIME);
+
   YBP.print("Last Reset: ");
   YBP.println(getResetReason());
 
@@ -136,4 +159,18 @@ void crash_me_hard()
   // provoke crash through writing to a nullpointer
   volatile uint32_t* aPtr = (uint32_t*)0x00000000;
   *aPtr = 0x1234567; // goodnight
+}
+
+int debug_log_vprintf(const char* fmt, va_list args)
+{
+  char buf[256];
+
+  // Format the log into a buffer using the va_list
+  int len = vsnprintf(buf, sizeof(buf), fmt, args);
+
+  if (len > 0) {
+    YBP.print(buf); // Use Print::print()
+  }
+
+  return len;
 }

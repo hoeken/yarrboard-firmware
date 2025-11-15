@@ -17,38 +17,15 @@
 
 void setup()
 {
-  // startup our serial
-  Serial.begin(115200);
-  Serial.setTimeout(50);
-  YBP.addPrinter(Serial);
-
-#ifdef YB_USB_SERIAL
-  USBSerial.begin();
-  YBP.addPrinter(USBSerial);
-  YBP.println("USB Serial Started");
-#endif
-
-  // startup log logs to a string for getting later
-  YBP.addPrinter(startupLogger);
+  debug_setup();
 
   if (!LittleFS.begin(true)) {
     YBP.println("ERROR: Unable to mount LittleFS");
   }
   YBP.printf("LittleFS Storage: %d / %d\n", LittleFS.usedBytes(), LittleFS.totalBytes());
 
-  YBP.println("Yarrboard");
-  YBP.print("Hardware Version: ");
-  YBP.println(YB_HARDWARE_VERSION);
-  YBP.print("Firmware Version: ");
-  YBP.println(YB_FIRMWARE_VERSION);
-
-  YBP.printf("Firmware build: %s (%s)\n", GIT_HASH, BUILD_TIME);
-
   // get our prefs early on.
   prefs_setup();
-
-  debug_setup();
-  YBP.println("Debug ok");
 
 // audio visual notifications
 #ifdef YB_HAS_STATUS_RGB

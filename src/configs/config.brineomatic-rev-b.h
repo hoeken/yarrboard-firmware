@@ -34,7 +34,11 @@
 #define YB_PRODUCT_FLOWMETER_PIN         1
 #define YB_PRODUCT_FLOWMETER_DEFAULT_PPL 4700.0 // Omega BV2000TRN075B
 #define YB_BRINE_FLOWMETER_PIN           2
-#define YB_BRINE_FLOWMETER_DEFAULT_PPL   4700.0 // Omega BV2000TRN075B
+#define YB_BRINE_FLOWMETER_DEFAULT_PPL   1260.0 // Amazon B07MY7H45V
+
+// PPL calculations
+// F=(21*Q) Q=L/Min
+// PPL = 21 * 60
 
 #define YB_ADC_DRIVER_ADS1115
 #define YB_I2C_SDA_PIN         13
@@ -46,7 +50,9 @@
 #define YB_LP_SENSOR_CHANNEL   2
 #define YB_HP_SENSOR_CHANNEL   3
 #define YB_420_RESISTOR        165.0
-#define YB_LP_SENSOR_MAX       100.0
+#define YB_LP_SENSOR_MIN       0.0
+#define YB_LP_SENSOR_MAX       50.0
+#define YB_HP_SENSOR_MIN       0.0
 #define YB_HP_SENSOR_MAX       1000.0
 
 #define YB_HAS_STEPPER_CHANNELS

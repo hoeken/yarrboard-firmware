@@ -87,14 +87,14 @@ void brineomatic_setup()
   ds18b20.begin();
   YBP.print("Found ");
   YBP.print(ds18b20.getDeviceCount(), DEC);
-  YBP.println(" devices.");
+  YBP.println(" DS18B20 devices.");
 
-  // report parasite power requirements
-  YBP.print("Parasite power is: ");
-  if (ds18b20.isParasitePowerMode())
-    YBP.println("ON");
-  else
-    YBP.println("OFF");
+  // // report parasite power requirements
+  // YBP.print("Parasite power is: ");
+  // if (ds18b20.isParasitePowerMode())
+  //   YBP.println("ON");
+  // else
+  //   YBP.println("OFF");
 
   // lookup our address
   if (!ds18b20.getAddress(motorThermometer, 0))
@@ -124,12 +124,6 @@ void brineomatic_setup()
   gravityTds.begin();                  // initialization
 
   // temporary hardcoding.
-  wm.highPressurePump = &relay_channels[0];
-  wm.highPressurePump->setName("High Pressure Pump");
-  wm.highPressurePump->setKey("hp_pump");
-  wm.highPressurePump->defaultState = false;
-  strncpy(wm.highPressurePump->type, "water_pump", sizeof(wm.highPressurePump->type));
-
   wm.flushValve = &relay_channels[1];
   wm.flushValve->setName("Flush Valve");
   wm.flushValve->setKey("flush_valve");
@@ -141,6 +135,12 @@ void brineomatic_setup()
   wm.coolingFan->setKey("cooling_fan");
   wm.coolingFan->defaultState = false;
   strncpy(wm.coolingFan->type, "fan", sizeof(wm.coolingFan->type));
+
+  wm.highPressurePump = &relay_channels[3];
+  wm.highPressurePump->setName("High Pressure Pump");
+  wm.highPressurePump->setKey("hp_pump");
+  wm.highPressurePump->defaultState = false;
+  strncpy(wm.highPressurePump->type, "water_pump", sizeof(wm.highPressurePump->type));
 
   // disabled until we implement config xml
   // wm.boostPump = &relay_channels[3];

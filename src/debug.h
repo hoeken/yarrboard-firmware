@@ -14,6 +14,7 @@
 #include <Arduino.h>
 #include <LittleFS.h>
 #include <esp_core_dump.h>
+#include <esp_log.h>
 #include <esp_partition.h>
 #include <esp_system.h>
 
@@ -31,6 +32,7 @@ bool checkCoreDump();
 String readCoreDump();
 bool deleteCoreDump();
 void crash_me_hard();
+int debug_log_vprintf(const char* fmt, va_list args);
 
 class YarrboardPrint : public Print
 {
