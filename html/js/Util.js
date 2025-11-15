@@ -111,7 +111,7 @@
       return null; // Return null if the variable is not found
     },
 
-    // return true if 'first' is greater than or equal to 'second'
+    // return true if 'first' is greater than 'second'
     compareVersions: function (first, second) {
 
       var a = first.split('.');
@@ -136,7 +136,7 @@
       if (a[2] > b[2]) return true;
       if (a[2] < b[2]) return false;
 
-      return true;
+      return false;
     },
 
     isCanvasSupported: function () {

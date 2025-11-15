@@ -1,10 +1,10 @@
 # GENERAL
 
-# v2.0.0 Release
+## v2.1.0
 
-* test actual ota updating flow
+* fork + modify esp32FOTA to use bundled certificates
 
-# BRINEOMATIC
+## BRINEOMATIC
 
 * update code for new Rev B board:
     * what new stuff can we do with brine_flowmeter and brine_salinity?
@@ -53,7 +53,7 @@
     * sensors for each output type...
 * dark mode gauge text color is wrong
 
-# FROTHFET
+## FROTHFET
 
 * sporadic crash when fading and saving to prefs at the same time.
 * slow vs fast blow
@@ -67,7 +67,7 @@
 * add OVERHEAT as a state - similar to trip, must be turned off before turn on.
     * if we have temperature, we should also check that before we enable the channel
 
-# LONG TERM:
+## LONG TERM:
 
 * UI
     * dio channels

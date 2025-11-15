@@ -11,7 +11,7 @@
 
 #include <ArduinoTrace.h>
 
-#define YB_FIRMWARE_VERSION "2.0.0"
+#define YB_FIRMWARE_VERSION "2.1.0"
 #define YB_IS_DEVELOPMENT   false
 
 #if defined YB_CONFIG_FROTHFET_REV_D

@@ -17,7 +17,7 @@
 
     onMessage: function (msg) {
       if (msg.debug)
-        YB.log(`SERVER: ${msg.debug}`);
+        YB.log(`[server] ${msg.debug}`);
 
       if (msg.msg) {
         const handlers = YB.App.messageHandlers[msg.msg];
@@ -261,8 +261,6 @@
         YB.client.send({
           "cmd": "get_full_config"
         });
-
-        YB.App.checkForUpdates();
       }
 
       YB.client.getConfig();
@@ -882,7 +880,6 @@
           cache: false,
           dataType: "json",
           success: function (jdata) {
-            console.log(jdata);
             //did we get anything?
             let data;
             for (firmware of jdata)
@@ -914,9 +911,6 @@
           }
         });
       }
-      //wait for it.
-      else
-        setTimeout(YB.App.checkForUpdates, 1000);
     },
 
     updateFirmware: function () {
@@ -1080,6 +1074,9 @@
 
       YB.App.config = msg;
 
+      //we can check for new firmware now.
+      // YB.App.checkForUpdates();
+
       //is it our first boot?
       if (msg.first_boot && YB.App.currentPage != "network")
         YB.App.showAlert(`Welcome to Yarrboard, head over to <a href="#network" onclick="YB.App.openPage('network')">Network</a> to setup your WiFi.`, "primary");
@@ -1095,9 +1092,11 @@
       //send our boot log
       if (msg.boot_log) {
         var lines = msg.boot_log.split("\n");
-        YB.log("Boot Log:");
-        for (var line of lines)
-          YB.log(line);
+        for (let line of lines) {
+          line = line.trim();
+          if (line)
+            YB.log(`[server.boot] ${line}`);
+        }
       }
 
       //let the people choose their own names!
