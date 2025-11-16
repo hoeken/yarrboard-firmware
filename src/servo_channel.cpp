@@ -36,6 +36,7 @@ void servo_channels_loop()
 void ServoChannel::init(uint8_t id)
 {
   BaseChannel::init(id);
+  this->channel_type = "servo";
 
   this->_pin = _servo_pins[id - 1];
 

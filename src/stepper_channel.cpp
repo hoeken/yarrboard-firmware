@@ -38,15 +38,12 @@ void stepper_channels_setup()
 
 void stepper_channels_loop()
 {
-  // // check if any steppers need turning off
-  // for (auto& ch : stepper_channels) {
-  //   ch.autoDisable();
-  // }
 }
 
 void StepperChannel::init(uint8_t id)
 {
   BaseChannel::init(id);
+  this->channel_type = "stepper";
 
   this->_step_pin = _step_pins[id - 1];
   pinMode(_step_pin, OUTPUT);

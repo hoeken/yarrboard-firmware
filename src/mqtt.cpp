@@ -25,6 +25,10 @@
   #include "relay_channel.h"
 #endif
 
+#ifdef YB_HAS_STEPPER_CHANNELS
+  #include "stepper_channel.h"
+#endif
+
 #ifdef YB_HAS_SERVO_CHANNELS
   #include "servo_channel.h"
 #endif
@@ -97,6 +101,14 @@ void mqtt_loop()
 
 #ifdef YB_HAS_RELAY_CHANNELS
       mqqt_update_channels(relay_channels);
+#endif
+
+#ifdef YB_HAS_SERVO_CHANNELS
+      mqqt_update_channels(servo_channels);
+#endif
+
+#ifdef YB_HAS_STEPPER_CHANNELS
+      mqqt_update_channels(stepper_channels);
 #endif
 
 #ifdef YB_IS_BRINEOMATIC
