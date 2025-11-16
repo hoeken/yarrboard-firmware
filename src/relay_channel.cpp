@@ -175,10 +175,7 @@ void RelayChannel::haGenerateDiscovery(JsonVariant doc)
 
 void RelayChannel::haPublishState()
 {
-  if (this->getStatus())
-    mqtt_publish(ha_topic_state_state, "ON", false);
-  else
-    mqtt_publish(ha_topic_state_state, "OFF", false);
+  mqtt_publish(ha_topic_state_state, this->getStatus(), false);
 }
 
 void relay_handle_ha_command(const char* topic, const char* payload, int retain, int qos, bool dup)
