@@ -10,6 +10,7 @@
 #define YARR_BRINEOMATIC_H
 
 #include "etl/deque.h"
+#include <ArduinoJson.h>
 #include <QuickPID.h>
 
 class RelayChannel;
@@ -209,6 +210,9 @@ class Brineomatic
     float getMotorTemperatureMaximum();
 
     void runStateMachine();
+
+    void generateUpdateJSON(JsonVariant output);
+    void updateMQQT();
 
   private:
     Status currentStatus;

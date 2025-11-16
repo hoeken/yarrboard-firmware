@@ -1665,4 +1665,64 @@ bool Brineomatic::checkTankLevel()
   return currentTankLevel >= tankLevelFull;
 }
 
+void Brineomatic::generateUpdateJSON(JsonVariant output)
+{
+  output["brineomatic"] = true;
+  output["status"] = getStatus();
+  output["run_result"] = resultToString(getRunResult());
+  output["flush_result"] = resultToString(getFlushResult());
+  output["pickle_result"] = resultToString(getPickleResult());
+  output["depickle_result"] = resultToString(getDepickleResult());
+  output["motor_temperature"] = getMotorTemperature();
+  output["water_temperature"] = getWaterTemperature();
+  output["product_flowrate"] = getProductFlowrate();
+  output["brine_flowrate"] = getBrineFlowrate();
+  output["total_flowrate"] = getTotalFlowrate();
+  output["volume"] = getVolume();
+  output["product_salinity"] = getProductSalinity();
+  output["brine_salinity"] = getBrineSalinity();
+  output["filter_pressure"] = getFilterPressure();
+  output["membrane_pressure"] = getMembranePressure();
+  output["tank_level"] = getTankLevel();
+
+  if (hasBoostPump())
+    output["boost_pump_on"] = isBoostPumpOn();
+  if (hasHighPressurePump())
+    output["high_pressure_pump_on"] = isHighPressurePumpOn();
+  if (hasDiverterValve())
+    output["diverter_valve_open"] = isDiverterValveOpen();
+  if (hasFlushValve())
+    output["flush_valve_open"] = isFlushValveOpen();
+  if (hasCoolingFan())
+    output["cooling_fan_on"] = isCoolingFanOn();
+
+  output["next_flush_countdown"] = getNextFlushCountdown();
+  output["runtime_elapsed"] = getRuntimeElapsed();
+  output["finish_countdown"] = getFinishCountdown();
+
+  if (!strcmp(getStatus(), "FLUSHING")) {
+    output["flush_elapsed"] = getFlushElapsed();
+    output["flush_countdown"] = getFlushCountdown();
+  }
+
+  if (!strcmp(getStatus(), "PICKLING")) {
+    output["pickle_elapsed"] = getPickleElapsed();
+    output["pickle_countdown"] = getPickleCountdown();
+  }
+
+  if (!strcmp(getStatus(), "DEPICKLING")) {
+    output["depickle_elapsed"] = getDepickleElapsed();
+    output["depickle_countdown"] = getDepickleCountdown();
+  }
+}
+
+void Brineomatic::updateMQQT()
+{
+  JsonDocument output;
+  this->generateUpdateJSON(output);
+  output.remove("brineomatic");
+
+  mqtt_traverse_json(output, "watermaker");
+}
+
 #endif

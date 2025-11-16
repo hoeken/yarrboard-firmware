@@ -1389,57 +1389,7 @@ void generateUpdateJSON(JsonVariant output)
 #endif
 
 #ifdef YB_IS_BRINEOMATIC
-  output["brineomatic"] = true;
-  output["status"] = wm.getStatus();
-  output["run_result"] = wm.resultToString(wm.getRunResult());
-  output["flush_result"] = wm.resultToString(wm.getFlushResult());
-  output["pickle_result"] = wm.resultToString(wm.getPickleResult());
-  output["depickle_result"] = wm.resultToString(wm.getDepickleResult());
-  output["motor_temperature"] = wm.getMotorTemperature();
-  output["water_temperature"] = wm.getWaterTemperature();
-  output["product_flowrate"] = wm.getProductFlowrate();
-  output["brine_flowrate"] = wm.getBrineFlowrate();
-  output["total_flowrate"] = wm.getTotalFlowrate();
-  output["volume"] = wm.getVolume();
-  output["product_salinity"] = wm.getProductSalinity();
-  output["brine_salinity"] = wm.getBrineSalinity();
-  output["filter_pressure"] = wm.getFilterPressure();
-  output["membrane_pressure"] = wm.getMembranePressure();
-  output["tank_level"] = wm.getTankLevel();
-
-  if (wm.hasBoostPump())
-    output["boost_pump_on"] = wm.isBoostPumpOn();
-  if (wm.hasHighPressurePump())
-    output["high_pressure_pump_on"] = wm.isHighPressurePumpOn();
-  if (wm.hasDiverterValve())
-    output["diverter_valve_open"] = wm.isDiverterValveOpen();
-  if (wm.hasFlushValve())
-    output["flush_valve_open"] = wm.isFlushValveOpen();
-  if (wm.hasCoolingFan())
-    output["cooling_fan_on"] = wm.isCoolingFanOn();
-
-  // if (!strcmp(wm.getStatus(), "IDLE"))
-  output["next_flush_countdown"] = wm.getNextFlushCountdown();
-
-  output["runtime_elapsed"] = wm.getRuntimeElapsed();
-  // if (!strcmp(wm.getStatus(), "RUNNING"))
-  output["finish_countdown"] = wm.getFinishCountdown();
-
-  if (!strcmp(wm.getStatus(), "FLUSHING")) {
-    output["flush_elapsed"] = wm.getFlushElapsed();
-    output["flush_countdown"] = wm.getFlushCountdown();
-  }
-
-  if (!strcmp(wm.getStatus(), "PICKLING")) {
-    output["pickle_elapsed"] = wm.getPickleElapsed();
-    output["pickle_countdown"] = wm.getPickleCountdown();
-  }
-
-  if (!strcmp(wm.getStatus(), "DEPICKLING")) {
-    output["depickle_elapsed"] = wm.getDepickleElapsed();
-    output["depickle_countdown"] = wm.getDepickleCountdown();
-  }
-
+  wm.generateUpdateJSON(output);
 #endif
 }
 

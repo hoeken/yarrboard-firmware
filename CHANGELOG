@@ -2,6 +2,7 @@
 
 * native USB serial support
 * nicer debug system, and bring full debug to the web console.
+* brineomatic mqqt now has all data
 
 ## Version 2.0.0
 

@@ -135,9 +135,11 @@ void mqqt_update_channels(etl::array<Channel, N>& channels)
     "Channel must derive from BaseChannel");
 
   for (auto& ch : channels) {
-    ch.mqttUpdate();
-    if (app_enable_ha_integration)
-      ch.haPublishAvailable();
+    if (ch.isEnabled) {
+      ch.mqttUpdate();
+      if (app_enable_ha_integration)
+        ch.haPublishAvailable();
+    }
   }
 }
 

@@ -98,6 +98,10 @@ void mqtt_loop()
 #ifdef YB_HAS_RELAY_CHANNELS
       mqqt_update_channels(relay_channels);
 #endif
+
+#ifdef YB_IS_BRINEOMATIC
+      wm.updateMQQT();
+#endif
     }
 
     previousMQTTMillis = millis();
