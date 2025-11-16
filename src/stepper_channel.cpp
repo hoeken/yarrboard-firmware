@@ -57,6 +57,7 @@ void StepperChannel::init(uint8_t id)
   #ifdef YB_STEPPER_DIAG_PINS
   this->_diag_pin = _diag_pins[id - 1];
   pinMode(_diag_pin, INPUT);
+  attachInterruptArg(_diag_pin, &StepperChannel::stallGuardISR, this, RISING);
   #endif
 
   snprintf(this->name, sizeof(this->name), "Stepper Channel %d", id);
@@ -98,10 +99,14 @@ void StepperChannel::setup()
   _tmc2209.setStandstillMode(_tmc2209.FREEWHEELING);
   _tmc2209.setRunCurrent(_run_current);
   _tmc2209.setHoldCurrent(_hold_current);
-  _tmc2209.setStallGuardThreshold(_stall_guard);
   _tmc2209.enableAutomaticCurrentScaling();
   _tmc2209.enableAutomaticGradientAdaptation();
   _tmc2209.enableStealthChop();
+  _tmc2209.setCoolStepCurrentIncrement(TMC2209::CURRENT_INCREMENT_8);
+  _tmc2209.setCoolStepMeasurementCount(TMC2209::MEASUREMENT_COUNT_1);
+  _tmc2209.setCoolStepDurationThreshold(300);
+  _tmc2209.enableCoolStep(1, 0);
+  _tmc2209.setStallGuardThreshold(_stall_guard);
   _tmc2209.enable();
 
     // printDebug(0);
@@ -306,21 +311,29 @@ int32_t StepperChannel::getPosition()
 
 bool StepperChannel::isEndstopHit()
 {
-  uint16_t stall_guard_result = _tmc2209.getStallGuardResult();
-  // DUMP(stall_guard_result);
-
-  if (stall_guard_result < _stall_guard * 2)
+  if (_endstopTriggered) {
+    _endstopTriggered = false;
     return true;
-  else
-    return false;
+  }
+
+  return false;
 }
 
 bool StepperChannel::home()
 {
-  if (homeWithSpeed(_home_fast_speed_rpm))
-    return homeWithSpeed(_home_slow_speed_rpm);
+  // home at a lower current so we dont jam
+  _tmc2209.setRunCurrent(_run_current * 0.60);
 
-  return false;
+  bool ret = false;
+  if (homeWithSpeed(_home_fast_speed_rpm))
+    ret = homeWithSpeed(_home_slow_speed_rpm);
+
+  currentPosition = 0;
+  currentAngle = 0;
+
+  _tmc2209.setRunCurrent(_run_current);
+
+  return ret;
 }
 
 bool StepperChannel::homeWithSpeed(float rpm)
@@ -333,7 +346,7 @@ bool StepperChannel::homeWithSpeed(float rpm)
 
   // seek toward negative until endstop triggers
   _stepper->runBackward();
-  delay(100); // give it time to get started.
+  _endstopTriggered = false;
 
   // look for endstop with timeout
   uint32_t t1 = millis();
@@ -343,7 +356,7 @@ bool StepperChannel::homeWithSpeed(float rpm)
       YBP.println("Stepper homing timeout.");
       return false;
     }
-    delay(1);
+    yield();
   }
 
   // okay, zero us.

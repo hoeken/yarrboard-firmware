@@ -54,9 +54,11 @@ class StepperChannel : public BaseChannel
     HardwareSerial& _serial = Serial2;
     TMC2209 _tmc2209;
     byte _diag_pin;
-    uint8_t _run_current = 50;
+    uint8_t _run_current = 67;
     uint8_t _hold_current = 20;
-    uint8_t _stall_guard = 25;
+    uint8_t _stall_guard = 90;
+
+    volatile bool _endstopTriggered = false;
 
     FastAccelStepper* _stepper = NULL;
     byte _step_pin;
@@ -66,10 +68,16 @@ class StepperChannel : public BaseChannel
     float _steps_per_degree = (float)YB_STEPPER_STEPS_PER_REVOLUTION / 360.0;
     uint32_t _acceleration = _steps_per_degree * 720; // steps/s^2
     float _default_speed_rpm = 100.0;                 // typical homing speed
-    float _home_fast_speed_rpm = 50.0;                // fast homing speed
-    float _home_slow_speed_rpm = 25.0;                // slow homing speed
-    uint32_t _backoff_steps = 45 * _steps_per_degree; // release distance
-    uint32_t _timeout_ms = 15000;                     // homing timeout
+    float _home_fast_speed_rpm = 35.0;                // fast homing speed
+    float _home_slow_speed_rpm = 35.0;                // slow homing speed
+    uint32_t _backoff_steps = 90 * _steps_per_degree; // release distance
+    uint32_t _timeout_ms = 5000;                      // homing timeout
+
+    static void ARDUINO_ISR_ATTR stallGuardISR(void* arg)
+    {
+      auto* self = static_cast<StepperChannel*>(arg);
+      self->_endstopTriggered = true;
+    }
 };
 
 extern etl::array<StepperChannel, YB_STEPPER_CHANNEL_COUNT> stepper_channels;

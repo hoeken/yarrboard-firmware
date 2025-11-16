@@ -143,7 +143,7 @@
       "cmd": "set_stepper_channel",
       "id": this.id,
       "home": true
-    });
+    }, false);
   }
 
   StepperChannel.prototype.generateEditUI = function () {
