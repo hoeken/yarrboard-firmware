@@ -88,32 +88,42 @@ void mqtt_loop()
     if (mqttClient.connected()) {
 
 #ifdef YB_HAS_ADC_CHANNELS
-      mqqt_update_channels(adc_channels);
+      mqtt_update_channels(adc_channels);
 #endif
 
 #ifdef YB_HAS_PWM_CHANNELS
-      mqqt_update_channels(pwm_channels);
+      mqtt_update_channels(pwm_channels);
 #endif
 
 #ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
-      mqqt_update_channels(digital_input_channels);
+      mqtt_update_channels(digital_input_channels);
 #endif
 
 #ifdef YB_HAS_RELAY_CHANNELS
-      mqqt_update_channels(relay_channels);
+      mqtt_update_channels(relay_channels);
 #endif
 
 #ifdef YB_HAS_SERVO_CHANNELS
-      mqqt_update_channels(servo_channels);
+      mqtt_update_channels(servo_channels);
 #endif
 
 #ifdef YB_HAS_STEPPER_CHANNELS
-      mqqt_update_channels(stepper_channels);
+      mqtt_update_channels(stepper_channels);
 #endif
 
 #ifdef YB_IS_BRINEOMATIC
-      wm.updateMQQT();
+      wm.updateMQTT();
 #endif
+
+      // separately update our Home Assistant status
+      if (app_enable_ha_integration) {
+#ifdef YB_HAS_PWM_CHANNELS
+        ha_update_channels(pwm_channels);
+#endif
+#ifdef YB_HAS_RELAY_CHANNELS
+        ha_update_channels(relay_channels);
+#endif
+      }
     }
 
     previousMQTTMillis = millis();
@@ -141,13 +151,19 @@ void mqtt_publish(const char* topic, const char* payload, bool use_prefix)
   if (!mqttClient.connected())
     return;
 
+  int ret;
+
   // prefix it with yarrboard or nah?
   if (use_prefix) {
     char mqtt_path[256];
     sprintf(mqtt_path, "yarrboard/%s/%s", local_hostname, topic);
-    mqttClient.publish(mqtt_path, 0, 0, payload, strlen(payload), false);
+    ret = mqttClient.publish(mqtt_path, 0, 0, payload, strlen(payload), false);
+    if (ret == -1)
+      YBP.printf("[mqtt] Error publishing prefix path %s\n", mqtt_path);
   } else {
-    mqttClient.publish(topic, 0, 0, payload, strlen(payload), false);
+    ret = mqttClient.publish(topic, 0, 0, payload, strlen(payload), false);
+    if (ret == -1)
+      YBP.printf("[mqtt] Error publishing topic %s\n", topic);
   }
 }
 
@@ -235,7 +251,10 @@ void mqtt_ha_discovery()
   // did we get anything?
   if (jsonBuffer != NULL) {
     serializeJson(doc, jsonBuffer, jsonSize + 1);
-    mqttClient.publish(topic, 2, false, jsonBuffer, strlen(jsonBuffer), false);
+    int ret = mqttClient.publish(topic, 2, false, jsonBuffer, strlen(jsonBuffer), false);
+
+    if (ret == -1)
+      YBP.printf("[mqtt] Error publishing HA topic %s\n", topic);
   }
 
   // no leaks

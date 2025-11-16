@@ -47,8 +47,11 @@ bool BaseChannel::loadConfig(JsonVariantConst config, char* error, size_t err_si
     return false;
   }
 
-  // enabled.  missing defaults to true
-  this->isEnabled = config["enabled"] | true;
+  // enabled.  missing defaults to false
+  this->isEnabled = false;
+  if (config["enabled"].is<bool>()) {
+    this->isEnabled = config["enabled"];
+  }
 
   // every channel has a name
   snprintf(this->name, sizeof(this->name), "Channel %d", this->id);

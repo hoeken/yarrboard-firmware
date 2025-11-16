@@ -18,6 +18,9 @@
 #include <esp_partition.h>
 #include <esp_system.h>
 
+#define ARDUINOTRACE_SERIAL YBP
+#include <ArduinoTrace.h>
+
 #ifdef YB_USB_SERIAL
   #include "USB.h"
 extern USBCDC USBSerial;

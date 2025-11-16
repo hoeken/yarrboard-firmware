@@ -20,6 +20,7 @@ class BaseChannel
   public:
     byte id = 0;
     bool isEnabled = true;
+    bool haEnabled = false;
     char name[YB_CHANNEL_NAME_LENGTH];
     char key[YB_CHANNEL_KEY_LENGTH];
 
@@ -129,7 +130,7 @@ Channel* lookupChannel(JsonVariantConst input, JsonVariant output, etl::array<Ch
 }
 
 template <typename Channel, size_t N>
-void mqqt_update_channels(etl::array<Channel, N>& channels)
+void mqtt_update_channels(etl::array<Channel, N>& channels)
 {
   static_assert(std::is_base_of<BaseChannel, Channel>::value,
     "Channel must derive from BaseChannel");
@@ -137,8 +138,20 @@ void mqqt_update_channels(etl::array<Channel, N>& channels)
   for (auto& ch : channels) {
     if (ch.isEnabled) {
       ch.mqttUpdate();
-      if (app_enable_ha_integration)
-        ch.haPublishAvailable();
+    }
+  }
+}
+
+template <typename Channel, size_t N>
+void ha_update_channels(etl::array<Channel, N>& channels)
+{
+  static_assert(std::is_base_of<BaseChannel, Channel>::value,
+    "Channel must derive from BaseChannel");
+
+  for (auto& ch : channels) {
+    if (ch.isEnabled) {
+      ch.haPublishAvailable();
+      ch.haPublishState();
     }
   }
 }

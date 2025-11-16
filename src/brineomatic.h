@@ -212,7 +212,7 @@ class Brineomatic
     void runStateMachine();
 
     void generateUpdateJSON(JsonVariant output);
-    void updateMQQT();
+    void updateMQTT();
 
   private:
     Status currentStatus;

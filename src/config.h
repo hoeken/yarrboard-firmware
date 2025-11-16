@@ -9,8 +9,6 @@
 #ifndef YARR_CONFIG_H
 #define YARR_CONFIG_H
 
-#include <ArduinoTrace.h>
-
 #define YB_FIRMWARE_VERSION "2.1.0"
 #define YB_IS_DEVELOPMENT   false
 

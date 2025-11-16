@@ -135,7 +135,6 @@ void RelayChannel::generateConfig(JsonVariant config)
   BaseChannel::generateConfig(config);
 
   config["type"] = this->type;
-  config["enabled"] = this->isEnabled;
   config["defaultState"] = this->defaultState;
 }
 
@@ -152,8 +151,8 @@ void RelayChannel::haGenerateDiscovery(JsonVariant doc)
   BaseChannel::haGenerateDiscovery(doc);
 
   // generate our topics
-  sprintf(ha_topic_cmd_state, "yarrboard/%s/pwm/%s/ha_set", ha_key, this->key);
-  sprintf(ha_topic_state_state, "yarrboard/%s/pwm/%s/ha_state", ha_key, this->key);
+  sprintf(ha_topic_cmd_state, "yarrboard/%s/relay/%s/ha_set", ha_key, this->key);
+  sprintf(ha_topic_state_state, "yarrboard/%s/relay/%s/ha_state", ha_key, this->key);
 
   // our callbacks to the command topics
   mqtt_on_topic(ha_topic_cmd_state, 0, relay_handle_ha_command);

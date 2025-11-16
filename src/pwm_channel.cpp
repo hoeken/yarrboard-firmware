@@ -18,8 +18,6 @@
 // INA226 INA(0x40);
 // unsigned long previousINA226UpdateMillis = 0;
 
-unsigned long previousHAUpdateMillis = 0;
-
 // the main star of the event
 etl::array<PWMChannel, YB_PWM_CHANNEL_COUNT> pwm_channels;
 
@@ -222,17 +220,6 @@ void pwm_channels_loop()
   // let the client know immediately.
   if (doSendFastUpdate) {
     sendFastUpdate();
-  }
-
-  // periodically update our HomeAssistant status
-  unsigned int messageDelta = millis() - previousHAUpdateMillis;
-  if (messageDelta >= 1000) {
-    for (auto& ch : pwm_channels) {
-      ch.haPublishAvailable();
-      ch.haPublishState();
-
-      previousHAUpdateMillis = millis();
-    }
   }
 
   // if (millis() - previousINA226UpdateMillis > 1000) {

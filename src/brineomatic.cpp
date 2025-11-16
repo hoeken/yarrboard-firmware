@@ -1716,7 +1716,7 @@ void Brineomatic::generateUpdateJSON(JsonVariant output)
   }
 }
 
-void Brineomatic::updateMQQT()
+void Brineomatic::updateMQTT()
 {
   JsonDocument output;
   this->generateUpdateJSON(output);
