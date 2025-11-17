@@ -90,13 +90,9 @@ void StepperChannel::setup()
 {
   // setup our TMC2209 parameters
   #ifdef YB_STEPPER_DRIVER_TMC2209
-  // setup our serial port
-  _serial = Serial2;
-  _tmc2209.setup(_serial, 115200, TMC2209::SERIAL_ADDRESS_0, YB_STEPPER_RX_PIN, YB_STEPPER_TX_PIN);
-
-  // setup our chip
+  _tmc2209.setup(Serial2, 115200, TMC2209::SERIAL_ADDRESS_0, YB_STEPPER_RX_PIN, YB_STEPPER_TX_PIN);
   _tmc2209.setMicrostepsPerStep(YB_STEPPER_MICROSTEPS);
-  _tmc2209.setStandstillMode(_tmc2209.FREEWHEELING);
+  _tmc2209.setStandstillMode(_tmc2209.BRAKING);
   _tmc2209.setRunCurrent(_run_current);
   _tmc2209.setHoldCurrent(_hold_current);
   _tmc2209.enableAutomaticCurrentScaling();
@@ -108,9 +104,7 @@ void StepperChannel::setup()
   _tmc2209.enableCoolStep(1, 0);
   _tmc2209.setStallGuardThreshold(_stall_guard);
   _tmc2209.enable();
-
     // printDebug(0);
-
   #endif
 
   // setup our actual stepper controller
@@ -118,11 +112,12 @@ void StepperChannel::setup()
   if (_stepper) {
     _stepper->setDirectionPin(_dir_pin);
     _stepper->setEnablePin(_enable_pin);
-    _stepper->setAutoEnable(true);
 
     // If auto enable/disable need delays, just add (one or both):
-    _stepper->setDelayToEnable(50);
-    _stepper->setDelayToDisable(1000);
+    // _stepper->setAutoEnable(true);
+    // _stepper->setDelayToEnable(50);
+    // _stepper->setDelayToDisable(1000);
+    _stepper->enableOutputs();
 
     setSpeed(_home_fast_speed_rpm);
     _stepper->setAcceleration(_acceleration);
@@ -331,7 +326,9 @@ bool StepperChannel::home()
   currentPosition = 0;
   currentAngle = 0;
 
+  // back to our defaults
   _tmc2209.setRunCurrent(_run_current);
+  setSpeed(_default_speed_rpm);
 
   return ret;
 }

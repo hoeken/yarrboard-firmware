@@ -15,6 +15,7 @@
   #include "etl/deque.h"
   #include "relay_channel.h"
   #include "servo_channel.h"
+  #include "stepper_channel.h"
   #include <ADS1X15.h>
   #include <Arduino.h>
   #include <DallasTemperature.h>
@@ -153,9 +154,15 @@ void brineomatic_setup()
   wm.diverterValve->setName("Diverter Valve");
   wm.diverterValve->setKey("diverter_valve");
 
-  wm.highPressureValve = &servo_channels[1];
-  wm.highPressureValve->setName("High Pressure Valve");
-  wm.highPressureValve->setKey("hp_valve");
+  wm.highPressureValveServo = &servo_channels[1];
+  wm.highPressureValveServo->setName("High Pressure Valve");
+  wm.highPressureValveServo->setKey("hp_valve");
+
+  wm.highPressureValveStepper = &stepper_channels[0];
+  wm.highPressureValveStepper->setName("High Pressure Valve");
+  wm.highPressureValveStepper->setKey("hp_valve");
+
+  wm.highPressureValveMode = Brineomatic::HighPressureValveControlMode::STEPPER;
 
   // Create a FreeRTOS task for the state machine
   xTaskCreatePinnedToCore(
@@ -494,9 +501,14 @@ void Brineomatic::setMembranePressureTarget(float pressure)
   }
   // negative target, turn off the servo.
   else {
-    YBP.println("negative target, turn off the servo.");
-    highPressureValve->write(highPressureValveCloseMin); // neutral / stop
-    highPressureValve->disable();
+    if (highPressureValveMode == HighPressureValveControlMode::SERVO) {
+      YBP.println("negative target, turn off the servo.");
+      highPressureValveServo->write(highPressureValveCloseMin); // neutral / stop
+      highPressureValveServo->disable();
+    } else if (highPressureValveMode == HighPressureValveControlMode::STEPPER) {
+      YBP.println("negative target, go to zero");
+      highPressureValveStepper->gotoAngle(0);
+    }
   }
 }
 
@@ -614,6 +626,7 @@ bool Brineomatic::initializeHardware()
 
   uint64_t membranePressureStart = esp_timer_get_time();
   if (membranePressureTarget > 0) {
+
     setMembranePressureTarget(0);
     while (getMembranePressure() > 65) {
       vTaskDelay(pdMS_TO_TICKS(100));
@@ -627,6 +640,10 @@ bool Brineomatic::initializeHardware()
   }
 
   disableHighPressurePump();
+
+  if (highPressureValveMode == HighPressureValveControlMode::STEPPER)
+    highPressureValveStepper->home();
+
   disableBoostPump();
   closeFlushValve();
   disableCoolingFan();
@@ -1082,7 +1099,7 @@ int64_t Brineomatic::getDepickleCountdown()
 
 bool Brineomatic::hasHighPressureValve()
 {
-  return highPressureValve != nullptr;
+  return highPressureValveMode != HighPressureValveControlMode::NONE;
 }
 
 void Brineomatic::manageHighPressureValve()
@@ -1092,7 +1109,6 @@ void Brineomatic::manageHighPressureValve()
   if (currentStatus != Status::IDLE) {
     if (hasHighPressureValve()) {
       if (membranePressureTarget >= 0) {
-
         // only use Ki for tuning once we are close to our target.
         if (abs(membranePressureTarget - currentMembranePressure) / membranePressureTarget > 0.05)
           membranePressurePID.SetTunings(KpRamp, KiRamp, KdRamp);
@@ -1109,17 +1125,21 @@ void Brineomatic::manageHighPressureValve()
             angle = map(membranePressurePIDOutput, YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX, highPressureValveMaintainOpenMax, highPressureValveMaintainCloseMax);
 
           // if we're close, just disable so its not constantly drawing current.
-          if (abs(membranePressureTarget - currentMembranePressure) / membranePressureTarget > 0.01)
-            highPressureValve->write(angle);
-          else {
-            highPressureValve->write(highPressureValveCloseMin); // neutral / stop
-            highPressureValve->disable();
-            membranePressurePID.Reset(); // keep our pid from winding up.
+          if (highPressureValveMode == HighPressureValveControlMode::SERVO) {
+
+            if (abs(membranePressureTarget - currentMembranePressure) / membranePressureTarget > 0.01)
+              highPressureValveServo->write(angle);
+            else {
+              highPressureValveServo->write(highPressureValveCloseMin); // neutral / stop
+              highPressureValveServo->disable();
+              membranePressurePID.Reset(); // keep our pid from winding up.
+            }
+          } else if (highPressureValveMode == HighPressureValveControlMode::STEPPER) {
+            highPressureValveStepper->gotoAngle(1650);
           }
 
           // YBP.printf("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f\n", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
         }
-      } else {
       }
     }
   }

@@ -15,6 +15,7 @@
 
 class RelayChannel;
 class ServoChannel;
+class StepperChannel;
 
 extern etl::deque<float, YB_BOM_DATA_SIZE> motor_temperature_data;
 extern etl::deque<float, YB_BOM_DATA_SIZE> water_temperature_data;
@@ -42,45 +43,6 @@ void measure_membrane_pressure(int16_t reading);
 class Brineomatic
 {
   public:
-    bool isPickled;
-    bool autoFlushEnabled;
-    bool flushUseHighPressureMotor = false;
-
-    RelayChannel* flushValve = NULL;
-    RelayChannel* boostPump = NULL;
-    RelayChannel* highPressurePump = NULL;
-    RelayChannel* coolingFan = NULL;
-    ServoChannel* diverterValve = NULL;
-    ServoChannel* highPressureValve = NULL;
-
-    float diverterValveOpenAngle = 35;
-    float diverterValveClosedAngle = 125;
-
-    float highPressureValveOpenMin;
-    float highPressureValveOpenMax;
-    float highPressureValveCloseMin;
-    float highPressureValveCloseMax;
-    float highPressureValveMaintainOpenMin;
-    float highPressureValveMaintainOpenMax;
-    float highPressureValveMaintainCloseMin;
-    float highPressureValveMaintainCloseMax;
-
-    float KpRamp = 0;
-    float KiRamp = 0;
-    float KdRamp = 0;
-    float KpMaintain = 0;
-    float KiMaintain = 0;
-    float KdMaintain = 0;
-
-    float currentVolume;
-
-    uint32_t totalCycles;
-    float totalVolume;
-    uint64_t totalRuntime;
-
-    Brineomatic();
-    void init();
-
     enum class Status {
       STARTUP,
       MANUAL,
@@ -116,6 +78,54 @@ class Brineomatic
       ERR_PRODUCTION_TIMEOUT,
       ERR_MOTOR_TEMPERATURE_HIGH
     };
+
+    enum class HighPressureValveControlMode {
+      NONE,
+      SERVO,
+      STEPPER
+    };
+
+    bool isPickled;
+    bool autoFlushEnabled;
+    bool flushUseHighPressureMotor = false;
+
+    RelayChannel* flushValve = NULL;
+    RelayChannel* boostPump = NULL;
+    RelayChannel* highPressurePump = NULL;
+    RelayChannel* coolingFan = NULL;
+    ServoChannel* diverterValve = NULL;
+    ServoChannel* highPressureValveServo = NULL;
+    StepperChannel* highPressureValveStepper = NULL;
+
+    HighPressureValveControlMode highPressureValveMode;
+
+    float diverterValveOpenAngle = 35;
+    float diverterValveClosedAngle = 125;
+
+    float highPressureValveOpenMin;
+    float highPressureValveOpenMax;
+    float highPressureValveCloseMin;
+    float highPressureValveCloseMax;
+    float highPressureValveMaintainOpenMin;
+    float highPressureValveMaintainOpenMax;
+    float highPressureValveMaintainCloseMin;
+    float highPressureValveMaintainCloseMax;
+
+    float KpRamp = 0;
+    float KiRamp = 0;
+    float KdRamp = 0;
+    float KpMaintain = 0;
+    float KiMaintain = 0;
+    float KdMaintain = 0;
+
+    float currentVolume;
+
+    uint32_t totalCycles;
+    float totalVolume;
+    uint64_t totalRuntime;
+
+    Brineomatic();
+    void init();
 
     void setFilterPressure(float pressure);
     void setMembranePressure(float pressure);

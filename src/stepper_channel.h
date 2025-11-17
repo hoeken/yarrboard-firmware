@@ -67,11 +67,11 @@ class StepperChannel : public BaseChannel
 
     float _steps_per_degree = (float)YB_STEPPER_STEPS_PER_REVOLUTION / 360.0;
     uint32_t _acceleration = _steps_per_degree * 720; // steps/s^2
-    float _default_speed_rpm = 100.0;                 // typical homing speed
+    float _default_speed_rpm = 25.0;                  // typical homing speed
     float _home_fast_speed_rpm = 35.0;                // fast homing speed
     float _home_slow_speed_rpm = 35.0;                // slow homing speed
-    uint32_t _backoff_steps = 90 * _steps_per_degree; // release distance
-    uint32_t _timeout_ms = 5000;                      // homing timeout
+    uint32_t _backoff_steps = 15 * _steps_per_degree; // release distance
+    uint32_t _timeout_ms = 15000;                     // homing timeout
 
     static void ARDUINO_ISR_ATTR stallGuardISR(void* arg)
     {
