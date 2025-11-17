@@ -507,7 +507,7 @@ void Brineomatic::setMembranePressureTarget(float pressure)
       highPressureValveServo->disable();
     } else if (highPressureValveMode == HighPressureValveControlMode::STEPPER) {
       YBP.println("target <= 0, disable our stepper");
-      highPressureValveStepper->gotoAngle(0);
+      highPressureValveStepper->gotoAngle(0, 40);
       highPressureValveStepper->waitUntilStopped();
       highPressureValveStepper->disable();
     }
@@ -583,9 +583,6 @@ void Brineomatic::startVolume(float volume)
 
 void Brineomatic::flush(uint64_t duration)
 {
-  TRACE();
-  DUMP(duration);
-
   stopFlag = false;
   if (currentStatus == Status::IDLE || currentStatus == Status::PICKLED) {
     flushDuration = duration;
@@ -627,11 +624,11 @@ bool Brineomatic::initializeHardware()
   // actively running, zero out our pressure
   if (membranePressureTarget > 0) {
     setMembranePressureTarget(0);
-    uint64_t membranePressureStart = esp_timer_get_time();
+    uint32_t membranePressureStart = millis();
     while (getMembranePressure() > 65) {
       vTaskDelay(pdMS_TO_TICKS(100));
 
-      if (esp_timer_get_time() - membranePressureStart > membranePressureTimeout) {
+      if (millis() - membranePressureStart > membranePressureTimeout) {
         isFailure = true;
         break;
       }
@@ -964,50 +961,11 @@ Brineomatic::Result Brineomatic::getDepickleResult()
 const char* Brineomatic::resultToString(Result result)
 {
   switch (result) {
-    case Result::STARTUP:
-      return "STARTUP";
-    case Result::SUCCESS:
-      return "SUCCESS";
-    case Result::SUCCESS_TIME:
-      return "SUCCESS_TIME";
-    case Result::SUCCESS_VOLUME:
-      return "SUCCESS_VOLUME";
-    case Result::SUCCESS_TANK_LEVEL:
-      return "SUCCESS_TANK_LEVEL";
-    case Result::USER_STOP:
-      return "USER_STOP";
-    case Result::ERR_FLUSH_VALVE_TIMEOUT:
-      return "ERR_FLUSH_VALVE_TIMEOUT";
-    case Result::ERR_FILTER_PRESSURE_TIMEOUT:
-      return "ERR_FILTER_PRESSURE_TIMEOUT";
-    case Result::ERR_FILTER_PRESSURE_LOW:
-      return "ERR_FILTER_PRESSURE_LOW";
-    case Result::ERR_FILTER_PRESSURE_HIGH:
-      return "ERR_FILTER_PRESSURE_HIGH";
-    case Result::ERR_MEMBRANE_PRESSURE_TIMEOUT:
-      return "ERR_MEMBRANE_PRESSURE_TIMEOUT";
-    case Result::ERR_MEMBRANE_PRESSURE_LOW:
-      return "ERR_MEMBRANE_PRESSURE_LOW";
-    case Result::ERR_MEMBRANE_PRESSURE_HIGH:
-      return "ERR_MEMBRANE_PRESSURE_HIGH";
-    case Result::ERR_PRODUCT_FLOWRATE_TIMEOUT:
-      return "ERR_PRODUCT_FLOWRATE_TIMEOUT";
-    case Result::ERR_PRODUCT_FLOWRATE_LOW:
-      return "ERR_PRODUCT_FLOWRATE_LOW";
-    case Result::ERR_BRINE_FLOWRATE_LOW:
-      return "ERR_BRINE_FLOWRATE_LOW";
-    case Result::ERR_TOTAL_FLOWRATE_LOW:
-      return "ERR_TOTAL_FLOWRATE_LOW";
-    case Result::ERR_DIVERTER_VALVE_OPEN:
-      return "ERR_DIVERTER_VALVE_OPEN";
-    case Result::ERR_PRODUCT_SALINITY_TIMEOUT:
-      return "ERR_PRODUCT_SALINITY_TIMEOUT";
-    case Result::ERR_PRODUCT_SALINITY_HIGH:
-      return "ERR_PRODUCT_SALINITY_HIGH";
-    case Result::ERR_PRODUCTION_TIMEOUT:
-      return "ERR_PRODUCTION_TIMEOUT";
-    case Result::ERR_MOTOR_TEMPERATURE_HIGH:
-      return "ERR_MOTOR_TEMPERATURE_HIGH";
+  #define X(name)      \
+    case Result::name: \
+      return #name;
+    BOM_RESULT_LIST
+  #undef X
     default:
       return "UNKNOWN";
   }
@@ -1143,9 +1101,9 @@ void Brineomatic::manageHighPressureValve()
             }
           } else if (highPressureValveMode == HighPressureValveControlMode::STEPPER) {
             if (membranePressureTarget > 0)
-              highPressureValveStepper->gotoAngle(1650);
+              highPressureValveStepper->gotoAngle(1650, 10);
             else
-              highPressureValveStepper->gotoAngle(0);
+              highPressureValveStepper->gotoAngle(0, 10);
           }
 
           // YBP.printf("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f\n", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
@@ -1201,7 +1159,7 @@ void Brineomatic::runStateMachine()
     // RUNNING
     //
     case Status::RUNNING: {
-      // YBP.println("State: RUNNING");
+      YBP.println("State: RUNNING");
 
       runtimeStart = esp_timer_get_time();
       currentVolume = 0;
@@ -1209,12 +1167,11 @@ void Brineomatic::runStateMachine()
       uint64_t lastRuntimeUpdate = runtimeStart;
 
       if (initializeHardware()) {
-        runResult = Result::ERR_MEMBRANE_PRESSURE_TIMEOUT;
         currentStatus = Status::IDLE;
         return;
       }
 
-      uint64_t boostPumpStart = esp_timer_get_time();
+      uint32_t boostPumpStart = millis();
       if (hasBoostPump()) {
         // YBP.println("Boost Pump Started");
         enableBoostPump();
@@ -1222,7 +1179,7 @@ void Brineomatic::runStateMachine()
           if (checkStopFlag())
             return;
 
-          if (esp_timer_get_time() - boostPumpStart > filterPressureTimeout) {
+          if (millis() - boostPumpStart > filterPressureTimeout) {
             currentStatus = Status::STOPPING;
             runResult = Result::ERR_FILTER_PRESSURE_TIMEOUT;
             return;
@@ -1233,54 +1190,29 @@ void Brineomatic::runStateMachine()
         // YBP.println("Boost Pump OK");
       }
 
-      // YBP.println("High Pressure Pump Started");
+      YBP.println("High Pressure Pump Started");
       enableHighPressurePump();
       setMembranePressureTarget(defaultMembranePressureTarget);
 
-      uint64_t highPressurePumpStart = esp_timer_get_time();
-      while (getMembranePressure() < getMembranePressureMinimum()) {
+      if (waitForMembranePressure())
+        return;
 
-        // let the spice flow
-        if (checkTotalFlowrateLow(runTotalFlowrateMinimum))
-          return;
-
-        // check this here in case our PID goes crazy
-        if (checkMembranePressureHigh())
-          return;
-
-        if (checkStopFlag())
-          return;
-
-        if (esp_timer_get_time() - highPressurePumpStart > membranePressureTimeout) {
-          currentStatus = Status::STOPPING;
-          runResult = Result::ERR_MEMBRANE_PRESSURE_TIMEOUT;
-          return;
-        }
-
-        vTaskDelay(pdMS_TO_TICKS(100));
-      }
-
-      DUMP(totalFlowrateLowErrorCount);
-
-      // YBP.println("High Pressure Pump OK");
+      YBP.println("High Pressure Pump OK");
 
       if (waitForProductFlowrate())
         return;
+
+      YBP.println("Flowrate OK");
+
       if (waitForProductSalinity())
         return;
+
+      YBP.println("Salinity OK");
 
       // YBP.println("Closing Diverter Valve.");
       closeDiverterValve();
 
-      // opening the valve sometimes causes a small blip in either, let it stabilize again
-      // if (waitForProductFlowrate())
-      //   return;
-      // if (waitForProductSalinity())
-      //   return;
-
-      // YBP.println("Product Flow and Salinity OK");
-
-      uint64_t productionStart = esp_timer_get_time();
+      uint32_t productionStart = millis();
       while (true) {
 
         if (checkDiverterValveClosed())
@@ -1310,7 +1242,7 @@ void Brineomatic::runStateMachine()
         if (checkStopFlag())
           return;
 
-        if (esp_timer_get_time() - productionStart > productionTimeout) {
+        if (millis() - productionStart > productionTimeout) {
           currentStatus = Status::STOPPING;
           runResult = Result::ERR_PRODUCTION_TIMEOUT;
           return;
@@ -1378,58 +1310,43 @@ void Brineomatic::runStateMachine()
     //
     case Status::FLUSHING: {
       // YBP.println("State: FLUSHING");
-
       stopFlag = false;
       flushStart = esp_timer_get_time();
+      flushFilterPressureLowStart = 0;
+      flushFlowrateLowStart = 0;
 
       if (initializeHardware()) {
         currentStatus = Status::IDLE;
-        flushResult = Result::ERR_MEMBRANE_PRESSURE_TIMEOUT;
         return;
       }
 
+      // start up our hardware
       openFlushValve();
-      uint64_t flushValveStart = esp_timer_get_time();
-      while (getFilterPressure() < getFilterPressureMinimum()) {
+      if (flushUseHighPressureMotor)
+        enableHighPressurePump();
+
+      // check our sensors while we flush
+      while (getFlushElapsed() < flushDuration) {
         if (stopFlag)
           break;
 
-        if (esp_timer_get_time() - flushValveStart > filterPressureTimeout) {
-          closeFlushValve();
+        if (checkFlushFilterPressureLow()) {
+          initializeHardware();
           currentStatus = Status::IDLE;
-          runResult = Result::ERR_FLUSH_VALVE_TIMEOUT;
+          return;
+        }
+
+        if (checkFlushFlowrateLow()) {
+          initializeHardware();
+          currentStatus = Status::IDLE;
           return;
         }
 
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 
-      // short little delay for fresh water valve to fully open
-      vTaskDelay(pdMS_TO_TICKS(5000));
-
-      if (!stopFlag) {
-
-        if (flushUseHighPressureMotor)
-          enableHighPressurePump();
-
-        while (getFlushElapsed() < flushDuration) {
-          if (stopFlag)
-            break;
-
-          if (checkBrineFlowrateLow(flushTotalFlowrateMinimum)) {
-            closeFlushValve();
-            currentStatus = Status::IDLE;
-            flushResult = Result::ERR_FLUSH_FLOWRATE_LOW;
-            return;
-          }
-
-          vTaskDelay(pdMS_TO_TICKS(100));
-        }
-      }
-
       if (initializeHardware()) {
         currentStatus = Status::IDLE;
-        flushResult = Result::ERR_MEMBRANE_PRESSURE_TIMEOUT;
         return;
       }
 
@@ -1455,21 +1372,21 @@ void Brineomatic::runStateMachine()
       // YBP.println("State: PICKLING");
 
       pickleStart = esp_timer_get_time();
+      brineFlowrateLowStart = 0;
 
       if (initializeHardware()) {
         currentStatus = Status::IDLE;
-        pickleResult = Result::ERR_MEMBRANE_PRESSURE_TIMEOUT;
         return;
       }
 
       enableHighPressurePump();
+
       while (getPickleElapsed() < pickleDuration) {
         if (stopFlag)
           break;
 
-        if (checkBrineFlowrateLow(pickleTotalFlowrateMinimum)) {
+        if (checkBrineFlowrateLow(pickleTotalFlowrateMinimum, pickleResult)) {
           currentStatus = Status::IDLE;
-          pickleResult = Result::ERR_BRINE_FLOWRATE_LOW;
           initializeHardware();
           return;
         }
@@ -1479,7 +1396,6 @@ void Brineomatic::runStateMachine()
 
       if (initializeHardware()) {
         currentStatus = Status::IDLE;
-        pickleResult = Result::ERR_MEMBRANE_PRESSURE_TIMEOUT;
         return;
       }
 
@@ -1502,10 +1418,10 @@ void Brineomatic::runStateMachine()
       // YBP.println("State: DEPICKLING");
 
       depickleStart = esp_timer_get_time();
+      brineFlowrateLowStart = 0;
 
       if (initializeHardware()) {
         currentStatus = Status::IDLE;
-        depickleResult = Result::ERR_MEMBRANE_PRESSURE_TIMEOUT;
         return;
       }
 
@@ -1514,9 +1430,8 @@ void Brineomatic::runStateMachine()
         if (stopFlag)
           break;
 
-        if (checkBrineFlowrateLow(pickleTotalFlowrateMinimum)) {
+        if (checkBrineFlowrateLow(pickleTotalFlowrateMinimum, depickleResult)) {
           currentStatus = Status::IDLE;
-          depickleResult = Result::ERR_BRINE_FLOWRATE_LOW;
           initializeHardware();
           return;
         }
@@ -1526,7 +1441,6 @@ void Brineomatic::runStateMachine()
 
       if (initializeHardware()) {
         currentStatus = Status::IDLE;
-        depickleResult = Result::ERR_MEMBRANE_PRESSURE_TIMEOUT;
         return;
       }
 
@@ -1557,160 +1471,170 @@ bool Brineomatic::checkStopFlag()
 
 bool Brineomatic::checkMembranePressureHigh()
 {
-  if (getMembranePressure() > highPressureMaximum)
-    membranePressureHighErrorCount++;
-  else
-    membranePressureHighErrorCount = 0;
-
-  if (membranePressureHighErrorCount > 10) {
-    currentStatus = Status::STOPPING;
-    runResult = Result::ERR_MEMBRANE_PRESSURE_HIGH;
-    return true;
-  }
-
-  return false;
+  return checkTimedError(
+    getMembranePressure() > highPressureMaximum,
+    membranePressureHighStart,
+    membranePressureHighTimeout,
+    Result::ERR_MEMBRANE_PRESSURE_HIGH,
+    runResult);
 }
 
 bool Brineomatic::checkMembranePressureLow()
 {
-  if (getMembranePressure() < highPressureMinimum)
-    membranePressureLowErrorCount++;
-  else
-    membranePressureLowErrorCount = 0;
-
-  if (membranePressureLowErrorCount > 10) {
-
-    currentStatus = Status::STOPPING;
-    runResult = Result::ERR_MEMBRANE_PRESSURE_LOW;
-    return true;
-  }
-
-  return false;
+  return checkTimedError(
+    getMembranePressure() < highPressureMinimum,
+    membranePressureLowStart,
+    membranePressureLowTimeout,
+    Result::ERR_MEMBRANE_PRESSURE_LOW,
+    runResult);
 }
 
 bool Brineomatic::checkFilterPressureHigh()
 {
-  if (getFilterPressure() > lowPressureMaximum)
-    filterPressureHighErrorCount++;
-  else
-    filterPressureHighErrorCount = 0;
-
-  if (filterPressureHighErrorCount > 10) {
-    currentStatus = Status::STOPPING;
-    runResult = Result::ERR_FILTER_PRESSURE_HIGH;
-    return true;
-  }
-
-  return false;
+  return checkTimedError(
+    getFilterPressure() > lowPressureMaximum,
+    filterPressureHighStart,
+    filterPressureHighTimeout,
+    Result::ERR_FILTER_PRESSURE_HIGH,
+    runResult);
 }
 
 bool Brineomatic::checkFilterPressureLow()
 {
-  if (getFilterPressure() < lowPressureMinimum)
-    filterPressureLowErrorCount++;
-  else
-    filterPressureLowErrorCount = 0;
-
-  if (filterPressureLowErrorCount > 10) {
-    currentStatus = Status::STOPPING;
-    runResult = Result::ERR_FILTER_PRESSURE_LOW;
-    return true;
-  }
-
-  return false;
+  return checkTimedError(
+    getFilterPressure() < lowPressureMinimum,
+    filterPressureLowStart,
+    filterPressureLowTimeout,
+    Result::ERR_FILTER_PRESSURE_LOW,
+    runResult);
 }
 
 bool Brineomatic::checkProductFlowrateLow()
 {
-  if (getProductFlowrate() < getProductFlowrateMinimum())
-    productFlowrateLowErrorCount++;
-  else
-    productFlowrateLowErrorCount = 0;
-
-  if (productFlowrateLowErrorCount > 10) {
-    currentStatus = Status::STOPPING;
-    runResult = Result::ERR_PRODUCT_FLOWRATE_LOW;
-    return true;
-  }
-
-  return false;
+  return checkTimedError(
+    getProductFlowrate() < getProductFlowrateMinimum(),
+    productFlowrateLowStart,
+    productFlowrateLowTimeout,
+    Result::ERR_PRODUCT_FLOWRATE_LOW,
+    runResult);
 }
 
-bool Brineomatic::checkBrineFlowrateLow(float flowrate)
+bool Brineomatic::checkBrineFlowrateLow(float flowrate, Result& result)
 {
-  if (getBrineFlowrate() < flowrate)
-    brineFlowrateLowErrorCount++;
-  else
-    brineFlowrateLowErrorCount = 0;
+  return checkTimedError(
+    getBrineFlowrate() < flowrate,
+    brineFlowrateLowStart,
+    brineFlowrateLowTimeout,
+    Result::ERR_BRINE_FLOWRATE_LOW,
+    result);
+}
 
-  if (brineFlowrateLowErrorCount > 25) {
-    currentStatus = Status::STOPPING;
-    runResult = Result::ERR_BRINE_FLOWRATE_LOW;
-    return true;
-  }
+bool Brineomatic::checkFlushFilterPressureLow()
+{
+  return checkTimedError(
+    getFilterPressure() < flushFilterPressureMinimum,
+    flushFilterPressureLowStart,
+    flushFilterPressureLowTimeout,
+    Result::ERR_FLUSH_FILTER_PRESSURE_LOW,
+    flushResult);
+}
 
-  return false;
+bool Brineomatic::checkFlushFlowrateLow()
+{
+  return checkTimedError(
+    getTotalFlowrate() < flushFlowrateMinimum,
+    flushFlowrateLowStart,
+    flushFlowrateLowTimeout,
+    Result::ERR_FLUSH_FLOWRATE_LOW,
+    flushResult);
 }
 
 bool Brineomatic::checkTotalFlowrateLow(float flowrate)
 {
-  if (getTotalFlowrate() < flowrate)
-    totalFlowrateLowErrorCount++;
-  else
-    totalFlowrateLowErrorCount = 0;
-
-  if (totalFlowrateLowErrorCount > 25) {
-    currentStatus = Status::STOPPING;
-    runResult = Result::ERR_TOTAL_FLOWRATE_LOW;
-    return true;
-  }
-
-  return false;
+  return checkTimedError(
+    getTotalFlowrate() < flowrate,
+    totalFlowrateLowStart,
+    totalFlowrateLowTimeout,
+    Result::ERR_TOTAL_FLOWRATE_LOW,
+    runResult);
 }
 
 bool Brineomatic::checkDiverterValveClosed()
 {
-  if (getTotalFlowrate() > getBrineFlowrate() + getProductFlowrate())
-    diverterValveOpenErrorCount++;
-  else
-    diverterValveOpenErrorCount = 0;
-
-  if (diverterValveOpenErrorCount > 10) {
-    currentStatus = Status::STOPPING;
-    runResult = Result::ERR_DIVERTER_VALVE_OPEN;
-    return true;
-  }
-
-  return false;
+  return checkTimedError(
+    getTotalFlowrate() > getBrineFlowrate() + getProductFlowrate(),
+    diverterValveOpenStart,
+    diverterValveOpenTimeout,
+    Result::ERR_DIVERTER_VALVE_OPEN,
+    runResult);
 }
 
 bool Brineomatic::checkProductSalinityHigh()
 {
-  if (getProductSalinity() > getProductSalinityMaximum())
-    productSalinityHighErrorCount++;
-  else
-    productSalinityHighErrorCount = 0;
+  return checkTimedError(
+    getProductSalinity() > getProductSalinityMaximum(),
+    productSalinityHighStart,
+    productSalinityHighTimeout,
+    Result::ERR_PRODUCT_SALINITY_HIGH,
+    runResult);
+}
 
-  if (productSalinityHighErrorCount > 10) {
-    currentStatus = Status::STOPPING;
-    runResult = Result::ERR_PRODUCT_SALINITY_HIGH;
-    return true;
+bool Brineomatic::checkMotorTemperature()
+{
+  return checkTimedError(
+    getMotorTemperature() > getMotorTemperatureMaximum(),
+    motorTemperatureStart,
+    motorTemperatureTimeout,
+    Result::ERR_MOTOR_TEMPERATURE_HIGH,
+    runResult);
+}
+
+bool Brineomatic::checkTimedError(bool condition,
+  uint32_t& startTime,
+  uint32_t timeout,
+  Result errorResult,
+  Result& result)
+{
+  if (condition) {
+    if (startTime != 0) {
+      if (millis() - startTime > timeout) {
+        currentStatus = Status::STOPPING;
+        result = errorResult;
+        return true;
+      }
+    } else {
+      startTime = millis();
+    }
+  } else {
+    startTime = 0;
   }
 
   return false;
 }
 
-bool Brineomatic::checkMotorTemperature()
+bool Brineomatic::waitForMembranePressure()
 {
-  if (getMotorTemperature() > getMotorTemperatureMaximum())
-    motorTemperatureErrorCount++;
-  else
-    motorTemperatureErrorCount = 0;
+  uint32_t highPressurePumpStart = millis();
+  while (getMembranePressure() < getMembranePressureMinimum()) {
 
-  if (motorTemperatureErrorCount > 10) {
-    currentStatus = Status::STOPPING;
-    runResult = Result::ERR_MOTOR_TEMPERATURE_HIGH;
-    return true;
+    // let the spice flow
+    if (checkTotalFlowrateLow(runTotalFlowrateMinimum))
+      return true;
+
+    // check this here in case our PID goes crazy
+    if (checkMembranePressureHigh())
+      return true;
+
+    if (checkStopFlag())
+      return true;
+
+    if (millis() - highPressurePumpStart > membranePressureTimeout) {
+      currentStatus = Status::STOPPING;
+      runResult = Result::ERR_MEMBRANE_PRESSURE_TIMEOUT;
+      return true;
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
 
   return false;
@@ -1719,7 +1643,7 @@ bool Brineomatic::checkMotorTemperature()
 bool Brineomatic::waitForProductFlowrate()
 {
   int flowReady = 0;
-  uint64_t flowCheckStart = esp_timer_get_time();
+  uint32_t flowCheckStart = millis();
 
   while (flowReady < 10) {
     if (checkMembranePressureHigh())
@@ -1732,7 +1656,7 @@ bool Brineomatic::waitForProductFlowrate()
     else
       flowReady = 0;
 
-    if (esp_timer_get_time() - flowCheckStart > productFlowRateTimeout) {
+    if (millis() - flowCheckStart > productFlowRateTimeout) {
       currentStatus = Status::STOPPING;
       runResult = Result::ERR_PRODUCT_FLOWRATE_TIMEOUT;
       return true;
@@ -1747,7 +1671,7 @@ bool Brineomatic::waitForProductFlowrate()
 bool Brineomatic::waitForProductSalinity()
 {
   int salinityReady = 0;
-  uint64_t salinityCheckStart = esp_timer_get_time();
+  uint32_t salinityCheckStart = millis();
   while (salinityReady < 10) {
     if (checkMembranePressureHigh())
       return false;
@@ -1759,7 +1683,7 @@ bool Brineomatic::waitForProductSalinity()
     else
       salinityReady = 0;
 
-    if (esp_timer_get_time() - salinityCheckStart > productSalinityTimeout) {
+    if (millis() - salinityCheckStart > productSalinityTimeout) {
       currentStatus = Status::STOPPING;
       runResult = Result::ERR_PRODUCT_SALINITY_TIMEOUT;
       return true;

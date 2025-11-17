@@ -10,26 +10,35 @@
     this.resultText = {
       "STARTUP": "Starting up.",
       "SUCCESS": "Success",
-      "SUCCESS_TIME": "Success: Runtime reached.",
+      "SUCCESS_TIME": "Success: Runtime reached",
       "SUCCESS_VOLUME": "Success: Volume reached",
-      "SUCCESS_TANK_LEVEL": "Success: Tank Full",
+      "SUCCESS_TANK_LEVEL": "Success: Tank full",
       "USER_STOP": "Stopped by user",
-      "ERR_FLUSH_VALVE_TIMEOUT": "Flush Valve Timeout",
-      "ERR_FILTER_PRESSURE_TIMEOUT": "Filter Pressure Timeout",
-      "ERR_FILTER_PRESSURE_LOW": "Filter Pressure Low",
-      "ERR_FILTER_PRESSURE_HIGH": "Filter Pressure High",
-      "ERR_MEMBRANE_PRESSURE_TIMEOUT": "Membrane Pressure Timeout",
-      "ERR_MEMBRANE_PRESSURE_LOW": "Membrane Pressure Low",
-      "ERR_MEMBRANE_PRESSURE_HIGH": "Membrane Pressure High",
-      "ERR_FLOWRATE_TIMEOUT": "Product Flowrate Timeout",
-      "ERR_PRODUCT_FLOWRATE_LOW": "Product Flowrate Low",
-      "ERR_BRINE_FLOWRATE_LOW": "Brine Flowrate Low",
-      "ERR_TOTAL_FLOWRATE_LOW": "Total Flowrate Low",
-      "ERR_DIVERTER_VALVE_OPEN": "Diverter Valve Not Closing",
-      "ERR_SALINITY_TIMEOUT": "Product Salinity Timeout",
-      "ERR_SALINITY_HIGH": "Product Salinity High",
-      "ERR_PRODUCTION_TIMEOUT": "Production Timeout",
-      "ERR_MOTOR_TEMPERATURE_HIGH": "Motor Temperature High",
+
+      "ERR_FILTER_PRESSURE_TIMEOUT": "Filter pressure timeout",
+      "ERR_FILTER_PRESSURE_LOW": "Filter pressure low",
+      "ERR_FILTER_PRESSURE_HIGH": "Filter pressure high",
+
+      "ERR_MEMBRANE_PRESSURE_TIMEOUT": "Membrane pressure timeout",
+      "ERR_MEMBRANE_PRESSURE_LOW": "Membrane pressure low",
+      "ERR_MEMBRANE_PRESSURE_HIGH": "Membrane pressure high",
+
+      "ERR_PRODUCT_FLOWRATE_TIMEOUT": "Product flowrate timeout",
+      "ERR_PRODUCT_FLOWRATE_LOW": "Product flowrate low",
+
+      "ERR_FLUSH_FLOWRATE_LOW": "Flush flowrate low",
+      "ERR_FLUSH_FILTER_PRESSURE_LOW": "Flush filter pressure low",
+
+      "ERR_BRINE_FLOWRATE_LOW": "Brine flowrate low",
+      "ERR_TOTAL_FLOWRATE_LOW": "Total flowrate low",
+
+      "ERR_DIVERTER_VALVE_OPEN": "Diverter valve not closing",
+
+      "ERR_PRODUCT_SALINITY_TIMEOUT": "Product salinity timeout",
+      "ERR_PRODUCT_SALINITY_HIGH": "Product salinity high",
+
+      "ERR_PRODUCTION_TIMEOUT": "Production timeout",
+      "ERR_MOTOR_TEMPERATURE_HIGH": "Motor temperature high",
     };
 
     this.handleConfigMessage = this.handleConfigMessage.bind(this);

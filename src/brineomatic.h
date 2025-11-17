@@ -55,30 +55,36 @@ class Brineomatic
       DEPICKLING
     };
 
+// Master list of all Result enum entries (single source of truth)
+#define BOM_RESULT_LIST            \
+  X(STARTUP)                       \
+  X(SUCCESS)                       \
+  X(SUCCESS_TIME)                  \
+  X(SUCCESS_VOLUME)                \
+  X(SUCCESS_TANK_LEVEL)            \
+  X(USER_STOP)                     \
+  X(ERR_FILTER_PRESSURE_TIMEOUT)   \
+  X(ERR_FILTER_PRESSURE_LOW)       \
+  X(ERR_FILTER_PRESSURE_HIGH)      \
+  X(ERR_MEMBRANE_PRESSURE_TIMEOUT) \
+  X(ERR_MEMBRANE_PRESSURE_LOW)     \
+  X(ERR_MEMBRANE_PRESSURE_HIGH)    \
+  X(ERR_PRODUCT_FLOWRATE_TIMEOUT)  \
+  X(ERR_PRODUCT_FLOWRATE_LOW)      \
+  X(ERR_FLUSH_FLOWRATE_LOW)        \
+  X(ERR_FLUSH_FILTER_PRESSURE_LOW) \
+  X(ERR_BRINE_FLOWRATE_LOW)        \
+  X(ERR_TOTAL_FLOWRATE_LOW)        \
+  X(ERR_DIVERTER_VALVE_OPEN)       \
+  X(ERR_PRODUCT_SALINITY_TIMEOUT)  \
+  X(ERR_PRODUCT_SALINITY_HIGH)     \
+  X(ERR_PRODUCTION_TIMEOUT)        \
+  X(ERR_MOTOR_TEMPERATURE_HIGH)
+
     enum class Result {
-      STARTUP,
-      SUCCESS,
-      SUCCESS_TIME,
-      SUCCESS_VOLUME,
-      SUCCESS_TANK_LEVEL,
-      USER_STOP,
-      ERR_FLUSH_VALVE_TIMEOUT,
-      ERR_FILTER_PRESSURE_TIMEOUT,
-      ERR_FILTER_PRESSURE_LOW,
-      ERR_FILTER_PRESSURE_HIGH,
-      ERR_MEMBRANE_PRESSURE_TIMEOUT,
-      ERR_MEMBRANE_PRESSURE_LOW,
-      ERR_MEMBRANE_PRESSURE_HIGH,
-      ERR_PRODUCT_FLOWRATE_TIMEOUT,
-      ERR_PRODUCT_FLOWRATE_LOW,
-      ERR_FLUSH_FLOWRATE_LOW,
-      ERR_BRINE_FLOWRATE_LOW,
-      ERR_TOTAL_FLOWRATE_LOW,
-      ERR_DIVERTER_VALVE_OPEN,
-      ERR_PRODUCT_SALINITY_TIMEOUT,
-      ERR_PRODUCT_SALINITY_HIGH,
-      ERR_PRODUCTION_TIMEOUT,
-      ERR_MOTOR_TEMPERATURE_HIGH
+#define X(name) name,
+      BOM_RESULT_LIST
+#undef X
     };
 
     enum class HighPressureValveControlMode {
@@ -271,12 +277,13 @@ class Brineomatic
 
     float lowPressureMinimum = 2.5;              // PSI
     float lowPressureMaximum = 60.0;             // PSI
-    float highPressureMinimum = 600.0;           // PSI
+    float highPressureMinimum = 700.0;           // PSI
     float defaultMembranePressureTarget = 775.0; // PSI
     float highPressureMaximum = 950.0;           // PSI
     float productFlowrateMinimum = 100.0;        // LPH
     float productFlowrateMaximum = 300.0;        // LPH
-    float flushTotalFlowrateMinimum = 100.0;     // LPH
+    float flushFilterPressureMinimum = 20.0;     // PSI
+    float flushFlowrateMinimum = 100.0;          // LPH
     float runTotalFlowrateMinimum = 300.0;       // LPH
     float pickleTotalFlowrateMinimum = 300.0;    // LPH
     float productSalinityMaximum = 500.0;        // PPM
@@ -286,39 +293,62 @@ class Brineomatic
     float coolingFanOnTemperature = 35.0;        // Celcius
     float coolingFanOffTemperature = 34.0;       // Celcius
 
-    uint8_t membranePressureHighErrorCount = 0;
-    uint8_t membranePressureLowErrorCount = 0;
-    uint8_t filterPressureHighErrorCount = 0;
-    uint8_t filterPressureLowErrorCount = 0;
-    uint8_t productFlowrateLowErrorCount = 0;
-    uint8_t brineFlowrateLowErrorCount = 0;
-    uint8_t totalFlowrateLowErrorCount = 0;
-    uint8_t diverterValveOpenErrorCount = 0;
-    uint8_t productSalinityHighErrorCount = 0;
-    uint8_t motorTemperatureErrorCount = 0;
+    // tracking when we first saw the error condition
+    uint32_t membranePressureHighStart = 0;
+    uint32_t membranePressureLowStart = 0;
+    uint32_t filterPressureHighStart = 0;
+    uint32_t filterPressureLowStart = 0;
+    uint32_t productFlowrateLowStart = 0;
+    uint32_t brineFlowrateLowStart = 0;
+    uint32_t totalFlowrateLowStart = 0;
+    uint32_t flushFilterPressureLowStart = 0;
+    uint32_t flushFlowrateLowStart = 0;
+    uint32_t diverterValveOpenStart = 0;
+    uint32_t productSalinityHighStart = 0;
+    uint32_t motorTemperatureStart = 0;
 
-    uint64_t flushValveTimeout = 1ULL * 10 * 1000000;       // 10 seconds default, in microseconds
-    uint64_t filterPressureTimeout = 1ULL * 30 * 1000000;   // 30 seconds default, in microseconds
-    uint64_t membranePressureTimeout = 1ULL * 60 * 1000000; // 1 minute default, in microseconds
-    uint64_t productFlowRateTimeout = 2ULL * 60 * 1000000;  // 2 minute default, in microseconds
-    uint64_t brineFlowRateTimeout = 2ULL * 60 * 1000000;    // 2 minute default, in microseconds
-    uint64_t productSalinityTimeout = 5ULL * 60 * 1000000;  // 5 minute default, in microseconds
-    uint64_t productionTimeout = 12ULL * 60 * 60 * 1000000; // 12 hour default, in microseconds
+    // how long to delay until we trigger the error
+    uint32_t membranePressureHighTimeout = 2000;      // timeout for membrane pressure too high during run in ms
+    uint32_t membranePressureLowTimeout = 2000;       // timeout for membrane pressure too low during run in ms
+    uint32_t filterPressureHighTimeout = 2000;        // timeout for filter pressure too high during run in ms
+    uint32_t filterPressureLowTimeout = 2000;         // timeout for filter pressure too low during run in ms
+    uint32_t productFlowrateLowTimeout = 2500;        // timeout for product flowrate too low during run in ms
+    uint32_t brineFlowrateLowTimeout = 2500;          // timeout for brine flowrate too low during run in ms
+    uint32_t totalFlowrateLowTimeout = 2500;          // timeout for total flowrate too low in ms
+    uint32_t diverterValveOpenTimeout = 5000;         // timeout for diverter valve opening failure in ms
+    uint32_t productSalinityHighTimeout = 1000;       // timeout for salinity too high during run  in ms
+    uint32_t motorTemperatureTimeout = 1000;          // timeout for motor overtemp in ms
+    uint32_t flushFilterPressureLowTimeout = 2500;    // timeout for flush filter pressure in ms
+    uint32_t flushFlowrateLowTimeout = 2500;          // timeout for flush flowrate in ms
+    uint32_t filterPressureTimeout = 30 * 1000;       // timeout for filter pressure in ms
+    uint32_t membranePressureTimeout = 60 * 1000;     // timeout for membrane pressure to stabilize in ms
+    uint32_t productFlowRateTimeout = 2 * 60 * 1000;  // timeout for product flowrate to stabilize in ms
+    uint32_t productSalinityTimeout = 5 * 60 * 1000;  // timeout for salinity to stabilize in ms
+    uint32_t productionTimeout = 12 * 60 * 60 * 1000; // maximum length of run run in ms
 
     bool checkStopFlag();
+    bool checkTankLevel();
     bool checkMembranePressureHigh();
     bool checkMembranePressureLow();
     bool checkFilterPressureHigh();
     bool checkFilterPressureLow();
     bool checkProductFlowrateLow();
-    bool checkBrineFlowrateLow(float flowrate);
+    bool checkBrineFlowrateLow(float flowrate, Result& result);
     bool checkTotalFlowrateLow(float flowrate);
+    bool checkFlushFilterPressureLow();
+    bool checkFlushFlowrateLow();
     bool checkDiverterValveClosed();
     bool checkProductSalinityHigh();
+    bool checkMotorTemperature();
+    bool waitForMembranePressure();
     bool waitForProductFlowrate();
     bool waitForProductSalinity();
-    bool checkTankLevel();
-    bool checkMotorTemperature();
+
+    bool checkTimedError(bool condition,
+      uint32_t& startTime,
+      uint32_t timeout,
+      Result errorResult,
+      Result& result);
 };
 
 extern Brineomatic wm;
