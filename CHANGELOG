@@ -2,8 +2,12 @@
 
 * native USB serial support
 * nicer debug system, and bring full debug to the web console.
-* brineomatic mqqt now has all data
-* brineomatic now checking brine flow during flush / run / pickle / depickle
+
+### Brineomatic
+
+* mqqt now has all data
+* now checking brine flow during flush / run / pickle / depickle
+* error checking all now timeout based
 
 ## Version 2.0.0
 

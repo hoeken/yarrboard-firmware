@@ -916,7 +916,7 @@
       else
         $('#bomBoostPumpStatus').hide();
 
-      if (YB.App.config.has_high_pressure_pump) {
+      if (YB.App.config.brineomatic.has_high_pressure_pump) {
         $('#bomHighPressurePumpStatus span').removeClass();
         $('#bomHighPressurePumpStatus span').addClass("badge");
         if (msg.high_pressure_pump_on) {
