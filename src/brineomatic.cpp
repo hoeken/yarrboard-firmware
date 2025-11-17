@@ -989,10 +989,10 @@ const char* Brineomatic::resultToString(Result result)
       return "ERR_PRODUCT_FLOWRATE_TIMEOUT";
     case Result::ERR_PRODUCT_FLOWRATE_LOW:
       return "ERR_PRODUCT_FLOWRATE_LOW";
-    case Result::ERR_BRINE_FLOWRATE_TIMEOUT:
-      return "ERR_BRINE_FLOWRATE_TIMEOUT";
     case Result::ERR_BRINE_FLOWRATE_LOW:
       return "ERR_BRINE_FLOWRATE_LOW";
+    case Result::ERR_TOTAL_FLOWRATE_LOW:
+      return "ERR_TOTAL_FLOWRATE_LOW";
     case Result::ERR_PRODUCT_SALINITY_TIMEOUT:
       return "ERR_PRODUCT_SALINITY_TIMEOUT";
     case Result::ERR_PRODUCT_SALINITY_HIGH:
@@ -1230,6 +1230,10 @@ void Brineomatic::runStateMachine()
       uint64_t highPressurePumpStart = esp_timer_get_time();
       while (getMembranePressure() < getMembranePressureMinimum()) {
 
+        // let the spice flow
+        if (checkTotalFlowrateLow(runTotalFlowrateMinimum))
+          return;
+
         // check this here in case our PID goes crazy
         if (checkMembranePressureHigh())
           return;
@@ -1277,6 +1281,9 @@ void Brineomatic::runStateMachine()
           return;
 
         if (checkMembranePressureHigh())
+          return;
+
+        if (checkTotalFlowrateLow(runTotalFlowrateMinimum))
           return;
 
         if (checkProductFlowrateLow())
@@ -1394,6 +1401,9 @@ void Brineomatic::runStateMachine()
           if (stopFlag)
             break;
 
+          if (checkBrineFlowrateLow(flushTotalFlowrateMinimum))
+            break;
+
           vTaskDelay(pdMS_TO_TICKS(100));
         }
       }
@@ -1438,6 +1448,9 @@ void Brineomatic::runStateMachine()
         if (stopFlag)
           break;
 
+        if (checkBrineFlowrateLow(runTotalFlowrateMinimum))
+          break;
+
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 
@@ -1476,6 +1489,9 @@ void Brineomatic::runStateMachine()
       enableHighPressurePump();
       while (getDepickleElapsed() < depickleDuration) {
         if (stopFlag)
+          break;
+
+        if (checkBrineFlowrateLow(runTotalFlowrateMinimum))
           break;
 
         vTaskDelay(pdMS_TO_TICKS(100));
@@ -1587,6 +1603,38 @@ bool Brineomatic::checkProductFlowrateLow()
   if (productFlowrateLowErrorCount > 10) {
     currentStatus = Status::STOPPING;
     runResult = Result::ERR_PRODUCT_FLOWRATE_LOW;
+    return true;
+  }
+
+  return false;
+}
+
+bool Brineomatic::checkBrineFlowrateLow(float flowrate)
+{
+  if (getBrineFlowrate() < flowrate)
+    brineFlowrateLowErrorCount++;
+  else
+    brineFlowrateLowErrorCount = 0;
+
+  if (brineFlowrateLowErrorCount > 25) {
+    currentStatus = Status::STOPPING;
+    runResult = Result::ERR_BRINE_FLOWRATE_LOW;
+    return true;
+  }
+
+  return false;
+}
+
+bool Brineomatic::checkTotalFlowrateLow(float flowrate)
+{
+  if (getTotalFlowrate() < flowrate)
+    totalFlowrateLowErrorCount++;
+  else
+    totalFlowrateLowErrorCount = 0;
+
+  if (totalFlowrateLowErrorCount > 25) {
+    currentStatus = Status::STOPPING;
+    runResult = Result::ERR_TOTAL_FLOWRATE_LOW;
     return true;
   }
 

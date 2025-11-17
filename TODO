@@ -8,16 +8,24 @@
 
 * update code for new Rev B board:
     * what new stuff can we do with brine_flowmeter and brine_salinity?
-        * verify the main pump is working based on brine flow
         * verify the diverter valve is working based on brine vs product flow
-        * add total_flow variable and verify it during runtime in addition to product flow
         * use brine_salinity to flush until seawater is gone
     * add stepper motor support
         * pid control output becomes stepper motor angle set point.
         * might allow us to use the PID tuning code
-        * need to redesign high pressure valve attachment
     * add support for the piezo on error or success.
         * need to add various piezo sounds we can play
+* add configuration options for:
+    * flowmeters - ppl
+    * tds (can we autodetect - whats this look like?)
+    * diverter valve
+    * hp valve servo
+    * hp valve relay
+    * diverter valve relay
+    * default intervals for flush, etc.
+    * options for display units
+    * timeouts
+    * high/low values
 * add mid-level commands to set_watermaker
     * boost_pump
     * high_pressure_pump
@@ -32,17 +40,6 @@
     * fan
     * membrane_pressure_target
     * advanced manual mode to set servos, stepper, etc.
-* add configuration options for:
-    * flowmeters - ppl
-    * tds (can we autodetect - whats this look like?)
-    * diverter valve
-    * hp valve servo
-    * hp valve relay
-    * diverter valve relay
-    * default intervals for flush, etc.
-    * options for display units
-    * timeouts
-    * high/low values
 * move everything to SI units, add configurable units
 * add tds calibration
 * PID calibration?
@@ -75,7 +72,6 @@
     * should we move this to the firmware instead?
     * frothfet plugin - use key for paths instead of id
     * signalk sendit plugin - use key for paths instead of id
-    * brineomatic plugin
 * brineomatic graphs
     * app.addPage("page", "content", openCallback);
     * app.onOpenPage(page, callback);

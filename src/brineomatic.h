@@ -71,8 +71,8 @@ class Brineomatic
       ERR_MEMBRANE_PRESSURE_HIGH,
       ERR_PRODUCT_FLOWRATE_TIMEOUT,
       ERR_PRODUCT_FLOWRATE_LOW,
-      ERR_BRINE_FLOWRATE_TIMEOUT,
       ERR_BRINE_FLOWRATE_LOW,
+      ERR_TOTAL_FLOWRATE_LOW,
       ERR_PRODUCT_SALINITY_TIMEOUT,
       ERR_PRODUCT_SALINITY_HIGH,
       ERR_PRODUCTION_TIMEOUT,
@@ -203,7 +203,6 @@ class Brineomatic
     float getProductFlowrate();
     float getProductFlowrateMinimum();
     float getBrineFlowrate();
-    float getBrineFlowrateMinimum();
     float getTotalFlowrate();
     float getTotalFlowrateMinimum();
     uint32_t getTotalCycles();
@@ -275,8 +274,8 @@ class Brineomatic
     float highPressureMaximum = 950.0;           // PSI
     float productFlowrateMinimum = 100.0;        // LPH
     float productFlowrateMaximum = 300.0;        // LPH
-    float brineFlowrateMinimum = 0.0;            // LPH
-    float brineFlowrateMaximum = 500.0;          // LPH
+    float flushTotalFlowrateMinimum = 100.0;     // LPH
+    float runTotalFlowrateMinimum = 300.0;       // LPH
     float productSalinityMaximum = 500.0;        // PPM
     float motorTemperatureMaximum = 65.0;        // Celcius
     float tankLevelFull = 0.99;                  // 0 = empty, 1 = full
@@ -290,11 +289,12 @@ class Brineomatic
     uint8_t filterPressureLowErrorCount = 0;
     uint8_t productFlowrateLowErrorCount = 0;
     uint8_t brineFlowrateLowErrorCount = 0;
+    uint8_t totalFlowrateLowErrorCount = 0;
     uint8_t productSalinityHighErrorCount = 0;
     uint8_t motorTemperatureErrorCount = 0;
 
-    uint64_t flushValveTimeout = 1ULL * 60 * 1000000;       // 1 minute default, in microseconds
-    uint64_t filterPressureTimeout = 1ULL * 60 * 1000000;   // 1 minute default, in microseconds
+    uint64_t flushValveTimeout = 1ULL * 10 * 1000000;       // 10 seconds default, in microseconds
+    uint64_t filterPressureTimeout = 1ULL * 30 * 1000000;   // 30 seconds default, in microseconds
     uint64_t membranePressureTimeout = 1ULL * 60 * 1000000; // 1 minute default, in microseconds
     uint64_t productFlowRateTimeout = 2ULL * 60 * 1000000;  // 2 minute default, in microseconds
     uint64_t brineFlowRateTimeout = 2ULL * 60 * 1000000;    // 2 minute default, in microseconds
@@ -307,7 +307,8 @@ class Brineomatic
     bool checkFilterPressureHigh();
     bool checkFilterPressureLow();
     bool checkProductFlowrateLow();
-    bool checkBrineFlowrateLow();
+    bool checkBrineFlowrateLow(float flowrate);
+    bool checkTotalFlowrateLow(float flowrate);
     bool checkProductSalinityHigh();
     bool waitForProductFlowrate();
     bool waitForProductSalinity();
