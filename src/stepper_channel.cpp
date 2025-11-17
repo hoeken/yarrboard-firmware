@@ -104,22 +104,19 @@ void StepperChannel::setup()
   _tmc2209.enableCoolStep(1, 0);
   _tmc2209.setStallGuardThreshold(_stall_guard);
   _tmc2209.enable();
-    // printDebug(0);
+  // printDebug(0);
   #endif
 
   // setup our actual stepper controller
   _stepper = engine.stepperConnectToPin(_step_pin);
   if (_stepper) {
     _stepper->setDirectionPin(_dir_pin);
+
     _stepper->setEnablePin(_enable_pin);
+    _stepper->setAutoEnable(true);
+    _stepper->setDelayToDisable(10000);
 
-    // If auto enable/disable need delays, just add (one or both):
-    // _stepper->setAutoEnable(true);
-    // _stepper->setDelayToEnable(50);
-    // _stepper->setDelayToDisable(1000);
-    _stepper->enableOutputs();
-
-    setSpeed(_home_fast_speed_rpm);
+    setSpeed(_default_speed_rpm);
     _stepper->setAcceleration(_acceleration);
   }
 }
@@ -286,6 +283,12 @@ void StepperChannel::gotoPosition(int32_t position, float rpm)
 
   // giddyup
   _stepper->moveTo(position);
+}
+
+void StepperChannel::waitUntilStopped()
+{
+  while (_stepper->isRunning())
+    delay(1);
 }
 
 void StepperChannel::disable()

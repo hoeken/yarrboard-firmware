@@ -25,6 +25,7 @@
       "ERR_PRODUCT_FLOWRATE_LOW": "Product Flowrate Low",
       "ERR_BRINE_FLOWRATE_LOW": "Brine Flowrate Low",
       "ERR_TOTAL_FLOWRATE_LOW": "Total Flowrate Low",
+      "ERR_DIVERTER_VALVE_OPEN": "Diverter Valve Not Closing",
       "ERR_SALINITY_TIMEOUT": "Product Salinity Timeout",
       "ERR_SALINITY_HIGH": "Product Salinity High",
       "ERR_PRODUCTION_TIMEOUT": "Production Timeout",

@@ -6,6 +6,8 @@
 
 ## BRINEOMATIC
 
+* convert all the error checking to timeout based w/ proper uint math
+* add zero flowrate check for post-run, post-flush, post-pickle, etc.
 * update code for new Rev B board:
     * what new stuff can we do with brine_flowmeter and brine_salinity?
         * verify the diverter valve is working based on brine vs product flow

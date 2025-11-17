@@ -71,8 +71,10 @@ class Brineomatic
       ERR_MEMBRANE_PRESSURE_HIGH,
       ERR_PRODUCT_FLOWRATE_TIMEOUT,
       ERR_PRODUCT_FLOWRATE_LOW,
+      ERR_FLUSH_FLOWRATE_LOW,
       ERR_BRINE_FLOWRATE_LOW,
       ERR_TOTAL_FLOWRATE_LOW,
+      ERR_DIVERTER_VALVE_OPEN,
       ERR_PRODUCT_SALINITY_TIMEOUT,
       ERR_PRODUCT_SALINITY_HIGH,
       ERR_PRODUCTION_TIMEOUT,
@@ -276,6 +278,7 @@ class Brineomatic
     float productFlowrateMaximum = 300.0;        // LPH
     float flushTotalFlowrateMinimum = 100.0;     // LPH
     float runTotalFlowrateMinimum = 300.0;       // LPH
+    float pickleTotalFlowrateMinimum = 300.0;    // LPH
     float productSalinityMaximum = 500.0;        // PPM
     float motorTemperatureMaximum = 65.0;        // Celcius
     float tankLevelFull = 0.99;                  // 0 = empty, 1 = full
@@ -290,6 +293,7 @@ class Brineomatic
     uint8_t productFlowrateLowErrorCount = 0;
     uint8_t brineFlowrateLowErrorCount = 0;
     uint8_t totalFlowrateLowErrorCount = 0;
+    uint8_t diverterValveOpenErrorCount = 0;
     uint8_t productSalinityHighErrorCount = 0;
     uint8_t motorTemperatureErrorCount = 0;
 
@@ -309,6 +313,7 @@ class Brineomatic
     bool checkProductFlowrateLow();
     bool checkBrineFlowrateLow(float flowrate);
     bool checkTotalFlowrateLow(float flowrate);
+    bool checkDiverterValveClosed();
     bool checkProductSalinityHigh();
     bool waitForProductFlowrate();
     bool waitForProductSalinity();

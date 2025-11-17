@@ -502,12 +502,14 @@ void Brineomatic::setMembranePressureTarget(float pressure)
   // negative target, turn off the servo.
   else {
     if (highPressureValveMode == HighPressureValveControlMode::SERVO) {
-      YBP.println("negative target, turn off the servo.");
+      YBP.println("target <= 0, turn off the servo.");
       highPressureValveServo->write(highPressureValveCloseMin); // neutral / stop
       highPressureValveServo->disable();
     } else if (highPressureValveMode == HighPressureValveControlMode::STEPPER) {
-      YBP.println("negative target, go to zero");
+      YBP.println("target <= 0, disable our stepper");
       highPressureValveStepper->gotoAngle(0);
+      highPressureValveStepper->waitUntilStopped();
+      highPressureValveStepper->disable();
     }
   }
 }
@@ -622,12 +624,10 @@ bool Brineomatic::initializeHardware()
 
   openDiverterValve();
 
-  // zero pressure and wait for it to drop
-
-  uint64_t membranePressureStart = esp_timer_get_time();
+  // actively running, zero out our pressure
   if (membranePressureTarget > 0) {
-
     setMembranePressureTarget(0);
+    uint64_t membranePressureStart = esp_timer_get_time();
     while (getMembranePressure() > 65) {
       vTaskDelay(pdMS_TO_TICKS(100));
 
@@ -636,6 +636,8 @@ bool Brineomatic::initializeHardware()
         break;
       }
     }
+
+    // turns our high pressure valve controller off
     setMembranePressureTarget(-1);
   }
 
@@ -839,7 +841,10 @@ float Brineomatic::getProductFlowrateMinimum()
 
 float Brineomatic::getTotalFlowrate()
 {
-  return getProductFlowrate() + getBrineFlowrate();
+  if (isDiverterValveOpen())
+    return getBrineFlowrate();
+  else
+    return getProductFlowrate() + getBrineFlowrate();
 }
 
 float Brineomatic::getVolume()
@@ -993,6 +998,8 @@ const char* Brineomatic::resultToString(Result result)
       return "ERR_BRINE_FLOWRATE_LOW";
     case Result::ERR_TOTAL_FLOWRATE_LOW:
       return "ERR_TOTAL_FLOWRATE_LOW";
+    case Result::ERR_DIVERTER_VALVE_OPEN:
+      return "ERR_DIVERTER_VALVE_OPEN";
     case Result::ERR_PRODUCT_SALINITY_TIMEOUT:
       return "ERR_PRODUCT_SALINITY_TIMEOUT";
     case Result::ERR_PRODUCT_SALINITY_HIGH:
@@ -1135,7 +1142,10 @@ void Brineomatic::manageHighPressureValve()
               membranePressurePID.Reset(); // keep our pid from winding up.
             }
           } else if (highPressureValveMode == HighPressureValveControlMode::STEPPER) {
-            highPressureValveStepper->gotoAngle(1650);
+            if (membranePressureTarget > 0)
+              highPressureValveStepper->gotoAngle(1650);
+            else
+              highPressureValveStepper->gotoAngle(0);
           }
 
           // YBP.printf("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f\n", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
@@ -1250,6 +1260,8 @@ void Brineomatic::runStateMachine()
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 
+      DUMP(totalFlowrateLowErrorCount);
+
       // YBP.println("High Pressure Pump OK");
 
       if (waitForProductFlowrate())
@@ -1261,15 +1273,18 @@ void Brineomatic::runStateMachine()
       closeDiverterValve();
 
       // opening the valve sometimes causes a small blip in either, let it stabilize again
-      if (waitForProductFlowrate())
-        return;
-      if (waitForProductSalinity())
-        return;
+      // if (waitForProductFlowrate())
+      //   return;
+      // if (waitForProductSalinity())
+      //   return;
 
       // YBP.println("Product Flow and Salinity OK");
 
       uint64_t productionStart = esp_timer_get_time();
       while (true) {
+
+        if (checkDiverterValveClosed())
+          return;
 
         if (checkFilterPressureLow())
           return;
@@ -1401,8 +1416,12 @@ void Brineomatic::runStateMachine()
           if (stopFlag)
             break;
 
-          if (checkBrineFlowrateLow(flushTotalFlowrateMinimum))
-            break;
+          if (checkBrineFlowrateLow(flushTotalFlowrateMinimum)) {
+            closeFlushValve();
+            currentStatus = Status::IDLE;
+            flushResult = Result::ERR_FLUSH_FLOWRATE_LOW;
+            return;
+          }
 
           vTaskDelay(pdMS_TO_TICKS(100));
         }
@@ -1448,8 +1467,12 @@ void Brineomatic::runStateMachine()
         if (stopFlag)
           break;
 
-        if (checkBrineFlowrateLow(runTotalFlowrateMinimum))
-          break;
+        if (checkBrineFlowrateLow(pickleTotalFlowrateMinimum)) {
+          currentStatus = Status::IDLE;
+          pickleResult = Result::ERR_BRINE_FLOWRATE_LOW;
+          initializeHardware();
+          return;
+        }
 
         vTaskDelay(pdMS_TO_TICKS(100));
       }
@@ -1491,8 +1514,12 @@ void Brineomatic::runStateMachine()
         if (stopFlag)
           break;
 
-        if (checkBrineFlowrateLow(runTotalFlowrateMinimum))
-          break;
+        if (checkBrineFlowrateLow(pickleTotalFlowrateMinimum)) {
+          currentStatus = Status::IDLE;
+          depickleResult = Result::ERR_BRINE_FLOWRATE_LOW;
+          initializeHardware();
+          return;
+        }
 
         vTaskDelay(pdMS_TO_TICKS(100));
       }
@@ -1635,6 +1662,22 @@ bool Brineomatic::checkTotalFlowrateLow(float flowrate)
   if (totalFlowrateLowErrorCount > 25) {
     currentStatus = Status::STOPPING;
     runResult = Result::ERR_TOTAL_FLOWRATE_LOW;
+    return true;
+  }
+
+  return false;
+}
+
+bool Brineomatic::checkDiverterValveClosed()
+{
+  if (getTotalFlowrate() > getBrineFlowrate() + getProductFlowrate())
+    diverterValveOpenErrorCount++;
+  else
+    diverterValveOpenErrorCount = 0;
+
+  if (diverterValveOpenErrorCount > 10) {
+    currentStatus = Status::STOPPING;
+    runResult = Result::ERR_DIVERTER_VALVE_OPEN;
     return true;
   }
 
