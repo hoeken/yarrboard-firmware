@@ -86,12 +86,12 @@
         "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.primary, bootstrapColors.success, bootstrapColors.danger]
       },
       "product_salinity": {
-        "thresholds": [300, 400, 1500],
-        "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
+        "thresholds": [1, 300, 400, 1500],
+        "colors": [bootstrapColors.secondary, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
       },
       "brine_salinity": {
-        "thresholds": [750, 1500],
-        "colors": [bootstrapColors.primary, bootstrapColors.success]
+        "thresholds": [1, 750, 1500],
+        "colors": [bootstrapColors.secondary, bootstrapColors.primary, bootstrapColors.success]
       },
       "product_flowrate": {
         "thresholds": [20, 100, 180, 200, 250],
@@ -751,10 +751,10 @@
 
       }
 
-      $("#bomVolumeData").html(volume);
-      this.setDataColor("volume", volume, $("#bomVolumeData"));
-      $("#bomFlushVolumeData").html(flush_volume);
-      this.setDataColor("volume", flush_volume, $("#bomFlushVolumeData"));
+      $(".bomVolumeData").html(volume);
+      this.setDataColor("volume", volume, $(".bomVolumeData"));
+      $(".bomFlushVolumeData").html(flush_volume);
+      this.setDataColor("volume", flush_volume, $(".bomFlushVolumeData"));
 
 
       $("#bomStatus").html(msg.status);
@@ -1694,12 +1694,12 @@
               </div>
               <div class="col-md-3 col-sm-4 col-6 text-center">
                   <h6 class="my-0">Product Volume</h6>
-                  <h1 id="bomVolumeData" class="my-0 mt-3"></h1>
+                  <h1 class="bomVolumeData my-0 mt-3"></h1>
                   <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
               </div>
               <div class="col-md-3 col-sm-4 col-6 text-center">
                   <h6 class="my-0">Flush Volume</h6>
-                  <h1 id="bomFlushVolumeData" class="my-0 mt-3"></h1>
+                  <h1 class="bomFlushVolumeData my-0 mt-3"></h1>
                   <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
               </div>
           </div>
@@ -1756,12 +1756,12 @@
               </div>
               <div class="col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Product Volume</h6>
-                  <h1 id="bomVolumeData" class="my-0"></h1>
+                  <h1 class="bomVolumeData" class="my-0"></h1>
                   <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
               </div>
               <div class="col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Flush Volume</h6>
-                  <h1 id="bomFlushVolumeData" class="my-0"></h1>
+                  <h1 class="bomFlushVolumeData" class="my-0"></h1>
                   <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
               </div>
           </div>
