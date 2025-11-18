@@ -7,11 +7,8 @@
 ## BRINEOMATIC
 
 * clean up and consolidate millis vs micros for timers
+* flush remaining UI needs some help
 * update code for new Rev B board:
-    * flush modes:
-        * automatic (flush til salinity drop w/ timeout)
-        * time
-        * volume
     * hp valve control mode:
         * stepper_position
         * stepper_pid
