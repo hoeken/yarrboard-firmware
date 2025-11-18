@@ -237,8 +237,7 @@ void StepperChannel::printDebug(unsigned int milliDelay)
   YBP.printf("Steps per degree: %.2f\n", _steps_per_degree);
   YBP.printf("Acceleratation: %d steps/s^2\n", _acceleration);
   YBP.printf("Default Speed: %.1fRPM\n", _default_speed_rpm);
-  YBP.printf("Fast Homing Speed: %.1fRPM\n", _home_fast_speed_rpm);
-  YBP.printf("Slow Homing Speed: %.1fRPM\n", _home_slow_speed_rpm);
+  YBP.printf("Homing Speed: %.1fRPM\n", _home_speed_rpm);
   YBP.println("*************************");
   YBP.println();
   #endif
@@ -323,8 +322,8 @@ bool StepperChannel::home()
   _tmc2209.setRunCurrent(_run_current * 0.60);
 
   bool ret = false;
-  if (homeWithSpeed(_home_fast_speed_rpm))
-    ret = homeWithSpeed(_home_slow_speed_rpm);
+  if (homeWithSpeed(_home_speed_rpm))
+    ret = homeWithSpeed(_home_speed_rpm);
 
   currentPosition = 0;
   currentAngle = 0;
