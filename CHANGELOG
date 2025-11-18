@@ -8,6 +8,7 @@
 * mqqt now has all data
 * now checking brine flow during flush / run / pickle / depickle
 * error checking all now timeout based
+* added flush volume tracking
 
 ## Version 2.0.0
 

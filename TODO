@@ -6,9 +6,7 @@
 
 ## BRINEOMATIC
 
-* set ppm to zero when mode == idle
 * update code for new Rev B board:
-    * add flush_volume tracker
     * flush modes:
         * automatic (flush til salinity drop w/ timeout)
         * time

@@ -313,6 +313,10 @@ void measure_brine_flowmeter()
     // Convert to liters per hour
     float flowrate = liters_per_second * 3600;
 
+    // update our volume
+    if (wm.isFlushValveOpen())
+      wm.currentFlushVolume += brine_flowmeter_pulse_counter / brineFlowmeterPulsesPerLiter;
+
     // reset counter
     brine_flowmeter_pulse_counter = 0;
 
@@ -436,6 +440,7 @@ void Brineomatic::init()
   currentProductFlowrate = 0.0;
   currentBrineFlowrate = 0.0;
   currentVolume = 0.0;
+  currentFlushVolume = 0.0;
   currentProductSalinity = 0.0;
   currentBrineSalinity = 0.0;
   currentFilterPressure = 0.0;
@@ -854,6 +859,11 @@ float Brineomatic::getTotalFlowrate()
 float Brineomatic::getVolume()
 {
   return currentVolume;
+}
+
+float Brineomatic::getFlushVolume()
+{
+  return currentFlushVolume;
 }
 
 float Brineomatic::getTotalVolume()
@@ -1330,6 +1340,7 @@ void Brineomatic::runStateMachine()
       flushStart = esp_timer_get_time();
       flushFilterPressureLowStart = 0;
       flushFlowrateLowStart = 0;
+      currentFlushVolume = 0;
 
       if (initializeHardware()) {
         currentStatus = Status::IDLE;
@@ -1759,6 +1770,7 @@ void Brineomatic::generateUpdateJSON(JsonVariant output)
   output["brine_flowrate"] = getBrineFlowrate();
   output["total_flowrate"] = getTotalFlowrate();
   output["volume"] = getVolume();
+  output["flush_volume"] = getFlushVolume();
   output["product_salinity"] = getProductSalinity();
   output["brine_salinity"] = getBrineSalinity();
   output["filter_pressure"] = getFilterPressure();

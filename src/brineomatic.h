@@ -129,6 +129,7 @@ class Brineomatic
     float KdMaintain = 0;
 
     float currentVolume;
+    float currentFlushVolume;
 
     uint32_t totalCycles;
     float totalVolume;
@@ -217,6 +218,7 @@ class Brineomatic
     float getTotalFlowrateMinimum();
     uint32_t getTotalCycles();
     float getVolume();
+    float getFlushVolume();
     float getTotalVolume();
     uint64_t getTotalRuntime();
     float getMotorTemperature();

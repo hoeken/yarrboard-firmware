@@ -643,6 +643,9 @@
       let volume = msg.volume.toFixed(1);
       if (volume >= 100)
         volume = Math.round(volume);
+      let flush_volume = msg.flush_volume.toFixed(1);
+      if (flush_volume >= 100)
+        flush_volume = Math.round(flush_volume);
       let product_salinity = Math.round(msg.product_salinity);
       let brine_salinity = Math.round(msg.brine_salinity);
       let filter_pressure = Math.round(msg.filter_pressure);
@@ -750,6 +753,9 @@
 
       $("#bomVolumeData").html(volume);
       this.setDataColor("volume", volume, $("#bomVolumeData"));
+      $("#bomFlushVolumeData").html(flush_volume);
+      this.setDataColor("volume", flush_volume, $("#bomFlushVolumeData"));
+
 
       $("#bomStatus").html(msg.status);
       $("#bomStatus").removeClass();
@@ -1687,8 +1693,13 @@
                   <div id="tankLevelGauge" class="d-flex justify-content-center"></div>
               </div>
               <div class="col-md-3 col-sm-4 col-6 text-center">
-                  <h6 class="my-0">Volume Produced</h6>
-                  <h1 id="bomVolumeData" class="my-0"></h1>
+                  <h6 class="my-0">Product Volume</h6>
+                  <h1 id="bomVolumeData" class="my-0 mt-3"></h1>
+                  <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
+              </div>
+              <div class="col-md-3 col-sm-4 col-6 text-center">
+                  <h6 class="my-0">Flush Volume</h6>
+                  <h1 id="bomFlushVolumeData" class="my-0 mt-3"></h1>
                   <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
               </div>
           </div>
@@ -1744,8 +1755,13 @@
                   <h5 id="tankLevelUnits" class="text-body-tertiary">%</h5>
               </div>
               <div class="col-md-3 col-sm-4 col-6">
-                  <h6 class="my-0">Volume Produced</h6>
+                  <h6 class="my-0">Product Volume</h6>
                   <h1 id="bomVolumeData" class="my-0"></h1>
+                  <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
+              </div>
+              <div class="col-md-3 col-sm-4 col-6">
+                  <h6 class="my-0">Flush Volume</h6>
+                  <h1 id="bomFlushVolumeData" class="my-0"></h1>
                   <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
               </div>
           </div>
