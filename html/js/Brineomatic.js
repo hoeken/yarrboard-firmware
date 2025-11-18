@@ -29,6 +29,7 @@
 
       "ERR_FLUSH_FLOWRATE_LOW": "Flush flowrate low",
       "ERR_FLUSH_FILTER_PRESSURE_LOW": "Flush filter pressure low",
+      "ERR_FLUSH_VALVE_ON": "Flush valve not closed",
 
       "ERR_BRINE_FLOWRATE_LOW": "Brine flowrate low",
       "ERR_TOTAL_FLOWRATE_LOW": "Total flowrate low",

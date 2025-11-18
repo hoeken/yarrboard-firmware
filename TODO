@@ -6,17 +6,17 @@
 
 ## BRINEOMATIC
 
-* error checking:
-    * add checkStepperMotor()
-    * add checkProductFlowrateHigh()
-    * add zero flowrate check for post-flush
+* set ppm to zero when mode == idle
 * update code for new Rev B board:
-    * what new stuff can we do with brine_flowmeter and brine_salinity?
-        * verify the diverter valve is working based on brine vs product flow
-        * use brine_salinity to flush until seawater is gone
-    * add stepper motor support
-        * pid control output becomes stepper motor angle set point.
-        * might allow us to use the PID tuning code
+    * add flush_volume tracker
+    * flush modes:
+        * automatic (flush til salinity drop w/ timeout)
+        * time
+        * volume
+    * hp valve control mode:
+        * stepper_position
+        * stepper_pid
+        * servo_pid
     * add support for the piezo on error or success.
         * need to add various piezo sounds we can play
 * add configuration options for:
@@ -43,7 +43,6 @@
     * flush valve
     * fan
     * membrane_pressure_target
-    * advanced manual mode to set servos, stepper, etc.
 * move everything to SI units, add configurable units
 * add tds calibration
 * PID calibration?

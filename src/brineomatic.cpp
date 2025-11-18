@@ -1348,16 +1348,19 @@ void Brineomatic::runStateMachine()
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 
-      if (initializeHardware()) {
-        currentStatus = Status::IDLE;
-        return;
-      }
-
       if (autoFlushEnabled)
         nextFlushTime = esp_timer_get_time() + flushInterval;
 
       // keep track over restarts.
       preferences.putBool("bomPickled", false);
+
+      if (initializeHardware()) {
+        currentStatus = Status::IDLE;
+        return;
+      }
+
+      if (waitForFlushValveOff())
+        return;
 
       if (stopFlag)
         flushResult = Result::USER_STOP;
@@ -1699,6 +1702,22 @@ bool Brineomatic::waitForProductSalinity()
     if (millis() - salinityCheckStart > productSalinityTimeout) {
       currentStatus = Status::STOPPING;
       runResult = Result::ERR_PRODUCT_SALINITY_TIMEOUT;
+      return true;
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(100));
+  }
+
+  return false;
+}
+
+bool Brineomatic::waitForFlushValveOff()
+{
+  uint32_t start = millis();
+  while (getFilterPressure() > 0) {
+    if (millis() - start > flushValveOffTimeout) {
+      currentStatus = Status::IDLE;
+      flushResult = Result::ERR_FLUSH_VALVE_ON;
       return true;
     }
 

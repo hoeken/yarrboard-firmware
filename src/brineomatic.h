@@ -74,6 +74,7 @@ class Brineomatic
   X(ERR_PRODUCT_FLOWRATE_HIGH)     \
   X(ERR_FLUSH_FLOWRATE_LOW)        \
   X(ERR_FLUSH_FILTER_PRESSURE_LOW) \
+  X(ERR_FLUSH_VALVE_ON)            \
   X(ERR_BRINE_FLOWRATE_LOW)        \
   X(ERR_TOTAL_FLOWRATE_LOW)        \
   X(ERR_DIVERTER_VALVE_OPEN)       \
@@ -323,6 +324,7 @@ class Brineomatic
     uint32_t motorTemperatureTimeout = 1000;          // timeout for motor overtemp in ms
     uint32_t flushFilterPressureLowTimeout = 2500;    // timeout for flush filter pressure in ms
     uint32_t flushFlowrateLowTimeout = 2500;          // timeout for flush flowrate in ms
+    uint32_t flushValveOffTimeout = 10000;            // timeout for flush valve to turn off in ms
     uint32_t filterPressureTimeout = 30 * 1000;       // timeout for filter pressure in ms
     uint32_t membranePressureTimeout = 60 * 1000;     // timeout for membrane pressure to stabilize in ms
     uint32_t productFlowRateTimeout = 2 * 60 * 1000;  // timeout for product flowrate to stabilize in ms
@@ -347,6 +349,7 @@ class Brineomatic
     bool waitForMembranePressure();
     bool waitForProductFlowrate();
     bool waitForProductSalinity();
+    bool waitForFlushValveOff();
 
     bool checkTimedError(bool condition,
       uint32_t& startTime,
