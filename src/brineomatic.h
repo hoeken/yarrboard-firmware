@@ -278,10 +278,10 @@ class Brineomatic
     float lowPressureMinimum = 2.5;              // PSI
     float lowPressureMaximum = 60.0;             // PSI
     float highPressureMinimum = 700.0;           // PSI
-    float defaultMembranePressureTarget = 775.0; // PSI
-    float highPressureMaximum = 950.0;           // PSI
-    float productFlowrateMinimum = 100.0;        // LPH
-    float productFlowrateMaximum = 300.0;        // LPH
+    float defaultMembranePressureTarget = 800.0; // PSI
+    float highPressureMaximum = 900.0;           // PSI
+    float productFlowrateMinimum = 120.0;        // LPH
+    float productFlowrateMaximum = 160.0;        // LPH
     float flushFilterPressureMinimum = 20.0;     // PSI
     float flushFlowrateMinimum = 100.0;          // LPH
     float runTotalFlowrateMinimum = 300.0;       // LPH
@@ -299,6 +299,7 @@ class Brineomatic
     uint32_t filterPressureHighStart = 0;
     uint32_t filterPressureLowStart = 0;
     uint32_t productFlowrateLowStart = 0;
+    uint32_t productFlowrateHighStart = 0;
     uint32_t brineFlowrateLowStart = 0;
     uint32_t totalFlowrateLowStart = 0;
     uint32_t flushFilterPressureLowStart = 0;
@@ -313,6 +314,7 @@ class Brineomatic
     uint32_t filterPressureHighTimeout = 2000;        // timeout for filter pressure too high during run in ms
     uint32_t filterPressureLowTimeout = 2000;         // timeout for filter pressure too low during run in ms
     uint32_t productFlowrateLowTimeout = 2500;        // timeout for product flowrate too low during run in ms
+    uint32_t productFlowrateHighTimeout = 2500;       // timeout for product flowrate too high during run in ms
     uint32_t brineFlowrateLowTimeout = 2500;          // timeout for brine flowrate too low during run in ms
     uint32_t totalFlowrateLowTimeout = 2500;          // timeout for total flowrate too low in ms
     uint32_t diverterValveOpenTimeout = 5000;         // timeout for diverter valve opening failure in ms
@@ -333,6 +335,7 @@ class Brineomatic
     bool checkFilterPressureHigh();
     bool checkFilterPressureLow();
     bool checkProductFlowrateLow();
+    bool checkProductFlowrateHigh();
     bool checkBrineFlowrateLow(float flowrate, Result& result);
     bool checkTotalFlowrateLow(float flowrate);
     bool checkFlushFilterPressureLow();

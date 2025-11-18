@@ -1236,6 +1236,9 @@ void Brineomatic::runStateMachine()
         if (checkProductFlowrateLow())
           return;
 
+        if (checkProductFlowrateHigh())
+          return;
+
         if (checkProductSalinityHigh())
           return;
 
@@ -1519,6 +1522,16 @@ bool Brineomatic::checkProductFlowrateLow()
     runResult);
 }
 
+bool Brineomatic::checkProductFlowrateHigh()
+{
+  return checkTimedError(
+    getProductFlowrate() > productFlowrateMaximum,
+    productFlowrateHighStart,
+    productFlowrateHighTimeout,
+    Result::ERR_PRODUCT_FLOWRATE_HIGH,
+    runResult);
+}
+
 bool Brineomatic::checkBrineFlowrateLow(float flowrate, Result& result)
 {
   return checkTimedError(
@@ -1651,7 +1664,7 @@ bool Brineomatic::waitForProductFlowrate()
     if (checkStopFlag())
       return false;
 
-    if (getProductFlowrate() > getProductFlowrateMinimum())
+    if (getProductFlowrate() > getProductFlowrateMinimum() && getProductFlowrate() < productFlowrateMaximum)
       flowReady++;
     else
       flowReady = 0;
