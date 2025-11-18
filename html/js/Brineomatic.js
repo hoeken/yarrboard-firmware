@@ -25,6 +25,7 @@
 
       "ERR_PRODUCT_FLOWRATE_TIMEOUT": "Product flowrate timeout",
       "ERR_PRODUCT_FLOWRATE_LOW": "Product flowrate low",
+      "ERR_PRODUCT_FLOWRATE_LOW": "Product flowrate high",
 
       "ERR_FLUSH_FLOWRATE_LOW": "Flush flowrate low",
       "ERR_FLUSH_FILTER_PRESSURE_LOW": "Flush filter pressure low",
