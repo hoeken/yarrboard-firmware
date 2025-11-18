@@ -1738,7 +1738,7 @@ bool Brineomatic::waitForProductSalinity()
 bool Brineomatic::waitForFlushValveOff()
 {
   uint32_t start = millis();
-  while (getFilterPressure() > 0) {
+  while (getFilterPressure() > 2 || getBrineFlowrate() > 0) {
     if (millis() - start > flushValveOffTimeout) {
       currentStatus = Status::IDLE;
       flushResult = Result::ERR_FLUSH_VALVE_ON;

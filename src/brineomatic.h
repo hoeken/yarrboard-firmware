@@ -286,7 +286,7 @@ class Brineomatic
     float highPressureMaximum = 900.0;           // PSI
     float productFlowrateMinimum = 120.0;        // LPH
     float productFlowrateMaximum = 160.0;        // LPH
-    float flushFilterPressureMinimum = 20.0;     // PSI
+    float flushFilterPressureMinimum = 15.0;     // PSI
     float flushFlowrateMinimum = 100.0;          // LPH
     float runTotalFlowrateMinimum = 300.0;       // LPH
     float pickleTotalFlowrateMinimum = 300.0;    // LPH
@@ -326,12 +326,12 @@ class Brineomatic
     uint32_t motorTemperatureTimeout = 1000;          // timeout for motor overtemp in ms
     uint32_t flushFilterPressureLowTimeout = 2500;    // timeout for flush filter pressure in ms
     uint32_t flushFlowrateLowTimeout = 2500;          // timeout for flush flowrate in ms
-    uint32_t flushValveOffTimeout = 10000;            // timeout for flush valve to turn off in ms
+    uint32_t flushValveOffTimeout = 15 * 1000;        // timeout for flush valve to turn off in ms
     uint32_t filterPressureTimeout = 30 * 1000;       // timeout for filter pressure in ms
     uint32_t membranePressureTimeout = 60 * 1000;     // timeout for membrane pressure to stabilize in ms
     uint32_t productFlowRateTimeout = 2 * 60 * 1000;  // timeout for product flowrate to stabilize in ms
     uint32_t productSalinityTimeout = 5 * 60 * 1000;  // timeout for salinity to stabilize in ms
-    uint32_t productionTimeout = 12 * 60 * 60 * 1000; // maximum length of run run in ms
+    uint32_t productionTimeout = 12 * 60 * 60 * 1000; // maximum length of run in ms
 
     bool checkStopFlag();
     bool checkTankLevel();
