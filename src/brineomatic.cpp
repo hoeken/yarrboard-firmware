@@ -357,14 +357,18 @@ void measure_brine_salinity(int16_t reading)
 void measure_filter_pressure(int16_t reading)
 {
   float voltage = brineomatic_adc.toVoltage(reading);
+  float amperage = (voltage / YB_420_RESISTOR) * 1000;
 
-  if (voltage < 0.4) {
+  // we wan
+  if (amperage < 1.0) {
     // YBP.println("No LP Sensor Detected");
     wm.setFilterPressure(-999);
     return;
   }
 
-  float amperage = (voltage / YB_420_RESISTOR) * 1000;
+  if (amperage < 4.0)
+    amperage = 4.0;
+
   float lowPressureReading = map_generic(amperage, 4.0, 20.0, 0.0, YB_LP_SENSOR_MAX);
   wm.setFilterPressure(lowPressureReading);
 }
@@ -372,14 +376,17 @@ void measure_filter_pressure(int16_t reading)
 void measure_membrane_pressure(int16_t reading)
 {
   float voltage = brineomatic_adc.toVoltage(reading);
+  float amperage = (voltage / YB_420_RESISTOR) * 1000;
 
-  if (voltage < 0.4) {
+  if (amperage < 1.0) {
     // YBP.println("No HP Sensor Detected");
     wm.setMembranePressure(-999);
     return;
   }
 
-  float amperage = (voltage / YB_420_RESISTOR) * 1000;
+  if (amperage < 4.0)
+    amperage = 4.0;
+
   float highPressureReading = map_generic(amperage, 4.0, 20.0, 0.0, YB_HP_SENSOR_MAX);
 
   // if (highPressureReading > ge)
@@ -891,12 +898,18 @@ float Brineomatic::getMotorTemperatureMaximum()
 
 float Brineomatic::getProductSalinity()
 {
-  return currentProductSalinity;
+  if (currentStatus == Status::IDLE)
+    return 0;
+  else
+    return currentProductSalinity;
 }
 
 float Brineomatic::getBrineSalinity()
 {
-  return currentBrineSalinity;
+  if (currentStatus == Status::IDLE)
+    return 0;
+  else
+    return currentBrineSalinity;
 }
 
 float Brineomatic::getProductSalinityMaximum()

@@ -462,37 +462,6 @@
           legend: { hide: true }
         });
 
-        this.volumeGauge = c3.generate({
-          bindto: '#volumeGauge',
-          data: {
-            columns: [
-              ['Volume', 0]
-            ],
-            type: 'gauge',
-          },
-          gauge: {
-            label: {
-              format: function (value, ratio) {
-                return `${value}L`;
-              },
-              show: true
-            },
-            min: 0,
-            max: msg.tank_capacity,
-          },
-          color: {
-            pattern: this.gaugeSetup.volume.colors,
-            threshold: {
-              unit: 'value',
-              values: this.gaugeSetup.volume.thresholds
-            }
-          },
-          size: { height: 130, width: 200 },
-          interaction: { enabled: false },
-          transition: { duration: 0 },
-          legend: { hide: true }
-        });
-
         // Define the data
         this.timeData = ['x'];
         this.motorTemperatureData = ['Motor Temperature'];
@@ -697,7 +666,6 @@
           this.brineFlowrateGauge.load({ columns: [['Brine Flowrate', brine_flowrate]] });
           this.totalFlowrateGauge.load({ columns: [['Total Flowrate', total_flowrate]] });
           this.tankLevelGauge.load({ columns: [['Tank Level', tank_level]] });
-          this.volumeGauge.load({ columns: [['Volume', volume]] });
         }
 
         if (YB.App.currentPage == "graphs") {
@@ -778,9 +746,10 @@
         $("#tankLevelData").html(tank_level);
         this.setDataColor("tank_level", tank_level, $("#tankLevelData"));
 
-        $("#bomVolumeData").html(volume);
-        this.setDataColor("volume", volume, $("#bomVolumeData"));
       }
+
+      $("#bomVolumeData").html(volume);
+      this.setDataColor("volume", volume, $("#bomVolumeData"));
 
       $("#bomStatus").html(msg.status);
       $("#bomStatus").removeClass();
@@ -1317,10 +1286,6 @@
                               </div>
                           </td>
                       </tr>
-                      <!-- <tr id="bomVolume" class="bomIDLE bomMANUAL bomRUNNING bomFLUSHING">
-                          <th>Volume Produced</th>
-                          <td id="bomVolumeData"></td>
-                      </tr> -->
                   </tbody>
               </table>
           </div>
@@ -1722,8 +1687,9 @@
                   <div id="tankLevelGauge" class="d-flex justify-content-center"></div>
               </div>
               <div class="col-md-3 col-sm-4 col-6 text-center">
-                  <h6 class="my-0" class="my-0">Volume Produced</h6>
-                  <div id="volumeGauge" class="d-flex justify-content-center"></div>
+                  <h6 class="my-0">Volume Produced</h6>
+                  <h1 id="bomVolumeData" class="my-0"></h1>
+                  <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
               </div>
           </div>
           <div id="bomGaugesMFD" class="mfdShow row gx-0 gy-3 my-3 text-center">
@@ -1768,19 +1734,19 @@
                   <h5 id="motorTemperatureUnits" class="text-body-tertiary">°C</h5>
               </div>
               <div class="col-md-3 col-sm-4 col-6">
-                  <h6 class="my-0" class="my-0">Water Temperature</h6>
-                  <h1 id="waterTemperatureData"></h1>
+                  <h6 class="my-0">Water Temperature</h6>
+                  <h1 id="waterTemperatureData" class="my-0"></h1>
                   <h5 id="waterTemperatureUnits" class="text-body-tertiary">°C</h5>
               </div>
               <div class="col-md-3 col-sm-4 col-6">
-                  <h6 class="my-0" class="my-0">Tank Level</h6>
-                  <h1 id="tankLevelData"></h1>
+                  <h6 class="my-0">Tank Level</h6>
+                  <h1 id="tankLevelData" class="my-0"></h1>
                   <h5 id="tankLevelUnits" class="text-body-tertiary">%</h5>
               </div>
               <div class="col-md-3 col-sm-4 col-6">
-                  <h6 class="my-0" class="my-0">Volume Produced</h6>
-                  <h1 id="bomVolumeData"></h1>
-                  <h5 id="tankLevelUnits" class="text-body-tertiary">liters</h5>
+                  <h6 class="my-0">Volume Produced</h6>
+                  <h1 id="bomVolumeData" class="my-0"></h1>
+                  <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
               </div>
           </div>
       </div>
