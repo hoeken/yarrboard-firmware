@@ -13,6 +13,7 @@
       "SUCCESS_TIME": "Success: Runtime reached",
       "SUCCESS_VOLUME": "Success: Volume reached",
       "SUCCESS_TANK_LEVEL": "Success: Tank full",
+      "SUCCESS_SALINITY": "Success: Salinity OK",
       "USER_STOP": "Stopped by user",
 
       "ERR_FILTER_PRESSURE_TIMEOUT": "Filter pressure timeout",
@@ -30,6 +31,7 @@
       "ERR_FLUSH_FLOWRATE_LOW": "Flush flowrate low",
       "ERR_FLUSH_FILTER_PRESSURE_LOW": "Flush filter pressure low",
       "ERR_FLUSH_VALVE_ON": "Flush valve not closed",
+      "ERR_FLUSH_TIMEOUT": "Flush timed out",
 
       "ERR_BRINE_FLOWRATE_LOW": "Brine flowrate low",
       "ERR_TOTAL_FLOWRATE_LOW": "Total flowrate low",
@@ -57,7 +59,9 @@
     this.startAutomatic = this.startAutomatic.bind(this);
     this.startDuration = this.startDuration.bind(this);
     this.startVolume = this.startVolume.bind(this);
-    this.flush = this.flush.bind(this);
+    this.flushAutomatic = this.flushAutomatic.bind(this);
+    this.flushDuration = this.flushDuration.bind(this);
+    this.flushVolume = this.flushVolume.bind(this);
     this.pickle = this.pickle.bind(this);
     this.depickle = this.depickle.bind(this);
     this.stop = this.stop.bind(this);
@@ -134,7 +138,9 @@
       $("#brineomaticStartAutomatic").on("click", this.startAutomatic);
       $("#brineomaticStartDuration").on("click", this.startDuration);
       $("#brineomaticStartVolume").on("click", this.startVolume);
-      $("#brineomaticFlush").on("click", this.flush);
+      $("#brineomaticFlushAutomatic").on("click", this.flushAutomatic);
+      $("#brineomaticFlushDuration").on("click", this.flushDuration);
+      $("#brineomaticFlushVolume").on("click", this.flushVolume);
       $("#brineomaticPickle").on("click", this.pickle);
       $("#brineomaticDepickle").on("click", this.depickle);
       $("#brineomaticStop").on("click", this.stop);
@@ -756,7 +762,6 @@
       $(".bomFlushVolumeData").html(flush_volume);
       this.setDataColor("volume", flush_volume, $(".bomFlushVolumeData"));
 
-
       $("#bomStatus").html(msg.status);
       $("#bomStatus").removeClass();
       $("#bomStatus").addClass("badge");
@@ -1133,16 +1138,36 @@
     }
   }
 
-  Brineomatic.prototype.flush = function (e) {
+  Brineomatic.prototype.flushAutomatic = function (e) {
+    $(e.currentTarget).blur();
+
+    YB.client.send({
+      "cmd": "flush_watermaker"
+    }, true);
+  }
+
+  Brineomatic.prototype.flushDuration = function (e) {
     $(e.currentTarget).blur();
     let duration = $("#bomFlushDurationInput").val();
 
     if (duration > 0) {
-      let micros = duration * 60 * 1000000;
+      let millis = duration * 60 * 1000;
 
       YB.client.send({
         "cmd": "flush_watermaker",
-        "duration": micros
+        "duration": millis
+      }, true);
+    }
+  }
+
+  Brineomatic.prototype.flushVolume = function (e) {
+    $(e.currentTarget).blur();
+    let volume = $("#bomFlushVolumeInput").val();
+
+    if (volume > 0) {
+      YB.client.send({
+        "cmd": "flush_watermaker",
+        "volume": volume
       }, true);
     }
   }
@@ -1477,10 +1502,10 @@
                                       </div>
                                   </div>
                               </div>
-                              <div class="modal-footer">
-                                  <button type="button" class="btn btn-secondary"
-                                      data-bs-dismiss="modal">Cancel</button>
-                              </div>
+                          </div>
+                          <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary"
+                                  data-bs-dismiss="modal">Cancel</button>
                           </div>
                       </div>
                   </div>
@@ -1498,13 +1523,48 @@
                                   aria-label="Close"></button>
                           </div>
                           <div class="modal-body">
-                              <p>Flush the watermaker for the time below.</p>
-                              <div class="row">
-                                  <div class="col-5">
-                                      <div class="input-group">
-                                          <input type="text" class="form-control"
-                                              id="bomFlushDurationInput" value="5">
-                                          <span class="input-group-text">minutes</span>
+                              <div class="container-fluid">
+                                  <div class="row">
+                                      <div class="col-md-4">
+                                          <h5>Automatic</h5>
+                                          <div class="small" style="height: 110px">
+                                              Flush until clean
+                                          </div>
+                                          <button id="brineomaticFlushAutomatic" type="button"
+                                              class="btn btn-primary my-3" data-bs-dismiss="modal"
+                                              style="width: 100%">Flush</button>
+                                      </div>
+                                      <div class="col-md-4">
+                                          <h5>Duration</h5>
+                                          <div class="small" style="height: 70px">
+                                              Flush for the time below.
+                                          </div>
+                                          <div style="height: 40px">
+                                              <div class="input-group">
+                                                  <input type="text" class="form-control"
+                                                      id="bomFlushDurationInput" value="5">
+                                                  <span class="input-group-text">minutes</span>
+                                              </div>
+                                          </div>
+                                          <button id="brineomaticFlushDuration" type="button"
+                                              class="btn btn-primary my-3" data-bs-dismiss="modal"
+                                              style="width: 100%">Flush</button>
+                                      </div>
+                                      <div class="col-md-4">
+                                          <h5>Volume</h5>
+                                          <div class="small" style="height: 70px">
+                                              Flush the volume of water below.
+                                          </div>
+                                          <div style="height: 40px">
+                                              <div class="input-group">
+                                                  <input type="text" class="form-control"
+                                                      id="bomFlushVolumeInput" value="15">
+                                                  <span class="input-group-text">liters</span>
+                                              </div>
+                                          </div>
+                                          <button id="brineomaticFlushVolume" type="button"
+                                              class="btn btn-primary my-3" data-bs-dismiss="modal"
+                                              style="width: 100%">Flush</button>
                                       </div>
                                   </div>
                               </div>
@@ -1512,8 +1572,6 @@
                           <div class="modal-footer">
                               <button type="button" class="btn btn-secondary"
                                   data-bs-dismiss="modal">Cancel</button>
-                              <button id="brineomaticFlush" type="button" class="btn btn-primary"
-                                  data-bs-dismiss="modal">Flush</button>
                           </div>
                       </div>
                   </div>

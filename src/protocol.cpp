@@ -1188,17 +1188,17 @@ void handleStartWatermaker(JsonVariantConst input, JsonVariant output)
 
 void handleFlushWatermaker(JsonVariantConst input, JsonVariant output)
 {
-  if (!input["duration"].is<JsonVariantConst>())
-    return generateErrorJSON(output, "'duration' is a required parameter");
-
   uint64_t duration = input["duration"];
+  float volume = input["volume"];
 
-  if (!duration)
-    return generateErrorJSON(output, "'duration' must be non-zero");
-
-  if (!strcmp(wm.getStatus(), "IDLE") || !strcmp(wm.getStatus(), "PICKLED"))
-    wm.flush(duration);
-  else
+  if (!strcmp(wm.getStatus(), "IDLE") || !strcmp(wm.getStatus(), "PICKLED")) {
+    if (duration > 0)
+      wm.flushDuration(duration);
+    else if (volume > 0)
+      wm.flushVolume(volume);
+    else
+      wm.flush();
+  } else
     return generateErrorJSON(output, "Watermaker is not in IDLE or PICKLED modes.");
 }
 

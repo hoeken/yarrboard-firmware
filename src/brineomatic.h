@@ -62,6 +62,7 @@ class Brineomatic
   X(SUCCESS_TIME)                  \
   X(SUCCESS_VOLUME)                \
   X(SUCCESS_TANK_LEVEL)            \
+  X(SUCCESS_SALINITY)              \
   X(USER_STOP)                     \
   X(ERR_FILTER_PRESSURE_TIMEOUT)   \
   X(ERR_FILTER_PRESSURE_LOW)       \
@@ -75,6 +76,7 @@ class Brineomatic
   X(ERR_FLUSH_FLOWRATE_LOW)        \
   X(ERR_FLUSH_FILTER_PRESSURE_LOW) \
   X(ERR_FLUSH_VALVE_ON)            \
+  X(ERR_FLUSH_TIMEOUT)             \
   X(ERR_BRINE_FLOWRATE_LOW)        \
   X(ERR_TOTAL_FLOWRATE_LOW)        \
   X(ERR_DIVERTER_VALVE_OPEN)       \
@@ -154,7 +156,9 @@ class Brineomatic
     void start();
     void startDuration(uint64_t duration);
     void startVolume(float volume);
-    void flush(uint64_t duration);
+    void flush();
+    void flushDuration(uint64_t duration);
+    void flushVolume(float volume);
     void pickle(uint64_t duration);
     void depickle(uint64_t duration);
     void stop();
@@ -245,13 +249,15 @@ class Brineomatic
     bool stopFlag = false;
 
     float desiredVolume = 0;
+    float desiredFlushVolume = 0;
 
     // all these times are in microseconds
     uint64_t desiredRuntime = 0;
     uint64_t runtimeStart = 0;
     uint64_t runtimeElapsed = 0;
     uint64_t flushStart = 0;
-    uint64_t flushDuration = 3ULL * 60 * 1000000; // 3 minute default, in microseconds
+    uint64_t desiredFlushDuration = 0;
+    uint64_t defaultFlushDuration = 3ULL * 60 * 1000000; // microseconds
     uint64_t nextFlushTime = 0;
     uint64_t flushInterval = 3ULL * 24 * 60 * 60 * 1000000; // 3 day default, in microseconds
     uint64_t pickleStart = 0;
@@ -288,6 +294,7 @@ class Brineomatic
     float productFlowrateMaximum = 160.0;        // LPH
     float flushFilterPressureMinimum = 15.0;     // PSI
     float flushFlowrateMinimum = 100.0;          // LPH
+    float flushSalinityFinished = 750.0;         // PPM
     float runTotalFlowrateMinimum = 300.0;       // LPH
     float pickleTotalFlowrateMinimum = 300.0;    // LPH
     float productSalinityMaximum = 500.0;        // PPM
@@ -327,6 +334,7 @@ class Brineomatic
     uint32_t flushFilterPressureLowTimeout = 2500;    // timeout for flush filter pressure in ms
     uint32_t flushFlowrateLowTimeout = 2500;          // timeout for flush flowrate in ms
     uint32_t flushValveOffTimeout = 15 * 1000;        // timeout for flush valve to turn off in ms
+    uint32_t flushTimeout = 5 * 60 * 1000;            // timeout for flush cycle in ms
     uint32_t filterPressureTimeout = 30 * 1000;       // timeout for filter pressure in ms
     uint32_t membranePressureTimeout = 60 * 1000;     // timeout for membrane pressure to stabilize in ms
     uint32_t productFlowRateTimeout = 2 * 60 * 1000;  // timeout for product flowrate to stabilize in ms

@@ -593,11 +593,29 @@ void Brineomatic::startVolume(float volume)
   }
 }
 
-void Brineomatic::flush(uint64_t duration)
+void Brineomatic::flush()
 {
-  stopFlag = false;
   if (currentStatus == Status::IDLE || currentStatus == Status::PICKLED) {
-    flushDuration = duration;
+    desiredFlushDuration = 0;
+    desiredFlushVolume = 0;
+    currentStatus = Status::FLUSHING;
+  }
+}
+
+void Brineomatic::flushDuration(uint64_t duration)
+{
+  if (currentStatus == Status::IDLE || currentStatus == Status::PICKLED) {
+    desiredFlushDuration = duration;
+    desiredFlushVolume = 0;
+    currentStatus = Status::FLUSHING;
+  }
+}
+
+void Brineomatic::flushVolume(float volume)
+{
+  if (currentStatus == Status::IDLE || currentStatus == Status::PICKLED) {
+    desiredFlushDuration = 0;
+    desiredFlushVolume = volume;
     currentStatus = Status::FLUSHING;
   }
 }
@@ -1042,9 +1060,20 @@ int64_t Brineomatic::getFlushElapsed()
 
 int64_t Brineomatic::getFlushCountdown()
 {
-  int64_t countdown = (flushStart + flushDuration) - esp_timer_get_time();
-  if (currentStatus == Status::FLUSHING && countdown > 0)
+  if (currentStatus != Status::FLUSHING)
+    return 0;
+
+  if (desiredFlushDuration) {
+    int64_t countdown = (flushStart + desiredFlushDuration) - esp_timer_get_time();
     return countdown;
+  } else if (desiredFlushVolume) {
+    float remainingVolume = desiredFlushVolume - getFlushVolume();
+    int64_t remainingMicros = (remainingVolume / getBrineFlowrate()) * 3600 * 1e6;
+    return remainingMicros;
+  } else {
+    int64_t countdown = (flushStart + flushTimeout) - esp_timer_get_time();
+    return countdown;
+  }
 
   return 0;
 }
@@ -1174,8 +1203,10 @@ void Brineomatic::runStateMachine()
     //
     case Status::IDLE:
       // YBP.println("State: IDLE");
-      if (autoFlushEnabled && esp_timer_get_time() > nextFlushTime)
+      if (autoFlushEnabled && esp_timer_get_time() > nextFlushTime) {
         currentStatus = Status::FLUSHING;
+        desiredFlushDuration = defaultFlushDuration;
+      }
       break;
 
     //
@@ -1325,8 +1356,10 @@ void Brineomatic::runStateMachine()
 
       if (initializeHardware())
         currentStatus = Status::IDLE;
-      else
+      else {
         currentStatus = Status::FLUSHING;
+        desiredFlushDuration = defaultFlushDuration;
+      }
 
       break;
     }
@@ -1342,6 +1375,9 @@ void Brineomatic::runStateMachine()
       flushFlowrateLowStart = 0;
       currentFlushVolume = 0;
 
+      DUMP(desiredFlushDuration);
+      DUMP(desiredFlushVolume);
+
       if (initializeHardware()) {
         currentStatus = Status::IDLE;
         return;
@@ -1353,20 +1389,54 @@ void Brineomatic::runStateMachine()
         enableHighPressurePump();
 
       // check our sensors while we flush
-      while (getFlushElapsed() < flushDuration) {
-        if (stopFlag)
-          break;
+      while (true) {
 
         if (checkFlushFilterPressureLow()) {
           initializeHardware();
           currentStatus = Status::IDLE;
+          TRACE();
           return;
         }
 
         if (checkFlushFlowrateLow()) {
           initializeHardware();
           currentStatus = Status::IDLE;
+          TRACE();
           return;
+        }
+
+        if (stopFlag) {
+          flushResult = Result::USER_STOP;
+          break;
+        }
+
+        // are we going for time?
+        if (desiredFlushDuration > 0 && getFlushElapsed() > desiredFlushDuration * 1000) {
+          flushResult = Result::SUCCESS_TIME;
+          DUMP("DURATION");
+          break;
+        }
+
+        // are we going for volume?
+        if (desiredFlushVolume > 0 && getFlushVolume() >= desiredFlushVolume) {
+          flushResult = Result::SUCCESS_VOLUME;
+          DUMP("VOLUME");
+          break;
+        }
+
+        // how about salinity? (auto)
+        if (desiredFlushDuration == 0 && desiredFlushVolume == 0) {
+          if (getBrineSalinity() < flushSalinityFinished) {
+            DUMP("SALINITY");
+            flushResult = Result::SUCCESS_SALINITY;
+            break;
+          }
+        }
+
+        // did we hit our flush timeout?
+        if (getFlushElapsed() > flushTimeout * 1000) {
+          flushResult = Result::ERR_FLUSH_TIMEOUT;
+          break;
         }
 
         vTaskDelay(pdMS_TO_TICKS(100));
@@ -1378,18 +1448,9 @@ void Brineomatic::runStateMachine()
       // keep track over restarts.
       preferences.putBool("bomPickled", false);
 
-      if (initializeHardware()) {
-        currentStatus = Status::IDLE;
-        return;
-      }
+      initializeHardware();
+      waitForFlushValveOff();
 
-      if (waitForFlushValveOff())
-        return;
-
-      if (stopFlag)
-        flushResult = Result::USER_STOP;
-      else
-        flushResult = Result::SUCCESS;
       currentStatus = Status::IDLE;
 
       break;

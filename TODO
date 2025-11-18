@@ -6,6 +6,7 @@
 
 ## BRINEOMATIC
 
+* clean up and consolidate millis vs micros for timers
 * update code for new Rev B board:
     * flush modes:
         * automatic (flush til salinity drop w/ timeout)
@@ -14,10 +15,10 @@
     * hp valve control mode:
         * stepper_position
         * stepper_pid
-        * servo_pid
     * add support for the piezo on error or success.
         * need to add various piezo sounds we can play
 * add configuration options for:
+    * autoflush - what mode and what duration/volume
     * flowmeters - ppl
     * tds (can we autodetect - whats this look like?)
     * diverter valve
