@@ -7,6 +7,11 @@
 ## BRINEOMATIC
 
 * clean up and consolidate millis vs micros for timers
+    * uint64_t to uint32_t
+    * micros to millis on time variables
+    * esp_timer_get_time() to millis()
+    * make sure all math is rollover safe
+    * update UI
 * flush remaining UI needs some help
 * update code for new Rev B board:
     * hp valve control mode:

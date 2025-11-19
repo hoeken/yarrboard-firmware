@@ -42,7 +42,7 @@ DallasTemperature ds18b20(&oneWire);
 DeviceAddress motorThermometer;
 
 static volatile uint16_t product_flowmeter_pulse_counter = 0;
-uint64_t lastProductFlowmeterCheckMicros = 0;
+uint32_t lastProductFlowmeterCheckMicros = 0;
 float productFlowmeterPulsesPerLiter = YB_PRODUCT_FLOWMETER_DEFAULT_PPL;
 
 void IRAM_ATTR product_flowmeter_interrupt()
@@ -51,7 +51,7 @@ void IRAM_ATTR product_flowmeter_interrupt()
 }
 
 static volatile uint16_t brine_flowmeter_pulse_counter = 0;
-uint64_t lastBrineFlowmeterCheckMicros = 0;
+uint32_t lastBrineFlowmeterCheckMicros = 0;
 float brineFlowmeterPulsesPerLiter = YB_BRINE_FLOWMETER_DEFAULT_PPL;
 
 void IRAM_ATTR brine_flowmeter_interrupt()
@@ -271,7 +271,7 @@ void brineomatic_state_machine(void* pvParameters)
 void measure_product_flowmeter()
 {
   // check roughly every second
-  uint64_t elapsed = esp_timer_get_time() - lastProductFlowmeterCheckMicros;
+  uint32_t elapsed = micros() - lastProductFlowmeterCheckMicros;
   if (elapsed >= 1000000) {
     // calculate flowrate
     float elapsed_seconds = elapsed / 1e6;
@@ -292,7 +292,7 @@ void measure_product_flowmeter()
     product_flowmeter_pulse_counter = 0;
 
     // store microseconds when tacho was measured the last time
-    lastProductFlowmeterCheckMicros = esp_timer_get_time();
+    lastProductFlowmeterCheckMicros = micros();
 
     // update our model
     wm.setProductFlowrate(flowrate);
@@ -302,7 +302,7 @@ void measure_product_flowmeter()
 void measure_brine_flowmeter()
 {
   // check roughly every second
-  uint64_t elapsed = esp_timer_get_time() - lastBrineFlowmeterCheckMicros;
+  uint32_t elapsed = micros() - lastBrineFlowmeterCheckMicros;
   if (elapsed >= 1000000) {
     // calculate flowrate
     float elapsed_seconds = elapsed / 1e6;
@@ -321,7 +321,7 @@ void measure_brine_flowmeter()
     brine_flowmeter_pulse_counter = 0;
 
     // store microseconds when tacho was measured the last time
-    lastBrineFlowmeterCheckMicros = esp_timer_get_time();
+    lastBrineFlowmeterCheckMicros = micros();
 
     // update our model
     wm.setBrineFlowrate(flowrate);
