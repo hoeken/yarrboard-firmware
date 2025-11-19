@@ -341,7 +341,9 @@ class Brineomatic
     uint32_t productSalinityTimeout = 5 * 60 * 1000;  // timeout for salinity to stabilize in ms
     uint32_t productionTimeout = 12 * 60 * 60 * 1000; // maximum length of run in ms
 
-    bool checkStopFlag();
+    void resetErrorTimers();
+
+    bool checkStopFlag(Result& result);
     bool checkTankLevel();
     bool checkMembranePressureHigh();
     bool checkMembranePressureLow();
@@ -355,7 +357,7 @@ class Brineomatic
     bool checkFlushFlowrateLow();
     bool checkDiverterValveClosed();
     bool checkProductSalinityHigh();
-    bool checkMotorTemperature();
+    bool checkMotorTemperature(Result& result);
     bool waitForMembranePressure();
     bool waitForProductFlowrate();
     bool waitForProductSalinity();
