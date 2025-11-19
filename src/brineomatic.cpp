@@ -1321,10 +1321,10 @@ void Brineomatic::runStateMachine()
           break;
         }
 
-        // save our total runtime occasionally (every 5 minutes)
-        if (millis() - lastRuntimeUpdate > 60000 * 5) {
-          totalRuntime += (millis() - lastRuntimeUpdate) / 1000;
-          preferences.putULong("bomTotRuntime", totalRuntime); // store as seconds
+        // save our total runtime occasionally
+        if (millis() - lastRuntimeUpdate > 10 * 60 * 1000) {
+          totalRuntime += (millis() - lastRuntimeUpdate) / 1000; // store as seconds
+          preferences.putULong("bomTotRuntime", totalRuntime);
           lastRuntimeUpdate = millis();
         }
 
@@ -1333,6 +1333,10 @@ void Brineomatic::runStateMachine()
 
       // save our total volume produced
       preferences.putFloat("bomTotVolume", totalVolume);
+
+      // save our runtime too.
+      totalRuntime += (millis() - lastRuntimeUpdate) / 1000; // store as seconds
+      preferences.putULong("bomTotRuntime", totalRuntime);
 
       // save our total number of cycles
       totalCycles++;
