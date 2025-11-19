@@ -391,7 +391,7 @@
               show: true
             },
             min: 0,
-            max: 500,
+            max: 600,
           },
           color: {
             pattern: this.gaugeSetup.brine_flowrate.colors,
