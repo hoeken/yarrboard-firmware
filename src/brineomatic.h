@@ -92,9 +92,10 @@ class Brineomatic
     };
 
     enum class HighPressureValveControlMode {
-      NONE,
+      MANUAL,
       SERVO,
-      STEPPER
+      STEPPER_POSITION,
+      STEPPER_PID
     };
 
     bool isPickled;
@@ -106,13 +107,15 @@ class Brineomatic
     RelayChannel* highPressurePump = NULL;
     RelayChannel* coolingFan = NULL;
     ServoChannel* diverterValve = NULL;
+
+    HighPressureValveControlMode highPressureValveMode;
     ServoChannel* highPressureValveServo = NULL;
     StepperChannel* highPressureValveStepper = NULL;
 
-    HighPressureValveControlMode highPressureValveMode;
-
-    float diverterValveOpenAngle = 35;
-    float diverterValveClosedAngle = 125;
+    float highPressureValveStepperCloseAngle = 1670.0;
+    float highPressureValveStepperCloseSpeed = 10.0;
+    float highPressureValveStepperOpenAngle = 0.0;
+    float highPressureValveStepperOpenSpeed = 40.0;
 
     float highPressureValveOpenMin;
     float highPressureValveOpenMax;
@@ -129,6 +132,9 @@ class Brineomatic
     float KpMaintain = 0;
     float KiMaintain = 0;
     float KdMaintain = 0;
+
+    float diverterValveOpenAngle = 35;
+    float diverterValveClosedAngle = 125;
 
     float currentVolume;
     float currentFlushVolume;
@@ -248,22 +254,18 @@ class Brineomatic
 
     bool stopFlag = false;
 
-    float desiredVolume = 0;
     float desiredFlushVolume = 0;
+    uint32_t desiredFlushDuration = 0;
+    uint32_t desiredRuntime = 0;
+    float desiredVolume = 0;
 
     // all these times are in milliseconds
-    uint32_t desiredRuntime = 0;
     uint32_t runtimeStart = 0;
     uint32_t runtimeElapsed = 0;
     uint32_t flushStart = 0;
-    uint32_t desiredFlushDuration = 0;
     uint32_t lastAutoFlushTime = 0;
     uint32_t pickleStart = 0;
     uint32_t depickleStart = 0;
-    uint32_t defaultFlushDuration = 3ULL * 60 * 1000;    // ms
-    uint32_t flushInterval = 3ULL * 24 * 60 * 60 * 1000; // 3 day default, in ms
-    uint32_t pickleDuration = 5ULL * 60 * 1000;          // 5 minute default, in ms
-    uint32_t depickleDuration = 15ULL * 60 * 1000;       // 15 minute default, in ms
 
     bool boostPumpOnState;
     bool highPressurePumpOnState;
@@ -285,24 +287,30 @@ class Brineomatic
     float membranePressurePIDOutput;
     QuickPID membranePressurePID;
 
-    float lowPressureMinimum = 2.5;              // PSI
-    float lowPressureMaximum = 60.0;             // PSI
-    float highPressureMinimum = 700.0;           // PSI
+    uint32_t defaultFlushDuration = 3ULL * 60 * 1000;    // ms
+    uint32_t flushInterval = 3ULL * 24 * 60 * 60 * 1000; // 3 day default, in ms
+    uint32_t pickleDuration = 5ULL * 60 * 1000;          // 5 minute default, in ms
+    uint32_t depickleDuration = 15ULL * 60 * 1000;       // 15 minute default, in ms
+
     float defaultMembranePressureTarget = 800.0; // PSI
-    float highPressureMaximum = 900.0;           // PSI
-    float productFlowrateMinimum = 120.0;        // LPH
-    float productFlowrateMaximum = 165.0;        // LPH
-    float flushFilterPressureMinimum = 15.0;     // PSI
-    float flushFlowrateMinimum = 100.0;          // LPH
-    float flushSalinityFinished = 750.0;         // PPM
-    float runTotalFlowrateMinimum = 300.0;       // LPH
-    float pickleTotalFlowrateMinimum = 300.0;    // LPH
-    float productSalinityMaximum = 500.0;        // PPM
-    float motorTemperatureMaximum = 65.0;        // Celcius
-    float tankLevelFull = 0.99;                  // 0 = empty, 1 = full
-    float tankCapacity = 780;                    // Liters
-    float coolingFanOnTemperature = 35.0;        // Celcius
-    float coolingFanOffTemperature = 34.0;       // Celcius
+
+    float lowPressureMinimum = 2.5;           // PSI
+    float lowPressureMaximum = 60.0;          // PSI
+    float highPressureMinimum = 700.0;        // PSI
+    float highPressureMaximum = 900.0;        // PSI
+    float productFlowrateMinimum = 120.0;     // LPH
+    float productFlowrateMaximum = 165.0;     // LPH
+    float flushFilterPressureMinimum = 15.0;  // PSI
+    float flushFlowrateMinimum = 100.0;       // LPH
+    float flushSalinityFinished = 750.0;      // PPM
+    float runTotalFlowrateMinimum = 300.0;    // LPH
+    float pickleTotalFlowrateMinimum = 300.0; // LPH
+    float productSalinityMaximum = 500.0;     // PPM
+    float motorTemperatureMaximum = 65.0;     // Celcius
+    float tankLevelFull = 0.99;               // 0 = empty, 1 = full
+    float tankCapacity = 780;                 // Liters
+    float coolingFanOnTemperature = 35.0;     // Celcius
+    float coolingFanOffTemperature = 34.0;    // Celcius
 
     // tracking when we first saw the error condition
     uint32_t membranePressureHighStart = 0;

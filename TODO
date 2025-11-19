@@ -3,27 +3,33 @@
 ## v2.1.0
 
 * fork + modify esp32FOTA to use bundled certificates
+* add app icon for bookmarking same as anchor alarm plugin
 
 ## BRINEOMATIC
 
 * update code for new Rev B board:
-    * hp valve control mode:
-        * stepper_position
         * stepper_pid
     * add support for the piezo on error or success.
         * need to add various piezo sounds we can play
 * add configuration options for:
-    * autoflush - what mode and what duration/volume
-    * flowmeters - ppl
-    * tds (can we autodetect - whats this look like?)
-    * diverter valve
-    * hp valve servo
-    * hp valve relay
-    * diverter valve relay
-    * default intervals for flush, etc.
+    * hardware
+        * has_* for all hardware
+        * dynamic options with javascript
+        * flowmeters - ppl
+        * tds
+        * diverter valve
+        * hp valve servo
+        * hp valve relay
+        * diverter valve relay
+    * errors
+        * errorEnabled for each error
+        * dynamic options with javascript
+        * timeouts for each error
+        * error trigger values
+    * autoflush - what mode, what duration/volume, and interval
     * options for display units
-    * timeouts
-    * high/low values
+    * tank capacity
+    * tank full level
 * add mid-level commands to set_watermaker
     * boost_pump
     * high_pressure_pump
