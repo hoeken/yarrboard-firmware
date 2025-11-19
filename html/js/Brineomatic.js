@@ -26,7 +26,7 @@
 
       "ERR_PRODUCT_FLOWRATE_TIMEOUT": "Product flowrate timeout",
       "ERR_PRODUCT_FLOWRATE_LOW": "Product flowrate low",
-      "ERR_PRODUCT_FLOWRATE_LOW": "Product flowrate high",
+      "ERR_PRODUCT_FLOWRATE_HIGH": "Product flowrate high",
 
       "ERR_FLUSH_FLOWRATE_LOW": "Flush flowrate low",
       "ERR_FLUSH_FILTER_PRESSURE_LOW": "Flush filter pressure low",
@@ -106,7 +106,7 @@
         "colors": [bootstrapColors.secondary, bootstrapColors.success]
       },
       "total_flowrate": {
-        "thresholds": [100, 500],
+        "thresholds": [100, 600],
         "colors": [bootstrapColors.secondary, bootstrapColors.success]
       },
       "tank_level": {
@@ -422,7 +422,7 @@
               show: true
             },
             min: 0,
-            max: 500,
+            max: 600,
           },
           color: {
             pattern: this.gaugeSetup.total_flowrate.colors,

@@ -1031,11 +1031,15 @@ uint32_t Brineomatic::getFinishCountdown()
       int32_t countdown = desiredRuntime - (millis() - runtimeStart);
       if (countdown > 0)
         return countdown;
+    } else if (desiredVolume > 0) {
+      float remainingVolume = desiredVolume - currentVolume;
+      uint32_t remainingMillis = (remainingVolume / getProductFlowrate()) * 3600 * 1000;
+      return remainingMillis;
     }
     // if we have tank capacity and a flowrate, we can estimate.
     else if (getTankCapacity() > 0 && getProductFlowrate() > 0) {
       float remainingVolume = getTankCapacity() * (1.0 - getTankLevel());
-      uint32_t remainingMillis = (remainingVolume / getProductFlowrate()) * 3600 * 1000;
+      uint32_t remainingMillis = (remainingVolume / getProductFlowrate()) * (3600 * 1000);
       return remainingMillis;
     }
   }
@@ -1152,7 +1156,7 @@ void Brineomatic::manageHighPressureValve()
             if (membranePressureTarget > 0)
               highPressureValveStepper->gotoAngle(1650, 10);
             else
-              highPressureValveStepper->gotoAngle(0, 10);
+              highPressureValveStepper->gotoAngle(0, 40);
           }
 
           // YBP.printf("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f\n", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);

@@ -291,7 +291,7 @@ class Brineomatic
     float defaultMembranePressureTarget = 800.0; // PSI
     float highPressureMaximum = 900.0;           // PSI
     float productFlowrateMinimum = 120.0;        // LPH
-    float productFlowrateMaximum = 160.0;        // LPH
+    float productFlowrateMaximum = 165.0;        // LPH
     float flushFilterPressureMinimum = 15.0;     // PSI
     float flushFlowrateMinimum = 100.0;          // LPH
     float flushSalinityFinished = 750.0;         // PPM
@@ -324,8 +324,8 @@ class Brineomatic
     uint32_t membranePressureLowTimeout = 2000;       // timeout for membrane pressure too low during run in ms
     uint32_t filterPressureHighTimeout = 2000;        // timeout for filter pressure too high during run in ms
     uint32_t filterPressureLowTimeout = 2000;         // timeout for filter pressure too low during run in ms
-    uint32_t productFlowrateLowTimeout = 2500;        // timeout for product flowrate too low during run in ms
-    uint32_t productFlowrateHighTimeout = 2500;       // timeout for product flowrate too high during run in ms
+    uint32_t productFlowrateLowTimeout = 10 * 1000;   // timeout for product flowrate too low during run in ms
+    uint32_t productFlowrateHighTimeout = 10 * 1000;  // timeout for product flowrate too high during run in ms
     uint32_t brineFlowrateLowTimeout = 2500;          // timeout for brine flowrate too low during run in ms
     uint32_t totalFlowrateLowTimeout = 2500;          // timeout for total flowrate too low in ms
     uint32_t diverterValveOpenTimeout = 5000;         // timeout for diverter valve opening failure in ms
