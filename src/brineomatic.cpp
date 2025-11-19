@@ -32,7 +32,7 @@ etl::deque<float, YB_BOM_DATA_SIZE> product_flowrate_data;
 etl::deque<float, YB_BOM_DATA_SIZE> brine_flowrate_data;
 etl::deque<float, YB_BOM_DATA_SIZE> tank_level_data;
 
-uint64_t lastDataStore = 0;
+uint32_t lastDataStore = 0;
 
 Brineomatic wm;
 
@@ -213,8 +213,8 @@ void brineomatic_loop()
     brineomatic_adc.requestADC(current_ads1115_channel);
   }
 
-  if (esp_timer_get_time() - lastDataStore > YB_BOM_DATA_INTERVAL) {
-    lastDataStore = esp_timer_get_time();
+  if (millis() - lastDataStore > YB_BOM_DATA_INTERVAL) {
+    lastDataStore = millis();
 
     if (motor_temperature_data.full())
       motor_temperature_data.pop_front();
@@ -274,7 +274,7 @@ void measure_product_flowmeter()
   uint32_t elapsed = micros() - lastProductFlowmeterCheckMicros;
   if (elapsed >= 1000000) {
     // calculate flowrate
-    float elapsed_seconds = elapsed / 1e6;
+    float elapsed_seconds = elapsed / 1000000;
 
     // Calculate liters per second
     float liters_per_second = (product_flowmeter_pulse_counter / productFlowmeterPulsesPerLiter) / elapsed_seconds;
@@ -305,7 +305,7 @@ void measure_brine_flowmeter()
   uint32_t elapsed = micros() - lastBrineFlowmeterCheckMicros;
   if (elapsed >= 1000000) {
     // calculate flowrate
-    float elapsed_seconds = elapsed / 1e6;
+    float elapsed_seconds = elapsed / 1000000;
 
     // Calculate liters per second
     float liters_per_second = (brine_flowmeter_pulse_counter / brineFlowmeterPulsesPerLiter) / elapsed_seconds;
@@ -417,9 +417,9 @@ void Brineomatic::init()
     totalVolume = 0.0;
 
   if (preferences.isKey("bomTotRuntime"))
-    totalRuntime = preferences.getULong64("bomTotRuntime");
+    totalRuntime = preferences.getULong("bomTotRuntime");
   else
-    totalRuntime = 0.0;
+    totalRuntime = 0;
 
   if (preferences.isKey("bomTotCycles"))
     totalCycles = preferences.getUInt("bomTotCycles");
@@ -572,7 +572,7 @@ void Brineomatic::start()
   }
 }
 
-void Brineomatic::startDuration(uint64_t duration)
+void Brineomatic::startDuration(uint32_t duration)
 {
   if (currentStatus == Status::IDLE) {
     desiredRuntime = duration;
@@ -599,7 +599,7 @@ void Brineomatic::flush()
   }
 }
 
-void Brineomatic::flushDuration(uint64_t duration)
+void Brineomatic::flushDuration(uint32_t duration)
 {
   if (currentStatus == Status::IDLE || currentStatus == Status::PICKLED) {
     desiredFlushDuration = duration;
@@ -617,7 +617,7 @@ void Brineomatic::flushVolume(float volume)
   }
 }
 
-void Brineomatic::pickle(uint64_t duration)
+void Brineomatic::pickle(uint32_t duration)
 {
   if (currentStatus == Status::IDLE) {
     pickleDuration = duration;
@@ -625,7 +625,7 @@ void Brineomatic::pickle(uint64_t duration)
   }
 }
 
-void Brineomatic::depickle(uint64_t duration)
+void Brineomatic::depickle(uint32_t duration)
 {
   if (currentStatus == Status::PICKLED) {
     depickleDuration = duration;
@@ -884,7 +884,7 @@ float Brineomatic::getTotalVolume()
   return totalVolume;
 }
 
-uint64_t Brineomatic::getTotalRuntime()
+uint32_t Brineomatic::getTotalRuntime()
 {
   return totalRuntime;
 }
@@ -1007,104 +1007,106 @@ const char* Brineomatic::resultToString(Result result)
   }
 }
 
-int64_t Brineomatic::getNextFlushCountdown()
+uint32_t Brineomatic::getNextFlushCountdown()
 {
-  int64_t countdown = nextFlushTime - esp_timer_get_time();
-  if (currentStatus == Status::IDLE && autoFlushEnabled && countdown > 0)
-    return countdown;
+  if (currentStatus == Status::IDLE && autoFlushEnabled)
+    return flushInterval - (millis() - lastAutoFlushTime);
 
   return 0;
 }
 
-int64_t Brineomatic::getRuntimeElapsed()
+uint32_t Brineomatic::getRuntimeElapsed()
 {
   if (currentStatus == Status::RUNNING)
-    runtimeElapsed = esp_timer_get_time() - runtimeStart;
+    runtimeElapsed = millis() - runtimeStart;
 
   return runtimeElapsed;
 }
 
-int64_t Brineomatic::getFinishCountdown()
+uint32_t Brineomatic::getFinishCountdown()
 {
   if (currentStatus == Status::RUNNING) {
     // are we on a timer?
     if (desiredRuntime > 0) {
-      int64_t countdown = (runtimeStart + desiredRuntime) - esp_timer_get_time();
+      int32_t countdown = desiredRuntime - (millis() - runtimeStart);
       if (countdown > 0)
         return countdown;
     }
     // if we have tank capacity and a flowrate, we can estimate.
     else if (getTankCapacity() > 0 && getProductFlowrate() > 0) {
       float remainingVolume = getTankCapacity() * (1.0 - getTankLevel());
-      int64_t remainingMicros = (remainingVolume / getProductFlowrate()) * 3600 * 1e6;
-      return remainingMicros;
+      uint32_t remainingMillis = (remainingVolume / getProductFlowrate()) * 3600 * 1000;
+      return remainingMillis;
     }
   }
 
   return 0;
 }
 
-int64_t Brineomatic::getFlushElapsed()
+uint32_t Brineomatic::getFlushElapsed()
 {
-  int64_t elapsed = esp_timer_get_time() - flushStart;
-  if (currentStatus == Status::FLUSHING && elapsed > 0)
-    return elapsed;
+  if (currentStatus == Status::FLUSHING)
+    return millis() - flushStart;
 
   return 0;
 }
 
-int64_t Brineomatic::getFlushCountdown()
+uint32_t Brineomatic::getFlushCountdown()
 {
   if (currentStatus != Status::FLUSHING)
     return 0;
 
   if (desiredFlushDuration) {
-    int64_t countdown = (flushStart + desiredFlushDuration) - esp_timer_get_time();
-    return countdown;
+    int32_t countdown = desiredFlushDuration - (millis() - flushStart);
+    if (countdown > 0)
+      return countdown;
   } else if (desiredFlushVolume) {
     float remainingVolume = desiredFlushVolume - getFlushVolume();
-    int64_t remainingMicros = (remainingVolume / getBrineFlowrate()) * 3600 * 1e6;
-    return remainingMicros;
+    uint32_t remainingMillis = (remainingVolume / getBrineFlowrate()) * 3600 * 1000;
+    return remainingMillis;
   } else {
-    int64_t countdown = (flushStart + flushTimeout) - esp_timer_get_time();
-    return countdown;
+    int32_t countdown = flushTimeout - (millis() - flushStart);
+    if (countdown > 0)
+      return countdown;
   }
 
   return 0;
 }
 
-int64_t Brineomatic::getPickleElapsed()
+uint32_t Brineomatic::getPickleElapsed()
 {
-  int64_t elapsed = esp_timer_get_time() - pickleStart;
-  if (currentStatus == Status::PICKLING && elapsed > 0)
-    return elapsed;
+  if (currentStatus == Status::PICKLING)
+    return millis() - pickleStart;
 
   return 0;
 }
 
-int64_t Brineomatic::getPickleCountdown()
+uint32_t Brineomatic::getPickleCountdown()
 {
-  int64_t countdown = (pickleStart + pickleDuration) - esp_timer_get_time();
-  if (currentStatus == Status::PICKLING && countdown > 0)
-    return countdown;
+  if (currentStatus == Status::PICKLING) {
+    int32_t countdown = pickleDuration - (millis() - pickleStart);
+    if (countdown > 0)
+      return countdown;
+  }
 
   return 0;
 }
 
-int64_t Brineomatic::getDepickleElapsed()
+uint32_t Brineomatic::getDepickleElapsed()
 {
-  int64_t elapsed = esp_timer_get_time() - depickleStart;
-  if (currentStatus == Status::DEPICKLING && elapsed > 0)
-    return elapsed;
+  if (currentStatus == Status::DEPICKLING)
+    return millis() - depickleStart;
 
   return 0;
 }
 
-int64_t Brineomatic::getDepickleCountdown()
+uint32_t Brineomatic::getDepickleCountdown()
 {
-  int64_t countdown = (depickleStart + depickleDuration) - esp_timer_get_time();
-  if (currentStatus == Status::DEPICKLING && countdown > 0)
-    return countdown;
+  if (currentStatus == Status::DEPICKLING) {
+    int32_t countdown = depickleDuration - (millis() - depickleStart);
+    if (countdown > 0)
+      return countdown;
+  }
 
   return 0;
 }
@@ -1174,7 +1176,7 @@ void Brineomatic::runStateMachine()
         currentStatus = Status::PICKLED;
       else {
         if (autoFlushEnabled)
-          nextFlushTime = esp_timer_get_time() + flushInterval;
+          lastAutoFlushTime = millis();
         currentStatus = Status::IDLE;
       }
       break;
@@ -1196,7 +1198,7 @@ void Brineomatic::runStateMachine()
     //
     case Status::IDLE:
       // YBP.println("State: IDLE");
-      if (autoFlushEnabled && esp_timer_get_time() > nextFlushTime) {
+      if (autoFlushEnabled && millis() - lastAutoFlushTime > flushInterval) {
         currentStatus = Status::FLUSHING;
         desiredFlushDuration = defaultFlushDuration;
       }
@@ -1208,8 +1210,8 @@ void Brineomatic::runStateMachine()
     case Status::RUNNING: {
       resetErrorTimers();
 
-      runtimeStart = esp_timer_get_time();
-      uint64_t lastRuntimeUpdate = runtimeStart;
+      runtimeStart = millis();
+      uint32_t lastRuntimeUpdate = runtimeStart;
 
       currentVolume = 0;
       currentFlushVolume = 0;
@@ -1319,11 +1321,11 @@ void Brineomatic::runStateMachine()
           break;
         }
 
-        // save our total runtime occasionally (every minute)
-        if (esp_timer_get_time() - lastRuntimeUpdate > 60000000) {
-          totalRuntime += esp_timer_get_time() - lastRuntimeUpdate;
-          preferences.putULong64("bomTotRuntime", totalRuntime);
-          lastRuntimeUpdate = esp_timer_get_time();
+        // save our total runtime occasionally (every 5 minutes)
+        if (millis() - lastRuntimeUpdate > 60000 * 5) {
+          totalRuntime += (millis() - lastRuntimeUpdate) / 1000;
+          preferences.putULong("bomTotRuntime", totalRuntime); // store as seconds
+          lastRuntimeUpdate = millis();
         }
 
         vTaskDelay(pdMS_TO_TICKS(100));
@@ -1364,7 +1366,7 @@ void Brineomatic::runStateMachine()
     case Status::FLUSHING: {
       resetErrorTimers();
 
-      flushStart = esp_timer_get_time();
+      flushStart = millis();
       currentFlushVolume = 0;
 
       DUMP(desiredFlushDuration);
@@ -1396,7 +1398,7 @@ void Brineomatic::runStateMachine()
           break;
 
         // are we going for time?
-        if (desiredFlushDuration > 0 && getFlushElapsed() > desiredFlushDuration * 1000) {
+        if (desiredFlushDuration > 0 && getFlushElapsed() > desiredFlushDuration) {
           flushResult = Result::SUCCESS_TIME;
           DUMP("DURATION");
           break;
@@ -1419,7 +1421,7 @@ void Brineomatic::runStateMachine()
         }
 
         // did we hit our flush timeout?
-        if (getFlushElapsed() > flushTimeout * 1000) {
+        if (getFlushElapsed() > flushTimeout) {
           flushResult = Result::ERR_FLUSH_TIMEOUT;
           break;
         }
@@ -1428,7 +1430,7 @@ void Brineomatic::runStateMachine()
       }
 
       if (autoFlushEnabled)
-        nextFlushTime = esp_timer_get_time() + flushInterval;
+        lastAutoFlushTime = millis();
 
       // keep track over restarts.
       preferences.putBool("bomPickled", false);
@@ -1447,7 +1449,7 @@ void Brineomatic::runStateMachine()
     case Status::PICKLING:
       resetErrorTimers();
 
-      pickleStart = esp_timer_get_time();
+      pickleStart = millis();
       brineFlowrateLowStart = 0;
 
       if (initializeHardware()) {
@@ -1493,7 +1495,7 @@ void Brineomatic::runStateMachine()
     case Status::DEPICKLING:
       resetErrorTimers();
 
-      depickleStart = esp_timer_get_time();
+      depickleStart = millis();
       brineFlowrateLowStart = 0;
 
       if (initializeHardware()) {

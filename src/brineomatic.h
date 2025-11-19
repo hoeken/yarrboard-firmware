@@ -135,7 +135,7 @@ class Brineomatic
 
     uint32_t totalCycles;
     float totalVolume;
-    uint64_t totalRuntime;
+    uint32_t totalRuntime; // seconds
 
     Brineomatic();
     void init();
@@ -154,13 +154,13 @@ class Brineomatic
     void idle();
     void manual();
     void start();
-    void startDuration(uint64_t duration);
+    void startDuration(uint32_t duration);
     void startVolume(float volume);
     void flush();
-    void flushDuration(uint64_t duration);
+    void flushDuration(uint32_t duration);
     void flushVolume(float volume);
-    void pickle(uint64_t duration);
-    void depickle(uint64_t duration);
+    void pickle(uint32_t duration);
+    void depickle(uint32_t duration);
     void stop();
 
     bool initializeHardware();
@@ -201,15 +201,15 @@ class Brineomatic
     Result getPickleResult();
     Result getDepickleResult();
 
-    int64_t getNextFlushCountdown();
-    int64_t getRuntimeElapsed();
-    int64_t getFinishCountdown();
-    int64_t getFlushElapsed();
-    int64_t getFlushCountdown();
-    int64_t getPickleElapsed();
-    int64_t getPickleCountdown();
-    int64_t getDepickleElapsed();
-    int64_t getDepickleCountdown();
+    uint32_t getNextFlushCountdown();
+    uint32_t getRuntimeElapsed();
+    uint32_t getFinishCountdown();
+    uint32_t getFlushElapsed();
+    uint32_t getFlushCountdown();
+    uint32_t getPickleElapsed();
+    uint32_t getPickleCountdown();
+    uint32_t getDepickleElapsed();
+    uint32_t getDepickleCountdown();
 
     float getFilterPressure();
     float getFilterPressureMinimum();
@@ -224,7 +224,7 @@ class Brineomatic
     float getVolume();
     float getFlushVolume();
     float getTotalVolume();
-    uint64_t getTotalRuntime();
+    uint32_t getTotalRuntime();
     float getMotorTemperature();
     float getWaterTemperature();
     float getProductSalinity();
@@ -251,19 +251,19 @@ class Brineomatic
     float desiredVolume = 0;
     float desiredFlushVolume = 0;
 
-    // all these times are in microseconds
-    uint64_t desiredRuntime = 0;
-    uint64_t runtimeStart = 0;
-    uint64_t runtimeElapsed = 0;
-    uint64_t flushStart = 0;
-    uint64_t desiredFlushDuration = 0;
-    uint64_t defaultFlushDuration = 3ULL * 60 * 1000000; // microseconds
-    uint64_t nextFlushTime = 0;
-    uint64_t flushInterval = 3ULL * 24 * 60 * 60 * 1000000; // 3 day default, in microseconds
-    uint64_t pickleStart = 0;
-    uint64_t pickleDuration = 5ULL * 60 * 1000000; // 5 minute default, in microseconds
-    uint64_t depickleStart = 0;
-    uint64_t depickleDuration = 15ULL * 60 * 1000000; // 15 minute default, in microseconds
+    // all these times are in milliseconds
+    uint32_t desiredRuntime = 0;
+    uint32_t runtimeStart = 0;
+    uint32_t runtimeElapsed = 0;
+    uint32_t flushStart = 0;
+    uint32_t desiredFlushDuration = 0;
+    uint32_t lastAutoFlushTime = 0;
+    uint32_t pickleStart = 0;
+    uint32_t depickleStart = 0;
+    uint32_t defaultFlushDuration = 3ULL * 60 * 1000;    // ms
+    uint32_t flushInterval = 3ULL * 24 * 60 * 60 * 1000; // 3 day default, in ms
+    uint32_t pickleDuration = 5ULL * 60 * 1000;          // 5 minute default, in ms
+    uint32_t depickleDuration = 15ULL * 60 * 1000;       // 15 minute default, in ms
 
     bool boostPumpOnState;
     bool highPressurePumpOnState;

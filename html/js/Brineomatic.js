@@ -10,9 +10,9 @@
     this.resultText = {
       "STARTUP": "Starting up.",
       "SUCCESS": "Success",
-      "SUCCESS_TIME": "Success: Runtime reached",
-      "SUCCESS_VOLUME": "Success: Volume reached",
-      "SUCCESS_TANK_LEVEL": "Success: Tank full",
+      "SUCCESS_TIME": "Success: Time OK",
+      "SUCCESS_VOLUME": "Success: Volume OK",
+      "SUCCESS_TANK_LEVEL": "Success: Tank Full",
       "SUCCESS_SALINITY": "Success: Salinity OK",
       "USER_STOP": "Stopped by user",
 
@@ -807,17 +807,17 @@
         this.showResult("#bomDePickleResult", msg.depickle_result);
 
       if (msg.next_flush_countdown > 0)
-        $("#bomNextFlushCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.next_flush_countdown / 1000000)));
+        $("#bomNextFlushCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.next_flush_countdown / 1000)));
       else
         $("#bomNextFlushCountdown").hide();
 
       if (msg.runtime_elapsed > 0)
-        $("#bomRuntimeElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.runtime_elapsed / 1000000)));
+        $("#bomRuntimeElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.runtime_elapsed / 1000)));
       else
         $("#bomRuntimeElapsed").hide();
 
       if (msg.finish_countdown > 0)
-        $("#bomFinishCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.finish_countdown / 1000000)));
+        $("#bomFinishCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.finish_countdown / 1000)));
       else
         $("#bomFinishCountdown").hide();
 
@@ -830,12 +830,12 @@
       }
 
       if (msg.flush_elapsed > 0)
-        $("#bomFlushElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.flush_elapsed / 1000000)));
+        $("#bomFlushElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.flush_elapsed / 1000)));
       else
         $("#bomFlushElapsed").hide();
 
       if (msg.flush_countdown > 0)
-        $("#bomFlushCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.flush_countdown / 1000000)));
+        $("#bomFlushCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.flush_countdown / 1000)));
       else
         $("#bomFlushCountdown").hide();
 
@@ -848,12 +848,12 @@
       }
 
       if (msg.pickle_elapsed > 0)
-        $("#bomPickleElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.pickle_elapsed / 1000000)));
+        $("#bomPickleElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.pickle_elapsed / 1000)));
       else
         $("#bomPickleElapsed").hide();
 
       if (msg.pickle_countdown > 0)
-        $("#bomPickleCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.pickle_countdown / 1000000)));
+        $("#bomPickleCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.pickle_countdown / 1000)));
       else
         $("#bomPickleCountdown").hide();
 
@@ -866,12 +866,12 @@
       }
 
       if (msg.depickle_elapsed > 0)
-        $("#bomDepickleElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.depickle_elapsed / 1000000)));
+        $("#bomDepickleElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.depickle_elapsed / 1000)));
       else
         $("#bomDepickleElapsed").hide();
 
       if (msg.depickle_countdown > 0)
-        $("#bomDepickleCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.depickle_countdown / 1000000)));
+        $("#bomDepickleCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.depickle_countdown / 1000)));
       else
         $("#bomDepickleCountdown").hide();
 
@@ -964,7 +964,7 @@
     if (msg.brineomatic) {
       let totalVolume = Math.round(msg.total_volume);
       totalVolume = totalVolume.toLocaleString('en-US');
-      let totalRuntime = (msg.total_runtime / (60 * 60 * 1000000)).toFixed(1);
+      let totalRuntime = (msg.total_runtime / (60 * 60 * 1000)).toFixed(1);
       totalRuntime = totalRuntime.toLocaleString('en-US');
       $("#bomTotalCycles").html(msg.total_cycles.toLocaleString('en-US'));
       $("#bomTotalVolume").html(`${totalVolume}L`);
@@ -1117,11 +1117,11 @@
 
     if (duration > 0) {
       //hours to microseconds
-      let micros = duration * 60 * 60 * 1000000;
+      let millis = duration * 60 * 60 * 1000;
 
       YB.client.send({
         "cmd": "start_watermaker",
-        "duration": micros
+        "duration": millis
       }, true);
     }
   }
@@ -1177,11 +1177,11 @@
     let duration = $("#bomPickleDurationInput").val();
 
     if (duration > 0) {
-      let micros = duration * 60 * 1000000;
+      let millis = duration * 60 * 1000;
 
       YB.client.send({
         "cmd": "pickle_watermaker",
-        "duration": micros
+        "duration": millis
       }, true);
     }
   }
@@ -1191,11 +1191,11 @@
     let duration = $("#bomDepickleDurationInput").val();
 
     if (duration > 0) {
-      let micros = duration * 60 * 1000000;
+      let millis = duration * 60 * 1000;
 
       YB.client.send({
         "cmd": "depickle_watermaker",
-        "duration": micros
+        "duration": millis
       }, true);
     }
   }
