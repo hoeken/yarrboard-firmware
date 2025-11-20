@@ -124,7 +124,6 @@
                 </div>
                 <div id="configPage" class="pageContainer" style="display:none">
                     <form class="row g-3" id="ConfigForm">
-                        <div id="boardConfigForm"></div>
                     </form>
                 </div>
                 <div id="graphsPage" class="pageContainer" style="display:none">
@@ -329,6 +328,26 @@
                 </div>
                 <div id="settingsPage" class="pageContainer" style="display:none">
                     <h4>Settings</h4>
+                    <div id="generalSettingsForm" class="p-3 mb-3 border border-secondary rounded">
+                        <h5>General</h5>
+
+                        <div class="form-floating mb-3">
+                            <input id="board_name" type="text" class="form-control">
+                            <label for="board_name">Board Name</label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <select id="startup_melody" class="form-select" aria-label="Startup Melody">
+                            </select>
+                            <label for="default_role">Startup Melody</label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="text-center">
+                            <button id="saveGeneralSettings" type="button" class="btn btn-primary">
+                                Save General Settings
+                            </button>
+                        </div>
+                    </div>
                     <div id="authenticationSettingsForm" class="p-3 mb-3 border border-secondary rounded">
                         <h5>Authentication</h5>
                         <div class="form-floating mb-3">

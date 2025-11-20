@@ -238,6 +238,36 @@
       el.addClass(myclass);
       setTimeout(() => el.removeClass(myclass), ms);
     },
+
+    humanizeText: function (text) {
+      return text
+        .toLowerCase()
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, c => c.toUpperCase());
+    },
+
+    populateMelodySelector: function (select) {
+      if (YB.App.config.melodies) {
+        // select.empty();
+        YB.App.config.melodies.forEach(m => {
+          $("<option>")
+            .val(m)
+            .text(YB.Util.humanizeText(m))
+            .appendTo(select);
+        });
+
+        // Trigger play on change
+        select.off("change").on("change", function () {
+          const melody = $(this).val();
+          if (melody != "NONE") {
+            YB.client.send({
+              cmd: "play_sound",
+              melody: melody
+            });
+          }
+        });
+      }
+    },
   };
 
   // expose to global

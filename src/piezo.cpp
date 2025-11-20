@@ -45,7 +45,7 @@ static const Note STARTUP[] = {
 };
 
 // Nice for power-on tones.
-static const Note STARTUP2[] = {
+static const Note STARTUP_2[] = {
   {330, 120}, // E4
   {392, 120}, // G4
   {523, 150}, // C5
@@ -53,7 +53,7 @@ static const Note STARTUP2[] = {
 };
 
 // clean + modern
-static const Note STARTUP3[] = {
+static const Note STARTUP_3[] = {
   {494, 120}, // B4
   {587, 120}, // D5
   {659, 160}, // E5
@@ -75,7 +75,7 @@ static const Note SUCCESS[] = {
 };
 
 // Short, bouncy upward motion with a tiny flourish.
-static const Note SUCCESS2[] = {
+static const Note SUCCESS_2[] = {
   {659, 100},  // E5
   {784, 100},  // G5
   {988, 140},  // B5
@@ -83,7 +83,7 @@ static const Note SUCCESS2[] = {
 };
 
 // A more melodic flourish that still stays compact.
-static const Note SUCCESS3[] = {
+static const Note SUCCESS_3[] = {
   {523, 100},  // C5
   {659, 120},  // E5
   {784, 120},  // G5
@@ -101,7 +101,7 @@ static const Note ERROR[] = {
 };
 
 // Tense descending motif, short but very clear.
-static const Note ERROR2[] = {
+static const Note ERROR_2[] = {
   {784, 160}, // G5
   {659, 160}, // E5
   {523, 220}, // C5
@@ -110,7 +110,7 @@ static const Note ERROR2[] = {
 };
 
 // A glitch-like pattern followed by a low thud.
-static const Note ERROR3[] = {
+static const Note ERROR_3[] = {
   {659, 120}, // E5
   {0, 40},
   {659, 120}, // E5 (stutter)
@@ -130,7 +130,7 @@ static const Note WARNING[] = {
 };
 
 // A subtle escalating attention pattern.
-static const Note WARNING2[] = {
+static const Note WARNING_2[] = {
   {523, 120}, // C5
   {0, 60},
   {587, 140}, // D5
@@ -139,7 +139,7 @@ static const Note WARNING2[] = {
 };
 
 // Two short pings followed by a longer warning tone.
-static const Note WARNING3[] = {
+static const Note WARNING_3[] = {
   {659, 100}, // E5
   {0, 60},
   {659, 100}, // E5
@@ -377,6 +377,222 @@ static const Note DUBSTEP_MELODIC[] = {
   {523, 260}, // C5
 };
 
+// Beethoven – “Ode to Joy”
+static const Note ODE_TO_JOY[] = {
+  {659, 750},
+  {0, 30},
+  {659, 750},
+  {698, 750},
+  {784, 750},
+  {784, 750},
+  {0, 30},
+  {698, 750},
+  {659, 750},
+  {587, 750},
+
+  {523, 750},
+  {0, 30},
+  {523, 750},
+  {587, 750},
+  {659, 750},
+  {659, 1125},
+  {0, 30},
+  {587, 375},
+  {587, 1500},
+  {0, 187},
+
+  {659, 750},
+  {0, 30},
+  {659, 750},
+  {698, 750},
+  {784, 750},
+  {784, 750},
+  {0, 30},
+  {698, 750},
+  {659, 750},
+  {587, 750},
+
+  {523, 750},
+  {0, 30},
+  {523, 750},
+  {587, 750},
+  {659, 750},
+  {587, 1125},
+  {523, 1125},
+};
+
+// Bach – “Minuet in G”
+static const Note MINUET_IN_G[] = {
+  {784, 535},
+  {659, 535},
+  {698, 535},
+  {784, 535},
+  {659, 535},
+  {523, 1070}, // half note
+  {587, 535},
+  {659, 1070},
+
+  {698, 535},
+  {587, 535},
+  {659, 535},
+  {698, 535},
+  {587, 535},
+  {494, 1070},
+  {523, 535},
+  {587, 1070},
+
+  {659, 535},
+  {523, 535},
+  {587, 535},
+  {659, 535},
+  {523, 535},
+  {440, 1070},
+  {494, 535},
+  {523, 1070},
+};
+
+// Mozart – “Eine Kleine Nachtmusik”
+static const Note NACHTMUSIK[] = {
+  {988, 500},
+  {1175, 500},
+  {1319, 750}, // dotted quarter = 750
+  {1175, 500},
+  {988, 750},
+  {784, 750}, // dotted quarters
+  {880, 500},
+  {988, 1000}, // half note
+
+  {880, 500},
+  {988, 500},
+  {1046, 750},
+  {988, 500},
+  {880, 750},
+  {698, 750},
+  {784, 500},
+  {880, 1000},
+};
+
+// Grieg – “In the Hall of the Mountain King”
+static const Note MOUNTAIN_KING[] = {
+  {392, 577},
+  {440, 577},
+  {392, 577},
+  {440, 577},
+  {392, 577},
+  {440, 577},
+  {494, 1154},
+
+  {392, 577},
+  {440, 577},
+  {392, 577},
+  {440, 577},
+  {494, 577},
+  {523, 577},
+  {587, 1154},
+};
+
+// Tchaikovsky – “Dance of the Sugar Plum Fairy”
+static const Note SUGAR_PLUM[] = {
+  {784, 227},
+  {740, 227},
+  {784, 227},
+  {988, 455},
+  {880, 227},
+  {740, 227},
+  {880, 227},
+  {1046, 683},
+  {988, 455},
+  {784, 227},
+  {880, 227},
+  {740, 455},
+  {0, 150},
+
+  {784, 227},
+  {740, 227},
+  {784, 227},
+  {988, 455},
+  {880, 227},
+  {740, 227},
+  {880, 227},
+  {1046, 683},
+  {988, 455},
+  {880, 455},
+  {784, 455},
+  {740, 683},
+};
+
+// Handel – “Hallelujah Chorus”
+static const Note HALLELUJAH[] = {
+  {523, 600},
+  {0, 30},
+  {523, 600},
+  {587, 600},
+  {523, 600},
+  {659, 900},
+  {587, 600},
+  {523, 1200},
+  {0, 150},
+
+  {659, 600},
+  {0, 30},
+  {659, 600},
+  {698, 600},
+  {659, 600},
+  {784, 900},
+  {698, 600},
+  {659, 1200},
+};
+
+// Brahms – Lullaby (opening phrase)
+static const Note LULLABY[] = {
+  {392, 833},
+  {0, 30},
+  {392, 833},
+  {523, 833},
+  {0, 30},
+  {523, 833},
+  {587, 1666},
+  {0, 30},
+  {587, 1666},
+  {523, 1666},
+  {0, 200},
+
+  {392, 833},
+  {0, 30},
+  {392, 833},
+  {523, 833},
+  {0, 30},
+  {523, 833},
+  {587, 1666},
+  {0, 30},
+  {587, 1666},
+  {523, 1666},
+  {0, 200},
+
+  {587, 833},
+  {0, 30},
+  {587, 833},
+  {659, 833},
+  {0, 30},
+  {659, 833},
+  {698, 1666},
+  {0, 30},
+  {698, 1666},
+  {659, 1666},
+  {0, 200},
+
+  {587, 833},
+  {0, 30},
+  {587, 833},
+  {659, 833},
+  {0, 30},
+  {659, 833},
+  {698, 1666},
+  {0, 30},
+  {698, 1666},
+  {659, 1666},
+};
+
 // Example melody (3 beeps)
 static const Note ACTIVE_STARTUP[] = {
   {3000, 50},
@@ -416,17 +632,17 @@ static const Note ACTIVE_WARNING[] = {
 static const Melody melodyTable[] = {
   #ifdef YB_PIEZO_PASSIVE
   MELODY_ENTRY(STARTUP),
-  MELODY_ENTRY(STARTUP2),
-  MELODY_ENTRY(STARTUP3),
+  MELODY_ENTRY(STARTUP_2),
+  MELODY_ENTRY(STARTUP_3),
   MELODY_ENTRY(SUCCESS),
-  MELODY_ENTRY(SUCCESS2),
-  MELODY_ENTRY(SUCCESS3),
+  MELODY_ENTRY(SUCCESS_2),
+  MELODY_ENTRY(SUCCESS_3),
   MELODY_ENTRY(ERROR),
-  MELODY_ENTRY(ERROR2),
-  MELODY_ENTRY(ERROR3),
+  MELODY_ENTRY(ERROR_2),
+  MELODY_ENTRY(ERROR_3),
   MELODY_ENTRY(WARNING),
-  MELODY_ENTRY(WARNING2),
-  MELODY_ENTRY(WARNING3),
+  MELODY_ENTRY(WARNING_2),
+  MELODY_ENTRY(WARNING_3),
   MELODY_ENTRY(CHEERFUL),
   MELODY_ENTRY(ADVENTURE),
   MELODY_ENTRY(PLAYFUL),
@@ -436,6 +652,13 @@ static const Melody melodyTable[] = {
   MELODY_ENTRY(GOOFY),
   MELODY_ENTRY(DUBSTEP),
   MELODY_ENTRY(DUBSTEP_MELODIC),
+  MELODY_ENTRY(ODE_TO_JOY),
+  MELODY_ENTRY(MINUET_IN_G),
+  MELODY_ENTRY(NACHTMUSIK),
+  MELODY_ENTRY(MOUNTAIN_KING),
+  MELODY_ENTRY(SUGAR_PLUM),
+  MELODY_ENTRY(HALLELUJAH),
+  MELODY_ENTRY(LULLABY),
   #endif
   #ifdef YB_PIEZO_ACTIVE
   MELODY_ENTRY(ACTIVE_STARTUP),
@@ -473,15 +696,21 @@ void piezo_setup()
     1, // low priority is fine
     &buzzerTaskHandle);
 
-  // Kick an example (one-shot)
-  if (piezoIsActive)
-    playMelodyByName("ACTIVE_STARTUP");
-  else
-    playMelodyByName("STARTUP2");
+  playMelodyByName(startup_melody);
+}
+
+void generateMelodyJSON(JsonVariant output)
+{
+  output["melodies"][0] = "NONE";
+  for (size_t i = 0; i < melodyCount; i++)
+    output["melodies"][i + 1] = melodyTable[i].name;
 }
 
 bool playMelodyByName(const char* melody)
 {
+  if (!strcmp(melody, "NONE"))
+    return true;
+
   const Note* seq = nullptr;
   size_t len = 0;
 

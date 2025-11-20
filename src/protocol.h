@@ -35,6 +35,7 @@
 
 // extern unsigned int handledMessages;
 extern char board_name[YB_BOARD_NAME_LENGTH];
+extern char startup_melody[YB_BOARD_NAME_LENGTH];
 extern char admin_user[YB_USERNAME_LENGTH];
 extern char admin_pass[YB_PASSWORD_LENGTH];
 extern char guest_user[YB_USERNAME_LENGTH];
@@ -69,7 +70,7 @@ void protocol_loop();
 void handleSerialJson();
 
 void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode, PsychicWebSocketClient* connection = NULL);
-void handleSetBoardName(JsonVariantConst input, JsonVariant output);
+void handleSetGeneralConfig(JsonVariantConst input, JsonVariant output);
 void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output);
 void handleSetAuthenticationConfig(JsonVariantConst input, JsonVariant output);
 void handleSetWebServerConfig(JsonVariantConst input, JsonVariant output);

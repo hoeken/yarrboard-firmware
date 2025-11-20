@@ -255,6 +255,7 @@ void generateBoardConfigJSON(JsonVariant output)
 void generateAppConfigJSON(JsonVariant output)
 {
   // our identifying info
+  output["startup_melody"] = startup_melody;
   output["default_role"] = getRoleText(app_default_role);
   output["admin_user"] = admin_user;
   output["admin_pass"] = admin_pass;
@@ -400,6 +401,9 @@ bool loadNetworkConfigFromJSON(JsonVariantConst config, char* error, size_t len)
 bool loadAppConfigFromJSON(JsonVariantConst config, char* error, size_t len)
 {
   const char* value;
+
+  value = config["startup_melody"].as<const char*>();
+  snprintf(startup_melody, sizeof(startup_melody), "%s", (value && *value) ? value : YB_PIEZO_DEFAULT_MELODY);
 
   value = config["admin_user"].as<const char*>();
   snprintf(admin_user, sizeof(admin_user), "%s", (value && *value) ? value : "admin");

@@ -11,6 +11,7 @@
 
 #include "config.h"
 #include "driver/ledc.h"
+#include <ArduinoJson.h>
 
 #ifdef YB_HAS_PIEZO
   #define YB_MAX_MELODY_LENGTH 100
@@ -35,6 +36,8 @@ bool playMelodyByName(const char* melody);
 static inline void buzzerMute();
 static inline void buzzerTone(uint16_t freqHz);
 void BuzzerTask(void* /*pv*/);
+
+void generateMelodyJSON(JsonVariant output);
 
 #endif
 

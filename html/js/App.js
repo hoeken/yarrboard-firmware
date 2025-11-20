@@ -130,6 +130,7 @@
         YB.App.currentlyPickingBrightness = false;
       });
 
+      $("#saveGeneralSettings").on('click', YB.App.saveGeneralSettings);
       $("#saveAuthenticationSettings").on('click', YB.App.saveAuthenticationSettings);
       $("#saveWebServerSettings").on('click', YB.App.saveWebServerSettings);
       $("#saveMQTTSettings").on('click', YB.App.saveMQTTSettings);
@@ -234,14 +235,6 @@
       return false;
     },
 
-    BoardNameEdit: (name) => `
-      <div class="col-12">
-        <h4>Board Name</h4>
-        <input type="text" class="form-control" id="fBoardName" value="${name}">
-        <div class="valid-feedback">Saved!</div>
-        <div class="invalid-feedback">Must be 30 characters or less.</div>
-      </div>`,
-
     AlertBox: (message, type) => `
       <div>
         <div class="mt-3 alert alert-${type} alert-dismissible" role="alert">
@@ -254,16 +247,13 @@
       if (YB.App.role == "nobody")
         return;
 
+      YB.client.getConfig();
+
       if (YB.App.role == "admin") {
         YB.client.getNetworkConfig();
         YB.client.getAppConfig();
-
-        YB.client.send({
-          "cmd": "get_full_config"
-        });
+        YB.client.send({ "cmd": "get_full_config" });
       }
-
-      YB.client.getConfig();
     },
 
     checkConnectionStatus: function () {
@@ -456,25 +446,6 @@
       }
     },
 
-    validateBoardName: function (e) {
-      let ele = e.target;
-      let value = ele.value;
-
-      if (value.length <= 0 || value.length > 30) {
-        $(ele).removeClass("is-valid");
-        $(ele).addClass("is-invalid");
-      } else {
-        $(ele).removeClass("is-invalid");
-        $(ele).addClass("is-valid");
-
-        //set our new board name!
-        YB.client.send({
-          "cmd": "set_boardname",
-          "value": value
-        });
-      }
-    },
-
     setBrightness: function (e) {
       let ele = e.target;
       let value = ele.value;
@@ -497,6 +468,22 @@
       YB.App.username = $('#username').val();
       YB.App.password = $('#password').val();
       YB.client.login(YB.App.username, YB.App.password);
+    },
+
+    getGeneralSettingsSchema: function () {
+      return {
+        board_name: {
+          presence: { allowEmpty: false },
+          length: { maximum: 31 },
+        },
+        startup_melody: {
+          presence: { allowEmpty: false },
+          inclusion: {
+            within: YB.App.config.melodies,
+            message: "^Invalid melody selection"
+          }
+        }
+      };
     },
 
     getAuthenticationSettingsSchema: function () {
@@ -533,6 +520,39 @@
           }
         }
       };
+    },
+
+    saveGeneralSettings: function () {
+      //pull our form data
+      const settings = {
+        board_name: $("#board_name").val().trim(),
+        startup_melody: $("#startup_melody").val(),
+      };
+
+      //validate it.
+      const errors = validate(settings, YB.App.getGeneralSettingsSchema());
+      YB.Util.showFormValidationResults(settings, errors);
+
+      //bail on fail.
+      if (errors) {
+        YB.Util.flashClass($("#generalSettingsForm"), "border-danger");
+        YB.Util.flashClass($("#saveGeneralSettings"), "btn-danger");
+        return;
+      }
+
+      //remember it and update our UI
+      YB.App.updateBoardName(settings.board_name);
+
+      //flash whole form green.
+      YB.Util.flashClass($("#generalSettingsForm"), "border-success");
+      YB.Util.flashClass($("#saveGeneralSettings"), "btn-success");
+
+      //okay, send it off.
+      YB.client.send({
+        "cmd": "set_general_config",
+        "board_name": settings.board_name,
+        "startup_melody": settings.startup_melody
+      });
     },
 
     saveAuthenticationSettings: function () {
@@ -1033,14 +1053,19 @@
         $("#darkSwitch").prop('checked', true);
     },
 
+    updateBoardName: function (name) {
+      $('#boardName').html(name);
+      $('#loginTitle').html(name);
+      document.title = name;
+      $('#board_name').val(name);
+    },
+
     handleHelloMessage: function (msg) {
       YB.App.role = msg.role;
       YB.App.defaultRole = msg.default_role;
 
       //custom board names.
-      $('#boardName').html(msg.name);
-      $('#loginTitle').html(msg.name);
-      document.title = msg.name;
+      YB.App.updateBoardName(msg.name);
 
       //light/dark mode
       //let the mfd override with ?mode=night, etc.
@@ -1074,6 +1099,8 @@
 
       YB.App.config = msg;
 
+      console.log(msg);
+
       //we can check for new firmware now.
       // YB.App.checkForUpdates();
 
@@ -1100,9 +1127,7 @@
       }
 
       //let the people choose their own names!
-      $('#boardName').html(msg.name);
-      $('#loginTitle').html(msg.name);
-      document.title = msg.name;
+      YB.App.updateBoardName(msg.name);
 
       //update our footer automatically.
       $('#projectName').html("Yarrboard v" + msg.firmware_version);
@@ -1156,10 +1181,6 @@
 
       //only do it as needed
       if (!YB.App.pageReady.config || YB.App.currentPage != "config") {
-
-        //board name controls
-        $('#boardConfigForm').html(YB.App.BoardNameEdit(msg.name));
-        $("#fBoardName").change(YB.App.validateBoardName);
 
         //edit controls for each adc
         $('#adcConfig').hide();
@@ -1220,6 +1241,8 @@
         $(".mfdShow").hide()
         $(".mfdHide").show()
       }
+
+      YB.Util.populateMelodySelector($("#startup_melody"));
 
       //ready!
       YB.App.pageReady.config = true;
@@ -1532,6 +1555,9 @@
       //what is our update interval?
       if (msg.app_update_interval)
         YB.App.updateInterval = msg.app_update_interval;
+
+      //for our melodies
+      $('#startup_melody').val(msg.startup_melody);
 
       //YB.log(msg);
       $("#admin_user").val(msg.admin_user);

@@ -38,6 +38,7 @@
 #endif
 
 char board_name[YB_BOARD_NAME_LENGTH] = YB_BOARD_NAME;
+char startup_melody[YB_BOARD_NAME_LENGTH] = YB_PIEZO_DEFAULT_MELODY;
 char admin_user[YB_USERNAME_LENGTH] = "admin";
 char admin_pass[YB_PASSWORD_LENGTH] = "admin";
 char guest_user[YB_USERNAME_LENGTH] = "guest";
@@ -230,8 +231,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
 
   // commands for changing settings
   if (role == ADMIN) {
-    if (!strcmp(cmd, "set_boardname"))
-      return handleSetBoardName(input, output);
+    if (!strcmp(cmd, "set_general_config"))
+      return handleSetGeneralConfig(input, output);
     else if (!strcmp(cmd, "save_config"))
       return handleSaveConfig(input, output);
     else if (!strcmp(cmd, "get_full_config"))
@@ -293,20 +294,21 @@ void generateHelloJSON(JsonVariant output, UserRole role)
   output["firmware_version"] = YB_FIRMWARE_VERSION;
 }
 
-void handleSetBoardName(JsonVariantConst input, JsonVariant output)
+void handleSetGeneralConfig(JsonVariantConst input, JsonVariant output)
 {
-  if (!input["value"].is<String>())
-    return generateErrorJSON(output, "'value' is a required parameter");
+  if (!input["board_name"].is<String>())
+    return generateErrorJSON(output, "'board_name' is a required parameter");
 
   // is it too long?
-  if (strlen(input["value"]) > YB_BOARD_NAME_LENGTH - 1) {
+  if (strlen(input["board_name"]) > YB_BOARD_NAME_LENGTH - 1) {
     char error[50];
     sprintf(error, "Maximum board name length is %s characters.", YB_BOARD_NAME_LENGTH - 1);
     return generateErrorJSON(output, error);
   }
 
   // update variable
-  strlcpy(board_name, input["value"] | "Yarrboard", sizeof(board_name));
+  strlcpy(board_name, input["board_name"] | "Yarrboard", sizeof(board_name));
+  strlcpy(startup_melody, input["startup_melody"] | "NONE", sizeof(startup_melody));
 
   // save it to file.
   char error[128];
@@ -674,6 +676,9 @@ void handlePlaySound(JsonVariantConst input, JsonVariant output)
     const char* melody = input["melody"].as<const char*>();
     if (!melody)
       return generateErrorJSON(output, "'melody' must be a string");
+
+    if (!strcmp(melody, "NONE"))
+      return;
 
     if (playMelodyByName(melody))
       return;
@@ -1377,6 +1382,7 @@ void generateConfigJSON(JsonVariant output)
   output["git_hash"] = GIT_HASH;
   output["build_time"] = BUILD_TIME;
 
+  generateMelodyJSON(output);
   generateBoardConfigJSON(output);
 
   output["is_development"] = YB_IS_DEVELOPMENT;

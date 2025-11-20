@@ -3,8 +3,6 @@
 ## v2.1.0
 
 * fork + modify esp32FOTA to use bundled certificates
-* move board name to settings (general)
-* add Startup Sound to settings (general)
 
 ## BRINEOMATIC
 
@@ -42,6 +40,7 @@
     * flush valve
     * fan
     * membrane_pressure_target
+* show "error" when no value for pressure or tank level
 * move everything to SI units, add configurable units
 * add tds calibration
 * PID calibration?

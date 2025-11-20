@@ -65,8 +65,8 @@
   #define YB_I2C_SPEED 400000
 #endif
 
-// max http clients
-#define YB_CLIENT_LIMIT 16
+// max http clients - cannot go any higher than this without a custom esp-idf config
+#define YB_CLIENT_LIMIT 13
 
 // for handling messages outside of the loop
 #define YB_RECEIVE_BUFFER_COUNT 100
@@ -120,6 +120,10 @@ typedef enum { YBP_MODE_WEBSOCKET,
 // Detect whether this build environment provides UsbSerial
 #if defined(ARDUINO_USB_MODE) && ARDUINO_USB_MODE == 1
   #define YB_USB_SERIAL 1
+#endif
+
+#ifndef YB_PIEZO_DEFAULT_MELODY
+  #define YB_PIEZO_DEFAULT_MELODY "NONE"
 #endif
 
 #endif // YARR_CONFIG_H
