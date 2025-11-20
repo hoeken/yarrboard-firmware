@@ -20,6 +20,14 @@ struct Note {
     uint16_t ms;
 }; // freq=0 => rest
 
+struct Melody {
+    const char* name;
+    const Note* seq;
+    size_t len;
+};
+
+  #define MELODY_ENTRY(x) {#x, x, sizeof(x) / sizeof(Note)}
+
 void piezo_setup();
 
 void playMelody(const Note* seq, size_t len);

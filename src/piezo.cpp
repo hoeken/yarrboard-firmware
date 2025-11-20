@@ -33,7 +33,7 @@ bool piezoIsActive = false;
   #endif
 
 // Example melody (C scale up)
-static const Note MELODY_STARTUP[] = {
+static const Note STARTUP[] = {
   {262, 100},
   {294, 100},
   {330, 100},
@@ -44,14 +44,111 @@ static const Note MELODY_STARTUP[] = {
   {523, 100},
 };
 
-static const Note MELODY_STARTUP2[] = {
+// Nice for power-on tones.
+static const Note STARTUP2[] = {
   {330, 120}, // E4
   {392, 120}, // G4
   {523, 150}, // C5
   {659, 200}, // E5
 };
 
-static const Note JINGLE_CHEERFUL[] = {
+// clean + modern
+static const Note STARTUP3[] = {
+  {494, 120}, // B4
+  {587, 120}, // D5
+  {659, 160}, // E5
+  {784, 180}, // G5
+  {0, 60},
+
+  {659, 150},  // E5
+  {784, 180},  // G5
+  {988, 200},  // B5
+  {1046, 240}, // C6
+};
+
+// Bright ascending triad → quick confirmation blip.
+static const Note SUCCESS[] = {
+  {523, 90},   // C5
+  {659, 90},   // E5
+  {784, 140},  // G5
+  {1046, 160}, // C6
+};
+
+// Short, bouncy upward motion with a tiny flourish.
+static const Note SUCCESS2[] = {
+  {659, 100},  // E5
+  {784, 100},  // G5
+  {988, 140},  // B5
+  {1175, 180}, // D6
+};
+
+// A more melodic flourish that still stays compact.
+static const Note SUCCESS3[] = {
+  {523, 100},  // C5
+  {659, 120},  // E5
+  {784, 120},  // G5
+  {988, 100},  // B5
+  {1319, 180}, // E6 (bright twirl)
+};
+
+// Short, stern downward tones.
+static const Note ERROR[] = {
+  {392, 160}, // G4
+  {330, 160}, // E4
+  {262, 220}, // C4
+  {0, 120},   // brief rest
+  {196, 260}, // G3 (low "bonk")
+};
+
+// Tense descending motif, short but very clear.
+static const Note ERROR2[] = {
+  {784, 160}, // G5
+  {659, 160}, // E5
+  {523, 220}, // C5
+  {0, 60},
+  {392, 260}, // G4 (final drop)
+};
+
+// A glitch-like pattern followed by a low thud.
+static const Note ERROR3[] = {
+  {659, 120}, // E5
+  {0, 40},
+  {659, 120}, // E5 (stutter)
+  {0, 60},
+  {494, 160}, // B4
+  {440, 200}, // A4
+  {392, 260}, // G4 (low drop)
+};
+
+// urgent beeps
+static const Note WARNING[] = {
+  {988, 120}, // B5
+  {0, 80},
+  {988, 120},
+  {0, 80},
+  {988, 200},
+};
+
+// A subtle escalating attention pattern.
+static const Note WARNING2[] = {
+  {523, 120}, // C5
+  {0, 60},
+  {587, 140}, // D5
+  {0, 60},
+  {659, 160}, // E5
+};
+
+// Two short pings followed by a longer warning tone.
+static const Note WARNING3[] = {
+  {659, 100}, // E5
+  {0, 60},
+  {659, 100}, // E5
+  {0, 60},
+  {784, 220}, // G5 (held warning)
+};
+
+// Think: “happy gadget booting up.”
+static const Note CHEERFUL[] = {
   {523, 150}, // C5
   {659, 150}, // E5
   {784, 180}, // G5
@@ -73,7 +170,8 @@ static const Note JINGLE_CHEERFUL[] = {
   {784, 220},  // G5
 };
 
-static const Note JINGLE_ADVENTURE[] = {
+// Triumphant + adventurous, without matching any copyrighted tune.
+static const Note ADVENTURE[] = {
   {392, 120}, // G4
   {523, 160}, // C5
   {659, 160}, // E5
@@ -95,7 +193,8 @@ static const Note JINGLE_ADVENTURE[] = {
   {784, 260},  // G5
 };
 
-static const Note JINGLE_PLAYFUL[] = {
+// Think “smart appliance with personality.”
+static const Note PLAYFUL[] = {
   {659, 120}, // E5
   {784, 120}, // G5
   {880, 150}, // A5
@@ -117,7 +216,8 @@ static const Note JINGLE_PLAYFUL[] = {
   {784, 200},  // G5
 };
 
-static const Note JINGLE_SHANTY[] = {
+// Folk-ish, rolling like waves.
+static const Note SHANTY[] = {
   {392, 200}, // G4
   {440, 200}, // A4
   {494, 250}, // B4
@@ -139,30 +239,7 @@ static const Note JINGLE_SHANTY[] = {
   {440, 260}, // A4
 };
 
-static const Note MELODY_SUCCESS[] = {
-  {523, 90},   // C5
-  {659, 90},   // E5
-  {784, 140},  // G5
-  {1046, 160}, // C6
-};
-
-static const Note MELODY_ERROR[] = {
-  {392, 160}, // G4
-  {330, 160}, // E4
-  {262, 220}, // C4
-  {0, 120},   // brief rest
-  {196, 260}, // G3 (low "bonk")
-};
-
-static const Note MELODY_WARNING[] = {
-  {988, 120}, // B5
-  {0, 80},
-  {988, 120},
-  {0, 80},
-  {988, 200},
-};
-
-static const Note MELODY_JINGLE1[] = {
+static const Note JINGLE[] = {
   {784, 150},  // G5
   {880, 150},  // A5
   {988, 180},  // B5
@@ -173,7 +250,8 @@ static const Note MELODY_JINGLE1[] = {
   {1175, 300}, // D6 sustain
 };
 
-static const Note MELODY_VICTORY[] = {
+// Triumphant, fast, bright.
+static const Note VICTORY[] = {
   {659, 100},  // E5
   {784, 100},  // G5
   {988, 160},  // B5
@@ -183,7 +261,8 @@ static const Note MELODY_VICTORY[] = {
   {1175, 220}, // D6
 };
 
-static const Note MELODY_GOOFY[] = {
+// Great for easter eggs or playful UI interactions.
+static const Note GOOFY[] = {
   {523, 120}, // C5
   {659, 120}, // E5
   {392, 180}, // G4
@@ -191,7 +270,8 @@ static const Note MELODY_GOOFY[] = {
   {784, 200}, // G5
 };
 
-static const Note JINGLE_DUBSTEP[] = {
+// Heavy wobble pattern + a mini drop.
+static const Note DUBSTEP[] = {
   // Intro stab
   {1046, 120}, // C6
   {1175, 120}, // D6
@@ -242,7 +322,8 @@ static const Note JINGLE_DUBSTEP[] = {
   {659, 200}, // E5
 };
 
-static const Note JINGLE_DUBSTEP_MELODIC[] = {
+// Feels like a melodic EDM motif with tasteful wobble.
+static const Note DUBSTEP_MELODIC[] = {
   // ==== Melodic Hook ====
   {523, 150}, // C5
   {659, 150}, // E5
@@ -332,6 +413,39 @@ static const Note ACTIVE_WARNING[] = {
   {3000, 120},
 };
 
+static const Melody melodyTable[] = {
+  #ifdef YB_PIEZO_PASSIVE
+  MELODY_ENTRY(STARTUP),
+  MELODY_ENTRY(STARTUP2),
+  MELODY_ENTRY(STARTUP3),
+  MELODY_ENTRY(SUCCESS),
+  MELODY_ENTRY(SUCCESS2),
+  MELODY_ENTRY(SUCCESS3),
+  MELODY_ENTRY(ERROR),
+  MELODY_ENTRY(ERROR2),
+  MELODY_ENTRY(ERROR3),
+  MELODY_ENTRY(WARNING),
+  MELODY_ENTRY(WARNING2),
+  MELODY_ENTRY(WARNING3),
+  MELODY_ENTRY(CHEERFUL),
+  MELODY_ENTRY(ADVENTURE),
+  MELODY_ENTRY(PLAYFUL),
+  MELODY_ENTRY(SHANTY),
+  MELODY_ENTRY(JINGLE),
+  MELODY_ENTRY(VICTORY),
+  MELODY_ENTRY(GOOFY),
+  MELODY_ENTRY(DUBSTEP),
+  MELODY_ENTRY(DUBSTEP_MELODIC),
+  #endif
+  #ifdef YB_PIEZO_ACTIVE
+  MELODY_ENTRY(ACTIVE_STARTUP),
+  MELODY_ENTRY(ACTIVE_SUCCESS),
+  MELODY_ENTRY(ACTIVE_ERROR),
+  MELODY_ENTRY(ACTIVE_WARNING),
+  #endif
+};
+static const size_t melodyCount = sizeof(melodyTable) / sizeof(melodyTable[0]);
+
 void piezo_setup()
 {
   pinMode(YB_PIEZO_PIN, OUTPUT);
@@ -363,7 +477,21 @@ void piezo_setup()
   if (piezoIsActive)
     playMelodyByName("ACTIVE_STARTUP");
   else
-    playMelodyByName("MELODY_STARTUP2");
+    playMelodyByName("STARTUP2");
+}
+
+bool playMelodyByName(const char* melody)
+{
+  const Note* seq = nullptr;
+  size_t len = 0;
+
+  for (size_t i = 0; i < melodyCount; i++) {
+    if (!strcmp(melody, melodyTable[i].name)) {
+      playMelody(melodyTable[i].seq, melodyTable[i].len);
+      return true;
+    }
+  }
+  return false;
 }
 
 // Signal the task to start (or restart) a melody.
@@ -452,75 +580,6 @@ void BuzzerTask(void* /*pv*/)
     g_len = 0;
     portEXIT_CRITICAL(&g_mux);
   }
-}
-
-bool playMelodyByName(const char* melody)
-{
-  const Note* seq = nullptr;
-  size_t len = 0;
-
-  // --- Match name to melody table ---
-  if (!strcmp(melody, "MELODY_STARTUP")) {
-    seq = MELODY_STARTUP;
-    len = sizeof(MELODY_STARTUP) / sizeof(Note);
-  } else if (!strcmp(melody, "MELODY_STARTUP2")) {
-    seq = MELODY_STARTUP2;
-    len = sizeof(MELODY_STARTUP2) / sizeof(Note);
-  } else if (!strcmp(melody, "JINGLE_CHEERFUL")) {
-    seq = JINGLE_CHEERFUL;
-    len = sizeof(JINGLE_CHEERFUL) / sizeof(Note);
-  } else if (!strcmp(melody, "JINGLE_ADVENTURE")) {
-    seq = JINGLE_ADVENTURE;
-    len = sizeof(JINGLE_ADVENTURE) / sizeof(Note);
-  } else if (!strcmp(melody, "JINGLE_PLAYFUL")) {
-    seq = JINGLE_PLAYFUL;
-    len = sizeof(JINGLE_PLAYFUL) / sizeof(Note);
-  } else if (!strcmp(melody, "JINGLE_SHANTY")) {
-    seq = JINGLE_SHANTY;
-    len = sizeof(JINGLE_SHANTY) / sizeof(Note);
-  } else if (!strcmp(melody, "MELODY_SUCCESS")) {
-    seq = MELODY_SUCCESS;
-    len = sizeof(MELODY_SUCCESS) / sizeof(Note);
-  } else if (!strcmp(melody, "MELODY_ERROR")) {
-    seq = MELODY_ERROR;
-    len = sizeof(MELODY_ERROR) / sizeof(Note);
-  } else if (!strcmp(melody, "MELODY_WARNING")) {
-    seq = MELODY_WARNING;
-    len = sizeof(MELODY_WARNING) / sizeof(Note);
-  } else if (!strcmp(melody, "MELODY_JINGLE1")) {
-    seq = MELODY_JINGLE1;
-    len = sizeof(MELODY_JINGLE1) / sizeof(Note);
-  } else if (!strcmp(melody, "MELODY_VICTORY")) {
-    seq = MELODY_VICTORY;
-    len = sizeof(MELODY_VICTORY) / sizeof(Note);
-  } else if (!strcmp(melody, "MELODY_GOOFY")) {
-    seq = MELODY_GOOFY;
-    len = sizeof(MELODY_GOOFY) / sizeof(Note);
-  } else if (!strcmp(melody, "JINGLE_DUBSTEP")) {
-    seq = JINGLE_DUBSTEP;
-    len = sizeof(JINGLE_DUBSTEP) / sizeof(Note);
-  } else if (!strcmp(melody, "JINGLE_DUBSTEP_MELODIC")) {
-    seq = JINGLE_DUBSTEP_MELODIC;
-    len = sizeof(JINGLE_DUBSTEP_MELODIC) / sizeof(Note);
-  } else if (!strcmp(melody, "ACTIVE_STARTUP")) {
-    seq = ACTIVE_STARTUP;
-    len = sizeof(ACTIVE_STARTUP) / sizeof(Note);
-  } else if (!strcmp(melody, "ACTIVE_SUCCESS")) {
-    seq = ACTIVE_SUCCESS;
-    len = sizeof(ACTIVE_SUCCESS) / sizeof(Note);
-  } else if (!strcmp(melody, "ACTIVE_ERROR")) {
-    seq = ACTIVE_ERROR;
-    len = sizeof(ACTIVE_ERROR) / sizeof(Note);
-  } else if (!strcmp(melody, "ACTIVE_WARNING")) {
-    seq = ACTIVE_WARNING;
-    len = sizeof(ACTIVE_WARNING) / sizeof(Note);
-  } else {
-    return false;
-  }
-
-  playMelody(seq, len);
-
-  return true;
 }
 
 #endif
