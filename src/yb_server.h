@@ -29,7 +29,6 @@
 #ifdef YB_IS_FROTHFET
   #include "logo-frothfet.png.gz.h"
 #elif YB_IS_BRINEOMATIC
-  #include "logo-brineomatic-180x180.png.gz.h"
   #include "logo-brineomatic.png.gz.h"
 #else
   #include "logo-navico.png.gz.h"
