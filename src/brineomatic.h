@@ -112,7 +112,7 @@ class Brineomatic
     ServoChannel* highPressureValveServo = NULL;
     StepperChannel* highPressureValveStepper = NULL;
 
-    float highPressureValveStepperCloseAngle = 1670.0;
+    float highPressureValveStepperCloseAngle = 1660.0;
     float highPressureValveStepperCloseSpeed = 10.0;
     float highPressureValveStepperOpenAngle = 0.0;
     float highPressureValveStepperOpenSpeed = 40.0;
