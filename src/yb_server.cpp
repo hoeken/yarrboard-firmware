@@ -77,7 +77,7 @@ void server_setup()
     }
   });
 
-  server->on("/logo-navico.png", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
+  server->on("/logo.png", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
     response->setCode(200);
     response->setContentType("image/png");
     response->addHeader("Content-Encoding", "gzip");
@@ -97,26 +97,6 @@ void server_setup()
     return response->send();
   });
 
-  server->on("/logo-180x180.png", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
-    response->setCode(200);
-    response->setContentType("image/png");
-    response->addHeader("Content-Encoding", "gzip");
-    response->addHeader("Last-Modified", last_modified);
-
-#ifdef YB_IS_FROTHFET
-    response->addHeader("ETag", logo_frothfet_gz_sha);
-    response->setContent(logo_frothfet_gz, logo_frothfet_gz_len);
-#elif YB_IS_BRINEOMATIC
-    response->addHeader("ETag", logo_brineomatic_180x180_gz_sha);
-    response->setContent(logo_brineomatic_180x180_gz, logo_brineomatic_180x180_gz_len);
-#else
-    response->addHeader("ETag", logo_yarrboard_gz_sha);
-    response->setContent(logo_yarrboard_gz, logo_yarrboard_gz_len);
-#endif
-
-    return response->send();
-  });
-
   server->on("/site.webmanifest", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
     esp_err_t err = ESP_OK;
     JsonDocument doc;
@@ -127,21 +107,10 @@ void server_setup()
 
     // icons array
     JsonArray icons = doc["icons"].to<JsonArray>();
-
-    // // First icon
-    // {
-    //   JsonObject icon = icons.add<JsonObject>();
-    //   icon["src"] = "favicons/android-chrome-192x192.png";
-    //   icon["sizes"] = "192x192";
-    //   icon["type"] = "image/png";
-    // }
-
-    {
-      JsonObject icon = icons.add<JsonObject>();
-      icon["src"] = "logo-navico.png";
-      icon["sizes"] = "512x512";
-      icon["type"] = "image/png";
-    }
+    JsonObject icon = icons.add<JsonObject>();
+    icon["src"] = "logo.png";
+    icon["sizes"] = "512x512";
+    icon["type"] = "image/png";
 
     doc["start_url"] = ".";
     doc["display"] = "standalone";

@@ -42,7 +42,7 @@ void navico_loop()
     Text_0["Language"] = "en";
     Text_0["Name"] = board_name;
     Text_0["Description"] = String(board_name) + " Webapp";
-    doc["Icon"] = url + "/logo-navico.png";
+    doc["Icon"] = url + "/logo.png";
     doc["URL"] = url + "/";
     doc["OnlyShowOnClientIP"] = "true";
 

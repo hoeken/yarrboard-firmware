@@ -144,6 +144,13 @@ tr.pwmRow #statsTable tbody tr {
     filter: invert(.75);
 }
 
+.logo {
+    color-scheme: light;
+    /* Prevents dark-mode auto inversion */
+    forced-color-adjust: none;
+    /* Safari/iOS: don't touch my colors */
+}
+
 /* [data-bs-theme="light"] {
     --bs-body-bg: #eee;
 }
