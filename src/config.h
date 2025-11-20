@@ -66,7 +66,7 @@
 #endif
 
 // max http clients
-#define YB_CLIENT_LIMIT 12
+#define YB_CLIENT_LIMIT 16
 
 // for handling messages outside of the loop
 #define YB_RECEIVE_BUFFER_COUNT 100
