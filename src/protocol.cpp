@@ -188,8 +188,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return generateGraphDataJSON(output);
     else if (!strcmp(cmd, "get_update"))
       return generateUpdateJSON(output);
-    else if (!strcmp(cmd, "play_piezo"))
-      return handlePlayPiezo(input, output);
+    else if (!strcmp(cmd, "play_sound"))
+      return handlePlaySound(input, output);
     else if (!strcmp(cmd, "set_pwm_channel"))
       return handleSetPWMChannel(input, output);
     else if (!strcmp(cmd, "toggle_pwm_channel"))
@@ -666,7 +666,7 @@ void handleOTAStart(JsonVariantConst input, JsonVariant output)
     return generateErrorJSON(output, "Firmware already up to date.");
 }
 
-void handlePlayPiezo(JsonVariantConst input, JsonVariant output)
+void handlePlaySound(JsonVariantConst input, JsonVariant output)
 {
 #ifdef YB_HAS_PIEZO
   // expect: "melody": "name"
