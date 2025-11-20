@@ -675,73 +675,13 @@ void handlePlayPiezo(JsonVariantConst input, JsonVariant output)
     if (!melody)
       return generateErrorJSON(output, "'melody' must be a string");
 
-    const Note* seq = nullptr;
-    size_t len = 0;
-    bool repeat = input["repeat"] | false;
-
-    // --- Match name to melody table ---
-    if (!strcmp(melody, "MELODY_STARTUP")) {
-      seq = MELODY_STARTUP;
-      len = sizeof(MELODY_STARTUP) / sizeof(Note);
-    } else if (!strcmp(melody, "MELODY_STARTUP2")) {
-      seq = MELODY_STARTUP2;
-      len = sizeof(MELODY_STARTUP2) / sizeof(Note);
-    } else if (!strcmp(melody, "JINGLE_CHEERFUL")) {
-      seq = JINGLE_CHEERFUL;
-      len = sizeof(JINGLE_CHEERFUL) / sizeof(Note);
-    } else if (!strcmp(melody, "JINGLE_ADVENTURE")) {
-      seq = JINGLE_ADVENTURE;
-      len = sizeof(JINGLE_ADVENTURE) / sizeof(Note);
-    } else if (!strcmp(melody, "JINGLE_PLAYFUL")) {
-      seq = JINGLE_PLAYFUL;
-      len = sizeof(JINGLE_PLAYFUL) / sizeof(Note);
-    } else if (!strcmp(melody, "JINGLE_SHANTY")) {
-      seq = JINGLE_SHANTY;
-      len = sizeof(JINGLE_SHANTY) / sizeof(Note);
-    } else if (!strcmp(melody, "MELODY_SUCCESS")) {
-      seq = MELODY_SUCCESS;
-      len = sizeof(MELODY_SUCCESS) / sizeof(Note);
-    } else if (!strcmp(melody, "MELODY_ERROR")) {
-      seq = MELODY_ERROR;
-      len = sizeof(MELODY_ERROR) / sizeof(Note);
-    } else if (!strcmp(melody, "MELODY_WARNING")) {
-      seq = MELODY_WARNING;
-      len = sizeof(MELODY_WARNING) / sizeof(Note);
-    } else if (!strcmp(melody, "MELODY_JINGLE1")) {
-      seq = MELODY_JINGLE1;
-      len = sizeof(MELODY_JINGLE1) / sizeof(Note);
-    } else if (!strcmp(melody, "MELODY_VICTORY")) {
-      seq = MELODY_VICTORY;
-      len = sizeof(MELODY_VICTORY) / sizeof(Note);
-    } else if (!strcmp(melody, "MELODY_GOOFY")) {
-      seq = MELODY_GOOFY;
-      len = sizeof(MELODY_GOOFY) / sizeof(Note);
-    } else if (!strcmp(melody, "JINGLE_DUBSTEP")) {
-      seq = JINGLE_DUBSTEP;
-      len = sizeof(JINGLE_DUBSTEP) / sizeof(Note);
-    } else if (!strcmp(melody, "JINGLE_DUBSTEP_MELODIC")) {
-      seq = JINGLE_DUBSTEP_MELODIC;
-      len = sizeof(JINGLE_DUBSTEP_MELODIC) / sizeof(Note);
-    } else if (!strcmp(melody, "ACTIVE_STARTUP")) {
-      seq = ACTIVE_STARTUP;
-      len = sizeof(ACTIVE_STARTUP) / sizeof(Note);
-    } else if (!strcmp(melody, "ACTIVE_SUCCESS")) {
-      seq = ACTIVE_SUCCESS;
-      len = sizeof(ACTIVE_SUCCESS) / sizeof(Note);
-    } else if (!strcmp(melody, "ACTIVE_ERROR")) {
-      seq = ACTIVE_ERROR;
-      len = sizeof(ACTIVE_ERROR) / sizeof(Note);
-    } else if (!strcmp(melody, "ACTIVE_WARNING")) {
-      seq = ACTIVE_WARNING;
-      len = sizeof(ACTIVE_WARNING) / sizeof(Note);
-    } else {
+    if (playMelodyByName(melody))
+      return;
+    else
       return generateErrorJSON(output, "Unknown melody name");
-    }
-
-    playMelody(seq, len, repeat);
   }
 
-  // Expect: { "notes": [ { "freq": 440, "ms": 200 }, ... ], "repeat": true }
+  // Expect: { "notes": [ { "freq": 440, "ms": 200 }, ... ] }
   if (!input["notes"])
     return generateErrorJSON(output, "Missing 'notes' array");
 
@@ -778,9 +718,7 @@ void handlePlayPiezo(JsonVariantConst input, JsonVariant output)
     seq[idx++] = {freq, ms};
   }
 
-  bool repeat = input["repeat"] | false;
-
-  playMelody(seq, count, repeat);
+  playMelody(seq, count);
 
   delete[] seq;
 #else
