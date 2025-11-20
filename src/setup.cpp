@@ -6,6 +6,7 @@
 #include "mqtt.h"
 #include "navico.h"
 #include "networking.h"
+#include "ntp.h"
 #include "ota.h"
 #include "prefs.h"
 #include "rgb.h"
@@ -56,8 +57,8 @@ void full_setup()
   network_setup();
   YBP.println("Network ok");
 
-  // ntp_setup();
-  // YBP.println("NTP ok");
+  ntp_setup();
+  YBP.println("NTP ok");
 
   server_setup();
   YBP.println("Server ok");
