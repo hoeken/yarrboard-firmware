@@ -3,14 +3,9 @@
 ## v2.1.0
 
 * fork + modify esp32FOTA to use bundled certificates
-* add app icon for bookmarking same as anchor alarm plugin
 
 ## BRINEOMATIC
 
-* update code for new Rev B board:
-        * stepper_pid
-    * add support for the piezo on error or success.
-        * need to add various piezo sounds we can play
 * add configuration options for:
     * hardware
         * has_* for all hardware
@@ -30,6 +25,8 @@
     * options for display units
     * tank capacity
     * tank full level
+    * piezo melody on success
+    * piezo melody on failure
 * add mid-level commands to set_watermaker
     * boost_pump
     * high_pressure_pump

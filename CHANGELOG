@@ -2,6 +2,11 @@
 
 * native USB serial support
 * nicer debug system, and bring full debug to the web console.
+* add play_piezo command
+    * name -> premade melody
+    * notes -> array of freq/duration
+* added icons for adding to home screen on apple / android
+* added a bunch of premade piezo melodys
 
 ### Brineomatic
 

@@ -33,6 +33,10 @@
   #include "stepper_channel.h"
 #endif
 
+#ifdef YB_HAS_PIEZO
+  #include "piezo.h"
+#endif
+
 char board_name[YB_BOARD_NAME_LENGTH] = YB_BOARD_NAME;
 char admin_user[YB_USERNAME_LENGTH] = "admin";
 char admin_pass[YB_PASSWORD_LENGTH] = "admin";
@@ -184,6 +188,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return generateGraphDataJSON(output);
     else if (!strcmp(cmd, "get_update"))
       return generateUpdateJSON(output);
+    else if (!strcmp(cmd, "play_piezo"))
+      return handlePlayPiezo(input, output);
     else if (!strcmp(cmd, "set_pwm_channel"))
       return handleSetPWMChannel(input, output);
     else if (!strcmp(cmd, "toggle_pwm_channel"))
@@ -658,6 +664,128 @@ void handleOTAStart(JsonVariantConst input, JsonVariant output)
     doOTAUpdate = true;
   else
     return generateErrorJSON(output, "Firmware already up to date.");
+}
+
+void handlePlayPiezo(JsonVariantConst input, JsonVariant output)
+{
+#ifdef YB_HAS_PIEZO
+  // expect: "melody": "name"
+  if (input["melody"]) {
+    const char* melody = input["melody"].as<const char*>();
+    if (!melody)
+      return generateErrorJSON(output, "'melody' must be a string");
+
+    const Note* seq = nullptr;
+    size_t len = 0;
+    bool repeat = input["repeat"] | false;
+
+    // --- Match name to melody table ---
+    if (!strcmp(melody, "MELODY_STARTUP")) {
+      seq = MELODY_STARTUP;
+      len = sizeof(MELODY_STARTUP) / sizeof(Note);
+    } else if (!strcmp(melody, "MELODY_STARTUP2")) {
+      seq = MELODY_STARTUP2;
+      len = sizeof(MELODY_STARTUP2) / sizeof(Note);
+    } else if (!strcmp(melody, "JINGLE_CHEERFUL")) {
+      seq = JINGLE_CHEERFUL;
+      len = sizeof(JINGLE_CHEERFUL) / sizeof(Note);
+    } else if (!strcmp(melody, "JINGLE_ADVENTURE")) {
+      seq = JINGLE_ADVENTURE;
+      len = sizeof(JINGLE_ADVENTURE) / sizeof(Note);
+    } else if (!strcmp(melody, "JINGLE_PLAYFUL")) {
+      seq = JINGLE_PLAYFUL;
+      len = sizeof(JINGLE_PLAYFUL) / sizeof(Note);
+    } else if (!strcmp(melody, "JINGLE_SHANTY")) {
+      seq = JINGLE_SHANTY;
+      len = sizeof(JINGLE_SHANTY) / sizeof(Note);
+    } else if (!strcmp(melody, "MELODY_SUCCESS")) {
+      seq = MELODY_SUCCESS;
+      len = sizeof(MELODY_SUCCESS) / sizeof(Note);
+    } else if (!strcmp(melody, "MELODY_ERROR")) {
+      seq = MELODY_ERROR;
+      len = sizeof(MELODY_ERROR) / sizeof(Note);
+    } else if (!strcmp(melody, "MELODY_WARNING")) {
+      seq = MELODY_WARNING;
+      len = sizeof(MELODY_WARNING) / sizeof(Note);
+    } else if (!strcmp(melody, "MELODY_JINGLE1")) {
+      seq = MELODY_JINGLE1;
+      len = sizeof(MELODY_JINGLE1) / sizeof(Note);
+    } else if (!strcmp(melody, "MELODY_VICTORY")) {
+      seq = MELODY_VICTORY;
+      len = sizeof(MELODY_VICTORY) / sizeof(Note);
+    } else if (!strcmp(melody, "MELODY_GOOFY")) {
+      seq = MELODY_GOOFY;
+      len = sizeof(MELODY_GOOFY) / sizeof(Note);
+    } else if (!strcmp(melody, "JINGLE_DUBSTEP")) {
+      seq = JINGLE_DUBSTEP;
+      len = sizeof(JINGLE_DUBSTEP) / sizeof(Note);
+    } else if (!strcmp(melody, "JINGLE_DUBSTEP_MELODIC")) {
+      seq = JINGLE_DUBSTEP_MELODIC;
+      len = sizeof(JINGLE_DUBSTEP_MELODIC) / sizeof(Note);
+    } else if (!strcmp(melody, "ACTIVE_STARTUP")) {
+      seq = ACTIVE_STARTUP;
+      len = sizeof(ACTIVE_STARTUP) / sizeof(Note);
+    } else if (!strcmp(melody, "ACTIVE_SUCCESS")) {
+      seq = ACTIVE_SUCCESS;
+      len = sizeof(ACTIVE_SUCCESS) / sizeof(Note);
+    } else if (!strcmp(melody, "ACTIVE_ERROR")) {
+      seq = ACTIVE_ERROR;
+      len = sizeof(ACTIVE_ERROR) / sizeof(Note);
+    } else if (!strcmp(melody, "ACTIVE_WARNING")) {
+      seq = ACTIVE_WARNING;
+      len = sizeof(ACTIVE_WARNING) / sizeof(Note);
+    } else {
+      return generateErrorJSON(output, "Unknown melody name");
+    }
+
+    playMelody(seq, len, repeat);
+  }
+
+  // Expect: { "notes": [ { "freq": 440, "ms": 200 }, ... ], "repeat": true }
+  if (!input["notes"])
+    return generateErrorJSON(output, "Missing 'notes' array");
+
+  JsonVariantConst notesVar = input["notes"];
+  if (!notesVar.is<JsonArrayConst>())
+    return generateErrorJSON(output, "'notes' must be an array");
+
+  JsonArrayConst notes = notesVar.as<JsonArrayConst>();
+  size_t count = notes.size();
+
+  if (count == 0)
+    return generateErrorJSON(output, "'notes' array is empty");
+
+  if (count > YB_MAX_MELODY_LENGTH) {
+    char error[128];
+    snprintf(error, sizeof(error), "Max notes length of %d", YB_MAX_MELODY_LENGTH);
+    return generateErrorJSON(output, error);
+  }
+
+  // Allocate dynamic Note sequence
+  Note* seq = new Note[count];
+  size_t idx = 0;
+
+  for (JsonVariantConst nv : notes) {
+    if (!nv["ms"]) {
+      delete[] seq;
+      return generateErrorJSON(output, "Each note must contain 'ms'");
+    }
+
+    // freq is optional (default = 0 meaning rest)
+    uint16_t freq = nv["freq"] | 0;
+    uint16_t ms = nv["ms"].as<uint16_t>();
+
+    seq[idx++] = {freq, ms};
+  }
+
+  bool repeat = input["repeat"] | false;
+
+  playMelody(seq, count, repeat);
+
+  delete[] seq;
+#else
+  return generateErrorJSON(output, "Piezo not supported on this board");
+#endif
 }
 
 void handleSetPWMChannel(JsonVariantConst input, JsonVariant output)

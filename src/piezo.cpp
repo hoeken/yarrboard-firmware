@@ -14,26 +14,9 @@
   #define LEDC_RES_BITS 10
   #define BUZZER_DUTY   512 // ~50% at 10-bit
 
-// Example melody (C scale up, rest, then down)
-static const Note PASSIVE_STARTUP[] = {
-  {262, 100},
-  {294, 100},
-  {330, 100},
-  {349, 100},
-  {392, 100},
-  {440, 100},
-  {494, 100},
-  {523, 100},
-};
-
-// Example melody (C scale up, rest, then down)
-static const Note ACTIVE_STARTUP[] = {
-  {100, 50},
-  {0, 50},
-  {100, 50},
-  {0, 50},
-  {100, 50},
-};
+// our global note buffer
+static Note g_noteBuffer[YB_MAX_MELODY_LENGTH]; // pick a safe max size
+static size_t g_noteCount = 0;
 
 // ---------- Buzzer task control ----------
 static TaskHandle_t buzzerTaskHandle = nullptr;
@@ -81,7 +64,7 @@ void piezo_setup()
   if (piezoIsActive)
     playMelody(ACTIVE_STARTUP, sizeof(ACTIVE_STARTUP) / sizeof(ACTIVE_STARTUP[0]), false);
   else
-    playMelody(PASSIVE_STARTUP, sizeof(PASSIVE_STARTUP) / sizeof(PASSIVE_STARTUP[0]), false);
+    playMelody(JINGLE_DUBSTEP, sizeof(JINGLE_DUBSTEP) / sizeof(JINGLE_DUBSTEP[0]), false);
 }
 
 // Signal the task to start (or restart) a melody.
@@ -89,9 +72,18 @@ void piezo_setup()
 void playMelody(const Note* seq, size_t len, bool repeat)
 {
   portENTER_CRITICAL(&g_mux);
-  g_seq = seq;
   g_len = len;
   g_repeat = repeat;
+
+  // max size
+  if (len > YB_MAX_MELODY_LENGTH)
+    return;
+
+  // copy into persistent storage
+  for (size_t i = 0; i < len; i++) {
+    g_noteBuffer[i] = seq[i];
+  }
+  g_seq = g_noteBuffer;
   portEXIT_CRITICAL(&g_mux);
   if (buzzerTaskHandle)
     xTaskNotifyGive(buzzerTaskHandle); // wake the task
