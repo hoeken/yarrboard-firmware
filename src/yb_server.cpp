@@ -74,17 +74,13 @@ void server_setup()
       response->setContent(index_html_gz, index_html_gz_len);
 
       return response->send();
-    } });
+    }
+  });
 
   server->on("/logo-navico.png", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
     response->setCode(200);
     response->setContentType("image/png");
-
-    // Tell the browswer the contemnt is Gzipped
     response->addHeader("Content-Encoding", "gzip");
-
-    // And set the last-modified datetime so we can check if we need to send it
-    // again next time or not
     response->addHeader("Last-Modified", last_modified);
 
 #ifdef YB_IS_FROTHFET
@@ -98,7 +94,84 @@ void server_setup()
     response->setContent(logo_yarrboard_gz, logo_yarrboard_gz_len);
 #endif
 
-    return response->send(); });
+    return response->send();
+  });
+
+  server->on("/logo-180x180.png", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
+    response->setCode(200);
+    response->setContentType("image/png");
+    response->addHeader("Content-Encoding", "gzip");
+    response->addHeader("Last-Modified", last_modified);
+
+#ifdef YB_IS_FROTHFET
+    response->addHeader("ETag", logo_frothfet_gz_sha);
+    response->setContent(logo_frothfet_gz, logo_frothfet_gz_len);
+#elif YB_IS_BRINEOMATIC
+    response->addHeader("ETag", logo_brineomatic_180x180_gz_sha);
+    response->setContent(logo_brineomatic_180x180_gz, logo_brineomatic_180x180_gz_len);
+#else
+    response->addHeader("ETag", logo_yarrboard_gz_sha);
+    response->setContent(logo_yarrboard_gz, logo_yarrboard_gz_len);
+#endif
+
+    return response->send();
+  });
+
+  server->on("/site.webmanifest", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
+    esp_err_t err = ESP_OK;
+    JsonDocument doc;
+
+    // Root values
+    doc["short_name"] = board_name;
+    doc["name"] = board_name;
+
+    // icons array
+    JsonArray icons = doc["icons"].to<JsonArray>();
+
+    // // First icon
+    // {
+    //   JsonObject icon = icons.add<JsonObject>();
+    //   icon["src"] = "favicons/android-chrome-192x192.png";
+    //   icon["sizes"] = "192x192";
+    //   icon["type"] = "image/png";
+    // }
+
+    {
+      JsonObject icon = icons.add<JsonObject>();
+      icon["src"] = "logo-navico.png";
+      icon["sizes"] = "512x512";
+      icon["type"] = "image/png";
+    }
+
+    doc["start_url"] = ".";
+    doc["display"] = "standalone";
+    doc["theme_color"] = "#000000";
+    doc["background_color"] = "#ffffff";
+
+    // we can have empty messages
+    if (doc.size()) {
+      // allocate memory for this output
+      size_t jsonSize = measureJson(doc);
+      char* jsonBuffer = (char*)malloc(jsonSize + 1);
+      jsonBuffer[jsonSize] = '\0'; // null terminate
+
+      // did we get anything?
+      if (jsonBuffer != NULL) {
+        response->setContentType("application/manifest+json");
+        serializeJson(doc.as<JsonObject>(), jsonBuffer, jsonSize + 1);
+        response->setContent(jsonBuffer);
+        err = response->send();
+      }
+      // send overloaded response
+      else
+        err = response->send(503, "application/manifest+json", "{}");
+
+      // no leaks!
+      free(jsonBuffer);
+    }
+
+    return err;
+  });
 
   // Our websocket handler
   websocketHandler.onFrame(

@@ -63,6 +63,10 @@ function buildfs_inline(cb) {
             base: 'html/',
             //            js: uglify,
             css: [cleancss, inlineImages],
+            ignore: [
+                'logo-navico.png',        // ignore the apple-touch-icon line
+                'site.webmanifest'        // ignore the manifest line
+            ]
             //            disabledTypes: ['svg', 'img']
         }))
         .pipe(htmlmin({
@@ -101,6 +105,12 @@ function buildfs_brineomatic_logo_gz(cb) {
         .pipe(dest("dist"));
 }
 
+function buildfs_brineomatic_logo_180x180_gz(cb) {
+    return src('html/logo-brineomatic-180x180.png')
+        .pipe(gzip())
+        .pipe(dest("dist"));
+}
+
 function buildfs_logo_embedded(cb) {
     var source = 'dist/logo-yarrboard.png.gz';
     var destination = 'src/logo-yarrboard.png.gz.h';
@@ -109,6 +119,10 @@ function buildfs_logo_embedded(cb) {
     source = 'dist/logo-brineomatic.png.gz';
     destination = 'src/logo-brineomatic.png.gz.h';
     write_header_file(source, destination, "logo_brineomatic_gz");
+
+    source = 'dist/logo-brineomatic-180x180.png.gz';
+    destination = 'src/logo-brineomatic-180x180.png.gz.h';
+    write_header_file(source, destination, "logo_brineomatic_180x180_gz");
 
     source = 'dist/logo-frothfet.png.gz';
     destination = 'src/logo-frothfet.png.gz.h';
@@ -145,7 +159,7 @@ function write_header_file(source, destination, name) {
     deleteAsync([source]);
 }
 
-const all = series(clean, buildfs_inline, buildfs_embeded, buildfs_yarrboard_logo_gz, buildfs_frothfet_logo_gz, buildfs_brineomatic_logo_gz, buildfs_logo_embedded);
+const all = series(clean, buildfs_inline, buildfs_embeded, buildfs_yarrboard_logo_gz, buildfs_frothfet_logo_gz, buildfs_brineomatic_logo_gz, buildfs_brineomatic_logo_180x180_gz, buildfs_logo_embedded);
 
 export default all;
 //export build;
