@@ -183,3 +183,7 @@ html[data-bs-theme="dark"] .c3 .c3-gauge-units,
 html[data-bs-theme="dark"] .c3 .c3-axis text {
     fill: var(--bs-body-color) !important;
 }
+
+.scrollFix {
+    scroll-margin-top: 4.5rem;
+}

@@ -8,16 +8,11 @@
 
 * add configuration options for:
     * hardware
+        * stepper microsteps
+        * stepper steps per degree
         * dynamic options with javascript
     * errors
         * dynamic options with javascript
-    * general
-        * autoflush - what mode, what duration/volume, and interval
-        * options for display units
-        * tank capacity
-        * tank full level
-        * piezo melody on success
-        * piezo melody on failure
     * add all parameters into generateConfig()
     * client side loading
     * dynamic display of client UI with JS
