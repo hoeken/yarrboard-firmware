@@ -1228,21 +1228,18 @@ void Brineomatic::runStateMachine()
 
       uint32_t boostPumpStart = millis();
       if (hasBoostPump()) {
-        // YBP.println("Boost Pump Started");
+        YBP.println("Boost Pump Started");
         enableBoostPump();
         while (getFilterPressure() < getFilterPressureMinimum()) {
           if (checkStopFlag(runResult))
             return;
 
-          if (millis() - boostPumpStart > filterPressureTimeout) {
-            currentStatus = Status::STOPPING;
-            runResult = Result::ERR_FILTER_PRESSURE_TIMEOUT;
+          if (checkFilterPressureLow())
             return;
-          }
 
           vTaskDelay(pdMS_TO_TICKS(100));
         }
-        // YBP.println("Boost Pump OK");
+        YBP.println("Boost Pump OK");
       }
 
       YBP.println("High Pressure Pump Started");

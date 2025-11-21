@@ -1893,7 +1893,6 @@
                               <option value="volume">By Volume</option>
                             </select>
                             <label for="autoflush_mode">Autoflush Mode</label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="input-group input-group-sm mb-3">
@@ -1924,7 +1923,6 @@
                             <input id="tank_capacity" type="text" class="form-control" placeholder="">
                             <label for="tank_capacity">Tank Capacity</label>
                             <span class="input-group-text">liters</span>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -1932,7 +1930,6 @@
                               <option value="celsius">Celsius</option>
                             </select>
                             <label for="pressure_units">Temperature Units</label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -1940,7 +1937,6 @@
                               <option value="psi">PSI</option>
                             </select>
                             <label for="pressure_units">Pressure Units</label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -1948,7 +1944,6 @@
                               <option value="liters">Liters</option>
                             </select>
                             <label for="volume_units">Volume Units</label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -1956,21 +1951,18 @@
                               <option value="lph">LPH (liters per hour)</option>
                             </select>
                             <label for="flowrate_units">Flowrate Units</label>
-                            <div class="invalid-feedback"></div>
                         </div>
                         
                         <div class="form-floating mb-3">
                             <select id="success_melody" class="form-select" aria-label="Success Melody">
                             </select>
                             <label for="default_role">Success Melody</label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
                             <select id="error_melody" class="form-select" aria-label="Error Melody">
                             </select>
                             <label for="default_role">Error Melody</label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="text-center">
@@ -1991,7 +1983,6 @@
                                 ${relayOptions}
                             </select>
                             <label for="boost_pump_control">Boost Pump Control</label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -2001,7 +1992,6 @@
                                 ${relayOptions}
                             </select>
                             <label for="high_pressure_pump_control">High Pressure Pump Control</label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -2012,7 +2002,6 @@
                                 ${servoOptions}
                             </select>
                             <label for="high_pressure_valve_control">High Pressure Valve Control</label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row g-3 mb-3">
@@ -2091,7 +2080,6 @@
                                 ${servoOptions}
                             </select>
                             <label for="diverter_valve_control">Diverter Valve Control</label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row g-3 mb-3">
@@ -2112,7 +2100,6 @@
                               <span class="input-group-text">°</span>
                             </div>
                           </div>
-
                         </div>
 
                         <div class="form-floating mb-3">
@@ -2122,7 +2109,6 @@
                                 ${relayOptions}
                             </select>
                             <label for="flush_valve_control">Flush Valve Control</label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -2132,7 +2118,6 @@
                                 ${relayOptions}
                             </select>
                             <label for="cooling_fan_control">Cooling Fan Control</label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row g-3 mb-3">
@@ -2158,7 +2143,6 @@
                             <label class="form-check-label" for="has_membrane_pressure_sensor">
                                 Has Membrane Pressure Sensor
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row g-3 mb-3">
@@ -2184,7 +2168,6 @@
                             <label class="form-check-label" for="has_filter_pressure_sensor">
                                 Has Filter Pressure Sensor
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row g-3 mb-3">
@@ -2210,7 +2193,6 @@
                             <label class="form-check-label" for="has_product_tds_sensor">
                                 Has Product TDS Sensor
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-check form-switch mb-3">
@@ -2218,7 +2200,6 @@
                             <label class="form-check-label" for="has_brine_tds_sensor">
                                 Has Brine TDS Sensor
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-check form-switch mb-3">
@@ -2226,7 +2207,6 @@
                             <label class="form-check-label" for="has_product_flow_sensor">
                                 Has Product Flow Sensor
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="input-group input-group-sm mb-3">
@@ -2239,7 +2219,6 @@
                             <label class="form-check-label" for="has_brine_flow_sensor">
                                 Has Brine Flow Sensor
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="input-group input-group-sm mb-3">
@@ -2252,7 +2231,6 @@
                             <label class="form-check-label" for="has_motor_temperature_sensor">
                                 Has Motor Temperature Sensor
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="text-center">
@@ -2271,43 +2249,39 @@
                             <input id="flush_timeout" type="text" class="form-control" placeholder="">
                             <label for="flush_timeout">Flush Timeout</label>
                             <span class="input-group-text">minutes</span>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="input-group form-floating mb-3">
                             <input id="membrane_pressure_timeout" type="text" class="form-control" placeholder="">
                             <label for="membrane_pressure_timeout">Membrane Pressure Timeout</label>
                             <span class="input-group-text">minutes</span>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="input-group form-floating mb-3">
                             <input id="product_flowrate_timeout" type="text" class="form-control" placeholder="">
                             <label for="product_flowrate_timeout">Product Flowrate Timeout</label>
                             <span class="input-group-text">minutes</span>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="input-group form-floating mb-3">
                             <input id="product_salinity_timeout" type="text" class="form-control" placeholder="">
                             <label for="product_salinity_timeout">Product Salinity Timeout</label>
-                            <span class="input-group-text">minutes</span>
-                            <div class="invalid-feedback"></div>
+                            <span class="input-group-text">minutes</span>                            
                         </div>
 
                         <div class="input-group form-floating mb-3">
                             <input id="production_runtime_timeout" type="text" class="form-control" placeholder="">
                             <label for="production_runtime_timeout">Production Runtime Timeout</label>
                             <span class="input-group-text">hours</span>
-                            <div class="invalid-feedback"></div>
                         </div>
+
+                        <h5>Error Checking</h5>
 
                         <div class="form-check form-switch mb-3">
                             <input class="form-check-input" type="checkbox" id="enable_membrane_pressure_high_check">
                             <label class="form-check-label" for="enable_membrane_pressure_high_check">
                                 Membrane Pressure High
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row">
@@ -2330,7 +2304,6 @@
                             <label class="form-check-label" for="enable_membrane_pressure_low_check">
                                 Membrane Pressure Low
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row">
@@ -2353,7 +2326,6 @@
                             <label class="form-check-label" for="enable_filter_pressure_high_check">
                                 Filter Pressure High
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row">
@@ -2376,7 +2348,6 @@
                             <label class="form-check-label" for="enable_filter_pressure_low_check">
                                 Filter Pressure Low
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row">
@@ -2399,7 +2370,6 @@
                             <label class="form-check-label" for="enable_product_flowrate_high_check">
                                 Product Flowrate High
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row">
@@ -2422,7 +2392,6 @@
                             <label class="form-check-label" for="enable_product_flowrate_low_check">
                                 Product Flowrate Low
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row">
@@ -2445,7 +2414,6 @@
                             <label class="form-check-label" for="enable_run_total_flowrate_low_check">
                                 Run Total Flowrate Low
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row">
@@ -2468,7 +2436,6 @@
                             <label class="form-check-label" for="enable_pickle_total_low_check">
                                 De/Pickle Total Flowrate Low
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row">
@@ -2490,8 +2457,7 @@
                             <input class="form-check-input" type="checkbox" id="enable_diverter_valve_closed_check">
                             <label class="form-check-label" for="enable_diverter_valve_closed_check">
                                 Diverter Valve Working
-                            </label>
-                            <div class="invalid-feedback"></div>
+                            </label>                            
                         </div>
 
                         <div class="col-6 mb-3">
@@ -2506,7 +2472,6 @@
                             <label class="form-check-label" for="enable_product_salinity_high_check">
                                 Product Salinity High
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row">
@@ -2529,7 +2494,6 @@
                             <label class="form-check-label" for="enable_motor_temperature_check">
                                 Motor Temperature
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row">
@@ -2552,7 +2516,6 @@
                             <label class="form-check-label" for="enable_flush_flowrate_low_check">
                                 Flush Flowrate Low
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row">
@@ -2575,7 +2538,6 @@
                             <label class="form-check-label" for="enable_flush_filter_pressure_low_check">
                                 Flush Filter Pressure Low
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row">
@@ -2598,7 +2560,6 @@
                             <label class="form-check-label" for="enable_flush_valve_off_check">
                                 Flush Valve Off
                             </label>
-                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row">
@@ -2630,7 +2591,7 @@
   }
 
   Brineomatic.prototype.generateStatsUI = function () {
-    return `
+    return /* html */ `
       <div id="bomStatsDiv" style="display: none">
         <h5>Brineomatic Statistics</h5>
         <table id="bomStatsTable" class="table table-hover">
@@ -2660,7 +2621,7 @@
   }
 
   Brineomatic.prototype.generateGraphsUI = function () {
-    return `
+    return /* html */ `
       <div id="bomGraphs" class="col-md-12 mfdHide">
         <h3>Graphs</h3>
         <!-- Nav tabs -->

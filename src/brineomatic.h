@@ -306,7 +306,7 @@ class Brineomatic
     float coolingFanOnTemperature = 35.0;  // Celcius
     float coolingFanOffTemperature = 34.0; // Celcius
 
-    const char* autoflushMode;
+    const char* autoflushMode = "duration";
     float autoflushSalinity = 750.0;
     uint32_t autoflushDuration = 3 * 60 * 1000;
     float autoflushVolume = 15.0;
@@ -430,9 +430,6 @@ class Brineomatic
     //
     //  Old config - needs conversion
     //
-
-    // convert to boost pump error check
-    uint32_t filterPressureTimeout = 30 * 1000; // timeout for filter pressure in ms
 
     void resetErrorTimers();
 

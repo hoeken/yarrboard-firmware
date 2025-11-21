@@ -6,15 +6,17 @@
 
 ## BRINEOMATIC
 
-* add configuration options for:
-    * add Timeout parameters to the UI and config
-    * add all parameters into generateConfig()
-    * client side loading
+* configuration system:
+    * client side data loading
     * dynamic display of client UI with JS
-    * form data and saving calls
+    * form data gathering + validation + saving calls
     * server side data loading and config saving
     * server side loading from config
-    * defaults - live in config.h?
+    * include brineomatic_config.h with #ifdef #define defaults
+    * make sure we're using the new config:
+        * relay/servo/stepper objects
+        * has_* hardware
+        * error checking booleans
 * add mid-level commands to set_watermaker
     * boost_pump
     * high_pressure_pump
