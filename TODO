@@ -8,25 +8,23 @@
 
 * add configuration options for:
     * hardware
-        * has_* for all hardware
         * dynamic options with javascript
-        * flowmeters - ppl
-        * tds
-        * diverter valve
-        * hp valve servo
-        * hp valve relay
-        * diverter valve relay
     * errors
-        * errorEnabled for each error
         * dynamic options with javascript
-        * timeouts for each error
-        * error trigger values
-    * autoflush - what mode, what duration/volume, and interval
-    * options for display units
-    * tank capacity
-    * tank full level
-    * piezo melody on success
-    * piezo melody on failure
+    * general
+        * autoflush - what mode, what duration/volume, and interval
+        * options for display units
+        * tank capacity
+        * tank full level
+        * piezo melody on success
+        * piezo melody on failure
+    * add all parameters into generateConfig()
+    * client side loading
+    * dynamic display of client UI with JS
+    * form data and saving calls
+    * server side data loading and config saving
+    * server side loading from config
+    * defaults - live in config.h?
 * add mid-level commands to set_watermaker
     * boost_pump
     * high_pressure_pump

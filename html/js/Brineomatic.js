@@ -127,11 +127,18 @@
       $("#bomInterface").remove();
       $("#controlPage").prepend(this.generateControlUI());
       $("#bomConfig").remove();
-      $("#boardConfigForm").after(this.generateEditUI());
+      $("#ConfigForm").prepend(this.generateEditUI());
       $("#bomStatsDiv").remove();
       $("#statsContainer").prepend(this.generateStatsUI());
       $("#bomGraphs").remove();
       $("#graphsPage").prepend(this.generateGraphsUI());
+
+      $("#relayConfig").hide();
+      $("#servoConfig").hide();
+      $("#stepperConfig").hide();
+
+      //edit UI handlers
+      $("#bomConfig").show();
 
       //our UI handlers
       $("#brineomaticIdle").on("click", this.idle);
@@ -1828,10 +1835,562 @@
   }
 
   Brineomatic.prototype.generateEditUI = function () {
+
+    let relayOptions = "";
+    let relays = YB.ChannelRegistry.getChannelsByType("relay");
+    for (ch of relays) {
+      relayOptions += `<option value="relay_${ch.id}">Relay ${ch.id}</option>`;
+    };
+
+    let servoOptions = "";
+    let servos = YB.ChannelRegistry.getChannelsByType("servo");
+    for (ch of servos) {
+      servoOptions += `<option value="servo_${ch.id}">Servo ${ch.id}</option>`;
+    };
+
+    let stepperOptions = "";
+    let steppers = YB.ChannelRegistry.getChannelsByType("stepper");
+    if (steppers.length == 1)
+      stepperOptions = `<option value="stepper_1">Stepper</option>`;
+    else {
+      for (ch of steppers) {
+        stepperOptions += `<option value="stepper_${ch.id}">Stepper ${ch.id}</option>`;
+      };
+    }
+
     return `
-      <div id="bomConfig" style="display:none" class="col-md-12">
-        <h4>Brineomatic Configuration</h4>
-        <div id="bomConfigForm" class="row g-3"></div>
+    <div id="bomConfig" style="display:none" class="container-fluid">
+        <div id="bomConfigForm" class="row g-3 mt-2">
+            <div id="hardwareSettingsForm" class="col-12 col-md-6">
+                <div class="p-3 border border-secondary rounded h-100">
+                    <h4>Hardware Configuration</h4>
+                    <div class="form-floating mb-3">
+                        <select id="boost_pump_control" class="form-select" aria-label="Boost Pump">
+                            <option value="none">None</option>
+                            <option value="manual">Manual</option>
+                            ${relayOptions}
+                        </select>
+                        <label for="boost_pump_control">Boost Pump Control</label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <select id="high_pressure_pump_control" class="form-select" aria-label="High Pressure Pump Control">
+                            <option value="none">None</option>
+                            <option value="manual">Manual</option>
+                            ${relayOptions}
+                        </select>
+                        <label for="high_pressure_pump_control">High Pressure Pump Control</label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <select id="high_pressure_valve_control" class="form-select" aria-label="High Pressure Valve Control">
+                            <option value="none">None</option>
+                            <option value="manual">Manual</option>
+                            ${stepperOptions}
+                            ${servoOptions}
+                        </select>
+                        <label for="high_pressure_valve_control">High Pressure Valve Control</label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                      <h6>High Pressure Valve Close (Pressure On)</h6>
+                      
+                      <div class="col-6 mt-1">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">Angle</span>
+                          <input type="text" class="form-control" id="high_pressure_stepper_close_angle">
+                          <span class="input-group-text">°</span>
+                        </div>
+                      </div>
+
+                      <div class="col-6 mt-1">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">Speed</span>
+                          <input type="text" class="form-control" id="high_pressure_stepper_close_speed">
+                          <span class="input-group-text">RPM</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                      <h6>High Pressure Valve Open (Pressure Off)</h6>
+                      <div class="col-6 mt-1">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">Angle</span>
+                          <input type="text" class="form-control" id="high_pressure_stepper_open_angle">
+                          <span class="input-group-text">°</span>
+                        </div>
+                      </div>
+
+                      <div class="col-6 mt-1">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">Speed</span>
+                          <input type="text" class="form-control" id="high_pressure_stepper_open_speed">
+                          <span class="input-group-text">RPM</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <select id="diverter_valve_control" class="form-select" aria-label="Diverter Valve Control">
+                            <option value="none">None</option>
+                            <option value="manual">Manual</option>
+                            ${servoOptions}
+                        </select>
+                        <label for="diverter_valve_control">Diverter Valve Control</label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                      <h6>Diverter Valve Settings (Open = Overboard)</h6>
+
+                      <div class="col-6 mt-1">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">Open</span>
+                          <input type="text" class="form-control" id="diverter_valve_open_angle">
+                          <span class="input-group-text">°</span>
+                        </div>
+                      </div>
+
+                      <div class="col-6 mt-1">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">Close</span>
+                          <input type="text" class="form-control" id="diverter_valve_close_angle">
+                          <span class="input-group-text">°</span>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <select id="flush_valve_control" class="form-select" aria-label="Flush Valve Control">
+                            <option value="none">None</option>
+                            <option value="manual">Manual</option>
+                            ${relayOptions}
+                        </select>
+                        <label for="flush_valve_control">Flush Valve Control</label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <select id="cooling_fan_control" class="form-select" aria-label="Cooling Fan Control">
+                            <option value="none">None</option>
+                            <option value="manual">Manual</option>
+                            ${relayOptions}
+                        </select>
+                        <label for="cooling_fan_control">Cooling Fan Control</label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="has_membrane_pressure_sensor">
+                        <label class="form-check-label" for="has_membrane_pressure_sensor">
+                            Has Membrane Pressure Sensor
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                      <div class="col-6 mt-1">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">Min</span>
+                          <input type="text" class="form-control" id="membrane_pressure_sensor_min">
+                          <span class="input-group-text">PSI</span>
+                        </div>
+                      </div>
+
+                      <div class="col-6 mt-1">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">Max</span>
+                          <input type="text" class="form-control" id="membrane_pressure_sensor_max">
+                          <span class="input-group-text">PSI</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="has_filter_pressure_sensor">
+                        <label class="form-check-label" for="has_filter_pressure_sensor">
+                            Has Filter Pressure Sensor
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                      <div class="col-6 mt-1">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">Min</span>
+                          <input type="text" class="form-control" id="filter_pressure_sensor_min">
+                          <span class="input-group-text">PSI</span>
+                        </div>
+                      </div>
+
+                      <div class="col-6 mt-1">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">Max</span>
+                          <input type="text" class="form-control" id="filter_pressure_sensor_max">
+                          <span class="input-group-text">PSI</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="has_product_tds_sensor">
+                        <label class="form-check-label" for="has_product_tds_sensor">
+                            Has Product TDS Sensor
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="has_brine_tds_sensor">
+                        <label class="form-check-label" for="has_brine_tds_sensor">
+                            Has Brine TDS Sensor
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="has_product_flow_sensor">
+                        <label class="form-check-label" for="has_product_flow_sensor">
+                            Has Product Flow Sensor
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="input-group input-group-sm mb-3">
+                      <input type="text" class="form-control" id="product_flowmeter_ppl">
+                      <span class="input-group-text">PPL (Pulses Per Liter)</span>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="has_brine_flow_sensor">
+                        <label class="form-check-label" for="has_brine_flow_sensor">
+                            Has Brine Flow Sensor
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="input-group input-group-sm mb-3">
+                      <input type="text" class="form-control" id="product_flowmeter_ppl">
+                      <span class="input-group-text">PPL (Pulses Per Liter)</span>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="has_motor_temperature_sensor">
+                        <label class="form-check-label" for="has_motor_temperature_sensor">
+                            Has Motor Temperature Sensor
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="text-center">
+                        <button id="saveHardwareSettings" type="button" class="btn btn-primary">
+                            Save Hardware Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="errorSettingsForm" class="col-12 col-md-6">
+                <div class="p-3 border border-secondary rounded h-100">
+                    <h4>System Safeguards</h4>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="enable_membrane_pressure_high_check">
+                        <label class="form-check-label" for="enable_membrane_pressure_high_check">
+                            Membrane Pressure High
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-6">
+                        <div class="input-group input-group-sm mb-3">
+                          <input type="text" class="form-control" id="membrane_pressure_high_threshold">
+                          <span class="input-group-text">PSI</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="input-group input-group-sm">
+                          <input type="text" class="form-control" id="membrane_pressure_high_timeout">
+                          <span class="input-group-text">Delay (ms)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="enable_membrane_pressure_low_check">
+                        <label class="form-check-label" for="enable_membrane_pressure_low_check">
+                            Membrane Pressure Low
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-6">
+                        <div class="input-group input-group-sm mb-3">
+                          <input type="text" class="form-control" id="membrane_pressure_high_threshold">
+                          <span class="input-group-text">PSI</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="input-group input-group-sm">
+                          <input type="text" class="form-control" id="membrane_pressure_high_timeout">
+                          <span class="input-group-text">Delay (ms)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="enable_filter_pressure_high_check">
+                        <label class="form-check-label" for="enable_filter_pressure_high_check">
+                            Filter Pressure High
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-6">
+                        <div class="input-group input-group-sm mb-3">
+                          <input type="text" class="form-control" id="membrane_pressure_high_threshold">
+                          <span class="input-group-text">PSI</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="input-group input-group-sm">
+                          <input type="text" class="form-control" id="membrane_pressure_high_timeout">
+                          <span class="input-group-text">Delay (ms)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="enable_filter_pressure_low_check">
+                        <label class="form-check-label" for="enable_filter_pressure_low_check">
+                            Filter Pressure Low
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-6">
+                        <div class="input-group input-group-sm mb-3">
+                          <input type="text" class="form-control" id="membrane_pressure_high_threshold">
+                          <span class="input-group-text">PSI</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="input-group input-group-sm">
+                          <input type="text" class="form-control" id="membrane_pressure_high_timeout">
+                          <span class="input-group-text">Delay (ms)</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="enable_product_flowrate_high_check">
+                        <label class="form-check-label" for="enable_product_flowrate_high_check">
+                            Product Flowrate High
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-6">
+                        <div class="input-group input-group-sm mb-3">
+                          <input type="text" class="form-control" id="membrane_pressure_high_threshold">
+                          <span class="input-group-text">LPH</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="input-group input-group-sm">
+                          <input type="text" class="form-control" id="membrane_pressure_high_timeout">
+                          <span class="input-group-text">Delay (ms)</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="enable_product_flowrate_low_check">
+                        <label class="form-check-label" for="enable_product_flowrate_low_check">
+                            Product Flowrate Low
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-6">
+                        <div class="input-group input-group-sm mb-3">
+                          <input type="text" class="form-control" id="membrane_pressure_high_threshold">
+                          <span class="input-group-text">LPH</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="input-group input-group-sm">
+                          <input type="text" class="form-control" id="membrane_pressure_high_timeout">
+                          <span class="input-group-text">Delay (ms)</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="enable_brine_flowrate_low_check">
+                        <label class="form-check-label" for="enable_brine_flowrate_low_check">
+                            Brine Flowrate Low
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-6">
+                        <div class="input-group input-group-sm mb-3">
+                          <input type="text" class="form-control" id="membrane_pressure_high_threshold">
+                          <span class="input-group-text">LPH</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="input-group input-group-sm">
+                          <input type="text" class="form-control" id="membrane_pressure_high_timeout">
+                          <span class="input-group-text">Delay (ms)</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="enable_total_flowrate_low_check">
+                        <label class="form-check-label" for="enable_total_flowrate_low_check">
+                            Total Flowrate Low
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-6">
+                        <div class="input-group input-group-sm mb-3">
+                          <input type="text" class="form-control" id="membrane_pressure_high_threshold">
+                          <span class="input-group-text">LPH</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="input-group input-group-sm">
+                          <input type="text" class="form-control" id="membrane_pressure_high_timeout">
+                          <span class="input-group-text">Delay (ms)</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="enable_diverter_valve_closed_check">
+                        <label class="form-check-label" for="enable_diverter_valve_closed_check">
+                            Diverter Valve Working
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="enable_product_salinity_high_check">
+                        <label class="form-check-label" for="enable_product_salinity_high_check">
+                            Product Salinity High
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-6">
+                        <div class="input-group input-group-sm mb-3">
+                          <input type="text" class="form-control" id="membrane_pressure_high_threshold">
+                          <span class="input-group-text">PPM</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="input-group input-group-sm">
+                          <input type="text" class="form-control" id="membrane_pressure_high_timeout">
+                          <span class="input-group-text">Delay (ms)</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="enable_motor_temperature_check">
+                        <label class="form-check-label" for="enable_motor_temperature_check">
+                            Motor Temperature
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-6">
+                        <div class="input-group input-group-sm mb-3">
+                          <input type="text" class="form-control" id="membrane_pressure_high_threshold">
+                          <span class="input-group-text">C</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="input-group input-group-sm">
+                          <input type="text" class="form-control" id="membrane_pressure_high_timeout">
+                          <span class="input-group-text">Delay (ms)</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="enable_flush_flowrate_low_check">
+                        <label class="form-check-label" for="enable_flush_flowrate_low_check">
+                            Flush Flowrate Low
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-6">
+                        <div class="input-group input-group-sm mb-3">
+                          <input type="text" class="form-control" id="membrane_pressure_high_threshold">
+                          <span class="input-group-text">LPH</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="input-group input-group-sm">
+                          <input type="text" class="form-control" id="membrane_pressure_high_timeout">
+                          <span class="input-group-text">Delay (ms)</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="enable_flush_filter_pressure_low_check">
+                        <label class="form-check-label" for="enable_flush_filter_pressure_low_check">
+                            Flush Filter Pressure Low
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-6">
+                        <div class="input-group input-group-sm mb-3">
+                          <input type="text" class="form-control" id="membrane_pressure_high_threshold">
+                          <span class="input-group-text">PSI</span>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="input-group input-group-sm">
+                          <input type="text" class="form-control" id="membrane_pressure_high_timeout">
+                          <span class="input-group-text">Delay (ms)</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button id="saveErrorSettings" type="button" class="btn btn-primary">
+                            Save Safeguard Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
       </div>
     `;
   }

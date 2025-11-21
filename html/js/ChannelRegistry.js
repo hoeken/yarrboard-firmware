@@ -92,6 +92,17 @@
       return null;
     },
 
+    getChannelsByType(type) {
+      if (typeof type !== "string" || !type.length)
+        throw new Error("Type must be a non-empty string.");
+
+      var arr = this.channels[type];
+      if (!arr || !arr.length)
+        return null;
+
+      return arr;
+    },
+
     loadAllChannels: function (cfg) {
       //loop through all of our register channel types and see if we got config data
       for (var ctype of Object.keys(this.channelConstructors)) {
