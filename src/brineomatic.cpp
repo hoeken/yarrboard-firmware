@@ -445,7 +445,7 @@ void Brineomatic::init()
   currentBrineSalinity = 0.0;
   currentFilterPressure = 0.0;
   currentMembranePressure = 0.0;
-  membranePressureTarget = -1;
+  currentMembranePressureTarget = -1;
 
   currentStatus = Status::STARTUP;
   runResult = Result::STARTUP;
@@ -481,7 +481,7 @@ void Brineomatic::init()
   KdMaintain = 0;
 
   // PID controller
-  membranePressurePID = QuickPID(&currentMembranePressure, &membranePressurePIDOutput, &membranePressureTarget);
+  membranePressurePID = QuickPID(&currentMembranePressure, &membranePressurePIDOutput, &currentMembranePressureTarget);
   membranePressurePID.SetMode(QuickPID::Control::automatic);
   membranePressurePID.SetAntiWindupMode(QuickPID::iAwMode::iAwClamp);
   membranePressurePID.SetTunings(KpRamp, KiRamp, KdRamp);
@@ -501,7 +501,7 @@ void Brineomatic::setMembranePressure(float pressure)
 
 void Brineomatic::setMembranePressureTarget(float pressure)
 {
-  membranePressureTarget = pressure;
+  currentMembranePressureTarget = pressure;
 
   // positive target, initialize our PID.
   if (pressure >= 0) {
@@ -649,7 +649,7 @@ bool Brineomatic::initializeHardware()
   openDiverterValve();
 
   // actively running, zero out our pressure
-  if (membranePressureTarget > 0) {
+  if (currentMembranePressureTarget > 0) {
     setMembranePressureTarget(0);
     uint32_t membranePressureStart = millis();
     while (getMembranePressure() > 65) {
@@ -753,7 +753,7 @@ void Brineomatic::openDiverterValve()
 void Brineomatic::closeDiverterValve()
 {
   if (hasDiverterValve()) {
-    diverterValve->write(diverterValveClosedAngle);
+    diverterValve->write(diverterValveCloseAngle);
     // vTaskDelay(pdMS_TO_TICKS(1000));
     // diverterValve->disable();
   }
@@ -835,7 +835,7 @@ float Brineomatic::getFilterPressure()
 
 float Brineomatic::getFilterPressureMinimum()
 {
-  return lowPressureMinimum;
+  return filterPressureLowThreshold;
 }
 
 float Brineomatic::getMembranePressure()
@@ -845,7 +845,7 @@ float Brineomatic::getMembranePressure()
 
 float Brineomatic::getMembranePressureMinimum()
 {
-  return highPressureMinimum;
+  return filterPressureHighThreshold;
 }
 
 float Brineomatic::getProductFlowrate()
@@ -860,7 +860,7 @@ float Brineomatic::getBrineFlowrate()
 
 float Brineomatic::getProductFlowrateMinimum()
 {
-  return productFlowrateMinimum;
+  return productFlowrateLowThreshold;
 }
 
 float Brineomatic::getTotalFlowrate()
@@ -918,7 +918,7 @@ float Brineomatic::getMotorTemperature()
 
 float Brineomatic::getMotorTemperatureMaximum()
 {
-  return motorTemperatureMaximum;
+  return motorTemperatureHighThreshold;
 }
 
 float Brineomatic::getProductSalinity()
@@ -939,7 +939,7 @@ float Brineomatic::getBrineSalinity()
 
 float Brineomatic::getProductSalinityMaximum()
 {
-  return productSalinityMaximum;
+  return productSalinityHighThreshold;
 }
 
 float Brineomatic::getTankLevel()
@@ -1012,7 +1012,7 @@ const char* Brineomatic::resultToString(Result result)
 uint32_t Brineomatic::getNextFlushCountdown()
 {
   if (currentStatus == Status::IDLE && autoFlushEnabled)
-    return flushInterval - (millis() - lastAutoFlushTime);
+    return autoflushInterval - (millis() - lastAutoFlushTime);
 
   return 0;
 }
@@ -1128,9 +1128,9 @@ void Brineomatic::manageHighPressureValve()
 
   if (currentStatus != Status::IDLE) {
     if (hasHighPressureValve()) {
-      if (membranePressureTarget >= 0) {
+      if (currentMembranePressureTarget >= 0) {
         // only use Ki for tuning once we are close to our target.
-        if (abs(membranePressureTarget - currentMembranePressure) / membranePressureTarget > 0.05)
+        if (abs(currentMembranePressureTarget - currentMembranePressure) / currentMembranePressureTarget > 0.05)
           membranePressurePID.SetTunings(KpRamp, KiRamp, KdRamp);
         else
           membranePressurePID.SetTunings(KpMaintain, KpMaintain, KdMaintain);
@@ -1138,7 +1138,7 @@ void Brineomatic::manageHighPressureValve()
         // run our PID calculations
         if (membranePressurePID.Compute()) {
           // different max values for the ramp
-          if (abs(membranePressureTarget - currentMembranePressure) / membranePressureTarget > 0.05)
+          if (abs(currentMembranePressureTarget - currentMembranePressure) / currentMembranePressureTarget > 0.05)
             angle = map(membranePressurePIDOutput, YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX, highPressureValveOpenMax, highPressureValveCloseMax);
           // smaller max values for maintain.
           else
@@ -1146,7 +1146,7 @@ void Brineomatic::manageHighPressureValve()
 
           // if we're close, just disable so its not constantly drawing current.
           if (highPressureValveMode == HighPressureValveControlMode::SERVO) {
-            if (abs(membranePressureTarget - currentMembranePressure) / membranePressureTarget > 0.01)
+            if (abs(currentMembranePressureTarget - currentMembranePressure) / currentMembranePressureTarget > 0.01)
               highPressureValveServo->write(angle);
             else {
               highPressureValveServo->write(highPressureValveCloseMin); // neutral / stop
@@ -1154,13 +1154,13 @@ void Brineomatic::manageHighPressureValve()
               membranePressurePID.Reset(); // keep our pid from winding up.
             }
           } else if (highPressureValveMode == HighPressureValveControlMode::STEPPER_POSITION) {
-            if (membranePressureTarget > 0)
+            if (currentMembranePressureTarget > 0)
               highPressureValveStepper->gotoAngle(highPressureValveStepperCloseAngle, highPressureValveStepperCloseSpeed);
             else
               highPressureValveStepper->gotoAngle(highPressureValveStepperOpenAngle, highPressureValveStepperOpenSpeed);
           }
 
-          // YBP.printf("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f\n", round(currentMembranePressure), round(membranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
+          // YBP.printf("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f\n", round(currentMembranePressure), round(currentMembranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
         }
       }
     }
@@ -1203,9 +1203,9 @@ void Brineomatic::runStateMachine()
     //
     case Status::IDLE:
       // YBP.println("State: IDLE");
-      if (autoFlushEnabled && millis() - lastAutoFlushTime > flushInterval) {
+      if (autoFlushEnabled && millis() - lastAutoFlushTime > autoflushInterval) {
         currentStatus = Status::FLUSHING;
-        desiredFlushDuration = defaultFlushDuration;
+        desiredFlushDuration = autoflushDuration;
       }
       break;
 
@@ -1247,7 +1247,7 @@ void Brineomatic::runStateMachine()
 
       YBP.println("High Pressure Pump Started");
       enableHighPressurePump();
-      setMembranePressureTarget(defaultMembranePressureTarget);
+      setMembranePressureTarget(membranePressureTarget);
 
       if (waitForMembranePressure())
         return;
@@ -1284,7 +1284,7 @@ void Brineomatic::runStateMachine()
         if (checkMembranePressureHigh())
           return;
 
-        if (checkTotalFlowrateLow(runTotalFlowrateMinimum))
+        if (checkTotalFlowrateLow(runTotalFlowrateLowThreshold))
           return;
 
         if (checkProductFlowrateLow())
@@ -1302,7 +1302,7 @@ void Brineomatic::runStateMachine()
         if (checkStopFlag(runResult))
           return;
 
-        if (millis() - productionStart > productionTimeout) {
+        if (millis() - productionStart > productionRuntimeTimeout) {
           currentStatus = Status::STOPPING;
           runResult = Result::ERR_PRODUCTION_TIMEOUT;
           return;
@@ -1363,7 +1363,7 @@ void Brineomatic::runStateMachine()
         currentStatus = Status::IDLE;
       else {
         currentStatus = Status::FLUSHING;
-        desiredFlushDuration = defaultFlushDuration;
+        desiredFlushDuration = autoflushDuration;
       }
 
       break;
@@ -1422,7 +1422,7 @@ void Brineomatic::runStateMachine()
 
         // how about salinity? (auto)
         if (desiredFlushDuration == 0 && desiredFlushVolume == 0) {
-          if (getBrineSalinity() < flushSalinityFinished) {
+          if (getBrineSalinity() < autoflushSalinity) {
             DUMP("SALINITY");
             flushResult = Result::SUCCESS_SALINITY;
             break;
@@ -1472,7 +1472,7 @@ void Brineomatic::runStateMachine()
         if (stopFlag)
           break;
 
-        if (checkBrineFlowrateLow(pickleTotalFlowrateMinimum, pickleResult)) {
+        if (checkBrineFlowrateLow(pickleTotalFlowrateLowThreshold, pickleResult)) {
           currentStatus = Status::IDLE;
           initializeHardware();
           return;
@@ -1517,7 +1517,7 @@ void Brineomatic::runStateMachine()
         if (stopFlag)
           break;
 
-        if (checkBrineFlowrateLow(pickleTotalFlowrateMinimum, depickleResult)) {
+        if (checkBrineFlowrateLow(pickleTotalFlowrateLowThreshold, depickleResult)) {
           currentStatus = Status::IDLE;
           initializeHardware();
           return;
@@ -1577,9 +1577,9 @@ bool Brineomatic::checkStopFlag(Result& result)
 bool Brineomatic::checkMembranePressureHigh()
 {
   return checkTimedError(
-    getMembranePressure() > highPressureMaximum,
+    getMembranePressure() > membranePressureHighThreshold,
     membranePressureHighStart,
-    membranePressureHighTimeout,
+    membranePressureHighDelay,
     Result::ERR_MEMBRANE_PRESSURE_HIGH,
     runResult);
 }
@@ -1587,9 +1587,9 @@ bool Brineomatic::checkMembranePressureHigh()
 bool Brineomatic::checkMembranePressureLow()
 {
   return checkTimedError(
-    getMembranePressure() < highPressureMinimum,
+    getMembranePressure() < membranePressureLowThreshold,
     membranePressureLowStart,
-    membranePressureLowTimeout,
+    membranePressureLowDelay,
     Result::ERR_MEMBRANE_PRESSURE_LOW,
     runResult);
 }
@@ -1597,9 +1597,9 @@ bool Brineomatic::checkMembranePressureLow()
 bool Brineomatic::checkFilterPressureHigh()
 {
   return checkTimedError(
-    getFilterPressure() > lowPressureMaximum,
+    getFilterPressure() > filterPressureHighThreshold,
     filterPressureHighStart,
-    filterPressureHighTimeout,
+    filterPressureHighDelay,
     Result::ERR_FILTER_PRESSURE_HIGH,
     runResult);
 }
@@ -1607,9 +1607,9 @@ bool Brineomatic::checkFilterPressureHigh()
 bool Brineomatic::checkFilterPressureLow()
 {
   return checkTimedError(
-    getFilterPressure() < lowPressureMinimum,
+    getFilterPressure() < filterPressureLowThreshold,
     filterPressureLowStart,
-    filterPressureLowTimeout,
+    filterPressureLowDelay,
     Result::ERR_FILTER_PRESSURE_LOW,
     runResult);
 }
@@ -1619,7 +1619,7 @@ bool Brineomatic::checkProductFlowrateLow()
   return checkTimedError(
     getProductFlowrate() < getProductFlowrateMinimum(),
     productFlowrateLowStart,
-    productFlowrateLowTimeout,
+    productFlowrateLowDelay,
     Result::ERR_PRODUCT_FLOWRATE_LOW,
     runResult);
 }
@@ -1627,9 +1627,9 @@ bool Brineomatic::checkProductFlowrateLow()
 bool Brineomatic::checkProductFlowrateHigh()
 {
   return checkTimedError(
-    getProductFlowrate() > productFlowrateMaximum,
+    getProductFlowrate() > productFlowrateHighThreshold,
     productFlowrateHighStart,
-    productFlowrateHighTimeout,
+    productFlowrateHighDelay,
     Result::ERR_PRODUCT_FLOWRATE_HIGH,
     runResult);
 }
@@ -1639,7 +1639,7 @@ bool Brineomatic::checkBrineFlowrateLow(float flowrate, Result& result)
   return checkTimedError(
     getBrineFlowrate() < flowrate,
     brineFlowrateLowStart,
-    brineFlowrateLowTimeout,
+    pickleTotalFlowrateLowDelay,
     Result::ERR_BRINE_FLOWRATE_LOW,
     result);
 }
@@ -1647,9 +1647,9 @@ bool Brineomatic::checkBrineFlowrateLow(float flowrate, Result& result)
 bool Brineomatic::checkFlushFilterPressureLow()
 {
   return checkTimedError(
-    getFilterPressure() < flushFilterPressureMinimum,
+    getFilterPressure() < flushFilterPressureLowThreshold,
     flushFilterPressureLowStart,
-    flushFilterPressureLowTimeout,
+    flushFilterPressureLowDelay,
     Result::ERR_FLUSH_FILTER_PRESSURE_LOW,
     flushResult);
 }
@@ -1657,9 +1657,9 @@ bool Brineomatic::checkFlushFilterPressureLow()
 bool Brineomatic::checkFlushFlowrateLow()
 {
   return checkTimedError(
-    getTotalFlowrate() < flushFlowrateMinimum,
+    getTotalFlowrate() < flushFlowrateLowThreshold,
     flushFlowrateLowStart,
-    flushFlowrateLowTimeout,
+    flushFlowrateLowDelay,
     Result::ERR_FLUSH_FLOWRATE_LOW,
     flushResult);
 }
@@ -1669,7 +1669,7 @@ bool Brineomatic::checkTotalFlowrateLow(float flowrate)
   return checkTimedError(
     getTotalFlowrate() < flowrate,
     totalFlowrateLowStart,
-    totalFlowrateLowTimeout,
+    runTotalFlowrateLowDelay,
     Result::ERR_TOTAL_FLOWRATE_LOW,
     runResult);
 }
@@ -1679,7 +1679,7 @@ bool Brineomatic::checkDiverterValveClosed()
   return checkTimedError(
     getTotalFlowrate() > getBrineFlowrate() + getProductFlowrate(),
     diverterValveOpenStart,
-    diverterValveOpenTimeout,
+    diverterValveClosedDelay,
     Result::ERR_DIVERTER_VALVE_OPEN,
     runResult);
 }
@@ -1689,7 +1689,7 @@ bool Brineomatic::checkProductSalinityHigh()
   return checkTimedError(
     getProductSalinity() > getProductSalinityMaximum(),
     productSalinityHighStart,
-    productSalinityHighTimeout,
+    productSalinityHighDelay,
     Result::ERR_PRODUCT_SALINITY_HIGH,
     runResult);
 }
@@ -1699,7 +1699,7 @@ bool Brineomatic::checkMotorTemperature(Result& result)
   return checkTimedError(
     getMotorTemperature() > getMotorTemperatureMaximum(),
     motorTemperatureStart,
-    motorTemperatureTimeout,
+    motorTemperatureHighDelay,
     Result::ERR_MOTOR_TEMPERATURE_HIGH,
     result);
 }
@@ -1733,7 +1733,7 @@ bool Brineomatic::waitForMembranePressure()
   while (getMembranePressure() < getMembranePressureMinimum()) {
 
     // let the spice flow
-    if (checkTotalFlowrateLow(runTotalFlowrateMinimum))
+    if (checkTotalFlowrateLow(runTotalFlowrateLowThreshold))
       return true;
 
     // check this here in case our PID goes crazy
@@ -1766,12 +1766,12 @@ bool Brineomatic::waitForProductFlowrate()
     if (checkStopFlag(runResult))
       return false;
 
-    if (getProductFlowrate() > getProductFlowrateMinimum() && getProductFlowrate() < productFlowrateMaximum)
+    if (getProductFlowrate() > getProductFlowrateMinimum() && getProductFlowrate() < productFlowrateHighThreshold)
       flowReady++;
     else
       flowReady = 0;
 
-    if (millis() - flowCheckStart > productFlowRateTimeout) {
+    if (millis() - flowCheckStart > productFlowrateTimeout) {
       currentStatus = Status::STOPPING;
       runResult = Result::ERR_PRODUCT_FLOWRATE_TIMEOUT;
       return true;
@@ -1814,7 +1814,7 @@ bool Brineomatic::waitForFlushValveOff()
 {
   uint32_t start = millis();
   while (getFilterPressure() > 2 || getBrineFlowrate() > 0) {
-    if (millis() - start > flushValveOffTimeout) {
+    if (millis() - start > flushValveOffDelay) {
       currentStatus = Status::IDLE;
       flushResult = Result::ERR_FLUSH_VALVE_ON;
       return true;
@@ -1881,6 +1881,139 @@ void Brineomatic::generateUpdateJSON(JsonVariant output)
     output["depickle_elapsed"] = getDepickleElapsed();
     output["depickle_countdown"] = getDepickleCountdown();
   }
+}
+
+void Brineomatic::generateConfigJSON(JsonVariant output)
+{
+  JsonObject bom = output["brineomatic"].to<JsonObject>();
+  bom["has_boost_pump"] = this->hasBoostPump();
+  bom["has_high_pressure_pump"] = this->hasHighPressurePump();
+  bom["has_diverter_valve"] = this->hasDiverterValve();
+  bom["has_flush_valve"] = this->hasFlushValve();
+  bom["has_cooling_fan"] = this->hasCoolingFan();
+
+  bom["autoflush_mode"] = this->autoflushMode;
+  bom["autoflush_salinity"] = this->autoflushSalinity;
+  bom["autoflush_duration"] = this->autoflushDuration;
+  bom["autoflush_volume"] = this->autoflushVolume;
+  bom["autoflush_interval"] = this->autoflushInterval;
+
+  bom["flush_timeout"] = this->flushTimeout;
+  bom["membrane_pressure_timeout"] = this->membranePressureTimeout;
+  bom["product_flowrate_timeout"] = this->productFlowrateTimeout;
+  bom["product_salinity_timeout"] = this->productSalinityTimeout;
+  bom["production_runtime_timeout"] = this->productionRuntimeTimeout;
+
+  bom["tank_capacity"] = this->tankCapacity;
+  bom["temperature_units"] = this->temperatureUnits;
+  bom["pressure_units"] = this->pressureUnits;
+  bom["volume_units"] = this->volumeUnits;
+  bom["flowrate_units"] = this->flowrateUnits;
+  bom["success_melody"] = this->successMelody;
+  bom["error_melody"] = this->errorMelody;
+
+  bom["boost_pump_control"] = this->boostPumpControl;
+  bom["boost_pump_relay_id"] = this->boostPumpRelayId;
+
+  bom["high_pressure_pump_control"] = this->highPressurePumpControl;
+  bom["high_pressure_relay_id"] = this->highPressureRelayId;
+
+  bom["high_pressure_valve_control"] = this->highPressureValveControl;
+  bom["membrane_pressure_target"] = this->membranePressureTarget;
+  bom["high_pressure_valve_stepper_id"] = this->highPressureValveStepperId;
+  bom["high_pressure_stepper_step_angle"] = this->highPressureValveStepperStepAngle;
+  bom["high_pressure_stepper_gear_ratio"] = this->highPressureValveStepperGearRatio;
+  bom["high_pressure_stepper_close_angle"] = this->highPressureValveStepperCloseAngle;
+  bom["high_pressure_stepper_close_speed"] = this->highPressureValveStepperCloseSpeed;
+  bom["high_pressure_stepper_open_angle"] = this->highPressureValveStepperOpenAngle;
+  bom["high_pressure_stepper_open_speed"] = this->highPressureValveStepperOpenSpeed;
+
+  bom["diverter_valve_control"] = this->diverterValveControl;
+  bom["diverter_valve_servo_id"] = this->diverterValveServoId;
+  bom["diverter_valve_open_angle"] = this->diverterValveOpenAngle;
+  bom["diverter_valve_close_angle"] = this->diverterValveCloseAngle;
+
+  bom["flush_valve_control"] = this->flushValveControl;
+  bom["flush_valve_relay_id"] = this->flushValveRelayId;
+
+  bom["cooling_fan_control"] = this->coolingFanControl;
+  bom["cooling_fan_relay_id"] = this->coolingFanRelayId;
+  bom["cooling_fan_on_temperature"] = this->coolingFanOnTemperature;
+  bom["cooling_fan_off_temperature"] = this->coolingFanOffTemperature;
+
+  bom["has_membrane_pressure_sensor"] = this->hasMembranePressureSensor;
+  bom["membrane_pressure_sensor_min"] = this->membranePressureSensorMin;
+  bom["membrane_pressure_sensor_max"] = this->membranePressureSensorMax;
+
+  bom["has_filter_pressure_sensor"] = this->hasFilterPressureSensor;
+  bom["filter_pressure_sensor_min"] = this->filterPressureSensorMin;
+  bom["filter_pressure_sensor_max"] = this->filterPressureSensorMax;
+
+  bom["has_product_tds_sensor"] = this->hasProductTDSSensor;
+  bom["has_brine_tds_sensor"] = this->hasBrineTDSSensor;
+
+  bom["has_product_flow_sensor"] = this->hasProductFlowSensor;
+  bom["product_flowmeter_ppl"] = this->productFlowmeterPPL;
+
+  bom["has_brine_flow_sensor"] = this->hasBrineFlowSensor;
+  bom["brine_flowmeter_ppl"] = this->brineFlowmeterPPL;
+
+  bom["has_motor_temperature_sensor"] = this->hasMotorTemperatureSensor;
+
+  bom["enable_membrane_pressure_high_check"] = this->enableMembranePressureHighCheck;
+  bom["membrane_pressure_high_threshold"] = this->membranePressureHighThreshold;
+  bom["membrane_pressure_high_delay"] = this->membranePressureHighDelay;
+
+  bom["enable_membrane_pressure_low_check"] = this->enableMembranePressureLowCheck;
+  bom["membrane_pressure_low_threshold"] = this->membranePressureLowThreshold;
+  bom["membrane_pressure_low_delay"] = this->membranePressureLowDelay;
+
+  bom["enable_filter_pressure_high_check"] = this->enableFilterPressureHighCheck;
+  bom["filter_pressure_high_threshold"] = this->filterPressureHighThreshold;
+  bom["filter_pressure_high_delay"] = this->filterPressureHighDelay;
+
+  bom["enable_filter_pressure_low_check"] = this->enableFilterPressureLowCheck;
+  bom["filter_pressure_low_threshold"] = this->filterPressureLowThreshold;
+  bom["filter_pressure_low_delay"] = this->filterPressureLowDelay;
+
+  bom["enable_product_flowrate_high_check"] = this->enableProductFlowrateHighCheck;
+  bom["product_flowrate_high_threshold"] = this->productFlowrateHighThreshold;
+  bom["product_flowrate_high_delay"] = this->productFlowrateHighDelay;
+
+  bom["enable_product_flowrate_low_check"] = this->enableProductFlowrateLowCheck;
+  bom["product_flowrate_low_threshold"] = this->productFlowrateLowThreshold;
+  bom["product_flowrate_low_delay"] = this->productFlowrateLowDelay;
+
+  bom["enable_run_total_flowrate_low_check"] = this->enableRunTotalFlowrateLowCheck;
+  bom["run_total_flowrate_low_threshold"] = this->runTotalFlowrateLowThreshold;
+  bom["run_total_flowrate_low_delay"] = this->runTotalFlowrateLowDelay;
+
+  bom["enable_pickle_total_flowrate_low_check"] = this->enablePickleTotalFlowrateLowCheck;
+  bom["pickle_total_flowrate_low_threshold"] = this->pickleTotalFlowrateLowThreshold;
+  bom["pickle_total_flowrate_low_delay"] = this->pickleTotalFlowrateLowDelay;
+
+  bom["enable_diverter_valve_closed_check"] = this->enableDiverterValveClosedCheck;
+  bom["diverter_valve_closed_delay"] = this->diverterValveClosedDelay;
+
+  bom["enable_product_salinity_high_check"] = this->enableProductSalinityHighCheck;
+  bom["product_salinity_high_threshold"] = this->productSalinityHighThreshold;
+  bom["product_salinity_high_delay"] = this->productSalinityHighDelay;
+
+  bom["enable_motor_temperature_check"] = this->enableMotorTemperatureCheck;
+  bom["motor_temperature_high_threshold"] = this->motorTemperatureHighThreshold;
+  bom["motor_temperature_high_delay"] = this->motorTemperatureHighDelay;
+
+  bom["enable_flush_flowrate_low_check"] = this->enableFlushFlowrateLowCheck;
+  bom["flush_flowrate_low_threshold"] = this->flushFlowrateLowThreshold;
+  bom["flush_flowrate_low_delay"] = this->flushFlowrateLowDelay;
+
+  bom["enable_flush_filter_pressure_low_check"] = this->enableFlushFilterPressureLowCheck;
+  bom["flush_filter_pressure_low_threshold"] = this->flushFilterPressureLowThreshold;
+  bom["flush_filter_pressure_low_delay"] = this->flushFilterPressureLowDelay;
+
+  bom["enable_flush_valve_off_check"] = this->enableFlushValveOffCheck;
+  bom["enable_flush_valve_off_threshold"] = this->flushValveOffThreshold;
+  bom["enable_flush_valve_off_delay"] = this->flushValveOffDelay;
 }
 
 void Brineomatic::updateMQTT()

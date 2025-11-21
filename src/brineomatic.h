@@ -112,11 +112,6 @@ class Brineomatic
     ServoChannel* highPressureValveServo = NULL;
     StepperChannel* highPressureValveStepper = NULL;
 
-    float highPressureValveStepperCloseAngle = 1660.0;
-    float highPressureValveStepperCloseSpeed = 10.0;
-    float highPressureValveStepperOpenAngle = 0.0;
-    float highPressureValveStepperOpenSpeed = 40.0;
-
     float highPressureValveOpenMin;
     float highPressureValveOpenMax;
     float highPressureValveCloseMin;
@@ -132,9 +127,6 @@ class Brineomatic
     float KpMaintain = 0;
     float KiMaintain = 0;
     float KdMaintain = 0;
-
-    float diverterValveOpenAngle = 35;
-    float diverterValveClosedAngle = 125;
 
     float currentVolume;
     float currentFlushVolume;
@@ -243,6 +235,8 @@ class Brineomatic
     void runStateMachine();
 
     void generateUpdateJSON(JsonVariant output);
+    void generateConfigJSON(JsonVariant output);
+
     void updateMQTT();
 
   private:
@@ -266,6 +260,8 @@ class Brineomatic
     uint32_t lastAutoFlushTime = 0;
     uint32_t pickleStart = 0;
     uint32_t depickleStart = 0;
+    uint32_t pickleDuration;
+    uint32_t depickleDuration;
 
     bool boostPumpOnState;
     bool highPressurePumpOnState;
@@ -282,35 +278,10 @@ class Brineomatic
     float currentBrineSalinity;
     float currentFilterPressure;
     float currentMembranePressure;
+    float currentMembranePressureTarget;
 
-    float membranePressureTarget;
     float membranePressurePIDOutput;
     QuickPID membranePressurePID;
-
-    uint32_t defaultFlushDuration = 3ULL * 60 * 1000;    // ms
-    uint32_t flushInterval = 3ULL * 24 * 60 * 60 * 1000; // 3 day default, in ms
-    uint32_t pickleDuration = 5ULL * 60 * 1000;          // 5 minute default, in ms
-    uint32_t depickleDuration = 15ULL * 60 * 1000;       // 15 minute default, in ms
-
-    float defaultMembranePressureTarget = 800.0; // PSI
-
-    float lowPressureMinimum = 2.5;           // PSI
-    float lowPressureMaximum = 60.0;          // PSI
-    float highPressureMinimum = 700.0;        // PSI
-    float highPressureMaximum = 900.0;        // PSI
-    float productFlowrateMinimum = 120.0;     // LPH
-    float productFlowrateMaximum = 165.0;     // LPH
-    float flushFilterPressureMinimum = 15.0;  // PSI
-    float flushFlowrateMinimum = 100.0;       // LPH
-    float flushSalinityFinished = 750.0;      // PPM
-    float runTotalFlowrateMinimum = 300.0;    // LPH
-    float pickleTotalFlowrateMinimum = 300.0; // LPH
-    float productSalinityMaximum = 500.0;     // PPM
-    float motorTemperatureMaximum = 65.0;     // Celcius
-    float tankLevelFull = 0.99;               // 0 = empty, 1 = full
-    float tankCapacity = 780;                 // Liters
-    float coolingFanOnTemperature = 35.0;     // Celcius
-    float coolingFanOffTemperature = 34.0;    // Celcius
 
     // tracking when we first saw the error condition
     uint32_t membranePressureHighStart = 0;
@@ -327,27 +298,141 @@ class Brineomatic
     uint32_t productSalinityHighStart = 0;
     uint32_t motorTemperatureStart = 0;
 
-    // how long to delay until we trigger the error
-    uint32_t membranePressureHighTimeout = 2000;      // timeout for membrane pressure too high during run in ms
-    uint32_t membranePressureLowTimeout = 2000;       // timeout for membrane pressure too low during run in ms
-    uint32_t filterPressureHighTimeout = 2000;        // timeout for filter pressure too high during run in ms
-    uint32_t filterPressureLowTimeout = 2000;         // timeout for filter pressure too low during run in ms
-    uint32_t productFlowrateLowTimeout = 10 * 1000;   // timeout for product flowrate too low during run in ms
-    uint32_t productFlowrateHighTimeout = 10 * 1000;  // timeout for product flowrate too high during run in ms
-    uint32_t brineFlowrateLowTimeout = 2500;          // timeout for brine flowrate too low during run in ms
-    uint32_t totalFlowrateLowTimeout = 2500;          // timeout for total flowrate too low in ms
-    uint32_t diverterValveOpenTimeout = 5000;         // timeout for diverter valve opening failure in ms
-    uint32_t productSalinityHighTimeout = 1000;       // timeout for salinity too high during run  in ms
-    uint32_t motorTemperatureTimeout = 1000;          // timeout for motor overtemp in ms
-    uint32_t flushFilterPressureLowTimeout = 2500;    // timeout for flush filter pressure in ms
-    uint32_t flushFlowrateLowTimeout = 2500;          // timeout for flush flowrate in ms
-    uint32_t flushValveOffTimeout = 15 * 1000;        // timeout for flush valve to turn off in ms
-    uint32_t flushTimeout = 5 * 60 * 1000;            // timeout for flush cycle in ms
-    uint32_t filterPressureTimeout = 30 * 1000;       // timeout for filter pressure in ms
-    uint32_t membranePressureTimeout = 60 * 1000;     // timeout for membrane pressure to stabilize in ms
-    uint32_t productFlowRateTimeout = 2 * 60 * 1000;  // timeout for product flowrate to stabilize in ms
-    uint32_t productSalinityTimeout = 5 * 60 * 1000;  // timeout for salinity to stabilize in ms
-    uint32_t productionTimeout = 12 * 60 * 60 * 1000; // maximum length of run in ms
+    //
+    // Configuration variables
+    //
+    float tankLevelFull = 0.99;            // 0 = empty, 1 = full
+    float tankCapacity = 780;              // Liters
+    float coolingFanOnTemperature = 35.0;  // Celcius
+    float coolingFanOffTemperature = 34.0; // Celcius
+
+    const char* autoflushMode;
+    float autoflushSalinity = 750.0;
+    uint32_t autoflushDuration = 3 * 60 * 1000;
+    float autoflushVolume = 15.0;
+    uint32_t autoflushInterval = 3 * 24 * 60 * 60 * 1000;
+
+    const char* temperatureUnits = "celsius";
+    const char* pressureUnits = "psi";
+    const char* volumeUnits = "liters";
+    const char* flowrateUnits = "lph";
+
+    const char* successMelody = "SUCCESS";
+    const char* errorMelody = "ERROR";
+
+    const char* boostPumpControl = "none";
+    uint8_t boostPumpRelayId = 1;
+
+    const char* highPressurePumpControl = "relay";
+    uint8_t highPressureRelayId = 4;
+
+    const char* highPressureValveControl = "stepper_position";
+    uint8_t highPressureValveStepperId = 1;
+    float highPressureValveStepperStepAngle = 1.8;
+    float highPressureValveStepperGearRatio = 3.0;
+    float highPressureValveStepperCloseAngle = 1660.0;
+    float highPressureValveStepperCloseSpeed = 10.0;
+    float highPressureValveStepperOpenAngle = 0.0;
+    float highPressureValveStepperOpenSpeed = 40.0;
+    float membranePressureTarget = 800.0; // PSI
+
+    const char* diverterValveControl = "servo";
+    uint8_t diverterValveServoId = 1;
+    float diverterValveOpenAngle = 35;
+    float diverterValveCloseAngle = 125;
+
+    const char* flushValveControl = "relay";
+    uint8_t flushValveRelayId = 2;
+
+    const char* coolingFanControl = "relay";
+    uint8_t coolingFanRelayId = 3;
+
+    bool hasMembranePressureSensor = true;
+    float membranePressureSensorMin = 0.0;
+    float membranePressureSensorMax = YB_HP_SENSOR_MAX;
+
+    bool hasFilterPressureSensor = true;
+    float filterPressureSensorMin = 0.0;
+    float filterPressureSensorMax = YB_LP_SENSOR_MAX;
+
+    bool hasProductTDSSensor = true;
+    bool hasBrineTDSSensor = true;
+
+    bool hasProductFlowSensor = true;
+    float productFlowmeterPPL = YB_PRODUCT_FLOWMETER_DEFAULT_PPL;
+
+    bool hasBrineFlowSensor = true;
+    float brineFlowmeterPPL = YB_BRINE_FLOWMETER_DEFAULT_PPL;
+
+    bool hasMotorTemperatureSensor = true;
+
+    bool enableMembranePressureHighCheck = true;
+    float membranePressureHighThreshold = 900.0;
+    uint32_t membranePressureHighDelay = 2000;
+
+    bool enableMembranePressureLowCheck = true;
+    float membranePressureLowThreshold = 700.0;
+    uint32_t membranePressureLowDelay = 2000;
+
+    bool enableFilterPressureHighCheck = true;
+    float filterPressureHighThreshold = 60.0;
+    uint32_t filterPressureHighDelay = 2000;
+
+    bool enableFilterPressureLowCheck = true;
+    float filterPressureLowThreshold = 2.5;
+    uint32_t filterPressureLowDelay = 2000;
+
+    bool enableProductFlowrateHighCheck = true;
+    float productFlowrateHighThreshold = 165.0;
+    uint32_t productFlowrateHighDelay = 10 * 1000;
+
+    bool enableProductFlowrateLowCheck = true;
+    float productFlowrateLowThreshold = 120.0;
+    uint32_t productFlowrateLowDelay = 10 * 1000;
+
+    bool enableRunTotalFlowrateLowCheck = true;
+    float runTotalFlowrateLowThreshold = 300.0;
+    uint32_t runTotalFlowrateLowDelay = 2500;
+
+    bool enablePickleTotalFlowrateLowCheck = true;
+    float pickleTotalFlowrateLowThreshold = 300.0;
+    uint32_t pickleTotalFlowrateLowDelay = 2500;
+
+    bool enableDiverterValveClosedCheck = true;
+    float diverterValveClosedDelay = 5000;
+
+    bool enableProductSalinityHighCheck = true;
+    float productSalinityHighThreshold = 500.0;
+    uint32_t productSalinityHighDelay = 1000;
+
+    bool enableMotorTemperatureCheck = true;
+    float motorTemperatureHighThreshold = 65.0;
+    uint32_t motorTemperatureHighDelay = 1000;
+
+    bool enableFlushFlowrateLowCheck = true;
+    float flushFlowrateLowThreshold = 100.0;
+    uint32_t flushFlowrateLowDelay = 2500;
+
+    bool enableFlushFilterPressureLowCheck = true;
+    float flushFilterPressureLowThreshold = 15.0;
+    uint32_t flushFilterPressureLowDelay = 2500;
+
+    bool enableFlushValveOffCheck = true;
+    float flushValveOffThreshold = 2.0;
+    uint32_t flushValveOffDelay = 15 * 1000;
+
+    uint32_t flushTimeout = 5 * 60 * 1000;                   // timeout for flush cycle in ms
+    uint32_t membranePressureTimeout = 60 * 1000;            // timeout for membrane pressure to stabilize in ms
+    uint32_t productFlowrateTimeout = 2 * 60 * 1000;         // timeout for product flowrate to stabilize in ms
+    uint32_t productSalinityTimeout = 5 * 60 * 1000;         // timeout for salinity to stabilize in ms
+    uint32_t productionRuntimeTimeout = 12 * 60 * 60 * 1000; // maximum length of run in ms
+
+    //
+    //  Old config - needs conversion
+    //
+
+    // convert to boost pump error check
+    uint32_t filterPressureTimeout = 30 * 1000; // timeout for filter pressure in ms
 
     void resetErrorTimers();
 

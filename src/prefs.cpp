@@ -242,13 +242,7 @@ void generateBoardConfigJSON(JsonVariant output)
 #endif
 
 #ifdef YB_IS_BRINEOMATIC
-  JsonObject bom = output["brineomatic"].to<JsonObject>();
-  bom["has_boost_pump"] = wm.hasBoostPump();
-  bom["has_high_pressure_pump"] = wm.hasHighPressurePump();
-  bom["has_diverter_valve"] = wm.hasDiverterValve();
-  bom["has_flush_valve"] = wm.hasFlushValve();
-  bom["has_cooling_fan"] = wm.hasCoolingFan();
-  bom["tank_capacity"] = wm.getTankCapacity();
+  wm.generateConfigJSON(output);
 #endif
 }
 
