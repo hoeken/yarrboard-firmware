@@ -201,28 +201,20 @@ void server_setup()
     return ESP_OK; });
 
   // downloadable coredump file
-  server->on("/coredump.txt", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
-    // delete the coredump here, but not from littlefs
-    deleteCoreDump();
-
-    // dont bug the client anymore
+  server->on("/coredump.bin", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
+    deleteCoreDump(); // clear ESP flash dump
     has_coredump = false;
 
-    response->setContentType("text/plain");
-
-    if (LittleFS.exists("/coredump.txt")) {
-      response->setCode(200);
-
-      // this feels a little bit hacky...
-      File fp = LittleFS.open("/coredump.txt");
-      String data = fp.readString();
-      response->setContent(data.c_str());
-    } else {
+    if (!LittleFS.exists("/coredump.bin")) {
       response->setCode(404);
       response->setContent("Coredump not found.");
+      return response->send();
     }
 
-    return response->send(); });
+    File fp = LittleFS.open("/coredump.bin");
+    PsychicFileResponse fileResponse(response, fp, "/coredump.bin", "application/octet-stream", true);
+    return fileResponse.send();
+  });
 
   server->start();
 }

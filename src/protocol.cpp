@@ -253,6 +253,8 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleSetMiscellaneousConfig(input, output);
     else if (!strcmp(cmd, "restart"))
       return handleRestart(input, output);
+    else if (!strcmp(cmd, "crashme"))
+      return handleCrashMe(input, output);
     else if (!strcmp(cmd, "factory_reset"))
       return handleFactoryReset(input, output);
     else if (!strcmp(cmd, "ota_start"))
@@ -643,6 +645,13 @@ void handleRestart(JsonVariantConst input, JsonVariant output)
   YBP.println("Restarting board.");
 
   ESP.restart();
+}
+
+void handleCrashMe(JsonVariantConst input, JsonVariant output)
+{
+#ifdef YB_IS_DEVELOPMENT
+  crash_me_hard();
+#endif
 }
 
 void handleFactoryReset(JsonVariantConst input, JsonVariant output)

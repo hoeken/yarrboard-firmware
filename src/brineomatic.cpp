@@ -90,13 +90,6 @@ void brineomatic_setup()
   YBP.print(ds18b20.getDeviceCount(), DEC);
   YBP.println(" DS18B20 devices.");
 
-  // // report parasite power requirements
-  // YBP.print("Parasite power is: ");
-  // if (ds18b20.isParasitePowerMode())
-  //   YBP.println("ON");
-  // else
-  //   YBP.println("OFF");
-
   // lookup our address
   if (!ds18b20.getAddress(motorThermometer, 0))
     YBP.println("Unable to find address for DS18B20");
@@ -258,10 +251,16 @@ void brineomatic_loop()
 }
 
 // State machine task function
+unsigned long lastBrineomaticPrint = 0;
 void brineomatic_state_machine(void* pvParameters)
 {
   while (true) {
     wm.runStateMachine();
+
+    if (millis() - lastBrineomaticPrint >= 1000) {
+      lastBrineomaticPrint = millis();
+      TRACE();
+    }
 
     // Add a delay to prevent task starvation
     vTaskDelay(pdMS_TO_TICKS(100));
@@ -1266,6 +1265,11 @@ void Brineomatic::runStateMachine()
       uint32_t productionStart = millis();
       while (true) {
 
+        if (millis() - lastBrineomaticPrint >= 1000) {
+          lastBrineomaticPrint = millis();
+          TRACE();
+        }
+
         if (checkDiverterValveClosed())
           return;
 
@@ -1390,6 +1394,11 @@ void Brineomatic::runStateMachine()
 
       // check our sensors while we flush
       while (true) {
+
+        if (millis() - lastBrineomaticPrint >= 1000) {
+          lastBrineomaticPrint = millis();
+          TRACE();
+        }
 
         if (checkFlushFilterPressureLow())
           break;

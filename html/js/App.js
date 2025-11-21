@@ -1110,9 +1110,9 @@
 
       //did we get a crash?
       if (msg.has_coredump)
-        YB.App.showAdminAlert(`
+        YB.App.showAdminAlert(/*html*/ `
           <p>Oops, looks like Yarrboard crashed.</p>
-          <p>Please download the <a href="/coredump.txt" target="_blank">coredump</a> and report it to our <a href="https://github.com/hoeken/yarrboard/issues">Github Issue Tracker</a> along with the following information:</p>
+          <p>Please download the <a href="/coredump.bin" target="_blank">coredump</a> and report it to our <a href="https://github.com/hoeken/yarrboard/issues">Github Issue Tracker</a> along with the following information:</p>
           <ul><li>Firmware: ${msg.firmware_version}</li><li>Hardware: ${msg.hardware_version}</li></ul>
         `, "danger");
 

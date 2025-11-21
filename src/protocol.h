@@ -80,6 +80,7 @@ void handleSaveConfig(JsonVariantConst input, JsonVariant output);
 void handleLogin(JsonVariantConst input, JsonVariant output, YBMode mode, PsychicWebSocketClient* connection = NULL);
 void handleLogout(JsonVariantConst input, JsonVariant output, YBMode mode, PsychicWebSocketClient* connection = NULL);
 void handleRestart(JsonVariantConst input, JsonVariant output);
+void handleCrashMe(JsonVariantConst input, JsonVariant output);
 void handleFactoryReset(JsonVariantConst input, JsonVariant output);
 void handleOTAStart(JsonVariantConst input, JsonVariant output);
 void handleConfigPWMChannel(JsonVariantConst input, JsonVariant output);

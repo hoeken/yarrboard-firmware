@@ -200,6 +200,7 @@ void full_loop()
 
   // smooth out our frequency
   if (millis() - lastLoopMillis > 1000) {
+    TRACE();
     framerateAvg.add(framerate_now);
     framerate = framerateAvg.average();
     lastLoopMillis = millis();

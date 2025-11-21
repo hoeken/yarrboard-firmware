@@ -32,7 +32,7 @@ void debug_setup();
 
 String getResetReason();
 bool checkCoreDump();
-String readCoreDump();
+bool saveCoreDumpToFile(const char* path);
 bool deleteCoreDump();
 void crash_me_hard();
 int debug_log_vprintf(const char* fmt, va_list args);

@@ -17,12 +17,13 @@
 
 void setup()
 {
-  debug_setup();
-
+  // we need littlefs to store our coredump if any in debug_setup()
   if (!LittleFS.begin(true)) {
     YBP.println("ERROR: Unable to mount LittleFS");
   }
   YBP.printf("LittleFS Storage: %d / %d\n", LittleFS.usedBytes(), LittleFS.totalBytes());
+
+  debug_setup();
 
   // get our prefs early on.
   prefs_setup();
@@ -42,10 +43,16 @@ void setup()
     full_setup();
 }
 
+unsigned long lastPrint = 0;
 void loop()
 {
   if (is_first_boot)
     improv_loop();
   else
     full_loop();
+
+  if (millis() - lastPrint >= 1000) {
+    lastPrint = millis();
+    TRACE();
+  }
 }

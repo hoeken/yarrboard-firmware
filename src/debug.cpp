@@ -7,6 +7,7 @@
 */
 
 #include "debug.h"
+#include <algorithm>
 
 #ifdef YB_USB_SERIAL
 USBCDC USBSerial;
@@ -49,11 +50,8 @@ void debug_setup()
   if (checkCoreDump()) {
     has_coredump = true;
     YBP.println("WARNING: Coredump Found.");
-    String coredump = readCoreDump();
 
-    File file = LittleFS.open("/coredump.txt", FILE_WRITE);
-    file.print(coredump);
-    file.close();
+    saveCoreDumpToFile("/coredump.bin");
   }
 }
 
@@ -104,46 +102,38 @@ bool checkCoreDump()
     return false;
 }
 
-String readCoreDump()
+bool saveCoreDumpToFile(const char* path)
 {
-  size_t size = 0;
-  size_t address = 0;
-  if (esp_core_dump_image_get(&address, &size) == ESP_OK) {
-    const esp_partition_t* pt = NULL;
-    pt = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_COREDUMP, "coredump");
+  size_t size = 0, address = 0;
 
-    if (pt != NULL) {
-      uint8_t bf[256];
-      char str_dst[640];
-      int16_t toRead;
-      String return_str;
+  if (esp_core_dump_image_get(&address, &size) != ESP_OK)
+    return false;
 
-      for (int16_t i = 0; i < (size / 256) + 1; i++) {
-        strcpy(str_dst, "");
-        toRead = (size - i * 256) > 256 ? 256 : (size - i * 256);
+  const esp_partition_t* pt = esp_partition_find_first(
+    ESP_PARTITION_TYPE_DATA,
+    ESP_PARTITION_SUBTYPE_DATA_COREDUMP,
+    "coredump");
 
-        esp_err_t er = esp_partition_read(pt, i * 256, bf, toRead);
-        if (er != ESP_OK) {
-          YBP.printf("FAIL [%x]\n", er);
-          break;
-        }
+  if (!pt)
+    return false;
 
-        for (int16_t j = 0; j < 256; j++) {
-          char str_tmp[3];
+  File file = LittleFS.open(path, FILE_WRITE);
+  if (!file)
+    return false;
 
-          sprintf(str_tmp, "%02x", bf[j]);
-          strcat(str_dst, str_tmp);
-        }
+  uint8_t buf[256];
 
-        return_str += str_dst;
-      }
-      return return_str;
-    } else {
-      return "Partition NULL";
-    }
-  } else {
-    return "esp_core_dump_image_get() FAIL";
+  for (size_t off = 0; off < size; off += sizeof(buf)) {
+    size_t toRead = std::min<size_t>(sizeof(buf), size - off);
+
+    if (esp_partition_read(pt, off, buf, toRead) != ESP_OK)
+      return false;
+
+    file.write(buf, toRead);
   }
+
+  file.close();
+  return true;
 }
 
 bool deleteCoreDump()
