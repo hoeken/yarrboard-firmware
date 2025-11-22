@@ -306,7 +306,7 @@ class Brineomatic
     float coolingFanOnTemperature = 35.0;  // Celcius
     float coolingFanOffTemperature = 34.0; // Celcius
 
-    const char* autoflushMode = "duration";
+    const char* autoflushMode = "TIME";
     float autoflushSalinity = 750.0;
     uint32_t autoflushDuration = 3 * 60 * 1000;
     float autoflushVolume = 15.0;
@@ -320,13 +320,13 @@ class Brineomatic
     const char* successMelody = "SUCCESS";
     const char* errorMelody = "ERROR";
 
-    const char* boostPumpControl = "none";
+    const char* boostPumpControl = "NONE";
     uint8_t boostPumpRelayId = 1;
 
-    const char* highPressurePumpControl = "relay";
+    const char* highPressurePumpControl = "RELAY";
     uint8_t highPressureRelayId = 4;
 
-    const char* highPressureValveControl = "stepper_position";
+    const char* highPressureValveControl = "STEPPER";
     uint8_t highPressureValveStepperId = 1;
     float highPressureValveStepperStepAngle = 1.8;
     float highPressureValveStepperGearRatio = 3.0;
@@ -336,15 +336,15 @@ class Brineomatic
     float highPressureValveStepperOpenSpeed = 40.0;
     float membranePressureTarget = 800.0; // PSI
 
-    const char* diverterValveControl = "servo";
+    const char* diverterValveControl = "SERVO";
     uint8_t diverterValveServoId = 1;
     float diverterValveOpenAngle = 35;
     float diverterValveCloseAngle = 125;
 
-    const char* flushValveControl = "relay";
+    const char* flushValveControl = "RELAY";
     uint8_t flushValveRelayId = 2;
 
-    const char* coolingFanControl = "relay";
+    const char* coolingFanControl = "RELAY";
     uint8_t coolingFanRelayId = 3;
 
     bool hasMembranePressureSensor = true;
@@ -426,10 +426,6 @@ class Brineomatic
     uint32_t productFlowrateTimeout = 2 * 60 * 1000;         // timeout for product flowrate to stabilize in ms
     uint32_t productSalinityTimeout = 5 * 60 * 1000;         // timeout for salinity to stabilize in ms
     uint32_t productionRuntimeTimeout = 12 * 60 * 60 * 1000; // maximum length of run in ms
-
-    //
-    //  Old config - needs conversion
-    //
 
     void resetErrorTimers();
 
