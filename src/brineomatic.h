@@ -17,16 +17,6 @@ class RelayChannel;
 class ServoChannel;
 class StepperChannel;
 
-extern etl::deque<float, YB_BOM_DATA_SIZE> motor_temperature_data;
-extern etl::deque<float, YB_BOM_DATA_SIZE> water_temperature_data;
-extern etl::deque<float, YB_BOM_DATA_SIZE> filter_pressure_data;
-extern etl::deque<float, YB_BOM_DATA_SIZE> membrane_pressure_data;
-extern etl::deque<float, YB_BOM_DATA_SIZE> product_salinity_data;
-extern etl::deque<float, YB_BOM_DATA_SIZE> brine_salinity_data;
-extern etl::deque<float, YB_BOM_DATA_SIZE> product_flowrate_data;
-extern etl::deque<float, YB_BOM_DATA_SIZE> brine_flowrate_data;
-extern etl::deque<float, YB_BOM_DATA_SIZE> tank_level_data;
-
 void brineomatic_setup();
 void brineomatic_loop();
 

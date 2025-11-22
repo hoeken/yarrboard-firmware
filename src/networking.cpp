@@ -142,13 +142,15 @@ bool connectToWifi(const char* ssid, const char* pass)
   rgb_set_status_color(CRGB::Yellow);
 
   // reset our wifi to a clean state
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect(true, true);
-  WiFi.mode(WIFI_OFF);
-  delay(50);
-  WiFi.mode(WIFI_STA);
+  if (WiFi.isConnected()) {
+    WiFi.mode(WIFI_STA);
+    WiFi.disconnect(true, true);
+    WiFi.mode(WIFI_OFF);
+    delay(100);
+  }
 
   // some tuning
+  WiFi.mode(WIFI_STA);
   WiFi.persistent(false);
   WiFi.setAutoReconnect(true);
   WiFi.setSleep(false); // optional but usually helps reliability

@@ -119,7 +119,6 @@ void generateUpdateJSON(JsonVariant output);
 void generateFastUpdateJSON(JsonVariant output);
 void generateConfigJSON(JsonVariant output);
 void generateStatsJSON(JsonVariant output);
-void generateGraphDataJSON(JsonVariant output);
 void generateFullConfigMessage(JsonVariant output);
 void generateNetworkConfigMessage(JsonVariant output);
 void generateAppConfigMessage(JsonVariant output);

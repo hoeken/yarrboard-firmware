@@ -727,8 +727,6 @@ bool playMelodyByName(const char* melody)
 // Safe to call from loop/ISRs (but here we use regular context).
 void playMelody(const Note* seq, size_t len)
 {
-  portENTER_CRITICAL(&g_mux);
-
   // wait until we're done playing.
   if (g_len > 0 || g_seq != nullptr)
     return;
@@ -738,12 +736,14 @@ void playMelody(const Note* seq, size_t len)
   if (g_len > YB_MAX_MELODY_LENGTH)
     return;
 
+  portENTER_CRITICAL(&g_mux);
   // copy into persistent storage
   for (size_t i = 0; i < len; i++) {
     g_noteBuffer[i] = seq[i];
   }
   g_seq = g_noteBuffer;
   portEXIT_CRITICAL(&g_mux);
+
   if (buzzerTaskHandle)
     xTaskNotifyGive(buzzerTaskHandle); // wake the task
 }

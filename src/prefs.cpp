@@ -111,14 +111,13 @@ bool saveConfig(char* error, size_t len)
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(config);
   char* jsonBuffer = (char*)malloc(jsonSize + 1);
-  jsonBuffer[jsonSize] = '\0'; // null terminate
 
   // now serialize it to the buffer
   if (jsonBuffer != NULL) {
+    jsonBuffer[jsonSize] = '\0'; // null terminate
     serializeJson(config, jsonBuffer, jsonSize + 1);
   } else {
-    free(jsonBuffer);
-    snprintf(error, len, "serializeJson() failed to create buffer of size %d", jsonSize);
+    snprintf(error, len, "saveConfig() failed to create buffer of size %d", jsonSize);
     return false;
   }
 
@@ -126,6 +125,7 @@ bool saveConfig(char* error, size_t len)
   File fp = LittleFS.open(YB_BOARD_CONFIG_PATH, "w");
   if (!fp) {
     snprintf(error, len, "Failed to open %s for writing", YB_BOARD_CONFIG_PATH);
+    free(jsonBuffer);
     return false;
   }
 
@@ -134,6 +134,7 @@ bool saveConfig(char* error, size_t len)
   if (bytesWritten == 0) {
     fp.close();
     strncpy(error, "Failed to write JSON data to file", len);
+    free(jsonBuffer);
     return false;
   }
 
@@ -144,6 +145,7 @@ bool saveConfig(char* error, size_t len)
   // confirm file exists and has non-zero length
   if (!LittleFS.exists(YB_BOARD_CONFIG_PATH)) {
     strncpy(error, "File not found after write", len);
+    free(jsonBuffer);
     return false;
   }
 
@@ -152,6 +154,7 @@ bool saveConfig(char* error, size_t len)
   if (!verify || verify.size() == 0) {
     verify.close();
     strncpy(error, "Wrote file but it appears empty or unreadable", len);
+    free(jsonBuffer);
     return false;
   }
   verify.close();
@@ -314,6 +317,7 @@ bool loadConfigFromFile(const char* file, char* error, size_t len)
   if (!buf) {
     snprintf(error, len, "Memory allocation failed for %u bytes", (unsigned int)size);
     configFile.close();
+    free(buf);
     return false;
   }
 
@@ -323,12 +327,16 @@ bool loadConfigFromFile(const char* file, char* error, size_t len)
 
   if (bytesRead != size) {
     snprintf(error, len, "Read size mismatch: expected %u, got %u", (unsigned int)size, (unsigned int)bytesRead);
+    free(buf);
     return false;
   }
 
   // parse JSON
   JsonDocument doc; // adjust to match your configuration complexity
   DeserializationError err = deserializeJson(doc, buf);
+
+  // no leaks
+  free(buf);
 
   if (err) {
     snprintf(error, len, "JSON parse error: %s", err.c_str());

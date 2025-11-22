@@ -22,18 +22,6 @@
   #include <GravityTDS.h>
   #include <OneWire.h>
 
-etl::deque<float, YB_BOM_DATA_SIZE> motor_temperature_data;
-etl::deque<float, YB_BOM_DATA_SIZE> water_temperature_data;
-etl::deque<float, YB_BOM_DATA_SIZE> filter_pressure_data;
-etl::deque<float, YB_BOM_DATA_SIZE> membrane_pressure_data;
-etl::deque<float, YB_BOM_DATA_SIZE> product_salinity_data;
-etl::deque<float, YB_BOM_DATA_SIZE> brine_salinity_data;
-etl::deque<float, YB_BOM_DATA_SIZE> product_flowrate_data;
-etl::deque<float, YB_BOM_DATA_SIZE> brine_flowrate_data;
-etl::deque<float, YB_BOM_DATA_SIZE> tank_level_data;
-
-uint32_t lastDataStore = 0;
-
 Brineomatic wm;
 
 // Setup a oneWire instance to communicate with any OneWire devices
@@ -163,7 +151,7 @@ void brineomatic_setup()
     "brineomatic_sm",          // Name of the task
     4096,                      // Stack size
     NULL,                      // Task input parameters
-    1,                         // Priority of the task
+    2,                         // Priority of the task
     NULL,                      // Task handle
     1                          // Core where the task should run
   );
@@ -206,61 +194,18 @@ void brineomatic_loop()
     brineomatic_adc.requestADC(current_ads1115_channel);
   }
 
-  if (millis() - lastDataStore > YB_BOM_DATA_INTERVAL) {
-    lastDataStore = millis();
-
-    if (motor_temperature_data.full())
-      motor_temperature_data.pop_front();
-    motor_temperature_data.push_back(wm.getMotorTemperature());
-
-    if (water_temperature_data.full())
-      water_temperature_data.pop_front();
-    water_temperature_data.push_back(wm.getWaterTemperature());
-
-    if (filter_pressure_data.full())
-      filter_pressure_data.pop_front();
-    filter_pressure_data.push_back(wm.getFilterPressure());
-
-    if (membrane_pressure_data.full())
-      membrane_pressure_data.pop_front();
-    membrane_pressure_data.push_back(wm.getMembranePressure());
-
-    if (product_salinity_data.full())
-      product_salinity_data.pop_front();
-    product_salinity_data.push_back(wm.getProductSalinity());
-
-    if (brine_salinity_data.full())
-      brine_salinity_data.pop_front();
-    brine_salinity_data.push_back(wm.getBrineSalinity());
-
-    if (product_flowrate_data.full())
-      product_flowrate_data.pop_front();
-    product_flowrate_data.push_back(wm.getProductFlowrate());
-
-    if (brine_flowrate_data.full())
-      brine_flowrate_data.pop_front();
-    brine_flowrate_data.push_back(wm.getBrineFlowrate());
-
-    if (tank_level_data.full())
-      tank_level_data.pop_front();
-    tank_level_data.push_back(wm.getTankLevel());
-  }
-
   wm.manageHighPressureValve();
   wm.manageCoolingFan();
 }
 
 // State machine task function
-unsigned long lastBrineomaticPrint = 0;
 void brineomatic_state_machine(void* pvParameters)
 {
   while (true) {
     wm.runStateMachine();
 
-    if (millis() - lastBrineomaticPrint >= 1000) {
-      lastBrineomaticPrint = millis();
-      TRACE();
-    }
+    // if (INTERVAL(1000))
+    //   Serial.println("brineomatic_state_machine");
 
     // Add a delay to prevent task starvation
     vTaskDelay(pdMS_TO_TICKS(100));
@@ -1264,12 +1209,6 @@ void Brineomatic::runStateMachine()
 
       uint32_t productionStart = millis();
       while (true) {
-
-        if (millis() - lastBrineomaticPrint >= 1000) {
-          lastBrineomaticPrint = millis();
-          TRACE();
-        }
-
         if (checkDiverterValveClosed())
           return;
 
@@ -1394,11 +1333,6 @@ void Brineomatic::runStateMachine()
 
       // check our sensors while we flush
       while (true) {
-
-        if (millis() - lastBrineomaticPrint >= 1000) {
-          lastBrineomaticPrint = millis();
-          TRACE();
-        }
 
         if (checkFlushFilterPressureLow())
           break;

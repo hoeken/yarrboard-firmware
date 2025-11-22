@@ -7,13 +7,10 @@
 */
 
 #include "navico.h"
+#include "debug.h"
 
 const int PUBLISH_PORT = 2053;
 IPAddress MULTICAST_GROUP_IP(239, 2, 1, 1);
-
-int port;
-String protocol;
-String url;
 
 unsigned long lastNavicoPublishMillis = 0;
 
@@ -23,12 +20,19 @@ WiFiUDP Udp;
 // https://github.com/SignalK/signalk-server/blob/master/src/interfaces/mfd_webapp.ts
 void navico_loop()
 {
+  String url = "http://192.168.2.150:80";
+  String protocol;
+  int port;
+
   if (millis() - lastNavicoPublishMillis > 10000) {
-    // which protocol to use?
-    if (app_enable_ssl)
-      url = "https://" + WiFi.localIP().toString() + ":443";
-    else
-      url = "http://" + WiFi.localIP().toString() + ":80";
+
+    if (!WiFi.isConnected())
+      return;
+
+    char urlBuf[48];
+    IPAddress ip = WiFi.localIP();
+    snprintf(urlBuf, sizeof(urlBuf), app_enable_ssl ? "https://%u.%u.%u.%u:443" : "http://%u.%u.%u.%u:80", ip[0], ip[1], ip[2], ip[3]);
+    url = urlBuf; // assign once
 
     // generate our config JSON
     JsonDocument doc;
@@ -50,24 +54,30 @@ void navico_loop()
     BrowserPanel["Enable"] = true;
     BrowserPanel["ProgressBarEnable"] = true;
 
-    JsonObject BrowserPanel_MenuText_0 =
-      BrowserPanel["MenuText"].add<JsonObject>();
+    JsonObject BrowserPanel_MenuText_0 = BrowserPanel["MenuText"].add<JsonObject>();
     BrowserPanel_MenuText_0["Language"] = "en";
     BrowserPanel_MenuText_0["Name"] = "Home";
 
     // make our dynamic buffer for the output
     size_t jsonSize = measureJson(doc);
     char* jsonBuffer = (char*)malloc(jsonSize + 1);
+    if (!jsonBuffer) {
+      YBP.println("Navico malloc failed!");
+      return;
+    }
+
     jsonBuffer[jsonSize] = '\0'; // null terminate
 
     // did we get anything?
-    if (jsonBuffer != NULL) {
-      serializeJson(doc, jsonBuffer, jsonSize + 1);
+    serializeJson(doc, jsonBuffer, jsonSize + 1);
 
-      Udp.beginPacket(MULTICAST_GROUP_IP, PUBLISH_PORT);
-      Udp.printf(jsonBuffer);
+    if (Udp.beginPacket(MULTICAST_GROUP_IP, PUBLISH_PORT)) {
+      Udp.write((const uint8_t*)jsonBuffer, jsonSize);
       Udp.endPacket();
+    } else {
+      YBP.println("UDP beginPacket failed");
     }
+
     free(jsonBuffer);
 
     lastNavicoPublishMillis = millis();

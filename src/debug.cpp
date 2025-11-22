@@ -7,6 +7,7 @@
 */
 
 #include "debug.h"
+#include "esp_freertos_hooks.h"
 #include <algorithm>
 
 #ifdef YB_USB_SERIAL
@@ -19,11 +20,36 @@ YarrboardPrint YBP;
 StringPrint startupLogger;
 WebsocketPrint networkLogger;
 
+static void heartbeatTask(void* pv)
+{
+  while (1) {
+    Serial.printf("HB %u\n", millis());
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
+}
+
+void IRAM_ATTR core0_tick_cb(void)
+{
+  static uint32_t n = 0;
+  if ((n++ & 0xFFF) == 0) {
+    // In ISR context – keep it very light.
+    // For pure debugging you *can* do Serial.println, but it's not ideal.
+    ets_printf("tick 0\n"); // ISR-safe ROM printf
+  }
+}
+
+void IRAM_ATTR core1_tick_cb(void)
+{
+  static uint32_t n = 0;
+  if ((n++ & 0xFFF) == 0) {
+    // In ISR context – keep it very light.
+    // For pure debugging you *can* do Serial.println, but it's not ideal.
+    ets_printf("tick 1\n"); // ISR-safe ROM printf
+  }
+}
+
 void debug_setup()
 {
-  // startup our serial
-  Serial.begin(115200);
-  Serial.setTimeout(50);
   YBP.addPrinter(Serial);
 
   // native usb serial too
@@ -35,6 +61,8 @@ void debug_setup()
 
   // startup log logs to a string for getting later
   YBP.addPrinter(startupLogger);
+
+  // our debug logs should use YBP too
   esp_log_set_vprintf(debug_log_vprintf);
 
   YBP.println("Yarrboard");
@@ -53,6 +81,19 @@ void debug_setup()
 
     saveCoreDumpToFile("/coredump.bin");
   }
+
+  // esp_register_freertos_tick_hook_for_cpu(core0_tick_cb, 0);
+  // esp_register_freertos_tick_hook_for_cpu(core1_tick_cb, 1);
+
+  // xTaskCreatePinnedToCore(
+  //   heartbeatTask,
+  //   "heartbeat",
+  //   4096,
+  //   NULL,
+  //   1,
+  //   NULL,
+  //   1 // Core 1 (loopTask usually runs on core 1)
+  // );
 }
 
 String getResetReason()
@@ -158,9 +199,8 @@ int debug_log_vprintf(const char* fmt, va_list args)
   // Format the log into a buffer using the va_list
   int len = vsnprintf(buf, sizeof(buf), fmt, args);
 
-  if (len > 0) {
-    YBP.print(buf); // Use Print::print()
-  }
+  if (len > 0)
+    YBP.print(buf);
 
   return len;
 }

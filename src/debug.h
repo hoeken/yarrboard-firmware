@@ -18,8 +18,19 @@
 #include <esp_partition.h>
 #include <esp_system.h>
 
-#define ARDUINOTRACE_SERIAL YBP
+// #define ARDUINOTRACE_SERIAL YBP
 #include <ArduinoTrace.h>
+
+#define INTERVAL(ms)            \
+  ([]() -> bool {               \
+    static uint32_t _last = 0;  \
+    uint32_t _now = millis();   \
+    if (_now - _last >= (ms)) { \
+      _last = _now;             \
+      return true;              \
+    }                           \
+    return false;               \
+  }())
 
 #ifdef YB_USB_SERIAL
   #include "USB.h"
@@ -74,43 +85,51 @@ class YarrboardPrint : public Print
 class StringPrint : public Print
 {
   public:
-    StringPrint()
-    {
-      value.reserve(1024); // preallocate default buffer
-    }
-
-    String value; // gathered output
+    StringPrint() : _pos(0) {}
 
     size_t write(uint8_t b) override
     {
-      value += (char)b;
+      if (_pos < sizeof(_buf) - 1) {
+        _buf[_pos++] = (char)b;
+        _buf[_pos] = '\0';
+      }
       return 1;
     }
+
+    const char* c_str() const { return _buf; }
+
+  private:
+    static constexpr size_t BUF_SIZE = 1024;
+    char _buf[BUF_SIZE];
+    size_t _pos;
 };
 
 class WebsocketPrint : public Print
 {
   public:
-    WebsocketPrint()
-    {
-      _buf.reserve(256); // default preallocation
-    }
+    WebsocketPrint() : _pos(0) {}
 
     size_t write(uint8_t b) override
     {
       if (b == '\n') {
-        if (_buf.length() > 0) {
-          sendDebug(_buf.c_str());
-          _buf = "";
+        if (_pos > 0) {
+          _buf[_pos] = '\0';
+          sendDebug(_buf);
+          _pos = 0; // reset buffer
         }
       } else {
-        _buf += (char)b;
+        if (_pos < sizeof(_buf) - 1) {
+          _buf[_pos++] = (char)b;
+        }
+        // else drop chars on overflow (optional)
       }
       return 1;
     }
 
   private:
-    String _buf;
+    static constexpr size_t BUF_SIZE = 256;
+    char _buf[BUF_SIZE];
+    size_t _pos;
 };
 
 extern YarrboardPrint YBP;

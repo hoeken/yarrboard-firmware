@@ -122,21 +122,23 @@ void server_setup()
       // allocate memory for this output
       size_t jsonSize = measureJson(doc);
       char* jsonBuffer = (char*)malloc(jsonSize + 1);
-      jsonBuffer[jsonSize] = '\0'; // null terminate
 
       // did we get anything?
       if (jsonBuffer != NULL) {
+        jsonBuffer[jsonSize] = '\0'; // null terminate
         response->setContentType("application/manifest+json");
         serializeJson(doc.as<JsonObject>(), jsonBuffer, jsonSize + 1);
         response->setContent(jsonBuffer);
         err = response->send();
+
+        // no leaks!
+        free(jsonBuffer);
       }
       // send overloaded response
-      else
+      else {
+        YBP.println("Error allocating in web.manifest");
         err = response->send(503, "application/manifest+json", "{}");
-
-      // no leaks!
-      free(jsonBuffer);
+      }
     }
 
     return err;
@@ -293,18 +295,20 @@ esp_err_t handleWebServerRequest(JsonVariant input, PsychicRequest* request, Psy
     // allocate memory for this output
     size_t jsonSize = measureJson(output);
     char* jsonBuffer = (char*)malloc(jsonSize + 1);
-    jsonBuffer[jsonSize] = '\0'; // null terminate
 
     // did we get anything?
     if (jsonBuffer != NULL) {
+      jsonBuffer[jsonSize] = '\0'; // null terminate
       response->setContentType("application/json");
       serializeJson(output.as<JsonObject>(), jsonBuffer, jsonSize + 1);
       response->setContent(jsonBuffer);
       err = response->send();
     }
     // send overloaded response
-    else
+    else {
+      YBP.println("Error allocating in handleWebServerRequest()");
       err = response->send(503, "application/json", "{}");
+    }
 
     // no leaks!
     free(jsonBuffer);
@@ -324,6 +328,7 @@ void handleWebSocketMessage(PsychicWebSocketRequest* request, uint8_t* data,
   WebsocketRequest wr;
   wr.socket = request->client()->socket();
   wr.len = len + 1;
+  DUMP(len);
   wr.buffer = (char*)malloc(len + 1);
 
   // did we flame out?
@@ -375,10 +380,10 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
     // allocate memory for this output
     size_t jsonSize = measureJson(output);
     char* jsonBuffer = (char*)malloc(jsonSize + 1);
-    jsonBuffer[jsonSize] = '\0'; // null terminate
 
     // did we get anything?
     if (jsonBuffer != NULL) {
+      jsonBuffer[jsonSize] = '\0'; // null terminate
       serializeJson(output, jsonBuffer, jsonSize + 1);
 
       if (xSemaphoreTake(sendMutex, portMAX_DELAY) == pdTRUE) {
@@ -389,9 +394,11 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
       // keep track!
       sentMessages++;
       totalSentMessages++;
-    }
 
-    free(jsonBuffer);
+      free(jsonBuffer);
+    } else {
+      YBP.println("Error allocating in handleWebsocketMessageLoop()");
+    }
   }
 }
 

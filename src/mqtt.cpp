@@ -246,19 +246,21 @@ void mqtt_ha_discovery()
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(doc);
   char* jsonBuffer = (char*)malloc(jsonSize + 1);
-  jsonBuffer[jsonSize] = '\0'; // null terminate
 
   // did we get anything?
   if (jsonBuffer != NULL) {
+    jsonBuffer[jsonSize] = '\0'; // null terminate
     serializeJson(doc, jsonBuffer, jsonSize + 1);
     int ret = mqttClient.publish(topic, 2, false, jsonBuffer, strlen(jsonBuffer), false);
 
     if (ret == -1)
       YBP.printf("[mqtt] Error publishing HA topic %s\n", topic);
-  }
 
-  // no leaks
-  free(jsonBuffer);
+    // no leaks
+    free(jsonBuffer);
+  } else {
+    YBP.println("MQTT malloc failed.");
+  }
 }
 
 // ---- Internal helpers -------------------------------------------------------

@@ -112,9 +112,12 @@ void full_setup()
   mqtt_setup();
   YBP.println("MQTT ok");
 
-  // we're done with startup log, switch to network print
+  // we're done with startup log
   YBP.removePrinter(startupLogger);
-  YBP.addPrinter(networkLogger);
+
+  // network logger is a troublemaker
+  // need to fix the memory issues before we can use this.
+  // YBP.addPrinter(networkLogger);
 
   lastLoopMicros = micros();
 }
@@ -200,7 +203,6 @@ void full_loop()
 
   // smooth out our frequency
   if (millis() - lastLoopMillis > 1000) {
-    TRACE();
     framerateAvg.add(framerate_now);
     framerate = framerateAvg.average();
     lastLoopMillis = millis();

@@ -17,6 +17,16 @@
 
 void setup()
 {
+  // startup our serial
+  Serial.begin(115200);
+  Serial.setTimeout(50);
+
+  // more memory!!!
+  // if (!psramInit())
+  //   Serial.println("PSRAM init failed!");
+  // else
+  //   Serial.printf("PSRAM size: %d bytes\n", ESP.getPsramSize());
+
   // we need littlefs to store our coredump if any in debug_setup()
   if (!LittleFS.begin(true)) {
     YBP.println("ERROR: Unable to mount LittleFS");
@@ -43,16 +53,10 @@ void setup()
     full_setup();
 }
 
-unsigned long lastPrint = 0;
 void loop()
 {
   if (is_first_boot)
     improv_loop();
   else
     full_loop();
-
-  if (millis() - lastPrint >= 1000) {
-    lastPrint = millis();
-    TRACE();
-  }
 }

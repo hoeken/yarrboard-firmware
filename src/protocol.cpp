@@ -185,8 +185,6 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return generateConfigJSON(output);
     else if (!strcmp(cmd, "get_stats"))
       return generateStatsJSON(output);
-    else if (!strcmp(cmd, "get_graph_data"))
-      return generateGraphDataJSON(output);
     else if (!strcmp(cmd, "get_update"))
       return generateUpdateJSON(output);
     else if (!strcmp(cmd, "play_sound"))
@@ -1400,7 +1398,7 @@ void generateConfigJSON(JsonVariant output)
   output["last_restart_reason"] = getResetReason();
   if (has_coredump)
     output["has_coredump"] = has_coredump;
-  output["boot_log"] = startupLogger.value;
+  output["boot_log"] = startupLogger.c_str();
 
 #ifdef YB_HAS_BUS_VOLTAGE
   output["bus_voltage"] = true;
@@ -1569,53 +1567,6 @@ void generateStatsJSON(JsonVariant output)
 #endif
 }
 
-void generateGraphDataJSON(JsonVariant output)
-{
-  // some basic statistics and info
-  output["msg"] = "graph_data";
-
-#ifdef YB_IS_BRINEOMATIC
-  JsonArray data;
-
-  data = output["motor_temperature"].to<JsonArray>();
-  for (float value : motor_temperature_data)
-    data.add(value);
-
-  data = output["water_temperature"].to<JsonArray>();
-  for (float value : water_temperature_data)
-    data.add(value);
-
-  data = output["filter_pressure"].to<JsonArray>();
-  for (float value : filter_pressure_data)
-    data.add(value);
-
-  data = output["membrane_pressure"].to<JsonArray>();
-  for (float value : membrane_pressure_data)
-    data.add(value);
-
-  data = output["product_salinity"].to<JsonArray>();
-  for (float value : product_salinity_data)
-    data.add(value);
-
-  data = output["brine_salinity"].to<JsonArray>();
-  for (float value : brine_salinity_data)
-    data.add(value);
-
-  data = output["product_flowrate"].to<JsonArray>();
-  for (float value : product_flowrate_data)
-    data.add(value);
-
-  data = output["brine_flowrate"].to<JsonArray>();
-  for (float value : brine_flowrate_data)
-    data.add(value);
-
-  data = output["tank_level"].to<JsonArray>();
-  for (float value : tank_level_data)
-    data.add(value);
-
-#endif
-}
-
 void generateNetworkConfigMessage(JsonVariant output)
 {
   // our identifying info
@@ -1671,14 +1622,16 @@ void sendThemeUpdate()
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(output);
   char* jsonBuffer = (char*)malloc(jsonSize + 1);
-  jsonBuffer[jsonSize] = '\0'; // null terminate
 
   // did we get anything?
   if (jsonBuffer != NULL) {
+    jsonBuffer[jsonSize] = '\0'; // null terminate
     serializeJson(output, jsonBuffer, jsonSize + 1);
     sendToAll(jsonBuffer, NOBODY);
+    free(jsonBuffer);
+  } else {
+    YBP.println("sendThemeUpdate() malloc failed.");
   }
-  free(jsonBuffer);
 }
 
 void sendBrightnessUpdate()
@@ -1690,14 +1643,16 @@ void sendBrightnessUpdate()
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(output);
   char* jsonBuffer = (char*)malloc(jsonSize + 1);
-  jsonBuffer[jsonSize] = '\0'; // null terminate
 
   // did we get anything?
   if (jsonBuffer != NULL) {
+    jsonBuffer[jsonSize] = '\0'; // null terminate
     serializeJson(output, jsonBuffer, jsonSize + 1);
     sendToAll(jsonBuffer, NOBODY);
+    free(jsonBuffer);
+  } else {
+    YBP.println("sendBrightnessUpdate() malloc failed.");
   }
-  free(jsonBuffer);
 }
 
 void sendFastUpdate()
@@ -1708,14 +1663,16 @@ void sendFastUpdate()
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(output);
   char* jsonBuffer = (char*)malloc(jsonSize + 1);
-  jsonBuffer[jsonSize] = '\0'; // null terminate
 
   // did we get anything?
   if (jsonBuffer != NULL) {
+    jsonBuffer[jsonSize] = '\0'; // null terminate
     serializeJson(output, jsonBuffer, jsonSize + 1);
     sendToAll(jsonBuffer, GUEST);
+    free(jsonBuffer);
+  } else {
+    YBP.println("sendFastUpdate() malloc failed.");
   }
-  free(jsonBuffer);
 }
 
 void sendOTAProgressUpdate(float progress)
@@ -1726,14 +1683,16 @@ void sendOTAProgressUpdate(float progress)
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(output);
   char* jsonBuffer = (char*)malloc(jsonSize + 1);
-  jsonBuffer[jsonSize] = '\0'; // null terminate
 
   // did we get anything?
   if (jsonBuffer != NULL) {
+    jsonBuffer[jsonSize] = '\0'; // null terminate
     serializeJson(output, jsonBuffer, jsonSize + 1);
     sendToAll(jsonBuffer, GUEST);
+    free(jsonBuffer);
+  } else {
+    YBP.println("sendOTAProgressUpdate() malloc failed.");
   }
-  free(jsonBuffer);
 }
 
 void sendOTAProgressFinished()
@@ -1744,14 +1703,16 @@ void sendOTAProgressFinished()
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(output);
   char* jsonBuffer = (char*)malloc(jsonSize + 1);
-  jsonBuffer[jsonSize] = '\0'; // null terminate
 
   // did we get anything?
   if (jsonBuffer != NULL) {
+    jsonBuffer[jsonSize] = '\0'; // null terminate
     serializeJson(output, jsonBuffer, jsonSize + 1);
     sendToAll(jsonBuffer, GUEST);
+    free(jsonBuffer);
+  } else {
+    YBP.println("sendOTAProgressFinished() malloc failed.");
   }
-  free(jsonBuffer);
 }
 
 void sendDebug(const char* message)
@@ -1762,14 +1723,17 @@ void sendDebug(const char* message)
   // dynamically allocate our buffer
   size_t jsonSize = measureJson(output);
   char* jsonBuffer = (char*)malloc(jsonSize + 1);
-  jsonBuffer[jsonSize] = '\0'; // null terminate
 
   // did we get anything?
   if (jsonBuffer != NULL) {
+    jsonBuffer[jsonSize] = '\0'; // null terminate
     serializeJson(output, jsonBuffer, jsonSize + 1);
     sendToAll(jsonBuffer, NOBODY);
+    free(jsonBuffer);
+  } else {
+    // dont call YBP b/c loops...
+    Serial.println("Error allocating in sendDebug()");
   }
-  free(jsonBuffer);
 }
 
 void sendToAll(const char* jsonString, UserRole auth_level)
@@ -1777,5 +1741,5 @@ void sendToAll(const char* jsonString, UserRole auth_level)
   sendToAllWebsockets(jsonString, auth_level);
 
   if (app_enable_serial && serial_role >= auth_level)
-    YBP.println(jsonString);
+    Serial.println(jsonString);
 }
