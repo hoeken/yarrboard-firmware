@@ -18,19 +18,8 @@
 #include <esp_partition.h>
 #include <esp_system.h>
 
-// #define ARDUINOTRACE_SERIAL YBP
+#define ARDUINOTRACE_SERIAL YBP
 #include <ArduinoTrace.h>
-
-#define INTERVAL(ms)            \
-  ([]() -> bool {               \
-    static uint32_t _last = 0;  \
-    uint32_t _now = millis();   \
-    if (_now - _last >= (ms)) { \
-      _last = _now;             \
-      return true;              \
-    }                           \
-    return false;               \
-  }())
 
 #ifdef YB_USB_SERIAL
   #include "USB.h"
