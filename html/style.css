@@ -187,3 +187,8 @@ html[data-bs-theme="dark"] .c3 .c3-axis text {
 .scrollFix {
     scroll-margin-top: 4.5rem;
 }
+
+hr.bold {
+    border: 0;
+    border-top: 2px solid currentColor;
+}
