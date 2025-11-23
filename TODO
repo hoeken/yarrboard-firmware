@@ -7,7 +7,6 @@
 ## BRINEOMATIC
 
 * configuration system:
-    * form data gathering + validation + saving calls
     * server side data loading and config saving
     * server side loading from config
     * include brineomatic_config.h with #ifdef #define defaults

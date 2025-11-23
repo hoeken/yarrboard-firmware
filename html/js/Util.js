@@ -234,7 +234,7 @@
       }
     },
 
-    flashClass: function (el, myclass, ms = 1000) {
+    flashClass: function (el, myclass, ms = 3000) {
       el.addClass(myclass);
       setTimeout(() => el.removeClass(myclass), ms);
     },

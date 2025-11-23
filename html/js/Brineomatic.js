@@ -50,6 +50,10 @@
     this.handleStatsMessage = this.handleStatsMessage.bind(this);
     this.handleGraphDataMessage = this.handleGraphDataMessage.bind(this);
 
+    this.handleBrineomaticConfigSave = this.handleBrineomaticConfigSave.bind(this);
+    this.handleHardwareConfigSave = this.handleHardwareConfigSave.bind(this);
+    this.handleSafeguardsConfigSave = this.handleSafeguardsConfigSave.bind(this);
+
     YB.App.addMessageHandler("config", this.handleConfigMessage);
     YB.App.addMessageHandler("update", this.handleUpdateMessage);
     YB.App.addMessageHandler("stats", this.handleStatsMessage);
@@ -1881,8 +1885,8 @@
 
             <div class="col-12 col-sm-8">
 
-                <div id="brineomaticSettingsForm" class="mb-3 scrollFix">
-                    <div class="p-3 border border-secondary rounded h-100">
+                <div class="mb-3">
+                    <div id="brineomaticSettingsForm" class="p-3 border border-secondary rounded h-100 scrollFix">
                         <h4>Brineomatic Settings</h4>
 
                         <div class="form-floating mb-3">
@@ -1943,7 +1947,7 @@
                             <select id="temperature_units" class="form-select" aria-label="Temperature Units">
                               <option value="celsius">Celsius</option>
                             </select>
-                            <label for="pressure_units">Temperature Units</label>
+                            <label for="temperature_units">Temperature Units</label>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -1982,15 +1986,15 @@
                         </div>
 
                         <div class="text-center">
-                            <button id="saveGeneralSettings" type="button" class="btn btn-primary">
+                            <button id="saveBrineomaticSettings" type="button" class="btn btn-primary">
                                 Save General Settings
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div id="hardwareSettingsForm" class="mb-3 scrollFix">
-                    <div class="p-3 border border-secondary rounded h-100">
+                <div class="mb-3">
+                    <div id="hardwareSettingsForm" class="p-3 border border-secondary rounded h-100 scrollFix">
                         <h4>Hardware Configuration</h4>
                         <div class="form-floating mb-3">
                             <select id="boost_pump_control" class="form-select" aria-label="Boost Pump">
@@ -2314,8 +2318,8 @@
                     </div>
                 </div>
 
-                <div id="errorSettingsForm" class="mb-3 scrollFix">
-                    <div class="p-3 border border-secondary rounded h-100">
+                <div class="mb-3">
+                    <div id="errorSettingsForm" class="p-3 border border-secondary rounded h-100 scrollFix">
                         <h4>System Safeguards</h4>
 
                         <div class="mb-3">
@@ -2684,6 +2688,7 @@
 
     $("#tank_capacity").val(data.tank_capacity);
     $("#temperature_units").val(data.temperature_units);
+    $("#pressure_units").val(data.pressure_units);
     $("#volume_units").val(data.volume_units);
     $("#flowrate_units").val(data.flowrate_units);
 
@@ -2844,6 +2849,10 @@
     });
 
     $('#bomConfigForm input.form-check-input').on('change', function () { $('#bomConfigForm #' + this.id + '_form').toggle(this.checked); });
+
+    $("#saveBrineomaticSettings").on('click', this.handleBrineomaticConfigSave);
+    $("#saveHardwareSettings").on('click', this.handleHardwareConfigSave);
+    $("#saveErrorSettings").on('click', this.handleSafeguardsConfigSave);
   }
 
   Brineomatic.prototype.updateAutoflushVisibility = function (mode) {
@@ -3005,6 +3014,588 @@
     }
   };
 
+  Brineomatic.prototype.getBrineomaticConfigFormData = function () {
+    const data = {};
+
+    data.autoflush_mode = $("#autoflush_mode").val();
+    data.autoflush_salinity = $("#autoflush_salinity").val();
+    data.autoflush_duration = $("#autoflush_duration").val() * 60 * 1000;
+    data.autoflush_volume = $("#autoflush_volume").val();
+    data.autoflush_interval = $("#autoflush_interval").val() * 60 * 60 * 1000;
+
+    data.tank_capacity = $("#tank_capacity").val();
+    data.temperature_units = $("#temperature_units").val();
+    data.pressure_units = $("#pressure_units").val();
+    data.volume_units = $("#volume_units").val();
+    data.flowrate_units = $("#flowrate_units").val();
+
+    data.success_melody = $("#success_melody").val();
+    data.error_melody = $("#error_melody").val();
+
+    return data;
+  };
+
+  Brineomatic.prototype.getHardwareConfigFormData = function () {
+    const data = {};
+
+    data.boost_pump_control = $("#boost_pump_control").val();
+    data.boost_pump_relay_id = $("#boost_pump_relay_id").val();
+
+    data.high_pressure_pump_control = $("#high_pressure_pump_control").val();
+    data.high_pressure_relay_id = $("#high_pressure_relay_id").val();
+
+    data.high_pressure_valve_control = $("#high_pressure_valve_control").val();
+    data.membrane_pressure_target = $("#membrane_pressure_target").val();
+    data.high_pressure_valve_stepper_id = $("#high_pressure_valve_stepper_id").val();
+    data.high_pressure_stepper_step_angle = $("#high_pressure_stepper_step_angle").val();
+    data.high_pressure_stepper_gear_ratio = $("#high_pressure_stepper_gear_ratio").val();
+    data.high_pressure_stepper_close_angle = $("#high_pressure_stepper_close_angle").val();
+    data.high_pressure_stepper_close_speed = $("#high_pressure_stepper_close_speed").val();
+    data.high_pressure_stepper_open_angle = $("#high_pressure_stepper_open_angle").val();
+    data.high_pressure_stepper_open_speed = $("#high_pressure_stepper_open_speed").val();
+
+    data.diverter_valve_control = $("#diverter_valve_control").val();
+    data.diverter_valve_servo_id = $("#diverter_valve_servo_id").val();
+    data.diverter_valve_open_angle = $("#diverter_valve_open_angle").val();
+    data.diverter_valve_close_angle = $("#diverter_valve_close_angle").val();
+
+    data.flush_valve_control = $("#flush_valve_control").val();
+    data.flush_valve_relay_id = $("#flush_valve_relay_id").val();
+
+    data.cooling_fan_control = $("#cooling_fan_control").val();
+    data.cooling_fan_relay_id = $("#cooling_fan_relay_id").val();
+    data.cooling_fan_on_temperature = $("#cooling_fan_on_temperature").val();
+    data.cooling_fan_off_temperature = $("#cooling_fan_off_temperature").val();
+
+    data.has_membrane_pressure_sensor = $("#has_membrane_pressure_sensor").prop("checked");
+    data.membrane_pressure_sensor_min = $("#membrane_pressure_sensor_min").val();
+    data.membrane_pressure_sensor_max = $("#membrane_pressure_sensor_max").val();
+
+    data.has_filter_pressure_sensor = $("#has_filter_pressure_sensor").prop("checked");
+    data.filter_pressure_sensor_min = $("#filter_pressure_sensor_min").val();
+    data.filter_pressure_sensor_max = $("#filter_pressure_sensor_max").val();
+
+    data.has_product_tds_sensor = $("#has_product_tds_sensor").prop("checked");
+    data.has_brine_tds_sensor = $("#has_brine_tds_sensor").prop("checked");
+
+    data.has_product_flow_sensor = $("#has_product_flow_sensor").prop("checked");
+    data.product_flowmeter_ppl = $("#product_flowmeter_ppl").val();
+
+    data.has_brine_flow_sensor = $("#has_brine_flow_sensor").prop("checked");
+    data.brine_flowmeter_ppl = $("#brine_flowmeter_ppl").val();
+
+    data.has_motor_temperature_sensor = $("#has_motor_temperature_sensor").prop("checked");
+
+    return data;
+  };
+
+  Brineomatic.prototype.getSafeguardsConfigFormData = function () {
+    const data = {};
+
+    data.flush_timeout = $("#flush_timeout").val() * 1000;
+    data.membrane_pressure_timeout = $("#membrane_pressure_timeout").val() * 1000;
+    data.product_flowrate_timeout = $("#product_flowrate_timeout").val() * 1000;
+    data.product_salinity_timeout = $("#product_salinity_timeout").val() * 1000;
+    data.production_runtime_timeout = $("#production_runtime_timeout").val() * 60 * 60 * 1000;
+
+    data.enable_membrane_pressure_high_check = $("#enable_membrane_pressure_high_check").prop("checked");
+    data.membrane_pressure_high_threshold = $("#membrane_pressure_high_threshold").val();
+    data.membrane_pressure_high_delay = $("#membrane_pressure_high_delay").val();
+
+    data.enable_membrane_pressure_low_check = $("#enable_membrane_pressure_low_check").prop("checked");
+    data.membrane_pressure_low_threshold = $("#membrane_pressure_low_threshold").val();
+    data.membrane_pressure_low_delay = $("#membrane_pressure_low_delay").val();
+
+    data.enable_filter_pressure_high_check = $("#enable_filter_pressure_high_check").prop("checked");
+    data.filter_pressure_high_threshold = $("#filter_pressure_high_threshold").val();
+    data.filter_pressure_high_delay = $("#filter_pressure_high_delay").val();
+
+    data.enable_filter_pressure_low_check = $("#enable_filter_pressure_low_check").prop("checked");
+    data.filter_pressure_low_threshold = $("#filter_pressure_low_threshold").val();
+    data.filter_pressure_low_delay = $("#filter_pressure_low_delay").val();
+
+    data.enable_product_flowrate_high_check = $("#enable_product_flowrate_high_check").prop("checked");
+    data.product_flowrate_high_threshold = $("#product_flowrate_high_threshold").val();
+    data.product_flowrate_high_delay = $("#product_flowrate_high_delay").val();
+
+    data.enable_product_flowrate_low_check = $("#enable_product_flowrate_low_check").prop("checked");
+    data.product_flowrate_low_threshold = $("#product_flowrate_low_threshold").val();
+    data.product_flowrate_low_delay = $("#product_flowrate_low_delay").val();
+
+    data.enable_run_total_flowrate_low_check = $("#enable_run_total_flowrate_low_check").prop("checked");
+    data.run_total_flowrate_low_threshold = $("#run_total_flowrate_low_threshold").val();
+    data.run_total_flowrate_low_delay = $("#run_total_flowrate_low_delay").val();
+
+    data.enable_pickle_total_flowrate_low_check = $("#enable_pickle_total_flowrate_low_check").prop("checked");
+    data.pickle_total_flowrate_low_threshold = $("#pickle_total_flowrate_low_threshold").val();
+    data.pickle_total_flowrate_low_delay = $("#pickle_total_flowrate_low_delay").val();
+
+    data.enable_diverter_valve_closed_check = $("#enable_diverter_valve_closed_check").prop("checked");
+    data.diverter_valve_closed_delay = $("#diverter_valve_closed_delay").val();
+
+    data.enable_product_salinity_high_check = $("#enable_product_salinity_high_check").prop("checked");
+    data.product_salinity_high_threshold = $("#product_salinity_high_threshold").val();
+    data.product_salinity_high_delay = $("#product_salinity_high_delay").val();
+
+    data.enable_motor_temperature_check = $("#enable_motor_temperature_check").prop("checked");
+    data.motor_temperature_high_threshold = $("#motor_temperature_high_threshold").val();
+    data.motor_temperature_high_delay = $("#motor_temperature_high_delay").val();
+
+    data.enable_flush_flowrate_low_check = $("#enable_flush_flowrate_low_check").prop("checked");
+    data.flush_flowrate_low_threshold = $("#flush_flowrate_low_threshold").val();
+    data.flush_flowrate_low_delay = $("#flush_flowrate_low_delay").val();
+
+    data.enable_flush_filter_pressure_low_check = $("#enable_flush_filter_pressure_low_check").prop("checked");
+    data.flush_filter_pressure_low_threshold = $("#flush_filter_pressure_low_threshold").val();
+    data.flush_filter_pressure_low_delay = $("#flush_filter_pressure_low_delay").val();
+
+    data.enable_flush_valve_off_check = $("#enable_flush_valve_off_check").prop("checked");
+    data.enable_flush_valve_off_threshold = $("#enable_flush_valve_off_threshold").val();
+    data.enable_flush_valve_off_delay = $("#enable_flush_valve_off_delay").val();
+
+    return data;
+  };
+
+  Brineomatic.prototype.getBrineomaticConfigSchema = function () {
+    return {
+      autoflush_mode: {
+        presence: true,
+        inclusion: ["TIME", "SALINITY", "MANUAL"]
+      },
+
+      autoflush_salinity: {
+        numericality: {
+          onlyInteger: true,
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      autoflush_duration: {
+        numericality: {
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      autoflush_volume: {
+        numericality: {
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      autoflush_interval: {
+        numericality: {
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      tank_capacity: {
+        presence: true,
+        numericality: {
+          greaterThan: 0
+        }
+      },
+
+      temperature_units: {
+        presence: true,
+        inclusion: ["celsius", "fahrenheit"]
+      },
+
+      pressure_units: {
+        presence: true,
+        inclusion: ["pascal", "psi", "bar"]
+      },
+
+      volume_units: {
+        presence: true,
+        inclusion: ["liters", "gallons"]
+      },
+
+      flowrate_units: {
+        presence: true,
+        inclusion: ["lph", "gph"]
+      },
+
+      success_melody: {
+        presence: true
+      },
+
+      error_melody: {
+        presence: true
+      }
+    };
+  }
+
+  Brineomatic.prototype.getHardwareConfigSchema = function () {
+    return {
+      boost_pump_control: {
+        presence: true,
+        inclusion: ["NONE", "RELAY", "MANUAL"]
+      },
+
+      boost_pump_relay_id: {
+        numericality: {
+          onlyInteger: true,
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      high_pressure_pump_control: {
+        presence: true,
+        inclusion: ["NONE", "RELAY"]
+      },
+
+      high_pressure_relay_id: {
+        numericality: {
+          onlyInteger: true,
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      high_pressure_valve_control: {
+        presence: true,
+        inclusion: ["NONE", "STEPPER", "SERVO"]
+      },
+
+      membrane_pressure_target: {
+        numericality: {
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      high_pressure_valve_stepper_id: {
+        numericality: {
+          onlyInteger: true,
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      high_pressure_stepper_step_angle: {
+        numericality: {
+          greaterThan: 0,
+          lessThanOrEqualTo: 90
+        }
+      },
+
+      high_pressure_stepper_gear_ratio: {
+        numericality: {
+          greaterThan: 0
+        }
+      },
+
+      high_pressure_stepper_close_angle: {
+        numericality: {
+          greaterThanOrEqualTo: 0,
+          lessThanOrEqualTo: 3600
+        }
+      },
+
+      high_pressure_stepper_close_speed: {
+        numericality: {
+          greaterThan: 0,
+          lessThanOrEqualTo: 200
+        }
+      },
+
+      high_pressure_stepper_open_angle: {
+        numericality: {
+          greaterThanOrEqualTo: 0,
+          lessThanOrEqualTo: 3600
+        }
+      },
+
+      high_pressure_stepper_open_speed: {
+        numericality: {
+          greaterThan: 0,
+          lessThanOrEqualTo: 200
+        }
+      },
+
+      diverter_valve_control: {
+        presence: true,
+        inclusion: ["NONE", "SERVO"]
+      },
+
+      diverter_valve_servo_id: {
+        numericality: {
+          onlyInteger: true,
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      diverter_valve_open_angle: {
+        numericality: {
+          greaterThanOrEqualTo: 0,
+          lessThanOrEqualTo: 180
+        }
+      },
+
+      diverter_valve_close_angle: {
+        numericality: {
+          greaterThanOrEqualTo: 0,
+          lessThanOrEqualTo: 180
+        }
+      },
+
+      flush_valve_control: {
+        presence: true,
+        inclusion: ["NONE", "RELAY"]
+      },
+
+      flush_valve_relay_id: {
+        numericality: {
+          onlyInteger: true,
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      cooling_fan_control: {
+        presence: true,
+        inclusion: ["NONE", "RELAY"]
+      },
+
+      cooling_fan_relay_id: {
+        numericality: {
+          onlyInteger: true,
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      cooling_fan_on_temperature: {
+        numericality: {
+          greaterThanOrEqualTo: 0,
+          lessThanOrEqualTo: 120
+        }
+      },
+
+      cooling_fan_off_temperature: {
+        numericality: {
+          greaterThanOrEqualTo: 0,
+          lessThanOrEqualTo: 120
+        }
+      },
+
+      has_membrane_pressure_sensor: {
+        inclusion: [true, false]
+      },
+
+      membrane_pressure_sensor_min: {
+        numericality: {
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      membrane_pressure_sensor_max: {
+        numericality: {
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      has_filter_pressure_sensor: {
+        inclusion: [true, false]
+      },
+
+      filter_pressure_sensor_min: {
+        numericality: {
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      filter_pressure_sensor_max: {
+        numericality: {
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      has_product_tds_sensor: { inclusion: [true, false] },
+      has_brine_tds_sensor: { inclusion: [true, false] },
+      has_product_flow_sensor: { inclusion: [true, false] },
+
+      product_flowmeter_ppl: {
+        numericality: {
+          greaterThan: 0
+        }
+      },
+
+      has_brine_flow_sensor: { inclusion: [true, false] },
+
+      brine_flowmeter_ppl: {
+        numericality: {
+          greaterThan: 0
+        }
+      },
+
+      has_motor_temperature_sensor: { inclusion: [true, false] }
+    };
+  }
+
+  Brineomatic.prototype.getSafeguardsConfigSchema = function () {
+    return {
+      flush_timeout: {
+        numericality: {
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      membrane_pressure_timeout: {
+        numericality: {
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      product_flowrate_timeout: {
+        numericality: {
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      product_salinity_timeout: {
+        numericality: {
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      production_runtime_timeout: {
+        numericality: {
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      enable_membrane_pressure_high_check: { inclusion: [true, false] },
+      membrane_pressure_high_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      membrane_pressure_high_delay: { numericality: { greaterThanOrEqualTo: 0 } },
+
+      enable_membrane_pressure_low_check: { inclusion: [true, false] },
+      membrane_pressure_low_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      membrane_pressure_low_delay: { numericality: { greaterThanOrEqualTo: 0 } },
+
+      enable_filter_pressure_high_check: { inclusion: [true, false] },
+      filter_pressure_high_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      filter_pressure_high_delay: { numericality: { greaterThanOrEqualTo: 0 } },
+
+      enable_filter_pressure_low_check: { inclusion: [true, false] },
+      filter_pressure_low_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      filter_pressure_low_delay: { numericality: { greaterThanOrEqualTo: 0 } },
+
+      enable_product_flowrate_high_check: { inclusion: [true, false] },
+      product_flowrate_high_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      product_flowrate_high_delay: { numericality: { greaterThanOrEqualTo: 0 } },
+
+      enable_product_flowrate_low_check: { inclusion: [true, false] },
+      product_flowrate_low_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      product_flowrate_low_delay: { numericality: { greaterThanOrEqualTo: 0 } },
+
+      enable_run_total_flowrate_low_check: { inclusion: [true, false] },
+      run_total_flowrate_low_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      run_total_flowrate_low_delay: { numericality: { greaterThanOrEqualTo: 0 } },
+
+      enable_pickle_total_flowrate_low_check: { inclusion: [true, false] },
+      pickle_total_flowrate_low_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      pickle_total_flowrate_low_delay: { numericality: { greaterThanOrEqualTo: 0 } },
+
+      enable_diverter_valve_closed_check: { inclusion: [true, false] },
+      diverter_valve_closed_delay: { numericality: { greaterThanOrEqualTo: 0 } },
+
+      enable_product_salinity_high_check: { inclusion: [true, false] },
+      product_salinity_high_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      product_salinity_high_delay: { numericality: { greaterThanOrEqualTo: 0 } },
+
+      enable_motor_temperature_check: { inclusion: [true, false] },
+      motor_temperature_high_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      motor_temperature_high_delay: { numericality: { greaterThanOrEqualTo: 0 } },
+
+      enable_flush_flowrate_low_check: { inclusion: [true, false] },
+      flush_flowrate_low_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      flush_flowrate_low_delay: { numericality: { greaterThanOrEqualTo: 0 } },
+
+      enable_flush_filter_pressure_low_check: { inclusion: [true, false] },
+      flush_filter_pressure_low_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      flush_filter_pressure_low_delay: { numericality: { greaterThanOrEqualTo: 0 } },
+
+      enable_flush_valve_off_check: { inclusion: [true, false] },
+      enable_flush_valve_off_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      enable_flush_valve_off_delay: { numericality: { greaterThanOrEqualTo: 0 } }
+    };
+  }
+
+
+
+  Brineomatic.prototype.handleBrineomaticConfigSave = function (event) {
+    let data = this.getBrineomaticConfigFormData();
+    console.log(data);
+    let schema = this.getBrineomaticConfigSchema();
+    console.log(schema);
+    let errors = validate(data, schema);
+    console.log(errors);
+
+    YB.Util.showFormValidationResults(data, errors);
+
+    //bail on fail.
+    if (errors) {
+      YB.Util.flashClass($("#brineomaticSettingsForm"), "border-danger");
+      YB.Util.flashClass($("#saveBrineomaticSettings"), "btn-danger");
+      return;
+    }
+
+    //flash whole form green.
+    YB.Util.flashClass($("#brineomaticSettingsForm"), "border-success");
+    YB.Util.flashClass($("#saveBrineomaticSettings"), "btn-success");
+
+    //okay, send it off.
+    data["cmd"] = "brineomatic_save_general_config";
+    YB.client.send(data, true);
+  };
+
+  Brineomatic.prototype.handleHardwareConfigSave = function (e) {
+    let data = this.getHardwareConfigFormData();
+    console.log(data);
+    let schema = this.getHardwareConfigSchema();
+    console.log(schema);
+    let errors = validate(data, schema);
+    console.log(errors);
+
+    YB.Util.showFormValidationResults(data, errors);
+
+    //bail on fail.
+    if (errors) {
+      YB.Util.flashClass($("#hardwareSettingsForm"), "border-danger");
+      YB.Util.flashClass($("#saveHardwareSettings"), "btn-danger");
+      return;
+    }
+
+    //flash whole form green.
+    YB.Util.flashClass($("#hardwareSettingsForm"), "border-success");
+    YB.Util.flashClass($("#saveHardwareSettings"), "btn-success");
+
+    //okay, send it off.
+    data["cmd"] = "brineomatic_save_hardware_config";
+    YB.client.send(data, true);
+  };
+
+  Brineomatic.prototype.handleSafeguardsConfigSave = function (e) {
+    let data = this.getSafeguardsConfigFormData();
+    console.log(data);
+    let schema = this.getSafeguardsConfigSchema();
+    console.log(schema);
+    let errors = validate(data, schema);
+    console.log(errors);
+
+    YB.Util.showFormValidationResults(data, errors);
+
+    //bail on fail.
+    if (errors) {
+      YB.Util.flashClass($("#errorSettingsForm"), "border-danger");
+      YB.Util.flashClass($("#saveErrorSettings"), "btn-danger");
+      return;
+    }
+
+    //flash whole form green.
+    YB.Util.flashClass($("#errorSettingsForm"), "border-success");
+    YB.Util.flashClass($("#saveErrorSettings"), "btn-success");
+
+    //okay, send it off.
+    data["cmd"] = "brineomatic_save_safeguards_config";
+    YB.client.send(data, true);
+  };
 
   Brineomatic.prototype.generateGraphsUI = function () {
     return /* html */ `
