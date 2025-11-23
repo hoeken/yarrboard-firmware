@@ -7,7 +7,6 @@
 ## BRINEOMATIC
 
 * configuration system:
-    * dynamic display of client UI with JS
     * form data gathering + validation + saving calls
     * server side data loading and config saving
     * server side loading from config

@@ -137,6 +137,7 @@
       $("#servoConfig").hide();
       $("#stepperConfig").hide();
 
+      this.addEditUIHandlers();
       this.updateEditUIData(msg.brineomatic);
       this.updateEditUI(msg.brineomatic);
 
@@ -2044,68 +2045,70 @@
                           </div>
                         </div>
 
-                        <div class="form-floating mb-3">
-                            <select id="high_pressure_valve_stepper_id" class="form-select" aria-label="High Pressure Valve Stepper Channel">
-                              ${stepperOptions}
-                            </select>
-                            <label for="high_pressure_valve_stepper_id">High Pressure Valve Stepper Channel</label>
-                        </div>
+                        <div id="high_pressure_valve_stepper_options">
+                          <div class="form-floating mb-3">
+                              <select id="high_pressure_valve_stepper_id" class="form-select" aria-label="High Pressure Valve Stepper Channel">
+                                ${stepperOptions}
+                              </select>
+                              <label for="high_pressure_valve_stepper_id">High Pressure Valve Stepper Channel</label>
+                          </div>
 
-                        <div class="row g-3 mb-3">
-                          <h6>Stepper Motor Configuration</h6>
-                          
-                          <div class="col-12 col-md-6 mt-1">
-                            <div class="input-group">
-                              <span class="input-group-text">Step Angle</span>
-                              <input type="text" class="form-control text-end" id="high_pressure_stepper_step_angle">
-                              <span class="input-group-text">°</span>
+                          <div class="row g-3 mb-3">
+                            <h6>Stepper Motor Configuration</h6>
+                            
+                            <div class="col-12 col-md-6 mt-1">
+                              <div class="input-group">
+                                <span class="input-group-text">Step Angle</span>
+                                <input type="text" class="form-control text-end" id="high_pressure_stepper_step_angle">
+                                <span class="input-group-text">°</span>
+                              </div>
+                            </div>
+
+                            <div class="col-12 col-md-6 mt-1">
+                              <div class="input-group">
+                                <span class="input-group-text">Gear Ratio</span>
+                                <input type="text" class="form-control text-end" id="high_pressure_stepper_gear_ratio">
+                                <span class="input-group-text">to 1</span>
+                              </div>
                             </div>
                           </div>
 
-                          <div class="col-12 col-md-6 mt-1">
-                            <div class="input-group">
-                              <span class="input-group-text">Gear Ratio</span>
-                              <input type="text" class="form-control text-end" id="high_pressure_stepper_gear_ratio">
-                              <span class="input-group-text">to 1</span>
+                          <div class="row g-3 mb-3">
+                            <h6>High Pressure Valve Close (Pressure On)</h6>
+                            
+                            <div class="col-12 col-md-6 mt-1">
+                              <div class="input-group">
+                                <span class="input-group-text">Angle</span>
+                                <input type="text" class="form-control text-end" id="high_pressure_stepper_close_angle">
+                                <span class="input-group-text">°</span>
+                              </div>
                             </div>
-                          </div>
-                        </div>
 
-                        <div class="row g-3 mb-3">
-                          <h6>High Pressure Valve Close (Pressure On)</h6>
-                          
-                          <div class="col-12 col-md-6 mt-1">
-                            <div class="input-group">
-                              <span class="input-group-text">Angle</span>
-                              <input type="text" class="form-control text-end" id="high_pressure_stepper_close_angle">
-                              <span class="input-group-text">°</span>
-                            </div>
-                          </div>
-
-                          <div class="col-12 col-md-6 mt-1">
-                            <div class="input-group">
-                              <span class="input-group-text">Speed</span>
-                              <input type="text" class="form-control text-end" id="high_pressure_stepper_close_speed">
-                              <span class="input-group-text">RPM</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div class="row g-3 mb-3">
-                          <h6>High Pressure Valve Open (Pressure Off)</h6>
-                          <div class="col-12 col-md-6 mt-1">
-                            <div class="input-group">
-                              <span class="input-group-text">Angle</span>
-                              <input type="text" class="form-control text-end" id="high_pressure_stepper_open_angle">
-                              <span class="input-group-text">°</span>
+                            <div class="col-12 col-md-6 mt-1">
+                              <div class="input-group">
+                                <span class="input-group-text">Speed</span>
+                                <input type="text" class="form-control text-end" id="high_pressure_stepper_close_speed">
+                                <span class="input-group-text">RPM</span>
+                              </div>
                             </div>
                           </div>
 
-                          <div class="col-12 col-md-6 mt-1">
-                            <div class="input-group">
-                              <span class="input-group-text">Speed</span>
-                              <input type="text" class="form-control text-end" id="high_pressure_stepper_open_speed">
-                              <span class="input-group-text">RPM</span>
+                          <div class="row g-3 mb-3">
+                            <h6>High Pressure Valve Open (Pressure Off)</h6>
+                            <div class="col-12 col-md-6 mt-1">
+                              <div class="input-group">
+                                <span class="input-group-text">Angle</span>
+                                <input type="text" class="form-control text-end" id="high_pressure_stepper_open_angle">
+                                <span class="input-group-text">°</span>
+                              </div>
+                            </div>
+
+                            <div class="col-12 col-md-6 mt-1">
+                              <div class="input-group">
+                                <span class="input-group-text">Speed</span>
+                                <input type="text" class="form-control text-end" id="high_pressure_stepper_open_speed">
+                                <span class="input-group-text">RPM</span>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -2211,7 +2214,7 @@
                             </label>
                         </div>
 
-                        <div class="row g-3 mb-3">
+                        <div id="has_membrane_pressure_sensor_form" class="row g-3 mb-3">
                           <div class="col-12 col-md-6 mt-1">
                             <div class="input-group">
                               <span class="input-group-text">Min</span>
@@ -2236,7 +2239,7 @@
                             </label>
                         </div>
 
-                        <div class="row g-3 mb-3">
+                        <div id="has_filter_pressure_sensor_form" class="row g-3 mb-3">
                           <div class="col-12 col-md-6 mt-1">
                             <div class="input-group">
                               <span class="input-group-text">Min</span>
@@ -2261,7 +2264,7 @@
                             </label>
                         </div>
 
-                        <div class="mb-3">
+                        <div id="has_product_flow_sensor_form" class="mb-3">
                           <div class="input-group">
                             <input type="text" class="form-control text-end" id="product_flowmeter_ppl">
                             <span class="input-group-text">PPL (Pulses Per Liter)</span>
@@ -2275,7 +2278,7 @@
                             </label>
                         </div>
 
-                        <div class="mb-3">
+                        <div id="has_brine_flow_sensor_form" class="mb-3">
                           <div class="input-group">
                             <input type="text" class="form-control text-end" id="brine_flowmeter_ppl">
                             <span class="input-group-text">PPL (Pulses Per Liter)</span>
@@ -2364,7 +2367,7 @@
                             </label>
                         </div>
 
-                        <div class="row">
+                        <div id="enable_membrane_pressure_high_check_form" class="row">
                           <div class="col-12 col-md-6">
                             <div class="input-group mb-3">
                               <input type="text" class="form-control text-end" id="membrane_pressure_high_threshold">
@@ -2386,7 +2389,7 @@
                             </label>
                         </div>
 
-                        <div class="row">
+                        <div id="enable_membrane_pressure_low_check_form" class="row">
                           <div class="col-12 col-md-6">
                             <div class="input-group mb-3">
                               <input type="text" class="form-control text-end" id="membrane_pressure_low_threshold">
@@ -2408,7 +2411,7 @@
                             </label>
                         </div>
 
-                        <div class="row">
+                        <div id="enable_filter_pressure_high_check_form" class="row">
                           <div class="col-12 col-md-6">
                             <div class="input-group mb-3">
                               <input type="text" class="form-control text-end" id="filter_pressure_high_threshold">
@@ -2430,7 +2433,7 @@
                             </label>
                         </div>
 
-                        <div class="row">
+                        <div id="enable_filter_pressure_low_check_form" class="row">
                           <div class="col-12 col-md-6">
                             <div class="input-group mb-3">
                               <input type="text" class="form-control text-end" id="filter_pressure_low_threshold">
@@ -2452,7 +2455,7 @@
                             </label>
                         </div>
 
-                        <div class="row">
+                        <div id="enable_product_flowrate_high_check_form" class="row">
                           <div class="col-12 col-md-6">
                             <div class="input-group mb-3">
                               <input type="text" class="form-control text-end" id="product_flowrate_high_threshold">
@@ -2474,7 +2477,7 @@
                             </label>
                         </div>
 
-                        <div class="row">
+                        <div id="enable_product_flowrate_low_check_form" class="row">
                           <div class="col-12 col-md-6">
                             <div class="input-group mb-3">
                               <input type="text" class="form-control text-end" id="product_flowrate_low_threshold">
@@ -2496,7 +2499,7 @@
                             </label>
                         </div>
 
-                        <div class="row">
+                        <div id="enable_run_total_flowrate_low_check_form" class="row">
                           <div class="col-12 col-md-6">
                             <div class="input-group mb-3">
                               <input type="text" class="form-control text-end" id="run_total_flowrate_low_threshold">
@@ -2518,7 +2521,7 @@
                             </label>
                         </div>
 
-                        <div class="row">
+                        <div id="enable_pickle_total_flowrate_low_check_form" class="row">
                           <div class="col-12 col-md-6">
                             <div class="input-group mb-3">
                               <input type="text" class="form-control text-end" id="pickle_total_flowrate_low_threshold">
@@ -2540,7 +2543,7 @@
                             </label>                            
                         </div>
 
-                        <div class="row">
+                        <div id="enable_diverter_valve_closed_check_form" class="row">
                           <div class="col-12 col-md-6">
                             <div class="input-group mb-3">
                               <input type="text" class="form-control text-end" id="diverter_valve_closed_delay">
@@ -2556,7 +2559,7 @@
                             </label>
                         </div>
 
-                        <div class="row">
+                        <div id="enable_product_salinity_high_check_form" class="row">
                           <div class="col-12 col-md-6">
                             <div class="input-group mb-3">
                               <input type="text" class="form-control text-end" id="product_salinity_high_threshold">
@@ -2578,7 +2581,7 @@
                             </label>
                         </div>
 
-                        <div class="row">
+                        <div id="enable_motor_temperature_check_form" class="row">
                           <div class="col-12 col-md-6">
                             <div class="input-group mb-3">
                               <input type="text" class="form-control text-end" id="motor_temperature_high_threshold">
@@ -2600,7 +2603,7 @@
                             </label>
                         </div>
 
-                        <div class="row">
+                        <div id="enable_flush_flowrate_low_check_form" class="row">
                           <div class="col-12 col-md-6">
                             <div class="input-group mb-3">
                               <input type="text" class="form-control text-end" id="flush_flowrate_low_threshold">
@@ -2622,7 +2625,7 @@
                             </label>
                         </div>
 
-                        <div class="row">
+                        <div id="enable_flush_filter_pressure_low_check_form" class="row">
                           <div class="col-12 col-md-6">
                             <div class="input-group mb-3">
                               <input type="text" class="form-control text-end" id="flush_filter_pressure_low_threshold">
@@ -2644,7 +2647,7 @@
                             </label>
                         </div>
 
-                        <div class="row">
+                        <div id="enable_flush_valve_off_check_form" class="row">
                           <div class="col-12 col-md-6">
                             <div class="input-group mb-3">
                               <input type="text" class="form-control text-end" id="enable_flush_valve_off_threshold">
@@ -2800,7 +2803,146 @@
   }
 
   Brineomatic.prototype.updateEditUI = function (data) {
+    this.updateAutoflushVisibility(data.autoflush_mode);
+    this.updateBoostPumpVisibility(data.boost_pump_control);
+    this.updateHighPressurePumpVisibility(data.high_pressure_pump_control);
+    this.updateHighPressureValveVisibility(data.high_pressure_valve_control);
+    this.updateDiverterValveVisibility(data.diverter_valve_control);
+    this.updateFlushValveVisibility(data.flush_valve_control);
+    this.updateCoolingFanVisibility(data.cooling_fan_control);
+
+    $('#bomConfigForm input.form-check-input').each(function () { $('#bomConfigForm #' + this.id + '_form').toggle(this.checked); });
   }
+
+  Brineomatic.prototype.addEditUIHandlers = function (data) {
+    $("#autoflush_mode").on("change", (e) => {
+      YB.bom.updateAutoflushVisibility(e.target.value);
+    });
+
+    $("#boost_pump_control").on("change", (e) => {
+      YB.bom.updateBoostPumpVisibility(e.target.value);
+    });
+
+    $("#high_pressure_pump_control").on("change", (e) => {
+      YB.bom.updateHighPressurePumpVisibility(e.target.value);
+    });
+
+    $("#high_pressure_valve_control").on("change", (e) => {
+      YB.bom.updateHighPressureValveVisibility(e.target.value);
+    });
+
+    $("#diverter_valve_control").on("change", (e) => {
+      YB.bom.updateDiverterValveVisibility(e.target.value);
+    });
+
+    $("#flush_valve_control").on("change", (e) => {
+      YB.bom.updateFlushValveVisibility(e.target.value);
+    });
+
+    $("#cooling_fan_control").on("change", (e) => {
+      YB.bom.updateCoolingFanVisibility(e.target.value);
+    });
+
+    $('#bomConfigForm input.form-check-input').on('change', function () { $('#bomConfigForm #' + this.id + '_form').toggle(this.checked); });
+  }
+
+  Brineomatic.prototype.updateAutoflushVisibility = function (mode) {
+    // Hide all autoflush fields first
+    $("#autoflush_salinity").closest(".mb-3").hide();
+    $("#autoflush_duration").closest(".mb-3").hide();
+    $("#autoflush_volume").closest(".mb-3").hide();
+    $("#autoflush_interval").closest(".mb-3").hide();
+
+    // Show based on mode
+    switch (mode) {
+      case "SALINITY":
+        $("#autoflush_salinity").closest(".mb-3").show();
+        $("#autoflush_interval").closest(".mb-3").show();
+        break;
+
+      case "TIME":
+        $("#autoflush_duration").closest(".mb-3").show();
+        $("#autoflush_interval").closest(".mb-3").show();
+        break;
+
+      case "VOLUME":
+        $("#autoflush_volume").closest(".mb-3").show();
+        $("#autoflush_interval").closest(".mb-3").show();
+        break;
+
+      case "NONE":
+      default:
+        // None → show nothing
+        break;
+    }
+  }
+
+  Brineomatic.prototype.updateBoostPumpVisibility = function (mode) {
+    const relayDiv = $("#boost_pump_relay_id").closest(".form-floating");
+
+    if (mode === "RELAY") {
+      relayDiv.show();
+    } else {
+      relayDiv.hide();
+    }
+  }
+
+  Brineomatic.prototype.updateHighPressurePumpVisibility = function (mode) {
+    const relayDiv = $("#high_pressure_relay_id").closest(".form-floating");
+
+    if (mode === "RELAY") {
+      relayDiv.show();
+    } else {
+      relayDiv.hide();
+    }
+  };
+
+  Brineomatic.prototype.updateHighPressureValveVisibility = function (mode) {
+    const pressureTargetDiv = $("#membrane_pressure_target").closest(".mb-3");
+    const stepperDiv = $("#high_pressure_valve_stepper_options");
+
+    // Hide everything first
+    pressureTargetDiv.hide();
+    stepperDiv.hide();
+
+    switch (mode) {
+      case "MANUAL":
+        pressureTargetDiv.show();
+        break;
+
+      case "STEPPER":
+        pressureTargetDiv.show();
+        stepperDiv.show();
+        break;
+
+      case "NONE":
+      default:
+        // nothing shown
+        break;
+    }
+  };
+
+  Brineomatic.prototype.updateDiverterValveVisibility = function (mode) {
+    const servoDiv = $("#diverter_valve_servo_id").closest(".form-floating");
+    const angleDiv = $("#diverter_valve_open_angle").closest(".row");
+
+    // Hide everything first
+    servoDiv.hide();
+    angleDiv.hide();
+
+    switch (mode) {
+      case "SERVO":
+        servoDiv.show();
+        angleDiv.show();
+        break;
+
+      case "MANUAL":
+      case "NONE":
+      default:
+        // nothing shown
+        break;
+    }
+  };
 
   Brineomatic.prototype.generateStatsUI = function () {
     return /* html */ `
@@ -2831,6 +2973,38 @@
       </div>
     `;
   }
+
+  Brineomatic.prototype.updateFlushValveVisibility = function (mode) {
+    const relayDiv = $("#flush_valve_relay_id").closest(".form-floating");
+
+    if (mode === "RELAY") {
+      relayDiv.show();
+    } else {
+      relayDiv.hide();
+    }
+  };
+
+  Brineomatic.prototype.updateCoolingFanVisibility = function (mode) {
+    const relayDiv = $("#cooling_fan_relay_id").closest(".form-floating");
+    const tempDiv = $("#cooling_fan_on_temperature").closest(".row");
+
+    // Hide everything first
+    relayDiv.hide();
+    tempDiv.hide();
+
+    switch (mode) {
+      case "RELAY":
+        relayDiv.show();
+        tempDiv.show();
+        break;
+
+      case "MANUAL":
+      case "NONE":
+      default:
+        break;
+    }
+  };
+
 
   Brineomatic.prototype.generateGraphsUI = function () {
     return /* html */ `
