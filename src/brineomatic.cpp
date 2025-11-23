@@ -204,9 +204,6 @@ void brineomatic_state_machine(void* pvParameters)
   while (true) {
     wm.runStateMachine();
 
-    // if (INTERVAL(1000))
-    //   Serial.println("brineomatic_state_machine");
-
     // Add a delay to prevent task starvation
     vTaskDelay(pdMS_TO_TICKS(100));
   }

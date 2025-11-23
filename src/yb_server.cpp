@@ -328,7 +328,6 @@ void handleWebSocketMessage(PsychicWebSocketRequest* request, uint8_t* data,
   WebsocketRequest wr;
   wr.socket = request->client()->socket();
   wr.len = len + 1;
-  DUMP(len);
   wr.buffer = (char*)malloc(len + 1);
 
   // did we flame out?

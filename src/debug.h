@@ -23,7 +23,6 @@
 
 #ifdef YB_USB_SERIAL
   #include "USB.h"
-extern USBCDC USBSerial;
 #endif
 
 extern bool has_coredump;

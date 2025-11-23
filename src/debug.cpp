@@ -10,10 +10,6 @@
 #include "esp_freertos_hooks.h"
 #include <algorithm>
 
-#ifdef YB_USB_SERIAL
-USBCDC USBSerial;
-#endif
-
 bool has_coredump = false;
 
 YarrboardPrint YBP;
@@ -50,13 +46,17 @@ void IRAM_ATTR core1_tick_cb(void)
 
 void debug_setup()
 {
+  // startup our serial
+  Serial.begin(115200);
+  Serial.setTimeout(50);
   YBP.addPrinter(Serial);
 
   // native usb serial too
 #ifdef YB_USB_SERIAL
-  USBSerial.begin();
-  YBP.addPrinter(USBSerial);
-  YBP.println("USB Serial Started");
+  // usb serial takes over the Serial object, but we want to print on both.
+  // Serial0 is the regular uart output
+  Serial0.begin(115200);
+  YBP.addPrinter(Serial0);
 #endif
 
   // startup log logs to a string for getting later
@@ -74,6 +74,12 @@ void debug_setup()
 
   YBP.print("Last Reset: ");
   YBP.println(getResetReason());
+
+  // we need littlefs to store our coredump
+  if (!LittleFS.begin(true)) {
+    YBP.println("ERROR: Unable to mount LittleFS");
+  }
+  YBP.printf("LittleFS Storage: %d / %d\n", LittleFS.usedBytes(), LittleFS.totalBytes());
 
   if (checkCoreDump()) {
     has_coredump = true;
