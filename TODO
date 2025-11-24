@@ -11,9 +11,6 @@
     * saveHardwareConfig only allowed in IDLE mode
     * add boolean to config: flushUseHighPressureMotor
     * make sure we're using the new config:
-        * autoflush
-            * remove all autoFlushEnabled calls and variables
-            * use new autoflushMode + others
         * any calls to our channel objects should be wrapped in a control mode check
         * has_* hardware before using that hardware
         * error checking booleans - check enabled flag first

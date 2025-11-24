@@ -328,8 +328,6 @@ void Brineomatic::init()
   else
     totalCycles = 0;
 
-  autoFlushEnabled = true;
-
   boostPumpOnState = false;
   highPressurePumpOnState = false;
   diverterValveOpenState = true;
@@ -644,6 +642,11 @@ bool Brineomatic::initializeHardware()
   disableCoolingFan();
 
   return isFailure;
+}
+
+bool Brineomatic::autoflushEnabled()
+{
+  return !autoflushMode.equals("NONE");
 }
 
 bool Brineomatic::hasBoostPump()
@@ -980,7 +983,7 @@ const char* Brineomatic::resultToString(Result result)
 
 uint32_t Brineomatic::getNextFlushCountdown()
 {
-  if (currentStatus == Status::IDLE && autoFlushEnabled)
+  if (currentStatus == Status::IDLE && autoflushEnabled())
     return autoflushInterval - (millis() - lastAutoFlushTime);
 
   return 0;
@@ -1148,8 +1151,9 @@ void Brineomatic::runStateMachine()
       if (isPickled)
         currentStatus = Status::PICKLED;
       else {
-        if (autoFlushEnabled)
+        if (autoflushEnabled()) {
           lastAutoFlushTime = millis();
+        }
         currentStatus = Status::IDLE;
       }
       break;
@@ -1170,10 +1174,13 @@ void Brineomatic::runStateMachine()
     // IDLE
     //
     case Status::IDLE:
-      // YBP.println("State: IDLE");
-      if (autoFlushEnabled && millis() - lastAutoFlushTime > autoflushInterval) {
-        currentStatus = Status::FLUSHING;
-        desiredFlushDuration = autoflushDuration;
+      if (autoflushEnabled() && millis() - lastAutoFlushTime > autoflushInterval) {
+        if (autoflushMode.equals("TIME"))
+          flushDuration(autoflushDuration);
+        else if (autoflushMode.equals("VOLUME"))
+          flushVolume(autoflushVolume);
+        else if (autoflushMode.equals("SALINITY"))
+          flush();
       }
       break;
 
@@ -1326,8 +1333,12 @@ void Brineomatic::runStateMachine()
       if (initializeHardware())
         currentStatus = Status::IDLE;
       else {
-        currentStatus = Status::FLUSHING;
-        desiredFlushDuration = autoflushDuration;
+        if (autoflushMode.equals("TIME"))
+          flushDuration(autoflushDuration);
+        else if (autoflushMode.equals("VOLUME"))
+          flushVolume(autoflushVolume);
+        else if (autoflushMode.equals("SALINITY"))
+          flush();
       }
 
       break;
@@ -1364,7 +1375,7 @@ void Brineomatic::runStateMachine()
         if (checkFlushFlowrateLow())
           break;
 
-        if (flushUseHighPressureMotor && checkMotorTemperature(flushResult))
+        if (hasHighPressurePump() && flushUseHighPressureMotor && checkMotorTemperature(flushResult))
           break;
 
         if (checkStopFlag(flushResult))
@@ -1402,7 +1413,7 @@ void Brineomatic::runStateMachine()
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 
-      if (autoFlushEnabled)
+      if (autoflushEnabled())
         lastAutoFlushTime = millis();
 
       // keep track over restarts.

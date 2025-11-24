@@ -3260,7 +3260,7 @@
     return {
       autoflush_mode: {
         presence: true,
-        inclusion: ["TIME", "SALINITY", "MANUAL"]
+        inclusion: ["NONE", "TIME", "SALINITY", "MANUAL"]
       },
 
       autoflush_salinity: {
