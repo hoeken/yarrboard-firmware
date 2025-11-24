@@ -89,6 +89,20 @@ class Brineomatic
       STEPPER_PID
     };
 
+    // Static lookup tables
+    static constexpr const char* const AUTOFLUSH_MODES[] = {"TIME", "SALINITY", "MANUAL"};
+    static constexpr const char* const TEMPERATURE_UNITS[] = {"celsius", "fahrenheit"};
+    static constexpr const char* const PRESSURE_UNITS[] = {"pascal", "psi", "bar"};
+    static constexpr const char* const VOLUME_UNITS[] = {"liters", "gallons"};
+    static constexpr const char* const FLOWRATE_UNITS[] = {"lph", "gph"};
+
+    static constexpr const char* BOOST_PUMP_CONTROLS[] = {"NONE", "RELAY", "MANUAL"};
+    static constexpr const char* HIGH_PRESSURE_PUMP_CONTROLS[] = {"NONE", "RELAY"};
+    static constexpr const char* HIGH_PRESSURE_VALVE_CONTROLS[] = {"NONE", "STEPPER", "SERVO"};
+    static constexpr const char* DIVERTER_VALVE_CONTROLS[] = {"NONE", "SERVO"};
+    static constexpr const char* FLUSH_VALVE_CONTROLS[] = {"NONE", "RELAY"};
+    static constexpr const char* COOLING_FAN_CONTROLS[] = {"NONE", "RELAY"};
+
     bool isPickled;
     bool autoFlushEnabled;
     bool flushUseHighPressureMotor = false;

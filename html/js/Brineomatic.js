@@ -3045,7 +3045,7 @@
     data.high_pressure_relay_id = parseInt($("#high_pressure_relay_id").val());
 
     data.high_pressure_valve_control = $("#high_pressure_valve_control").val();
-    data.membrane_pressure_target = $("#membrane_pressure_target").val();
+    data.membrane_pressure_target = parseFloat($("#membrane_pressure_target").val());
     data.high_pressure_valve_stepper_id = parseInt($("#high_pressure_valve_stepper_id").val());
     data.high_pressure_stepper_step_angle = parseFloat($("#high_pressure_stepper_step_angle").val());
     data.high_pressure_stepper_gear_ratio = parseFloat($("#high_pressure_stepper_gear_ratio").val());
@@ -3166,25 +3166,25 @@
       autoflush_salinity: {
         numericality: {
           onlyInteger: true,
-          greaterThanOrEqualTo: 0
+          greaterThan: 0
         }
       },
 
       autoflush_duration: {
         numericality: {
-          greaterThanOrEqualTo: 0
+          greaterThan: 0
         }
       },
 
       autoflush_volume: {
         numericality: {
-          greaterThanOrEqualTo: 0
+          greaterThan: 0
         }
       },
 
       autoflush_interval: {
         numericality: {
-          greaterThanOrEqualTo: 0
+          greaterThan: 0
         }
       },
 
@@ -3258,7 +3258,7 @@
 
       membrane_pressure_target: {
         numericality: {
-          greaterThanOrEqualTo: 0
+          greaterThan: 0
         }
       },
 
@@ -3285,7 +3285,7 @@
       high_pressure_stepper_close_angle: {
         numericality: {
           greaterThanOrEqualTo: 0,
-          lessThanOrEqualTo: 3600
+          lessThanOrEqualTo: 5000
         }
       },
 
@@ -3299,7 +3299,7 @@
       high_pressure_stepper_open_angle: {
         numericality: {
           greaterThanOrEqualTo: 0,
-          lessThanOrEqualTo: 3600
+          lessThanOrEqualTo: 5000
         }
       },
 
@@ -3363,14 +3363,14 @@
       cooling_fan_on_temperature: {
         numericality: {
           greaterThanOrEqualTo: 0,
-          lessThanOrEqualTo: 120
+          lessThanOrEqualTo: 100
         }
       },
 
       cooling_fan_off_temperature: {
         numericality: {
           greaterThanOrEqualTo: 0,
-          lessThanOrEqualTo: 120
+          lessThanOrEqualTo: 100
         }
       },
 
@@ -3386,7 +3386,7 @@
 
       membrane_pressure_sensor_max: {
         numericality: {
-          greaterThanOrEqualTo: 0
+          greaterThan: 0
         }
       },
 
@@ -3402,7 +3402,7 @@
 
       filter_pressure_sensor_max: {
         numericality: {
-          greaterThanOrEqualTo: 0
+          greaterThan: 0
         }
       },
 
@@ -3432,87 +3432,87 @@
     return {
       flush_timeout: {
         numericality: {
-          greaterThanOrEqualTo: 0
+          greaterThan: 0
         }
       },
 
       membrane_pressure_timeout: {
         numericality: {
-          greaterThanOrEqualTo: 0
+          greaterThan: 0
         }
       },
 
       product_flowrate_timeout: {
         numericality: {
-          greaterThanOrEqualTo: 0
+          greaterThan: 0
         }
       },
 
       product_salinity_timeout: {
         numericality: {
-          greaterThanOrEqualTo: 0
+          greaterThan: 0
         }
       },
 
       production_runtime_timeout: {
         numericality: {
-          greaterThanOrEqualTo: 0
+          greaterThan: 0
         }
       },
 
       enable_membrane_pressure_high_check: { inclusion: [true, false] },
-      membrane_pressure_high_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      membrane_pressure_high_threshold: { numericality: { greaterThan: 0 } },
       membrane_pressure_high_delay: { numericality: { greaterThanOrEqualTo: 0 } },
 
       enable_membrane_pressure_low_check: { inclusion: [true, false] },
-      membrane_pressure_low_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      membrane_pressure_low_threshold: { numericality: { greaterThan: 0 } },
       membrane_pressure_low_delay: { numericality: { greaterThanOrEqualTo: 0 } },
 
       enable_filter_pressure_high_check: { inclusion: [true, false] },
-      filter_pressure_high_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      filter_pressure_high_threshold: { numericality: { greaterThan: 0 } },
       filter_pressure_high_delay: { numericality: { greaterThanOrEqualTo: 0 } },
 
       enable_filter_pressure_low_check: { inclusion: [true, false] },
-      filter_pressure_low_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      filter_pressure_low_threshold: { numericality: { greaterThan: 0 } },
       filter_pressure_low_delay: { numericality: { greaterThanOrEqualTo: 0 } },
 
       enable_product_flowrate_high_check: { inclusion: [true, false] },
-      product_flowrate_high_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      product_flowrate_high_threshold: { numericality: { greaterThan: 0 } },
       product_flowrate_high_delay: { numericality: { greaterThanOrEqualTo: 0 } },
 
       enable_product_flowrate_low_check: { inclusion: [true, false] },
-      product_flowrate_low_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      product_flowrate_low_threshold: { numericality: { greaterThan: 0 } },
       product_flowrate_low_delay: { numericality: { greaterThanOrEqualTo: 0 } },
 
       enable_run_total_flowrate_low_check: { inclusion: [true, false] },
-      run_total_flowrate_low_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      run_total_flowrate_low_threshold: { numericality: { greaterThan: 0 } },
       run_total_flowrate_low_delay: { numericality: { greaterThanOrEqualTo: 0 } },
 
       enable_pickle_total_flowrate_low_check: { inclusion: [true, false] },
-      pickle_total_flowrate_low_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      pickle_total_flowrate_low_threshold: { numericality: { greaterThan: 0 } },
       pickle_total_flowrate_low_delay: { numericality: { greaterThanOrEqualTo: 0 } },
 
       enable_diverter_valve_closed_check: { inclusion: [true, false] },
       diverter_valve_closed_delay: { numericality: { greaterThanOrEqualTo: 0 } },
 
       enable_product_salinity_high_check: { inclusion: [true, false] },
-      product_salinity_high_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      product_salinity_high_threshold: { numericality: { greaterThan: 0 } },
       product_salinity_high_delay: { numericality: { greaterThanOrEqualTo: 0 } },
 
       enable_motor_temperature_check: { inclusion: [true, false] },
-      motor_temperature_high_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      motor_temperature_high_threshold: { numericality: { greaterThan: 0 } },
       motor_temperature_high_delay: { numericality: { greaterThanOrEqualTo: 0 } },
 
       enable_flush_flowrate_low_check: { inclusion: [true, false] },
-      flush_flowrate_low_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      flush_flowrate_low_threshold: { numericality: { greaterThan: 0 } },
       flush_flowrate_low_delay: { numericality: { greaterThanOrEqualTo: 0 } },
 
       enable_flush_filter_pressure_low_check: { inclusion: [true, false] },
-      flush_filter_pressure_low_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      flush_filter_pressure_low_threshold: { numericality: { greaterThan: 0 } },
       flush_filter_pressure_low_delay: { numericality: { greaterThanOrEqualTo: 0 } },
 
       enable_flush_valve_off_check: { inclusion: [true, false] },
-      enable_flush_valve_off_threshold: { numericality: { greaterThanOrEqualTo: 0 } },
+      enable_flush_valve_off_threshold: { numericality: { greaterThan: 0 } },
       enable_flush_valve_off_delay: { numericality: { greaterThanOrEqualTo: 0 } }
     };
   }

@@ -16,6 +16,7 @@
   #include "relay_channel.h"
   #include "servo_channel.h"
   #include "stepper_channel.h"
+  #include "validate.h"
   #include <ADS1X15.h>
   #include <Arduino.h>
   #include <DallasTemperature.h>
@@ -1967,16 +1968,599 @@ bool Brineomatic::validateConfigJSON(JsonVariantConst config, char* error, size_
 
 bool Brineomatic::validateGeneralConfigJSON(JsonVariantConst config, char* error, size_t err_size)
 {
+  // autoflush_mode (required, string inclusion)
+  if (!checkPresence(config, "autoflush_mode", error, err_size))
+    return false;
+  if (!checkInclusion(config, "autoflush_mode", Brineomatic::AUTOFLUSH_MODES, error, err_size))
+    return false;
+
+  // autoflush_salinity (integer >= 0)
+  if (config["autoflush_salinity"]) {
+    if (!checkIsInteger(config, "autoflush_salinity", error, err_size))
+      return false;
+    if (!checkNumGT(config, "autoflush_salinity", 0, error, err_size))
+      return false;
+  }
+
+  // autoflush_duration (number >= 0)
+  if (config["autoflush_duration"]) {
+    if (!checkIsNumber(config, "autoflush_duration", error, err_size))
+      return false;
+    if (!checkNumGT(config, "autoflush_duration", 0, error, err_size))
+      return false;
+  }
+
+  if (config["autoflush_volume"]) {
+    if (!checkIsNumber(config, "autoflush_volume", error, err_size))
+      return false;
+    if (!checkNumGT(config, "autoflush_volume", 0, error, err_size))
+      return false;
+  }
+
+  if (config["autoflush_interval"]) {
+    if (!checkIsNumber(config, "autoflush_interval", error, err_size))
+      return false;
+    if (!checkNumGT(config, "autoflush_interval", 0, error, err_size))
+      return false;
+  }
+
+  // tank_capacity (required, number > 0)
+  if (!checkPresence(config, "tank_capacity", error, err_size))
+    return false;
+  if (!checkIsNumber(config, "tank_capacity", error, err_size))
+    return false;
+  if (!checkNumGT(config, "tank_capacity", 0, error, err_size))
+    return false;
+
+  // enum-like fields
+  if (!checkPresence(config, "temperature_units", error, err_size))
+    return false;
+  if (!checkInclusion(config, "temperature_units", Brineomatic::TEMPERATURE_UNITS, error, err_size))
+    return false;
+
+  if (!checkPresence(config, "pressure_units", error, err_size))
+    return false;
+  if (!checkInclusion(config, "pressure_units", Brineomatic::PRESSURE_UNITS, error, err_size))
+    return false;
+
+  if (!checkPresence(config, "volume_units", error, err_size))
+    return false;
+  if (!checkInclusion(config, "volume_units", Brineomatic::VOLUME_UNITS, error, err_size))
+    return false;
+
+  if (!checkPresence(config, "flowrate_units", error, err_size))
+    return false;
+  if (!checkInclusion(config, "flowrate_units", Brineomatic::FLOWRATE_UNITS, error, err_size))
+    return false;
+
+  // success_melody + error_melody (presence only)
+  if (!checkPresence(config, "success_melody", error, err_size))
+    return false;
+  if (!checkPresence(config, "error_melody", error, err_size))
+    return false;
+
   return true;
 }
 
 bool Brineomatic::validateHardwareConfigJSON(JsonVariantConst config, char* error, size_t err_size)
 {
+  // ---------------------------------------------------------
+  // Control mode enums
+  // ---------------------------------------------------------
+
+  if (!checkPresence(config, "boost_pump_control", error, err_size))
+    return false;
+  if (!checkInclusion(config, "boost_pump_control", BOOST_PUMP_CONTROLS, error, err_size))
+    return false;
+
+  if (config["boost_pump_relay_id"]) {
+    if (!checkIsInteger(config, "boost_pump_relay_id", error, err_size))
+      return false;
+    if (!checkIntGE(config, "boost_pump_relay_id", 0, error, err_size))
+      return false;
+  }
+
+  if (!checkPresence(config, "high_pressure_pump_control", error, err_size))
+    return false;
+  if (!checkInclusion(config, "high_pressure_pump_control", HIGH_PRESSURE_PUMP_CONTROLS, error, err_size))
+    return false;
+
+  if (config["high_pressure_relay_id"]) {
+    if (!checkIsInteger(config, "high_pressure_relay_id", error, err_size))
+      return false;
+    if (!checkIntGE(config, "high_pressure_relay_id", 0, error, err_size))
+      return false;
+  }
+
+  if (!checkPresence(config, "high_pressure_valve_control", error, err_size))
+    return false;
+  if (!checkInclusion(config, "high_pressure_valve_control", HIGH_PRESSURE_VALVE_CONTROLS, error, err_size))
+    return false;
+
+  if (config["membrane_pressure_target"]) {
+    if (!checkIsNumber(config, "membrane_pressure_target", error, err_size))
+      return false;
+    if (!checkNumGT(config, "membrane_pressure_target", 0.0f, error, err_size))
+      return false;
+  }
+
+  if (config["high_pressure_valve_stepper_id"]) {
+    if (!checkIsInteger(config, "high_pressure_valve_stepper_id", error, err_size))
+      return false;
+    if (!checkIntGE(config, "high_pressure_valve_stepper_id", 0, error, err_size))
+      return false;
+  }
+
+  // Stepper angles and speeds
+  auto checkAngle = [&](const char* key, float minv, float maxv) -> bool {
+    if (!checkIsNumber(config, key, error, err_size))
+      return false;
+    float v = config[key].as<float>();
+    if (v < minv) {
+      snprintf(error, err_size, "Field '%s' must be >= %.2f", key, minv);
+      return false;
+    }
+    if (v > maxv) {
+      snprintf(error, err_size, "Field '%s' must be <= %.2f", key, maxv);
+      return false;
+    }
+    return true;
+  };
+
+  if (config["high_pressure_stepper_step_angle"]) {
+    if (!checkAngle("high_pressure_stepper_step_angle", 0.0001f, 90.0f))
+      return false;
+  }
+
+  if (config["high_pressure_stepper_gear_ratio"]) {
+    if (!checkNumGT(config, "high_pressure_stepper_gear_ratio", 0.0f, error, err_size))
+      return false;
+  }
+
+  if (config["high_pressure_stepper_close_angle"]) {
+    if (!checkAngle("high_pressure_stepper_close_angle", 0.0f, 5000.0f))
+      return false;
+  }
+
+  if (config["high_pressure_stepper_close_speed"]) {
+    if (!checkAngle("high_pressure_stepper_close_speed", 0.0001f, 200.0f))
+      return false;
+  }
+
+  if (config["high_pressure_stepper_open_angle"]) {
+    if (!checkAngle("high_pressure_stepper_open_angle", 0.0f, 5000.0f))
+      return false;
+  }
+
+  if (config["high_pressure_stepper_open_speed"]) {
+    if (!checkAngle("high_pressure_stepper_open_speed", 0.0001f, 200.0f))
+      return false;
+  }
+
+  // ---------------------------------------------------------
+  // Diverter valve
+  // ---------------------------------------------------------
+
+  if (!checkPresence(config, "diverter_valve_control", error, err_size))
+    return false;
+  if (!checkInclusion(config, "diverter_valve_control", DIVERTER_VALVE_CONTROLS, error, err_size))
+    return false;
+
+  if (config["diverter_valve_servo_id"]) {
+    if (!checkIsInteger(config, "diverter_valve_servo_id", error, err_size))
+      return false;
+    if (!checkIntGE(config, "diverter_valve_servo_id", 0, error, err_size))
+      return false;
+  }
+
+  if (config["diverter_valve_open_angle"]) {
+    if (!checkAngle("diverter_valve_open_angle", 0.0f, 180.0f))
+      return false;
+  }
+
+  if (config["diverter_valve_close_angle"]) {
+    if (!checkAngle("diverter_valve_close_angle", 0.0f, 180.0f))
+      return false;
+  }
+
+  // ---------------------------------------------------------
+  // Flush valve
+  // ---------------------------------------------------------
+
+  if (!checkPresence(config, "flush_valve_control", error, err_size))
+    return false;
+  if (!checkInclusion(config, "flush_valve_control", FLUSH_VALVE_CONTROLS, error, err_size))
+    return false;
+
+  if (config["flush_valve_relay_id"]) {
+    if (!checkIsInteger(config, "flush_valve_relay_id", error, err_size))
+      return false;
+    if (!checkIntGE(config, "flush_valve_relay_id", 0, error, err_size))
+      return false;
+  }
+
+  // ---------------------------------------------------------
+  // Cooling fan
+  // ---------------------------------------------------------
+
+  if (!checkPresence(config, "cooling_fan_control", error, err_size))
+    return false;
+  if (!checkInclusion(config, "cooling_fan_control", COOLING_FAN_CONTROLS, error, err_size))
+    return false;
+
+  if (config["cooling_fan_relay_id"]) {
+    if (!checkIsInteger(config, "cooling_fan_relay_id", error, err_size))
+      return false;
+    if (!checkIntGE(config, "cooling_fan_relay_id", 0, error, err_size))
+      return false;
+  }
+
+  if (config["cooling_fan_on_temperature"]) {
+    if (!checkAngle("cooling_fan_on_temperature", 0.0f, 100.0f))
+      return false;
+  }
+
+  if (config["cooling_fan_off_temperature"]) {
+    if (!checkAngle("cooling_fan_off_temperature", 0.0f, 100.0f))
+      return false;
+  }
+
+  // ---------------------------------------------------------
+  // Sensor booleans
+  // ---------------------------------------------------------
+
+  if (config["has_membrane_pressure_sensor"])
+    if (!checkIsBool(config, "has_membrane_pressure_sensor", error, err_size))
+      return false;
+
+  if (config["membrane_pressure_sensor_min"]) {
+    if (!checkNumGE(config, "membrane_pressure_sensor_min", 0.0f, error, err_size))
+      return false;
+  }
+
+  if (config["membrane_pressure_sensor_max"]) {
+    if (!checkNumGT(config, "membrane_pressure_sensor_max", 0.0f, error, err_size))
+      return false;
+  }
+
+  if (config["has_filter_pressure_sensor"])
+    if (!checkIsBool(config, "has_filter_pressure_sensor", error, err_size))
+      return false;
+
+  if (config["filter_pressure_sensor_min"]) {
+    if (!checkNumGE(config, "filter_pressure_sensor_min", 0.0f, error, err_size))
+      return false;
+  }
+
+  if (config["filter_pressure_sensor_max"]) {
+    if (!checkNumGT(config, "filter_pressure_sensor_max", 0.0f, error, err_size))
+      return false;
+  }
+
+  if (config["has_product_tds_sensor"])
+    if (!checkIsBool(config, "has_product_tds_sensor", error, err_size))
+      return false;
+
+  if (config["has_brine_tds_sensor"])
+    if (!checkIsBool(config, "has_brine_tds_sensor", error, err_size))
+      return false;
+
+  if (config["has_product_flow_sensor"])
+    if (!checkIsBool(config, "has_product_flow_sensor", error, err_size))
+      return false;
+
+  if (config["product_flowmeter_ppl"]) {
+    if (!checkNumGT(config, "product_flowmeter_ppl", 0.0f, error, err_size))
+      return false;
+  }
+
+  if (config["has_brine_flow_sensor"])
+    if (!checkIsBool(config, "has_brine_flow_sensor", error, err_size))
+      return false;
+
+  if (config["brine_flowmeter_ppl"]) {
+    if (!checkNumGT(config, "brine_flowmeter_ppl", 0.0f, error, err_size))
+      return false;
+  }
+
+  if (config["has_motor_temperature_sensor"])
+    if (!checkIsBool(config, "has_motor_temperature_sensor", error, err_size))
+      return false;
+
   return true;
 }
 
 bool Brineomatic::validateSafeguardsConfigJSON(JsonVariantConst config, char* error, size_t err_size)
 {
+  // ---------------------------------------------------------
+  // Basic timeout fields (number > 0)
+  // ---------------------------------------------------------
+
+  if (config["flush_timeout"]) {
+    if (!checkIsNumber(config, "flush_timeout", error, err_size))
+      return false;
+    if (!checkNumGT(config, "flush_timeout", 0.0f, error, err_size))
+      return false;
+  }
+
+  if (config["membrane_pressure_timeout"]) {
+    if (!checkIsNumber(config, "membrane_pressure_timeout", error, err_size))
+      return false;
+    if (!checkNumGT(config, "membrane_pressure_timeout", 0.0f, error, err_size))
+      return false;
+  }
+
+  if (config["product_flowrate_timeout"]) {
+    if (!checkIsNumber(config, "product_flowrate_timeout", error, err_size))
+      return false;
+    if (!checkNumGT(config, "product_flowrate_timeout", 0.0f, error, err_size))
+      return false;
+  }
+
+  if (config["product_salinity_timeout"]) {
+    if (!checkIsNumber(config, "product_salinity_timeout", error, err_size))
+      return false;
+    if (!checkNumGT(config, "product_salinity_timeout", 0.0f, error, err_size))
+      return false;
+  }
+
+  if (config["production_runtime_timeout"]) {
+    if (!checkIsNumber(config, "production_runtime_timeout", error, err_size))
+      return false;
+    if (!checkNumGT(config, "production_runtime_timeout", 0.0f, error, err_size))
+      return false;
+  }
+
+  // ---------------------------------------------------------
+  // Repeated patterns: boolean enable + threshold/delay
+  // ---------------------------------------------------------
+
+  // enable_membrane_pressure_high_check
+  if (config["enable_membrane_pressure_high_check"]) {
+    if (!checkIsBool(config, "enable_membrane_pressure_high_check", error, err_size))
+      return false;
+  }
+  if (config["membrane_pressure_high_threshold"]) {
+    if (!checkIsNumber(config, "membrane_pressure_high_threshold", error, err_size))
+      return false;
+    if (!checkNumGT(config, "membrane_pressure_high_threshold", 0.0f, error, err_size))
+      return false;
+  }
+  if (config["membrane_pressure_high_delay"]) {
+    if (!checkIsNumber(config, "membrane_pressure_high_delay", error, err_size))
+      return false;
+    if (!checkNumGE(config, "membrane_pressure_high_delay", 0.0f, error, err_size))
+      return false;
+  }
+
+  // enable_membrane_pressure_low_check
+  if (config["enable_membrane_pressure_low_check"]) {
+    if (!checkIsBool(config, "enable_membrane_pressure_low_check", error, err_size))
+      return false;
+  }
+  if (config["membrane_pressure_low_threshold"]) {
+    if (!checkIsNumber(config, "membrane_pressure_low_threshold", error, err_size))
+      return false;
+    if (!checkNumGT(config, "membrane_pressure_low_threshold", 0.0f, error, err_size))
+      return false;
+  }
+  if (config["membrane_pressure_low_delay"]) {
+    if (!checkIsNumber(config, "membrane_pressure_low_delay", error, err_size))
+      return false;
+    if (!checkNumGE(config, "membrane_pressure_low_delay", 0.0f, error, err_size))
+      return false;
+  }
+
+  // enable_filter_pressure_high_check
+  if (config["enable_filter_pressure_high_check"]) {
+    if (!checkIsBool(config, "enable_filter_pressure_high_check", error, err_size))
+      return false;
+  }
+  if (config["filter_pressure_high_threshold"]) {
+    if (!checkIsNumber(config, "filter_pressure_high_threshold", error, err_size))
+      return false;
+    if (!checkNumGT(config, "filter_pressure_high_threshold", 0.0f, error, err_size))
+      return false;
+  }
+  if (config["filter_pressure_high_delay"]) {
+    if (!checkIsNumber(config, "filter_pressure_high_delay", error, err_size))
+      return false;
+    if (!checkNumGE(config, "filter_pressure_high_delay", 0.0f, error, err_size))
+      return false;
+  }
+
+  // enable_filter_pressure_low_check
+  if (config["enable_filter_pressure_low_check"]) {
+    if (!checkIsBool(config, "enable_filter_pressure_low_check", error, err_size))
+      return false;
+  }
+  if (config["filter_pressure_low_threshold"]) {
+    if (!checkIsNumber(config, "filter_pressure_low_threshold", error, err_size))
+      return false;
+    if (!checkNumGT(config, "filter_pressure_low_threshold", 0.0f, error, err_size))
+      return false;
+  }
+  if (config["filter_pressure_low_delay"]) {
+    if (!checkIsNumber(config, "filter_pressure_low_delay", error, err_size))
+      return false;
+    if (!checkNumGE(config, "filter_pressure_low_delay", 0.0f, error, err_size))
+      return false;
+  }
+
+  // enable_product_flowrate_high_check
+  if (config["enable_product_flowrate_high_check"]) {
+    if (!checkIsBool(config, "enable_product_flowrate_high_check", error, err_size))
+      return false;
+  }
+  if (config["product_flowrate_high_threshold"]) {
+    if (!checkIsNumber(config, "product_flowrate_high_threshold", error, err_size))
+      return false;
+    if (!checkNumGT(config, "product_flowrate_high_threshold", 0.0f, error, err_size))
+      return false;
+  }
+  if (config["product_flowrate_high_delay"]) {
+    if (!checkIsNumber(config, "product_flowrate_high_delay", error, err_size))
+      return false;
+    if (!checkNumGE(config, "product_flowrate_high_delay", 0.0f, error, err_size))
+      return false;
+  }
+
+  // enable_product_flowrate_low_check
+  if (config["enable_product_flowrate_low_check"]) {
+    if (!checkIsBool(config, "enable_product_flowrate_low_check", error, err_size))
+      return false;
+  }
+  if (config["product_flowrate_low_threshold"]) {
+    if (!checkIsNumber(config, "product_flowrate_low_threshold", error, err_size))
+      return false;
+    if (!checkNumGT(config, "product_flowrate_low_threshold", 0.0f, error, err_size))
+      return false;
+  }
+  if (config["product_flowrate_low_delay"]) {
+    if (!checkIsNumber(config, "product_flowrate_low_delay", error, err_size))
+      return false;
+    if (!checkNumGE(config, "product_flowrate_low_delay", 0.0f, error, err_size))
+      return false;
+  }
+
+  // enable_run_total_flowrate_low_check
+  if (config["enable_run_total_flowrate_low_check"]) {
+    if (!checkIsBool(config, "enable_run_total_flowrate_low_check", error, err_size))
+      return false;
+  }
+  if (config["run_total_flowrate_low_threshold"]) {
+    if (!checkIsNumber(config, "run_total_flowrate_low_threshold", error, err_size))
+      return false;
+    if (!checkNumGT(config, "run_total_flowrate_low_threshold", 0.0f, error, err_size))
+      return false;
+  }
+  if (config["run_total_flowrate_low_delay"]) {
+    if (!checkIsNumber(config, "run_total_flowrate_low_delay", error, err_size))
+      return false;
+    if (!checkNumGE(config, "run_total_flowrate_low_delay", 0.0f, error, err_size))
+      return false;
+  }
+
+  // enable_pickle_total_flowrate_low_check
+  if (config["enable_pickle_total_flowrate_low_check"]) {
+    if (!checkIsBool(config, "enable_pickle_total_flowrate_low_check", error, err_size))
+      return false;
+  }
+  if (config["pickle_total_flowrate_low_threshold"]) {
+    if (!checkIsNumber(config, "pickle_total_flowrate_low_threshold", error, err_size))
+      return false;
+    if (!checkNumGT(config, "pickle_total_flowrate_low_threshold", 0.0f, error, err_size))
+      return false;
+  }
+  if (config["pickle_total_flowrate_low_delay"]) {
+    if (!checkIsNumber(config, "pickle_total_flowrate_low_delay", error, err_size))
+      return false;
+    if (!checkNumGE(config, "pickle_total_flowrate_low_delay", 0.0f, error, err_size))
+      return false;
+  }
+
+  // enable_diverter_valve_closed_check
+  if (config["enable_diverter_valve_closed_check"]) {
+    if (!checkIsBool(config, "enable_diverter_valve_closed_check", error, err_size))
+      return false;
+  }
+  if (config["diverter_valve_closed_delay"]) {
+    if (!checkIsNumber(config, "diverter_valve_closed_delay", error, err_size))
+      return false;
+    if (!checkNumGE(config, "diverter_valve_closed_delay", 0.0f, error, err_size))
+      return false;
+  }
+
+  // enable_product_salinity_high_check
+  if (config["enable_product_salinity_high_check"]) {
+    if (!checkIsBool(config, "enable_product_salinity_high_check", error, err_size))
+      return false;
+  }
+  if (config["product_salinity_high_threshold"]) {
+    if (!checkIsNumber(config, "product_salinity_high_threshold", error, err_size))
+      return false;
+    if (!checkNumGT(config, "product_salinity_high_threshold", 0.0f, error, err_size))
+      return false;
+  }
+  if (config["product_salinity_high_delay"]) {
+    if (!checkIsNumber(config, "product_salinity_high_delay", error, err_size))
+      return false;
+    if (!checkNumGE(config, "product_salinity_high_delay", 0.0f, error, err_size))
+      return false;
+  }
+
+  // enable_motor_temperature_check
+  if (config["enable_motor_temperature_check"]) {
+    if (!checkIsBool(config, "enable_motor_temperature_check", error, err_size))
+      return false;
+  }
+  if (config["motor_temperature_high_threshold"]) {
+    if (!checkIsNumber(config, "motor_temperature_high_threshold", error, err_size))
+      return false;
+    if (!checkNumGT(config, "motor_temperature_high_threshold", 0.0f, error, err_size))
+      return false;
+  }
+  if (config["motor_temperature_high_delay"]) {
+    if (!checkIsNumber(config, "motor_temperature_high_delay", error, err_size))
+      return false;
+    if (!checkNumGE(config, "motor_temperature_high_delay", 0.0f, error, err_size))
+      return false;
+  }
+
+  // enable_flush_flowrate_low_check
+  if (config["enable_flush_flowrate_low_check"]) {
+    if (!checkIsBool(config, "enable_flush_flowrate_low_check", error, err_size))
+      return false;
+  }
+  if (config["flush_flowrate_low_threshold"]) {
+    if (!checkIsNumber(config, "flush_flowrate_low_threshold", error, err_size))
+      return false;
+    if (!checkNumGT(config, "flush_flowrate_low_threshold", 0.0f, error, err_size))
+      return false;
+  }
+  if (config["flush_flowrate_low_delay"]) {
+    if (!checkIsNumber(config, "flush_flowrate_low_delay", error, err_size))
+      return false;
+    if (!checkNumGE(config, "flush_flowrate_low_delay", 0.0f, error, err_size))
+      return false;
+  }
+
+  // enable_flush_filter_pressure_low_check
+  if (config["enable_flush_filter_pressure_low_check"]) {
+    if (!checkIsBool(config, "enable_flush_filter_pressure_low_check", error, err_size))
+      return false;
+  }
+  if (config["flush_filter_pressure_low_threshold"]) {
+    if (!checkIsNumber(config, "flush_filter_pressure_low_threshold", error, err_size))
+      return false;
+    if (!checkNumGT(config, "flush_filter_pressure_low_threshold", 0.0f, error, err_size))
+      return false;
+  }
+  if (config["flush_filter_pressure_low_delay"]) {
+    if (!checkIsNumber(config, "flush_filter_pressure_low_delay", error, err_size))
+      return false;
+    if (!checkNumGE(config, "flush_filter_pressure_low_delay", 0.0f, error, err_size))
+      return false;
+  }
+
+  // enable_flush_valve_off_check
+  if (config["enable_flush_valve_off_check"]) {
+    if (!checkIsBool(config, "enable_flush_valve_off_check", error, err_size))
+      return false;
+  }
+  if (config["enable_flush_valve_off_threshold"]) {
+    if (!checkIsNumber(config, "enable_flush_valve_off_threshold", error, err_size))
+      return false;
+    if (!checkNumGT(config, "enable_flush_valve_off_threshold", 0.0f, error, err_size))
+      return false;
+  }
+  if (config["enable_flush_valve_off_delay"]) {
+    if (!checkIsNumber(config, "enable_flush_valve_off_delay", error, err_size))
+      return false;
+    if (!checkNumGE(config, "enable_flush_valve_off_delay", 0.0f, error, err_size))
+      return false;
+  }
+
   return true;
 }
 

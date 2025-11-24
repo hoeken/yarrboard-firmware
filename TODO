@@ -3,7 +3,8 @@
 ## BRINEOMATIC
 
 * configuration system:
-    * implement server side validation code
+    * javascript validation error description not showing
+    * add calls to getChannel() in validateHardwareConfig()
     * make sure we're using the new config:
         * relay/servo/stepper objects
         * has_* hardware
