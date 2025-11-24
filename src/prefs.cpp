@@ -331,6 +331,10 @@ bool loadConfigFromFile(const char* file, char* error, size_t len)
     return false;
   }
 
+  YBP.println("Saved Config File:");
+  YBP.print(buf);
+  YBP.println();
+
   // parse JSON
   JsonDocument doc; // adjust to match your configuration complexity
   DeserializationError err = deserializeJson(doc, buf);
@@ -499,6 +503,13 @@ bool loadBoardConfigFromJSON(JsonVariantConst config, char* error, size_t len)
 
 #ifdef YB_HAS_STEPPER_CHANNELS
   if (!loadChannelsConfigFromJSON("stepper", stepper_channels, config, error, len))
+    return false;
+#endif
+
+#ifdef YB_IS_BRINEOMATIC
+  if (wm.validateConfigJSON(config["brineomatic"], error, len))
+    wm.loadConfigJSON(config["brineomatic"]);
+  else
     return false;
 #endif
 

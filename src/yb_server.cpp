@@ -382,8 +382,8 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
 
     // did we get anything?
     if (jsonBuffer != NULL) {
-      jsonBuffer[jsonSize] = '\0'; // null terminate
       serializeJson(output, jsonBuffer, jsonSize + 1);
+      jsonBuffer[jsonSize] = '\0'; // null terminate
 
       if (xSemaphoreTake(sendMutex, portMAX_DELAY) == pdTRUE) {
         client->sendMessage(jsonBuffer);

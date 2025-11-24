@@ -9,6 +9,7 @@
 #ifndef YARR_BRINEOMATIC_H
 #define YARR_BRINEOMATIC_H
 
+#include "brineomatic_config.h"
 #include "etl/deque.h"
 #include <ArduinoJson.h>
 #include <QuickPID.h>
@@ -226,6 +227,8 @@ class Brineomatic
 
     void generateUpdateJSON(JsonVariant output);
     void generateConfigJSON(JsonVariant output);
+    bool validateConfigJSON(JsonVariantConst config, char* error, size_t err_size);
+    void loadConfigJSON(JsonVariantConst config);
 
     void updateMQTT();
 
@@ -291,131 +294,131 @@ class Brineomatic
     //
     // Configuration variables
     //
-    float tankLevelFull = 0.99;            // 0 = empty, 1 = full
-    float tankCapacity = 780;              // Liters
-    float coolingFanOnTemperature = 35.0;  // Celcius
-    float coolingFanOffTemperature = 34.0; // Celcius
+    float tankLevelFull;            // 0 = empty, 1 = full
+    float tankCapacity;             // Liters
+    float coolingFanOnTemperature;  // Celcius
+    float coolingFanOffTemperature; // Celcius
 
-    const char* autoflushMode = "TIME";
-    float autoflushSalinity = 750.0;
-    uint32_t autoflushDuration = 3 * 60 * 1000;
-    float autoflushVolume = 15.0;
-    uint32_t autoflushInterval = 3 * 24 * 60 * 60 * 1000;
+    String autoflushMode;
+    float autoflushSalinity;
+    uint32_t autoflushDuration;
+    float autoflushVolume;
+    uint32_t autoflushInterval;
 
-    const char* temperatureUnits = "celsius";
-    const char* pressureUnits = "psi";
-    const char* volumeUnits = "liters";
-    const char* flowrateUnits = "lph";
+    String temperatureUnits;
+    String pressureUnits;
+    String volumeUnits;
+    String flowrateUnits;
 
-    const char* successMelody = "SUCCESS";
-    const char* errorMelody = "ERROR";
+    String successMelody;
+    String errorMelody;
 
-    const char* boostPumpControl = "NONE";
-    uint8_t boostPumpRelayId = 1;
+    String boostPumpControl;
+    uint8_t boostPumpRelayId;
 
-    const char* highPressurePumpControl = "RELAY";
-    uint8_t highPressureRelayId = 4;
+    String highPressurePumpControl;
+    uint8_t highPressureRelayId;
 
-    const char* highPressureValveControl = "STEPPER";
-    uint8_t highPressureValveStepperId = 1;
-    float highPressureValveStepperStepAngle = 1.8;
-    float highPressureValveStepperGearRatio = 3.0;
-    float highPressureValveStepperCloseAngle = 1660.0;
-    float highPressureValveStepperCloseSpeed = 10.0;
-    float highPressureValveStepperOpenAngle = 0.0;
-    float highPressureValveStepperOpenSpeed = 40.0;
-    float membranePressureTarget = 800.0; // PSI
+    String highPressureValveControl;
+    uint8_t highPressureValveStepperId;
+    float highPressureValveStepperStepAngle;
+    float highPressureValveStepperGearRatio;
+    float highPressureValveStepperCloseAngle;
+    float highPressureValveStepperCloseSpeed;
+    float highPressureValveStepperOpenAngle;
+    float highPressureValveStepperOpenSpeed;
+    float membranePressureTarget; // PSI
 
-    const char* diverterValveControl = "SERVO";
-    uint8_t diverterValveServoId = 1;
-    float diverterValveOpenAngle = 35;
-    float diverterValveCloseAngle = 125;
+    String diverterValveControl;
+    uint8_t diverterValveServoId;
+    float diverterValveOpenAngle;
+    float diverterValveCloseAngle;
 
-    const char* flushValveControl = "RELAY";
-    uint8_t flushValveRelayId = 2;
+    String flushValveControl;
+    uint8_t flushValveRelayId;
 
-    const char* coolingFanControl = "RELAY";
-    uint8_t coolingFanRelayId = 3;
+    String coolingFanControl;
+    uint8_t coolingFanRelayId;
 
-    bool hasMembranePressureSensor = true;
-    float membranePressureSensorMin = 0.0;
-    float membranePressureSensorMax = YB_HP_SENSOR_MAX;
+    bool hasMembranePressureSensor;
+    float membranePressureSensorMin;
+    float membranePressureSensorMax;
 
-    bool hasFilterPressureSensor = true;
-    float filterPressureSensorMin = 0.0;
-    float filterPressureSensorMax = YB_LP_SENSOR_MAX;
+    bool hasFilterPressureSensor;
+    float filterPressureSensorMin;
+    float filterPressureSensorMax;
 
-    bool hasProductTDSSensor = true;
-    bool hasBrineTDSSensor = true;
+    bool hasProductTDSSensor;
+    bool hasBrineTDSSensor;
 
-    bool hasProductFlowSensor = true;
-    float productFlowmeterPPL = YB_PRODUCT_FLOWMETER_DEFAULT_PPL;
+    bool hasProductFlowSensor;
+    float productFlowmeterPPL;
 
-    bool hasBrineFlowSensor = true;
-    float brineFlowmeterPPL = YB_BRINE_FLOWMETER_DEFAULT_PPL;
+    bool hasBrineFlowSensor;
+    float brineFlowmeterPPL;
 
-    bool hasMotorTemperatureSensor = true;
+    bool hasMotorTemperatureSensor;
 
-    bool enableMembranePressureHighCheck = true;
-    float membranePressureHighThreshold = 900.0;
-    uint32_t membranePressureHighDelay = 2000;
+    bool enableMembranePressureHighCheck;
+    float membranePressureHighThreshold;
+    uint32_t membranePressureHighDelay;
 
-    bool enableMembranePressureLowCheck = true;
-    float membranePressureLowThreshold = 700.0;
-    uint32_t membranePressureLowDelay = 2000;
+    bool enableMembranePressureLowCheck;
+    float membranePressureLowThreshold;
+    uint32_t membranePressureLowDelay;
 
-    bool enableFilterPressureHighCheck = true;
-    float filterPressureHighThreshold = 60.0;
-    uint32_t filterPressureHighDelay = 2000;
+    bool enableFilterPressureHighCheck;
+    float filterPressureHighThreshold;
+    uint32_t filterPressureHighDelay;
 
-    bool enableFilterPressureLowCheck = true;
-    float filterPressureLowThreshold = 2.5;
-    uint32_t filterPressureLowDelay = 2000;
+    bool enableFilterPressureLowCheck;
+    float filterPressureLowThreshold;
+    uint32_t filterPressureLowDelay;
 
-    bool enableProductFlowrateHighCheck = true;
-    float productFlowrateHighThreshold = 165.0;
-    uint32_t productFlowrateHighDelay = 10 * 1000;
+    bool enableProductFlowrateHighCheck;
+    float productFlowrateHighThreshold;
+    uint32_t productFlowrateHighDelay;
 
-    bool enableProductFlowrateLowCheck = true;
-    float productFlowrateLowThreshold = 120.0;
-    uint32_t productFlowrateLowDelay = 10 * 1000;
+    bool enableProductFlowrateLowCheck;
+    float productFlowrateLowThreshold;
+    uint32_t productFlowrateLowDelay;
 
-    bool enableRunTotalFlowrateLowCheck = true;
-    float runTotalFlowrateLowThreshold = 300.0;
-    uint32_t runTotalFlowrateLowDelay = 2500;
+    bool enableRunTotalFlowrateLowCheck;
+    float runTotalFlowrateLowThreshold;
+    uint32_t runTotalFlowrateLowDelay;
 
-    bool enablePickleTotalFlowrateLowCheck = true;
-    float pickleTotalFlowrateLowThreshold = 300.0;
-    uint32_t pickleTotalFlowrateLowDelay = 2500;
+    bool enablePickleTotalFlowrateLowCheck;
+    float pickleTotalFlowrateLowThreshold;
+    uint32_t pickleTotalFlowrateLowDelay;
 
-    bool enableDiverterValveClosedCheck = true;
-    float diverterValveClosedDelay = 5000;
+    bool enableDiverterValveClosedCheck;
+    float diverterValveClosedDelay;
 
-    bool enableProductSalinityHighCheck = true;
-    float productSalinityHighThreshold = 500.0;
-    uint32_t productSalinityHighDelay = 1000;
+    bool enableProductSalinityHighCheck;
+    float productSalinityHighThreshold;
+    uint32_t productSalinityHighDelay;
 
-    bool enableMotorTemperatureCheck = true;
-    float motorTemperatureHighThreshold = 65.0;
-    uint32_t motorTemperatureHighDelay = 1000;
+    bool enableMotorTemperatureCheck;
+    float motorTemperatureHighThreshold;
+    uint32_t motorTemperatureHighDelay;
 
-    bool enableFlushFlowrateLowCheck = true;
-    float flushFlowrateLowThreshold = 100.0;
-    uint32_t flushFlowrateLowDelay = 2500;
+    bool enableFlushFlowrateLowCheck;
+    float flushFlowrateLowThreshold;
+    uint32_t flushFlowrateLowDelay;
 
-    bool enableFlushFilterPressureLowCheck = true;
-    float flushFilterPressureLowThreshold = 15.0;
-    uint32_t flushFilterPressureLowDelay = 2500;
+    bool enableFlushFilterPressureLowCheck;
+    float flushFilterPressureLowThreshold;
+    uint32_t flushFilterPressureLowDelay;
 
-    bool enableFlushValveOffCheck = true;
-    float flushValveOffThreshold = 2.0;
-    uint32_t flushValveOffDelay = 15 * 1000;
+    bool enableFlushValveOffCheck;
+    float flushValveOffThreshold;
+    uint32_t flushValveOffDelay;
 
-    uint32_t flushTimeout = 5 * 60 * 1000;                   // timeout for flush cycle in ms
-    uint32_t membranePressureTimeout = 60 * 1000;            // timeout for membrane pressure to stabilize in ms
-    uint32_t productFlowrateTimeout = 2 * 60 * 1000;         // timeout for product flowrate to stabilize in ms
-    uint32_t productSalinityTimeout = 5 * 60 * 1000;         // timeout for salinity to stabilize in ms
-    uint32_t productionRuntimeTimeout = 12 * 60 * 60 * 1000; // maximum length of run in ms
+    uint32_t flushTimeout;             // timeout for flush cycle in ms
+    uint32_t membranePressureTimeout;  // timeout for membrane pressure to stabilize in ms
+    uint32_t productFlowrateTimeout;   // timeout for product flowrate to stabilize in ms
+    uint32_t productSalinityTimeout;   // timeout for salinity to stabilize in ms
+    uint32_t productionRuntimeTimeout; // maximum length of run in ms
 
     void resetErrorTimers();
 

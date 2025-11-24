@@ -2,18 +2,16 @@
 
 ## v2.1.0
 
-* fork + modify esp32FOTA to use bundled certificates
 
 ## BRINEOMATIC
 
 * configuration system:
-    * server side data loading and config saving
-    * server side loading from config
-    * include brineomatic_config.h with #ifdef #define defaults
+    * server side config saving
     * make sure we're using the new config:
         * relay/servo/stepper objects
         * has_* hardware
         * error checking booleans
+* show "error" when no value for pressure or tank level
 * add mid-level commands to set_watermaker
     * boost_pump
     * high_pressure_pump
@@ -27,15 +25,17 @@
     * flush valve
     * fan
     * membrane_pressure_target
-* show "error" when no value for pressure or tank level
+    * advanced -> raw *channel ui
 * move everything to SI units, add configurable units
-* add tds calibration
-* PID calibration?
+* stepper PID
+    * calibration
+    * testing
 * ntp server and next flush being an actual time that is stored in preferences (survive reboot)
 * move brineomatic to interrupt based adc
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker
-    * sensors for each output type...
+    * sensors for each output type
+    * YAML dashboard
 
 ## FROTHFET
 
@@ -53,6 +53,7 @@
 
 ## LONG TERM:
 
+* fork + modify esp32FOTA to use bundled certificates
 * UI
     * combine config and settings page into a single mega page
     * dio channels

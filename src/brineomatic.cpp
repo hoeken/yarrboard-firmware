@@ -401,33 +401,33 @@ void Brineomatic::init()
   //  highPressureValveCloseMax = 55;
 
   // HSR-2645CR
-  highPressureValveOpenMax = 125;
-  highPressureValveOpenMin = 92;
-  highPressureValveCloseMin = 92;
-  highPressureValveCloseMax = 55;
+  // highPressureValveOpenMax = 125;
+  // highPressureValveOpenMin = 92;
+  // highPressureValveCloseMin = 92;
+  // highPressureValveCloseMax = 55;
 
-  highPressureValveMaintainOpenMax = 100;
-  highPressureValveMaintainOpenMin = 92;
-  highPressureValveMaintainCloseMin = 92;
-  highPressureValveMaintainCloseMax = 80;
+  // highPressureValveMaintainOpenMax = 100;
+  // highPressureValveMaintainOpenMin = 92;
+  // highPressureValveMaintainCloseMin = 92;
+  // highPressureValveMaintainCloseMax = 80;
 
   // PID settings - Ramp Up
-  KpRamp = 2.2;
-  KiRamp = 0;
-  KdRamp = 0.55;
+  // KpRamp = 2.2;
+  // KiRamp = 0;
+  // KdRamp = 0.55;
 
   // PID Settings - Maintain
-  KpMaintain = 1.50;
-  KiMaintain = 0.02;
-  KdMaintain = 0;
+  // KpMaintain = 1.50;
+  // KiMaintain = 0.02;
+  // KdMaintain = 0;
 
   // PID controller
-  membranePressurePID = QuickPID(&currentMembranePressure, &membranePressurePIDOutput, &currentMembranePressureTarget);
-  membranePressurePID.SetMode(QuickPID::Control::automatic);
-  membranePressurePID.SetAntiWindupMode(QuickPID::iAwMode::iAwClamp);
-  membranePressurePID.SetTunings(KpRamp, KiRamp, KdRamp);
-  membranePressurePID.SetControllerDirection(QuickPID::Action::direct);
-  membranePressurePID.SetOutputLimits(YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX);
+  // membranePressurePID = QuickPID(&currentMembranePressure, &membranePressurePIDOutput, &currentMembranePressureTarget);
+  // membranePressurePID.SetMode(QuickPID::Control::automatic);
+  // membranePressurePID.SetAntiWindupMode(QuickPID::iAwMode::iAwClamp);
+  // membranePressurePID.SetTunings(KpRamp, KiRamp, KdRamp);
+  // membranePressurePID.SetControllerDirection(QuickPID::Action::direct);
+  // membranePressurePID.SetOutputLimits(YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX);
 }
 
 void Brineomatic::setFilterPressure(float pressure)
@@ -1951,6 +1951,137 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["enable_flush_valve_off_check"] = this->enableFlushValveOffCheck;
   bom["enable_flush_valve_off_threshold"] = this->flushValveOffThreshold;
   bom["enable_flush_valve_off_delay"] = this->flushValveOffDelay;
+}
+
+bool Brineomatic::validateConfigJSON(JsonVariantConst config, char* error, size_t err_size)
+{
+  return true;
+}
+
+void Brineomatic::loadConfigJSON(JsonVariantConst config)
+{
+  this->autoflushMode = config["autoflush_mode"] | YB_AUTOFLUSH_MODE;
+  this->autoflushSalinity = config["autoflush_salinity"] | YB_AUTOFLUSH_SALINITY;
+  this->autoflushDuration = config["autoflush_duration"] | YB_AUTOFLUSH_DURATION;
+  this->autoflushVolume = config["autoflush_volume"] | YB_AUTOFLUSH_VOLUME;
+  this->autoflushInterval = config["autoflush_interval"] | YB_AUTOFLUSH_INTERVAL;
+
+  this->flushTimeout = config["flush_timeout"] | YB_FLUSH_TIMEOUT;
+  this->membranePressureTimeout = config["membrane_pressure_timeout"] | YB_MEMBRANE_PRESSURE_TIMEOUT;
+  this->productFlowrateTimeout = config["product_flowrate_timeout"] | YB_PRODUCT_FLOWRATE_TIMEOUT;
+  this->productSalinityTimeout = config["product_salinity_timeout"] | YB_PRODUCT_SALINITY_TIMEOUT;
+  this->productionRuntimeTimeout = config["production_runtime_timeout"] | YB_PRODUCTION_RUNTIME_TIMEOUT;
+
+  this->tankCapacity = config["tank_capacity"] | YB_TANK_CAPACITY;
+  this->temperatureUnits = config["temperature_units"] | YB_TEMPERATURE_UNITS;
+  this->pressureUnits = config["pressure_units"] | YB_PRESSURE_UNITS;
+  this->volumeUnits = config["volume_units"] | YB_VOLUME_UNITS;
+  this->flowrateUnits = config["flowrate_units"] | YB_FLOWRATE_UNITS;
+  this->successMelody = config["success_melody"] | YB_SUCCESS_MELODY;
+  this->errorMelody = config["error_melody"] | YB_ERROR_MELODY;
+
+  this->boostPumpControl = config["boost_pump_control"] | YB_BOOST_PUMP_CONTROL;
+  this->boostPumpRelayId = config["boost_pump_relay_id"] | YB_BOOST_PUMP_RELAY_ID;
+
+  this->highPressurePumpControl = config["high_pressure_pump_control"] | YB_HIGH_PRESSURE_PUMP_CONTROL;
+  this->highPressureRelayId = config["high_pressure_relay_id"] | YB_HIGH_PRESSURE_RELAY_ID;
+
+  this->highPressureValveControl = config["high_pressure_valve_control"] | YB_HIGH_PRESSURE_VALVE_CONTROL;
+  this->membranePressureTarget = config["membrane_pressure_target"] | YB_MEMBRANE_PRESSURE_TARGET;
+  this->highPressureValveStepperId = config["high_pressure_valve_stepper_id"] | YB_HIGH_PRESSURE_VALVE_STEPPER_ID;
+  this->highPressureValveStepperStepAngle = config["high_pressure_stepper_step_angle"] | YB_HIGH_PRESSURE_VALVE_STEPPER_STEP_ANGLE;
+  this->highPressureValveStepperGearRatio = config["high_pressure_stepper_gear_ratio"] | YB_HIGH_PRESSURE_VALVE_STEPPER_GEAR_RATIO;
+  this->highPressureValveStepperCloseAngle = config["high_pressure_stepper_close_angle"] | YB_HIGH_PRESSURE_VALVE_STEPPER_CLOSE_ANGLE;
+  this->highPressureValveStepperCloseSpeed = config["high_pressure_stepper_close_speed"] | YB_HIGH_PRESSURE_VALVE_STEPPER_CLOSE_SPEED;
+  this->highPressureValveStepperOpenAngle = config["high_pressure_stepper_open_angle"] | YB_HIGH_PRESSURE_VALVE_STEPPER_OPEN_ANGLE;
+  this->highPressureValveStepperOpenSpeed = config["high_pressure_stepper_open_speed"] | YB_HIGH_PRESSURE_VALVE_STEPPER_OPEN_SPEED;
+
+  this->diverterValveControl = config["diverter_valve_control"] | YB_DIVERTER_VALVE_CONTROL;
+  this->diverterValveServoId = config["diverter_valve_servo_id"] | YB_DIVERTER_VALVE_SERVO_ID;
+  this->diverterValveOpenAngle = config["diverter_valve_open_angle"] | YB_DIVERTER_VALVE_OPEN_ANGLE;
+  this->diverterValveCloseAngle = config["diverter_valve_close_angle"] | YB_DIVERTER_VALVE_CLOSE_ANGLE;
+
+  this->flushValveControl = config["flush_valve_control"] | YB_FLUSH_VALVE_CONTROL;
+  this->flushValveRelayId = config["flush_valve_relay_id"] | YB_FLUSH_VALVE_RELAY_ID;
+
+  this->coolingFanControl = config["cooling_fan_control"] | YB_COOLING_FAN_CONTROL;
+  this->coolingFanRelayId = config["cooling_fan_relay_id"] | YB_COOLING_FAN_RELAY_ID;
+  this->coolingFanOnTemperature = config["cooling_fan_on_temperature"] | YB_COOLING_FAN_ON_TEMPERATURE;
+  this->coolingFanOffTemperature = config["cooling_fan_off_temperature"] | YB_COOLING_FAN_OFF_TEMPERATURE;
+
+  this->hasMembranePressureSensor = config["has_membrane_pressure_sensor"] | YB_HAS_MEMBRANE_PRESSURE_SENSOR;
+  this->membranePressureSensorMin = config["membrane_pressure_sensor_min"] | YB_MEMBRANE_PRESSURE_SENSOR_MIN;
+  this->membranePressureSensorMax = config["membrane_pressure_sensor_max"] | YB_MEMBRANE_PRESSURE_SENSOR_MAX;
+
+  this->hasFilterPressureSensor = config["has_filter_pressure_sensor"] | YB_HAS_FILTER_PRESSURE_SENSOR;
+  this->filterPressureSensorMin = config["filter_pressure_sensor_min"] | YB_FILTER_PRESSURE_SENSOR_MIN;
+  this->filterPressureSensorMax = config["filter_pressure_sensor_max"] | YB_FILTER_PRESSURE_SENSOR_MAX;
+
+  this->hasProductTDSSensor = config["has_product_tds_sensor"] | YB_HAS_PRODUCT_TDS_SENSOR;
+  this->hasBrineTDSSensor = config["has_brine_tds_sensor"] | YB_HAS_BRINE_TDS_SENSOR;
+
+  this->hasProductFlowSensor = config["has_product_flow_sensor"] | YB_HAS_PRODUCT_FLOW_SENSOR;
+  this->productFlowmeterPPL = config["product_flowmeter_ppl"] | YB_PRODUCT_FLOWMETER_PPL;
+
+  this->hasBrineFlowSensor = config["has_brine_flow_sensor"] | YB_HAS_BRINE_FLOW_SENSOR;
+  this->brineFlowmeterPPL = config["brine_flowmeter_ppl"] | YB_BRINE_FLOWMETER_PPL;
+
+  this->hasMotorTemperatureSensor = config["has_motor_temperature_sensor"] | YB_HAS_MOTOR_TEMPERATURE_SENSOR;
+
+  this->enableMembranePressureHighCheck = config["enable_membrane_pressure_high_check"] | YB_ENABLE_MEMBRANE_PRESSURE_HIGH_CHECK;
+  this->membranePressureHighThreshold = config["membrane_pressure_high_threshold"] | YB_MEMBRANE_PRESSURE_HIGH_THRESHOLD;
+  this->membranePressureHighDelay = config["membrane_pressure_high_delay"] | YB_MEMBRANE_PRESSURE_HIGH_DELAY;
+
+  this->enableMembranePressureLowCheck = config["enable_membrane_pressure_low_check"] | YB_ENABLE_MEMBRANE_PRESSURE_LOW_CHECK;
+  this->membranePressureLowThreshold = config["membrane_pressure_low_threshold"] | YB_MEMBRANE_PRESSURE_LOW_THRESHOLD;
+  this->membranePressureLowDelay = config["membrane_pressure_low_delay"] | YB_MEMBRANE_PRESSURE_LOW_DELAY;
+
+  this->enableFilterPressureHighCheck = config["enable_filter_pressure_high_check"] | YB_ENABLE_FILTER_PRESSURE_HIGH_CHECK;
+  this->filterPressureHighThreshold = config["filter_pressure_high_threshold"] | YB_FILTER_PRESSURE_HIGH_THRESHOLD;
+  this->filterPressureHighDelay = config["filter_pressure_high_delay"] | YB_FILTER_PRESSURE_HIGH_DELAY;
+
+  this->enableFilterPressureLowCheck = config["enable_filter_pressure_low_check"] | YB_ENABLE_FILTER_PRESSURE_LOW_CHECK;
+  this->filterPressureLowThreshold = config["filter_pressure_low_threshold"] | YB_FILTER_PRESSURE_LOW_THRESHOLD;
+  this->filterPressureLowDelay = config["filter_pressure_low_delay"] | YB_FILTER_PRESSURE_LOW_DELAY;
+
+  this->enableProductFlowrateHighCheck = config["enable_product_flowrate_high_check"] | YB_ENABLE_PRODUCT_FLOWRATE_HIGH_CHECK;
+  this->productFlowrateHighThreshold = config["product_flowrate_high_threshold"] | YB_PRODUCT_FLOWRATE_HIGH_THRESHOLD;
+  this->productFlowrateHighDelay = config["product_flowrate_high_delay"] | YB_PRODUCT_FLOWRATE_HIGH_DELAY;
+
+  this->enableProductFlowrateLowCheck = config["enable_product_flowrate_low_check"] | YB_ENABLE_PRODUCT_FLOWRATE_LOW_CHECK;
+  this->productFlowrateLowThreshold = config["product_flowrate_low_threshold"] | YB_PRODUCT_FLOWRATE_LOW_THRESHOLD;
+  this->productFlowrateLowDelay = config["product_flowrate_low_delay"] | YB_PRODUCT_FLOWRATE_LOW_DELAY;
+
+  this->enableRunTotalFlowrateLowCheck = config["enable_run_total_flowrate_low_check"] | YB_ENABLE_RUN_TOTAL_FLOWRATE_LOW_CHECK;
+  this->runTotalFlowrateLowThreshold = config["run_total_flowrate_low_threshold"] | YB_RUN_TOTAL_FLOWRATE_LOW_THRESHOLD;
+  this->runTotalFlowrateLowDelay = config["run_total_flowrate_low_delay"] | YB_RUN_TOTAL_FLOWRATE_LOW_DELAY;
+
+  this->enablePickleTotalFlowrateLowCheck = config["enable_pickle_total_flowrate_low_check"] | YB_ENABLE_PICKLE_TOTAL_FLOWRATE_LOW_CHECK;
+  this->pickleTotalFlowrateLowThreshold = config["pickle_total_flowrate_low_threshold"] | YB_PICKLE_TOTAL_FLOWRATE_LOW_THRESHOLD;
+  this->pickleTotalFlowrateLowDelay = config["pickle_total_flowrate_low_delay"] | YB_PICKLE_TOTAL_FLOWRATE_LOW_DELAY;
+
+  this->enableDiverterValveClosedCheck = config["enable_diverter_valve_closed_check"] | YB_ENABLE_DIVERTER_VALVE_CLOSED_CHECK;
+  this->diverterValveClosedDelay = config["diverter_valve_closed_delay"] | YB_DIVERTER_VALVE_CLOSED_DELAY;
+
+  this->enableProductSalinityHighCheck = config["enable_product_salinity_high_check"] | YB_ENABLE_PRODUCT_SALINITY_HIGH_CHECK;
+  this->productSalinityHighThreshold = config["product_salinity_high_threshold"] | YB_PRODUCT_SALINITY_HIGH_THRESHOLD;
+  this->productSalinityHighDelay = config["product_salinity_high_delay"] | YB_PRODUCT_SALINITY_HIGH_DELAY;
+
+  this->enableMotorTemperatureCheck = config["enable_motor_temperature_check"] | YB_ENABLE_MOTOR_TEMPERATURE_CHECK;
+  this->motorTemperatureHighThreshold = config["motor_temperature_high_threshold"] | YB_MOTOR_TEMPERATURE_HIGH_THRESHOLD;
+  this->motorTemperatureHighDelay = config["motor_temperature_high_delay"] | YB_MOTOR_TEMPERATURE_HIGH_DELAY;
+
+  this->enableFlushFlowrateLowCheck = config["enable_flush_flowrate_low_check"] | YB_ENABLE_FLUSH_FLOWRATE_LOW_CHECK;
+  this->flushFlowrateLowThreshold = config["flush_flowrate_low_threshold"] | YB_FLUSH_FLOWRATE_LOW_THRESHOLD;
+  this->flushFlowrateLowDelay = config["flush_flowrate_low_delay"] | YB_FLUSH_FLOWRATE_LOW_DELAY;
+
+  this->enableFlushFilterPressureLowCheck = config["enable_flush_filter_pressure_low_check"] | YB_ENABLE_FLUSH_FILTER_PRESSURE_LOW_CHECK;
+  this->flushFilterPressureLowThreshold = config["flush_filter_pressure_low_threshold"] | YB_FLUSH_FILTER_PRESSURE_LOW_THRESHOLD;
+  this->flushFilterPressureLowDelay = config["flush_filter_pressure_low_delay"] | YB_FLUSH_FILTER_PRESSURE_LOW_DELAY;
+
+  this->enableFlushValveOffCheck = config["enable_flush_valve_off_check"] | YB_ENABLE_FLUSH_VALVE_OFF_CHECK;
+  this->flushValveOffThreshold = config["flush_valve_off_threshold"] | YB_FLUSH_VALVE_OFF_THRESHOLD;
+  this->flushValveOffDelay = config["flush_valve_off_delay"] | YB_FLUSH_VALVE_OFF_DELAY;
 }
 
 void Brineomatic::updateMQTT()
