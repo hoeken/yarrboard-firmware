@@ -331,10 +331,6 @@ bool loadConfigFromFile(const char* file, char* error, size_t len)
     return false;
   }
 
-  YBP.println("Saved Config File:");
-  YBP.print(buf);
-  YBP.println();
-
   // parse JSON
   JsonDocument doc; // adjust to match your configuration complexity
   DeserializationError err = deserializeJson(doc, buf);

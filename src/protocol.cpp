@@ -222,6 +222,12 @@ void handleReceivedJSON(JsonVariantConst input, JsonVariant output, YBMode mode,
       return handleManualWatermaker(input, output);
     else if (!strcmp(cmd, "set_watermaker"))
       return handleSetWatermaker(input, output);
+    else if (!strcmp(cmd, "brineomatic_save_general_config"))
+      return handleBrineomaticSaveGeneralConfig(input, output);
+    else if (!strcmp(cmd, "brineomatic_save_hardware_config"))
+      return handleBrineomaticSaveHardwareConfig(input, output);
+    else if (!strcmp(cmd, "brineomatic_save_safeguards_config"))
+      return handleBrineomaticSaveSafeguardsConfig(input, output);
 #endif
     else if (!strcmp(cmd, "logout"))
       return handleLogout(input, output, mode, connection);
@@ -1362,6 +1368,42 @@ void handleSetWatermaker(JsonVariantConst input, JsonVariant output)
     wm.KiMaintain = input["ki_maintain"];
   if (input["kd_maintain"].is<JsonVariantConst>())
     wm.KdMaintain = input["kd_maintain"];
+}
+
+void handleBrineomaticSaveGeneralConfig(JsonVariantConst input, JsonVariant output)
+{
+  char error[128];
+  if (!wm.validateGeneralConfigJSON(input, error, sizeof(error)))
+    return generateErrorJSON(output, error);
+
+  wm.loadGeneralConfigJSON(input);
+
+  if (!saveConfig(error, sizeof(error)))
+    return generateErrorJSON(output, error);
+}
+
+void handleBrineomaticSaveHardwareConfig(JsonVariantConst input, JsonVariant output)
+{
+  char error[128];
+  if (!wm.validateHardwareConfigJSON(input, error, sizeof(error)))
+    return generateErrorJSON(output, error);
+
+  wm.loadHardwareConfigJSON(input);
+
+  if (!saveConfig(error, sizeof(error)))
+    return generateErrorJSON(output, error);
+}
+
+void handleBrineomaticSaveSafeguardsConfig(JsonVariantConst input, JsonVariant output)
+{
+  char error[128];
+  if (!wm.validateSafeguardsConfigJSON(input, error, sizeof(error)))
+    return generateErrorJSON(output, error);
+
+  wm.loadSafeguardsConfigJSON(input);
+
+  if (!saveConfig(error, sizeof(error)))
+    return generateErrorJSON(output, error);
 }
 
 #endif

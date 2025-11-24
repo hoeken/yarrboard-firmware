@@ -1955,23 +1955,45 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
 
 bool Brineomatic::validateConfigJSON(JsonVariantConst config, char* error, size_t err_size)
 {
+  if (!validateGeneralConfigJSON(config, error, err_size))
+    return false;
+  if (!validateHardwareConfigJSON(config, error, err_size))
+    return false;
+  if (!validateSafeguardsConfigJSON(config, error, err_size))
+    return false;
+
+  return true;
+}
+
+bool Brineomatic::validateGeneralConfigJSON(JsonVariantConst config, char* error, size_t err_size)
+{
+  return true;
+}
+
+bool Brineomatic::validateHardwareConfigJSON(JsonVariantConst config, char* error, size_t err_size)
+{
+  return true;
+}
+
+bool Brineomatic::validateSafeguardsConfigJSON(JsonVariantConst config, char* error, size_t err_size)
+{
   return true;
 }
 
 void Brineomatic::loadConfigJSON(JsonVariantConst config)
+{
+  this->loadGeneralConfigJSON(config);
+  this->loadHardwareConfigJSON(config);
+  this->loadSafeguardsConfigJSON(config);
+}
+
+void Brineomatic::loadGeneralConfigJSON(JsonVariantConst config)
 {
   this->autoflushMode = config["autoflush_mode"] | YB_AUTOFLUSH_MODE;
   this->autoflushSalinity = config["autoflush_salinity"] | YB_AUTOFLUSH_SALINITY;
   this->autoflushDuration = config["autoflush_duration"] | YB_AUTOFLUSH_DURATION;
   this->autoflushVolume = config["autoflush_volume"] | YB_AUTOFLUSH_VOLUME;
   this->autoflushInterval = config["autoflush_interval"] | YB_AUTOFLUSH_INTERVAL;
-
-  this->flushTimeout = config["flush_timeout"] | YB_FLUSH_TIMEOUT;
-  this->membranePressureTimeout = config["membrane_pressure_timeout"] | YB_MEMBRANE_PRESSURE_TIMEOUT;
-  this->productFlowrateTimeout = config["product_flowrate_timeout"] | YB_PRODUCT_FLOWRATE_TIMEOUT;
-  this->productSalinityTimeout = config["product_salinity_timeout"] | YB_PRODUCT_SALINITY_TIMEOUT;
-  this->productionRuntimeTimeout = config["production_runtime_timeout"] | YB_PRODUCTION_RUNTIME_TIMEOUT;
-
   this->tankCapacity = config["tank_capacity"] | YB_TANK_CAPACITY;
   this->temperatureUnits = config["temperature_units"] | YB_TEMPERATURE_UNITS;
   this->pressureUnits = config["pressure_units"] | YB_PRESSURE_UNITS;
@@ -1979,7 +2001,10 @@ void Brineomatic::loadConfigJSON(JsonVariantConst config)
   this->flowrateUnits = config["flowrate_units"] | YB_FLOWRATE_UNITS;
   this->successMelody = config["success_melody"] | YB_SUCCESS_MELODY;
   this->errorMelody = config["error_melody"] | YB_ERROR_MELODY;
+}
 
+void Brineomatic::loadHardwareConfigJSON(JsonVariantConst config)
+{
   this->boostPumpControl = config["boost_pump_control"] | YB_BOOST_PUMP_CONTROL;
   this->boostPumpRelayId = config["boost_pump_relay_id"] | YB_BOOST_PUMP_RELAY_ID;
 
@@ -2027,6 +2052,15 @@ void Brineomatic::loadConfigJSON(JsonVariantConst config)
   this->brineFlowmeterPPL = config["brine_flowmeter_ppl"] | YB_BRINE_FLOWMETER_PPL;
 
   this->hasMotorTemperatureSensor = config["has_motor_temperature_sensor"] | YB_HAS_MOTOR_TEMPERATURE_SENSOR;
+}
+
+void Brineomatic::loadSafeguardsConfigJSON(JsonVariantConst config)
+{
+  this->flushTimeout = config["flush_timeout"] | YB_FLUSH_TIMEOUT;
+  this->membranePressureTimeout = config["membrane_pressure_timeout"] | YB_MEMBRANE_PRESSURE_TIMEOUT;
+  this->productFlowrateTimeout = config["product_flowrate_timeout"] | YB_PRODUCT_FLOWRATE_TIMEOUT;
+  this->productSalinityTimeout = config["product_salinity_timeout"] | YB_PRODUCT_SALINITY_TIMEOUT;
+  this->productionRuntimeTimeout = config["production_runtime_timeout"] | YB_PRODUCTION_RUNTIME_TIMEOUT;
 
   this->enableMembranePressureHighCheck = config["enable_membrane_pressure_high_check"] | YB_ENABLE_MEMBRANE_PRESSURE_HIGH_CHECK;
   this->membranePressureHighThreshold = config["membrane_pressure_high_threshold"] | YB_MEMBRANE_PRESSURE_HIGH_THRESHOLD;

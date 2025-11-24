@@ -227,8 +227,16 @@ class Brineomatic
 
     void generateUpdateJSON(JsonVariant output);
     void generateConfigJSON(JsonVariant output);
+
     bool validateConfigJSON(JsonVariantConst config, char* error, size_t err_size);
+    bool validateGeneralConfigJSON(JsonVariantConst config, char* error, size_t err_size);
+    bool validateHardwareConfigJSON(JsonVariantConst config, char* error, size_t err_size);
+    bool validateSafeguardsConfigJSON(JsonVariantConst config, char* error, size_t err_size);
+
     void loadConfigJSON(JsonVariantConst config);
+    void loadGeneralConfigJSON(JsonVariantConst config);
+    void loadHardwareConfigJSON(JsonVariantConst config);
+    void loadSafeguardsConfigJSON(JsonVariantConst config);
 
     void updateMQTT();
 
@@ -294,16 +302,16 @@ class Brineomatic
     //
     // Configuration variables
     //
-    float tankLevelFull;            // 0 = empty, 1 = full
-    float tankCapacity;             // Liters
-    float coolingFanOnTemperature;  // Celcius
-    float coolingFanOffTemperature; // Celcius
-
     String autoflushMode;
     float autoflushSalinity;
     uint32_t autoflushDuration;
     float autoflushVolume;
     uint32_t autoflushInterval;
+
+    float tankLevelFull;            // 0 = empty, 1 = full
+    float tankCapacity;             // Liters
+    float coolingFanOnTemperature;  // Celcius
+    float coolingFanOffTemperature; // Celcius
 
     String temperatureUnits;
     String pressureUnits;

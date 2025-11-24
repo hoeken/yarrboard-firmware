@@ -3018,12 +3018,12 @@
     const data = {};
 
     data.autoflush_mode = $("#autoflush_mode").val();
-    data.autoflush_salinity = $("#autoflush_salinity").val();
-    data.autoflush_duration = $("#autoflush_duration").val() * 60 * 1000;
-    data.autoflush_volume = $("#autoflush_volume").val();
-    data.autoflush_interval = $("#autoflush_interval").val() * 60 * 60 * 1000;
+    data.autoflush_salinity = parseFloat($("#autoflush_salinity").val());
+    data.autoflush_duration = parseInt($("#autoflush_duration").val()) * 60 * 1000;
+    data.autoflush_volume = parseFloat($("#autoflush_volume").val());
+    data.autoflush_interval = parseInt($("#autoflush_interval").val()) * 60 * 60 * 1000;
 
-    data.tank_capacity = $("#tank_capacity").val();
+    data.tank_capacity = parseFloat($("#tank_capacity").val());
     data.temperature_units = $("#temperature_units").val();
     data.pressure_units = $("#pressure_units").val();
     data.volume_units = $("#volume_units").val();
@@ -3039,50 +3039,50 @@
     const data = {};
 
     data.boost_pump_control = $("#boost_pump_control").val();
-    data.boost_pump_relay_id = $("#boost_pump_relay_id").val();
+    data.boost_pump_relay_id = parseInt($("#boost_pump_relay_id").val())
 
     data.high_pressure_pump_control = $("#high_pressure_pump_control").val();
-    data.high_pressure_relay_id = $("#high_pressure_relay_id").val();
+    data.high_pressure_relay_id = parseInt($("#high_pressure_relay_id").val());
 
     data.high_pressure_valve_control = $("#high_pressure_valve_control").val();
     data.membrane_pressure_target = $("#membrane_pressure_target").val();
-    data.high_pressure_valve_stepper_id = $("#high_pressure_valve_stepper_id").val();
-    data.high_pressure_stepper_step_angle = $("#high_pressure_stepper_step_angle").val();
-    data.high_pressure_stepper_gear_ratio = $("#high_pressure_stepper_gear_ratio").val();
-    data.high_pressure_stepper_close_angle = $("#high_pressure_stepper_close_angle").val();
-    data.high_pressure_stepper_close_speed = $("#high_pressure_stepper_close_speed").val();
-    data.high_pressure_stepper_open_angle = $("#high_pressure_stepper_open_angle").val();
-    data.high_pressure_stepper_open_speed = $("#high_pressure_stepper_open_speed").val();
+    data.high_pressure_valve_stepper_id = parseInt($("#high_pressure_valve_stepper_id").val());
+    data.high_pressure_stepper_step_angle = parseFloat($("#high_pressure_stepper_step_angle").val());
+    data.high_pressure_stepper_gear_ratio = parseFloat($("#high_pressure_stepper_gear_ratio").val());
+    data.high_pressure_stepper_close_angle = parseFloat($("#high_pressure_stepper_close_angle").val());
+    data.high_pressure_stepper_close_speed = parseFloat($("#high_pressure_stepper_close_speed").val());
+    data.high_pressure_stepper_open_angle = parseFloat($("#high_pressure_stepper_open_angle").val());
+    data.high_pressure_stepper_open_speed = parseFloat($("#high_pressure_stepper_open_speed").val());
 
     data.diverter_valve_control = $("#diverter_valve_control").val();
-    data.diverter_valve_servo_id = $("#diverter_valve_servo_id").val();
-    data.diverter_valve_open_angle = $("#diverter_valve_open_angle").val();
-    data.diverter_valve_close_angle = $("#diverter_valve_close_angle").val();
+    data.diverter_valve_servo_id = parseInt($("#diverter_valve_servo_id").val());
+    data.diverter_valve_open_angle = parseFloat($("#diverter_valve_open_angle").val());
+    data.diverter_valve_close_angle = parseFloat($("#diverter_valve_close_angle").val());
 
     data.flush_valve_control = $("#flush_valve_control").val();
-    data.flush_valve_relay_id = $("#flush_valve_relay_id").val();
+    data.flush_valve_relay_id = parseInt($("#flush_valve_relay_id").val());
 
     data.cooling_fan_control = $("#cooling_fan_control").val();
-    data.cooling_fan_relay_id = $("#cooling_fan_relay_id").val();
-    data.cooling_fan_on_temperature = $("#cooling_fan_on_temperature").val();
-    data.cooling_fan_off_temperature = $("#cooling_fan_off_temperature").val();
+    data.cooling_fan_relay_id = parseInt($("#cooling_fan_relay_id").val());
+    data.cooling_fan_on_temperature = parseFloat($("#cooling_fan_on_temperature").val());
+    data.cooling_fan_off_temperature = parseFloat($("#cooling_fan_off_temperature").val());
 
     data.has_membrane_pressure_sensor = $("#has_membrane_pressure_sensor").prop("checked");
-    data.membrane_pressure_sensor_min = $("#membrane_pressure_sensor_min").val();
-    data.membrane_pressure_sensor_max = $("#membrane_pressure_sensor_max").val();
+    data.membrane_pressure_sensor_min = parseFloat($("#membrane_pressure_sensor_min").val());
+    data.membrane_pressure_sensor_max = parseFloat($("#membrane_pressure_sensor_max").val());
 
     data.has_filter_pressure_sensor = $("#has_filter_pressure_sensor").prop("checked");
-    data.filter_pressure_sensor_min = $("#filter_pressure_sensor_min").val();
-    data.filter_pressure_sensor_max = $("#filter_pressure_sensor_max").val();
+    data.filter_pressure_sensor_min = parseFloat($("#filter_pressure_sensor_min").val());
+    data.filter_pressure_sensor_max = parseFloat($("#filter_pressure_sensor_max").val());
 
     data.has_product_tds_sensor = $("#has_product_tds_sensor").prop("checked");
     data.has_brine_tds_sensor = $("#has_brine_tds_sensor").prop("checked");
 
     data.has_product_flow_sensor = $("#has_product_flow_sensor").prop("checked");
-    data.product_flowmeter_ppl = $("#product_flowmeter_ppl").val();
+    data.product_flowmeter_ppl = parseInt($("#product_flowmeter_ppl").val());
 
     data.has_brine_flow_sensor = $("#has_brine_flow_sensor").prop("checked");
-    data.brine_flowmeter_ppl = $("#brine_flowmeter_ppl").val();
+    data.brine_flowmeter_ppl = parseInt($("#brine_flowmeter_ppl").val());
 
     data.has_motor_temperature_sensor = $("#has_motor_temperature_sensor").prop("checked");
 
@@ -3093,65 +3093,65 @@
     const data = {};
 
     data.flush_timeout = $("#flush_timeout").val() * 1000;
-    data.membrane_pressure_timeout = $("#membrane_pressure_timeout").val() * 1000;
-    data.product_flowrate_timeout = $("#product_flowrate_timeout").val() * 1000;
-    data.product_salinity_timeout = $("#product_salinity_timeout").val() * 1000;
-    data.production_runtime_timeout = $("#production_runtime_timeout").val() * 60 * 60 * 1000;
+    data.membrane_pressure_timeout = Math.round(parseFloat($("#membrane_pressure_timeout").val()) * 1000);
+    data.product_flowrate_timeout = Math.round(parseFloat($("#product_flowrate_timeout").val() * 1000));
+    data.product_salinity_timeout = Math.round(parseFloat($("#product_salinity_timeout").val() * 1000));
+    data.production_runtime_timeout = Math.round(parseFloat($("#production_runtime_timeout").val() * 60 * 60 * 1000));
 
     data.enable_membrane_pressure_high_check = $("#enable_membrane_pressure_high_check").prop("checked");
-    data.membrane_pressure_high_threshold = $("#membrane_pressure_high_threshold").val();
-    data.membrane_pressure_high_delay = $("#membrane_pressure_high_delay").val();
+    data.membrane_pressure_high_threshold = parseFloat($("#membrane_pressure_high_threshold").val());
+    data.membrane_pressure_high_delay = parseInt($("#membrane_pressure_high_delay").val());
 
     data.enable_membrane_pressure_low_check = $("#enable_membrane_pressure_low_check").prop("checked");
-    data.membrane_pressure_low_threshold = $("#membrane_pressure_low_threshold").val();
-    data.membrane_pressure_low_delay = $("#membrane_pressure_low_delay").val();
+    data.membrane_pressure_low_threshold = parseFloat($("#membrane_pressure_low_threshold").val());
+    data.membrane_pressure_low_delay = parseInt($("#membrane_pressure_low_delay").val());
 
     data.enable_filter_pressure_high_check = $("#enable_filter_pressure_high_check").prop("checked");
-    data.filter_pressure_high_threshold = $("#filter_pressure_high_threshold").val();
-    data.filter_pressure_high_delay = $("#filter_pressure_high_delay").val();
+    data.filter_pressure_high_threshold = parseFloat($("#filter_pressure_high_threshold").val());
+    data.filter_pressure_high_delay = parseInt($("#filter_pressure_high_delay").val());
 
     data.enable_filter_pressure_low_check = $("#enable_filter_pressure_low_check").prop("checked");
-    data.filter_pressure_low_threshold = $("#filter_pressure_low_threshold").val();
-    data.filter_pressure_low_delay = $("#filter_pressure_low_delay").val();
+    data.filter_pressure_low_threshold = parseFloat($("#filter_pressure_low_threshold").val());
+    data.filter_pressure_low_delay = parseInt($("#filter_pressure_low_delay").val());
 
     data.enable_product_flowrate_high_check = $("#enable_product_flowrate_high_check").prop("checked");
-    data.product_flowrate_high_threshold = $("#product_flowrate_high_threshold").val();
-    data.product_flowrate_high_delay = $("#product_flowrate_high_delay").val();
+    data.product_flowrate_high_threshold = parseFloat($("#product_flowrate_high_threshold").val());
+    data.product_flowrate_high_delay = parseInt($("#product_flowrate_high_delay").val());
 
     data.enable_product_flowrate_low_check = $("#enable_product_flowrate_low_check").prop("checked");
-    data.product_flowrate_low_threshold = $("#product_flowrate_low_threshold").val();
-    data.product_flowrate_low_delay = $("#product_flowrate_low_delay").val();
+    data.product_flowrate_low_threshold = parseFloat($("#product_flowrate_low_threshold").val());
+    data.product_flowrate_low_delay = parseInt($("#product_flowrate_low_delay").val());
 
     data.enable_run_total_flowrate_low_check = $("#enable_run_total_flowrate_low_check").prop("checked");
-    data.run_total_flowrate_low_threshold = $("#run_total_flowrate_low_threshold").val();
-    data.run_total_flowrate_low_delay = $("#run_total_flowrate_low_delay").val();
+    data.run_total_flowrate_low_threshold = parseFloat($("#run_total_flowrate_low_threshold").val());
+    data.run_total_flowrate_low_delay = parseInt($("#run_total_flowrate_low_delay").val());
 
     data.enable_pickle_total_flowrate_low_check = $("#enable_pickle_total_flowrate_low_check").prop("checked");
-    data.pickle_total_flowrate_low_threshold = $("#pickle_total_flowrate_low_threshold").val();
-    data.pickle_total_flowrate_low_delay = $("#pickle_total_flowrate_low_delay").val();
+    data.pickle_total_flowrate_low_threshold = parseFloat($("#pickle_total_flowrate_low_threshold").val());
+    data.pickle_total_flowrate_low_delay = parseInt($("#pickle_total_flowrate_low_delay").val());
 
     data.enable_diverter_valve_closed_check = $("#enable_diverter_valve_closed_check").prop("checked");
-    data.diverter_valve_closed_delay = $("#diverter_valve_closed_delay").val();
+    data.diverter_valve_closed_delay = parseInt($("#diverter_valve_closed_delay").val());
 
     data.enable_product_salinity_high_check = $("#enable_product_salinity_high_check").prop("checked");
-    data.product_salinity_high_threshold = $("#product_salinity_high_threshold").val();
-    data.product_salinity_high_delay = $("#product_salinity_high_delay").val();
+    data.product_salinity_high_threshold = parseFloat($("#product_salinity_high_threshold").val());
+    data.product_salinity_high_delay = parseInt($("#product_salinity_high_delay").val());
 
     data.enable_motor_temperature_check = $("#enable_motor_temperature_check").prop("checked");
-    data.motor_temperature_high_threshold = $("#motor_temperature_high_threshold").val();
-    data.motor_temperature_high_delay = $("#motor_temperature_high_delay").val();
+    data.motor_temperature_high_threshold = parseFloat($("#motor_temperature_high_threshold").val());
+    data.motor_temperature_high_delay = parseInt($("#motor_temperature_high_delay").val());
 
     data.enable_flush_flowrate_low_check = $("#enable_flush_flowrate_low_check").prop("checked");
-    data.flush_flowrate_low_threshold = $("#flush_flowrate_low_threshold").val();
-    data.flush_flowrate_low_delay = $("#flush_flowrate_low_delay").val();
+    data.flush_flowrate_low_threshold = parseFloat($("#flush_flowrate_low_threshold").val());
+    data.flush_flowrate_low_delay = parseInt($("#flush_flowrate_low_delay").val());
 
     data.enable_flush_filter_pressure_low_check = $("#enable_flush_filter_pressure_low_check").prop("checked");
-    data.flush_filter_pressure_low_threshold = $("#flush_filter_pressure_low_threshold").val();
-    data.flush_filter_pressure_low_delay = $("#flush_filter_pressure_low_delay").val();
+    data.flush_filter_pressure_low_threshold = parseFloat($("#flush_filter_pressure_low_threshold").val());
+    data.flush_filter_pressure_low_delay = parseInt($("#flush_filter_pressure_low_delay").val());
 
     data.enable_flush_valve_off_check = $("#enable_flush_valve_off_check").prop("checked");
-    data.enable_flush_valve_off_threshold = $("#enable_flush_valve_off_threshold").val();
-    data.enable_flush_valve_off_delay = $("#enable_flush_valve_off_delay").val();
+    data.enable_flush_valve_off_threshold = parseFloat($("#enable_flush_valve_off_threshold").val());
+    data.enable_flush_valve_off_delay = parseInt($("#enable_flush_valve_off_delay").val());
 
     return data;
   };
@@ -3516,8 +3516,6 @@
       enable_flush_valve_off_delay: { numericality: { greaterThanOrEqualTo: 0 } }
     };
   }
-
-
 
   Brineomatic.prototype.handleBrineomaticConfigSave = function (event) {
     let data = this.getBrineomaticConfigFormData();

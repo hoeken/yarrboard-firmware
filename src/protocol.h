@@ -111,6 +111,9 @@ void handleStopWatermaker(JsonVariantConst input, JsonVariant output);
 void handleIdleWatermaker(JsonVariantConst input, JsonVariant output);
 void handleManualWatermaker(JsonVariantConst input, JsonVariant output);
 void handleSetWatermaker(JsonVariantConst input, JsonVariant output);
+void handleBrineomaticSaveGeneralConfig(JsonVariantConst input, JsonVariant output);
+void handleBrineomaticSaveHardwareConfig(JsonVariantConst input, JsonVariant output);
+void handleBrineomaticSaveSafeguardsConfig(JsonVariantConst input, JsonVariant output);
 #endif
 
 void generateHelloJSON(JsonVariant output, UserRole role);

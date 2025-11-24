@@ -1,12 +1,9 @@
 # GENERAL
 
-## v2.1.0
-
-
 ## BRINEOMATIC
 
 * configuration system:
-    * server side config saving
+    * implement server side validation code
     * make sure we're using the new config:
         * relay/servo/stepper objects
         * has_* hardware
