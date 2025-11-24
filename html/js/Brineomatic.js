@@ -3623,11 +3623,8 @@
 
   Brineomatic.prototype.handleBrineomaticConfigSave = function (event) {
     let data = this.getBrineomaticConfigFormData();
-    console.log(data);
     let schema = this.getBrineomaticConfigSchema();
-    console.log(schema);
     let errors = validate(data, schema);
-    console.log(errors);
 
     YB.Util.showFormValidationResults(data, errors);
 
@@ -3649,11 +3646,8 @@
 
   Brineomatic.prototype.handleHardwareConfigSave = function (e) {
     let data = this.getHardwareConfigFormData();
-    console.log(data);
     let schema = this.getHardwareConfigSchema();
-    console.log(schema);
     let errors = validate(data, schema);
-    console.log(errors);
 
     YB.Util.showFormValidationResults(data, errors);
 
@@ -3675,11 +3669,8 @@
 
   Brineomatic.prototype.handleSafeguardsConfigSave = function (e) {
     let data = this.getSafeguardsConfigFormData();
-    console.log(data);
     let schema = this.getSafeguardsConfigSchema();
-    console.log(schema);
     let errors = validate(data, schema);
-    console.log(errors);
 
     YB.Util.showFormValidationResults(data, errors);
 
