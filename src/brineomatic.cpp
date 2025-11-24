@@ -2048,6 +2048,8 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariantConst config, char* erro
   // Control mode enums
   // ---------------------------------------------------------
 
+  String control;
+
   if (!checkPresence(config, "boost_pump_control", error, err_size))
     return false;
   if (!checkInclusion(config, "boost_pump_control", BOOST_PUMP_CONTROLS, error, err_size))
@@ -2060,6 +2062,13 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariantConst config, char* erro
       return false;
   }
 
+  control = config["boost_pump_control"].as<String>();
+  if (control.equals("RELAY")) {
+    auto* ch = getChannelById(config["boost_pump_relay_id"], relay_channels);
+    if (!ch)
+      return fail("Boost Pump relay id invalid.", error, err_size);
+  }
+
   if (!checkPresence(config, "high_pressure_pump_control", error, err_size))
     return false;
   if (!checkInclusion(config, "high_pressure_pump_control", HIGH_PRESSURE_PUMP_CONTROLS, error, err_size))
@@ -2070,6 +2079,13 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariantConst config, char* erro
       return false;
     if (!checkIntGE(config, "high_pressure_relay_id", 0, error, err_size))
       return false;
+  }
+
+  control = config["high_pressure_pump_control"].as<String>();
+  if (control.equals("RELAY")) {
+    auto* ch = getChannelById(config["high_pressure_relay_id"], relay_channels);
+    if (!ch)
+      return fail("High Pressure Pump relay id invalid.", error, err_size);
   }
 
   if (!checkPresence(config, "high_pressure_valve_control", error, err_size))
@@ -2089,6 +2105,13 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariantConst config, char* erro
       return false;
     if (!checkIntGE(config, "high_pressure_valve_stepper_id", 0, error, err_size))
       return false;
+  }
+
+  control = config["high_pressure_valve_control"].as<String>();
+  if (control.equals("STEPPER")) {
+    auto* ch = getChannelById(config["high_pressure_valve_stepper_id"], stepper_channels);
+    if (!ch)
+      return fail("High Pressure Valve stepper id invalid.", error, err_size);
   }
 
   // Stepper angles and speeds
@@ -2153,6 +2176,13 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariantConst config, char* erro
       return false;
   }
 
+  control = config["diverter_valve_control"].as<String>();
+  if (control.equals("SERVO")) {
+    auto* ch = getChannelById(config["diverter_valve_servo_id"], relay_channels);
+    if (!ch)
+      return fail("Diverter Valve servo id invalid.", error, err_size);
+  }
+
   if (config["diverter_valve_open_angle"]) {
     if (!checkAngle("diverter_valve_open_angle", 0.0f, 180.0f))
       return false;
@@ -2179,6 +2209,13 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariantConst config, char* erro
       return false;
   }
 
+  control = config["flush_valve_control"].as<String>();
+  if (control.equals("RELAY")) {
+    auto* ch = getChannelById(config["flush_valve_relay_id"], relay_channels);
+    if (!ch)
+      return fail("Flush Valve relay id invalid.", error, err_size);
+  }
+
   // ---------------------------------------------------------
   // Cooling fan
   // ---------------------------------------------------------
@@ -2193,6 +2230,13 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariantConst config, char* erro
       return false;
     if (!checkIntGE(config, "cooling_fan_relay_id", 0, error, err_size))
       return false;
+  }
+
+  control = config["cooling_fan_control"].as<String>();
+  if (control.equals("RELAY")) {
+    auto* ch = getChannelById(config["cooling_fan_relay_id"], relay_channels);
+    if (!ch)
+      return fail("Cooling Fan relay id invalid.", error, err_size);
   }
 
   if (config["cooling_fan_on_temperature"]) {

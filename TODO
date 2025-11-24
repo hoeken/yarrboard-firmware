@@ -3,7 +3,7 @@
 ## BRINEOMATIC
 
 * configuration system:
-    * add calls to getChannel() in validateHardwareConfig()
+    * saveHardwareConfig only allowed in IDLE mode
     * make sure we're using the new config:
         * relay/servo/stepper objects
         * has_* hardware
