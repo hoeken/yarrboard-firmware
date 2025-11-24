@@ -3329,7 +3329,7 @@
     return {
       boost_pump_control: {
         presence: true,
-        inclusion: ["NONE", "RELAY", "MANUAL"]
+        inclusion: ["NONE", "MANUAL", "RELAY"]
       },
 
       boost_pump_relay_id: {
@@ -3342,7 +3342,7 @@
 
       high_pressure_pump_control: {
         presence: true,
-        inclusion: ["NONE", "RELAY"]
+        inclusion: ["NONE", "MANUAL", "RELAY"]
       },
 
       high_pressure_relay_id: {
@@ -3355,7 +3355,7 @@
 
       high_pressure_valve_control: {
         presence: true,
-        inclusion: ["NONE", "STEPPER", "SERVO"]
+        inclusion: ["NONE", "MANUAL", "STEPPER", "SERVO"]
       },
 
       membrane_pressure_target: {
@@ -3414,7 +3414,7 @@
 
       diverter_valve_control: {
         presence: true,
-        inclusion: ["NONE", "SERVO"]
+        inclusion: ["NONE", "MANUAL", "SERVO"]
       },
 
       diverter_valve_servo_id: {
@@ -3440,7 +3440,7 @@
 
       flush_valve_control: {
         presence: true,
-        inclusion: ["NONE", "RELAY"]
+        inclusion: ["NONE", "MANUAL", "RELAY"]
       },
 
       flush_valve_relay_id: {
@@ -3453,7 +3453,7 @@
 
       cooling_fan_control: {
         presence: true,
-        inclusion: ["NONE", "RELAY"]
+        inclusion: ["NONE", "MANUAL", "RELAY"]
       },
 
       cooling_fan_relay_id: {

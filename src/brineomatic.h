@@ -82,13 +82,6 @@ class Brineomatic
 #undef X
     };
 
-    enum class HighPressureValveControlMode {
-      MANUAL,
-      SERVO,
-      STEPPER_POSITION,
-      STEPPER_PID
-    };
-
     // Static lookup tables
     static constexpr const char* const AUTOFLUSH_MODES[] = {"TIME", "SALINITY", "MANUAL"};
     static constexpr const char* const TEMPERATURE_UNITS[] = {"celsius", "fahrenheit"};
@@ -96,12 +89,12 @@ class Brineomatic
     static constexpr const char* const VOLUME_UNITS[] = {"liters", "gallons"};
     static constexpr const char* const FLOWRATE_UNITS[] = {"lph", "gph"};
 
-    static constexpr const char* BOOST_PUMP_CONTROLS[] = {"NONE", "RELAY", "MANUAL"};
-    static constexpr const char* HIGH_PRESSURE_PUMP_CONTROLS[] = {"NONE", "RELAY"};
-    static constexpr const char* HIGH_PRESSURE_VALVE_CONTROLS[] = {"NONE", "STEPPER", "SERVO"};
-    static constexpr const char* DIVERTER_VALVE_CONTROLS[] = {"NONE", "SERVO"};
-    static constexpr const char* FLUSH_VALVE_CONTROLS[] = {"NONE", "RELAY"};
-    static constexpr const char* COOLING_FAN_CONTROLS[] = {"NONE", "RELAY"};
+    static constexpr const char* BOOST_PUMP_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
+    static constexpr const char* HIGH_PRESSURE_PUMP_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
+    static constexpr const char* HIGH_PRESSURE_VALVE_CONTROLS[] = {"NONE", "MANUAL", "STEPPER", "SERVO"};
+    static constexpr const char* DIVERTER_VALVE_CONTROLS[] = {"NONE", "MANUAL", "SERVO"};
+    static constexpr const char* FLUSH_VALVE_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
+    static constexpr const char* COOLING_FAN_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
 
     bool isPickled;
     bool autoFlushEnabled;
@@ -113,7 +106,6 @@ class Brineomatic
     RelayChannel* coolingFan = NULL;
     ServoChannel* diverterValve = NULL;
 
-    HighPressureValveControlMode highPressureValveMode;
     ServoChannel* highPressureValveServo = NULL;
     StepperChannel* highPressureValveStepper = NULL;
 
@@ -142,6 +134,7 @@ class Brineomatic
 
     Brineomatic();
     void init();
+    void initChannels();
 
     void setFilterPressure(float pressure);
     void setMembranePressure(float pressure);
