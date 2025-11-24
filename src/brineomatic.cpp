@@ -648,7 +648,7 @@ bool Brineomatic::initializeHardware()
 
 bool Brineomatic::hasBoostPump()
 {
-  return boostPump != nullptr;
+  return !boostPumpControl.equals("NONE");
 }
 
 bool Brineomatic::isBoostPumpOn()
@@ -674,7 +674,7 @@ void Brineomatic::disableBoostPump()
 
 bool Brineomatic::hasHighPressurePump()
 {
-  return highPressurePump != nullptr;
+  return !highPressurePumpControl.equals("NONE");
 }
 
 bool Brineomatic::isHighPressurePumpOn()
@@ -700,7 +700,7 @@ void Brineomatic::disableHighPressurePump()
 
 bool Brineomatic::hasDiverterValve()
 {
-  return flushValve != nullptr;
+  return !diverterValveControl.equals("NONE");
 }
 
 bool Brineomatic::isDiverterValveOpen()
@@ -731,7 +731,7 @@ void Brineomatic::closeDiverterValve()
 
 bool Brineomatic::hasFlushValve()
 {
-  return flushValve != nullptr;
+  return !flushValveControl.equals("NONE");
 }
 
 bool Brineomatic::isFlushValveOpen()
@@ -757,7 +757,7 @@ void Brineomatic::closeFlushValve()
 
 bool Brineomatic::hasCoolingFan()
 {
-  return coolingFan != nullptr;
+  return !coolingFanControl.equals("NONE");
 }
 
 bool Brineomatic::isCoolingFanOn()

@@ -5,7 +5,6 @@
 * configuration system:
     * saveHardwareConfig only allowed in IDLE mode
     * make sure we're using the new config:
-        * relay/servo/stepper objects
         * has_* hardware
         * error checking booleans
 * show "error" when no value for pressure or tank level
