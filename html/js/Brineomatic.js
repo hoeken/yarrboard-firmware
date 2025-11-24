@@ -1489,10 +1489,11 @@
                                               Run for the time below.
                                           </div>
                                           <div style="height: 40px">
-                                              <div class="input-group">
+                                              <div class="input-group has-validation">
                                                   <input type="text" class="form-control text-center"
                                                       id="bomRunDurationInput" value="3.5">
                                                   <span class="input-group-text">hours</span>
+                                                  <div class="invalid-feedback"></div>
                                               </div>
                                           </div>
                                           <button id="brineomaticStartDuration" type="button"
@@ -1505,10 +1506,11 @@
                                               Make the amount of water below.
                                           </div>
                                           <div style="height: 40px">
-                                              <div class="input-group">
+                                              <div class="input-group has-validation">
                                                   <input type="text" class="form-control text-center"
                                                       id="bomRunVolumeInput" value="250">
                                                   <span class="input-group-text">liters</span>
+                                                  <div class="invalid-feedback"></div>                            
                                               </div>
                                           </div>
                                           <button id="brineomaticStartVolume" type="button"
@@ -1555,10 +1557,11 @@
                                               Flush for the time below.
                                           </div>
                                           <div style="height: 40px">
-                                              <div class="input-group">
+                                              <div class="input-group has-validation">
                                                   <input type="text" class="form-control text-center"
                                                       id="bomFlushDurationInput" value="5">
                                                   <span class="input-group-text">minutes</span>
+                                                  <div class="invalid-feedback"></div>                            
                                               </div>
                                           </div>
                                           <button id="brineomaticFlushDuration" type="button"
@@ -1571,10 +1574,11 @@
                                               Flush the volume of water below.
                                           </div>
                                           <div style="height: 40px">
-                                              <div class="input-group">
+                                              <div class="input-group has-validation">
                                                   <input type="text" class="form-control text-center"
                                                       id="bomFlushVolumeInput" value="15">
                                                   <span class="input-group-text">liters</span>
+                                                  <div class="invalid-feedback"></div>                            
                                               </div>
                                           </div>
                                           <button id="brineomaticFlushVolume" type="button"
@@ -1614,10 +1618,11 @@
                               <p>Pickle the watermaker for the time below.</p>
                               <div class="row">
                                   <div class="col-5">
-                                      <div class="input-group">
+                                      <div class="input-group has-validation">
                                           <input type="text" class="form-control text-center"
                                               id="bomPickleDurationInput" value="5">
                                           <span class="input-group-text">minutes</span>
+                                          <div class="invalid-feedback"></div>                            
                                       </div>
                                   </div>
                               </div>
@@ -1653,10 +1658,11 @@
                               <p>De-Pickle the watermaker for the time below.</p>
                               <div class="row">
                                   <div class="col-5">
-                                      <div class="input-group">
+                                      <div class="input-group has-validation">
                                           <input type="text" class="form-control text-center"
                                               id="bomDepickleDurationInput" value="15">
                                           <span class="input-group-text">minutes</span>
+                                          <div class="invalid-feedback"></div>                            
                                       </div>
                                   </div>
                               </div>
@@ -1897,47 +1903,53 @@
                               <option value="VOLUME">By Volume</option>
                             </select>
                             <label for="autoflush_mode">Autoflush Mode</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="mb-3">
-                          <div class="input-group">
+                          <div class="input-group has-validation">
                             <span class="input-group-text">Autoflush Salinity</span>
                             <input id="autoflush_salinity" type="text" class="form-control text-end">
                             <span class="input-group-text">PPM</span>
+                            <div class="invalid-feedback"></div>
                           </div>
                         </div>
 
                         <div class="mb-3">
-                          <div class="input-group">
+                          <div class="input-group has-validation">
                             <span class="input-group-text">Autoflush Duration</span>
                             <input id="autoflush_duration" type="text" class="form-control text-end">
                             <span class="input-group-text">liters</span>
+                            <div class="invalid-feedback"></div>
                           </div>
                         </div>
 
                         <div class="mb-3">
-                          <div class="input-group">
+                          <div class="input-group has-validation">
                             <span class="input-group-text">Autoflush Volume</span>
                             <input id="autoflush_volume" type="text" class="form-control text-end">
                             <span class="input-group-text">liters</span>
+                            <div class="invalid-feedback"></div>
                           </div>
                         </div>
 
                         <div class="mb-3">
-                          <div class="input-group">
+                          <div class="input-group has-validation">
                             <span class="input-group-text">Autoflush Interval</span>
                             <input id="autoflush_interval" type="text" class="form-control text-end">
                             <span class="input-group-text">hours</span>
+                            <div class="invalid-feedback"></div>
                           </div>
                         </div>
 
                         <hr class="bold">
 
                         <div class="mb-3">
-                          <div class="input-group">
+                          <div class="input-group has-validation">
                             <span class="input-group-text">Tank Capacity</span>
                             <input id="tank_capacity" type="text" class="form-control text-end">
                             <span class="input-group-text">liters</span>
+                            <div class="invalid-feedback"></div>
                           </div>
                         </div>
 
@@ -1948,6 +1960,7 @@
                               <option value="celsius">Celsius</option>
                             </select>
                             <label for="temperature_units">Temperature Units</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -1955,6 +1968,7 @@
                               <option value="psi">PSI</option>
                             </select>
                             <label for="pressure_units">Pressure Units</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -1962,6 +1976,7 @@
                               <option value="liters">Liters</option>
                             </select>
                             <label for="volume_units">Volume Units</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -1969,6 +1984,7 @@
                               <option value="lph">LPH (liters per hour)</option>
                             </select>
                             <label for="flowrate_units">Flowrate Units</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <hr class="bold">
@@ -1977,12 +1993,14 @@
                             <select id="success_melody" class="form-select" aria-label="Success Melody">
                             </select>
                             <label for="success_melody">Success Melody</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
                             <select id="error_melody" class="form-select" aria-label="Error Melody">
                             </select>
                             <label for="error_melody">Error Melody</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="text-center">
@@ -2003,6 +2021,7 @@
                                 <option value="RELAY">Relay</option>
                             </select>
                             <label for="boost_pump_control">Boost Pump Control</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -2010,7 +2029,8 @@
                               ${relayOptions}
                             </select>
                             <label for="boost_pump_relay_id">Boost Pump Relay Channel</label>
-                        </div>
+                             <div class="invalid-feedback"></div>
+                       </div>
 
                         <hr class="bold">
 
@@ -2021,6 +2041,7 @@
                                 <option value="RELAY">Relay</option>
                             </select>
                             <label for="high_pressure_pump_control">High Pressure Pump Control</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -2028,6 +2049,7 @@
                               ${relayOptions}
                             </select>
                             <label for="high_pressure_relay_id">High Pressure Pump Relay Channel</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <hr class="bold">
@@ -2039,40 +2061,45 @@
                                 <option value="STEPPER">Stepper</option>
                             </select>
                             <label for="high_pressure_valve_control">High Pressure Valve Control</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="mb-3">
-                          <div class="input-group">
+                          <div class="input-group has-validation">
                             <span class="input-group-text">Pressure Target</span>
                             <input id="membrane_pressure_target" type="text" class="form-control text-end">
                             <span class="input-group-text">PSI</span>
+                            <div class="invalid-feedback"></div>
                           </div>
                         </div>
 
                         <div id="high_pressure_valve_stepper_options">
                           <div class="form-floating mb-3">
-                              <select id="high_pressure_valve_stepper_id" class="form-select" aria-label="High Pressure Valve Stepper Channel">
-                                ${stepperOptions}
-                              </select>
-                              <label for="high_pressure_valve_stepper_id">High Pressure Valve Stepper Channel</label>
+                            <select id="high_pressure_valve_stepper_id" class="form-select" aria-label="High Pressure Valve Stepper Channel">
+                              ${stepperOptions}
+                            </select>
+                            <label for="high_pressure_valve_stepper_id">High Pressure Valve Stepper Channel</label>
+                            <div class="invalid-feedback"></div>
                           </div>
 
                           <div class="row g-3 mb-3">
                             <h6>Stepper Motor Configuration</h6>
                             
                             <div class="col-12 col-md-6 mt-1">
-                              <div class="input-group">
+                              <div class="input-group has-validation">
                                 <span class="input-group-text">Step Angle</span>
                                 <input type="text" class="form-control text-end" id="high_pressure_stepper_step_angle">
                                 <span class="input-group-text">°</span>
-                              </div>
+                                <div class="invalid-feedback"></div>
+                            </div>
                             </div>
 
                             <div class="col-12 col-md-6 mt-1">
-                              <div class="input-group">
+                              <div class="input-group has-validation">
                                 <span class="input-group-text">Gear Ratio</span>
                                 <input type="text" class="form-control text-end" id="high_pressure_stepper_gear_ratio">
                                 <span class="input-group-text">to 1</span>
+                              <div class="invalid-feedback"></div>
                               </div>
                             </div>
                           </div>
@@ -2081,18 +2108,20 @@
                             <h6>High Pressure Valve Close (Pressure On)</h6>
                             
                             <div class="col-12 col-md-6 mt-1">
-                              <div class="input-group">
+                              <div class="input-group has-validation">
                                 <span class="input-group-text">Angle</span>
                                 <input type="text" class="form-control text-end" id="high_pressure_stepper_close_angle">
                                 <span class="input-group-text">°</span>
+                                <div class="invalid-feedback"></div>
                               </div>
                             </div>
 
                             <div class="col-12 col-md-6 mt-1">
-                              <div class="input-group">
+                              <div class="input-group has-validation">
                                 <span class="input-group-text">Speed</span>
                                 <input type="text" class="form-control text-end" id="high_pressure_stepper_close_speed">
                                 <span class="input-group-text">RPM</span>
+                                <div class="invalid-feedback"></div>
                               </div>
                             </div>
                           </div>
@@ -2100,18 +2129,20 @@
                           <div class="row g-3 mb-3">
                             <h6>High Pressure Valve Open (Pressure Off)</h6>
                             <div class="col-12 col-md-6 mt-1">
-                              <div class="input-group">
+                              <div class="input-group has-validation">
                                 <span class="input-group-text">Angle</span>
                                 <input type="text" class="form-control text-end" id="high_pressure_stepper_open_angle">
                                 <span class="input-group-text">°</span>
+                                <div class="invalid-feedback"></div>
                               </div>
                             </div>
 
                             <div class="col-12 col-md-6 mt-1">
-                              <div class="input-group">
+                              <div class="input-group has-validation">
                                 <span class="input-group-text">Speed</span>
                                 <input type="text" class="form-control text-end" id="high_pressure_stepper_open_speed">
                                 <span class="input-group-text">RPM</span>
+                                <div class="invalid-feedback"></div>
                               </div>
                             </div>
                           </div>
@@ -2126,6 +2157,7 @@
                                 <option value="SERVO">Servo</option>
                             </select>
                             <label for="diverter_valve_control">Diverter Valve Control</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -2133,24 +2165,27 @@
                               ${servoOptions}
                             </select>
                             <label for="diverter_valve_servo_id">Diverter Valve Servo Channel</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row g-3 mb-3">
                           <h6>Diverter Valve Settings (Open = Overboard)</h6>
 
                           <div class="col-12 col-md-6 mt-1">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <span class="input-group-text">Open</span>
                               <input type="text" class="form-control text-end" id="diverter_valve_open_angle">
                               <span class="input-group-text">°</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
 
                           <div class="col-12 col-md-6 mt-1">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <span class="input-group-text">Close</span>
                               <input type="text" class="form-control text-end" id="diverter_valve_close_angle">
                               <span class="input-group-text">°</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                         </div>
@@ -2164,6 +2199,7 @@
                                 <option value="RELAY">Relay</option>
                             </select>
                             <label for="flush_valve_control">Flush Valve Control</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -2171,6 +2207,7 @@
                               ${relayOptions}
                             </select>
                             <label for="flush_valve_relay_id">Flush Valve Relay Channel</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <hr class="bold">
@@ -2182,6 +2219,7 @@
                                 <option value="RELAY">Relay</option>
                             </select>
                             <label for="cooling_fan_control">Cooling Fan Control</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-floating mb-3">
@@ -2189,23 +2227,26 @@
                               ${relayOptions}
                             </select>
                             <label for="cooling_fan_relay_id">Cooling Fan Relay Channel</label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="row g-3 mb-3">
                           <div class="col-12 col-md-6 mt-1">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <span class="input-group-text">On Temp</span>
                               <input type="text" class="form-control text-end" id="cooling_fan_on_temperature">
                               <span class="input-group-text">C</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
 
                           <div class="col-12 col-md-6 mt-1">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <span class="input-group-text">Off Temp</span>
                               <input type="text" class="form-control text-end" id="cooling_fan_off_temperature">
                               <span class="input-group-text">C</span>
-                            </div>
+                              <div class="invalid-feedback"></div>
+                           </div>
                           </div>
                         </div>
 
@@ -2216,22 +2257,25 @@
                             <label class="form-check-label" for="has_membrane_pressure_sensor">
                                 Has Membrane Pressure Sensor
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="has_membrane_pressure_sensor_form" class="row g-3 mb-3">
                           <div class="col-12 col-md-6 mt-1">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <span class="input-group-text">Min</span>
                               <input type="text" class="form-control text-end" id="membrane_pressure_sensor_min">
                               <span class="input-group-text">PSI</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
 
                           <div class="col-12 col-md-6 mt-1">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <span class="input-group-text">Max</span>
                               <input type="text" class="form-control text-end" id="membrane_pressure_sensor_max">
                               <span class="input-group-text">PSI</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                         </div>
@@ -2241,22 +2285,25 @@
                             <label class="form-check-label" for="has_filter_pressure_sensor">
                                 Has Filter Pressure Sensor
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="has_filter_pressure_sensor_form" class="row g-3 mb-3">
                           <div class="col-12 col-md-6 mt-1">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <span class="input-group-text">Min</span>
                               <input type="text" class="form-control text-end" id="filter_pressure_sensor_min">
                               <span class="input-group-text">PSI</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
 
                           <div class="col-12 col-md-6 mt-1">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <span class="input-group-text">Max</span>
                               <input type="text" class="form-control text-end" id="filter_pressure_sensor_max">
                               <span class="input-group-text">PSI</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                         </div>
@@ -2266,12 +2313,14 @@
                             <label class="form-check-label" for="has_product_flow_sensor">
                                 Has Product Flow Sensor
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="has_product_flow_sensor_form" class="mb-3">
-                          <div class="input-group">
+                          <div class="input-group has-validation">
                             <input type="text" class="form-control text-end" id="product_flowmeter_ppl">
                             <span class="input-group-text">PPL (Pulses Per Liter)</span>
+                            <div class="invalid-feedback"></div>
                           </div>
                         </div>
 
@@ -2280,12 +2329,14 @@
                             <label class="form-check-label" for="has_brine_flow_sensor">
                                 Has Brine Flow Sensor
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="has_brine_flow_sensor_form" class="mb-3">
-                          <div class="input-group">
+                          <div class="input-group has-validation">
                             <input type="text" class="form-control text-end" id="brine_flowmeter_ppl">
                             <span class="input-group-text">PPL (Pulses Per Liter)</span>
+                            <div class="invalid-feedback"></div>
                           </div>
                         </div>
 
@@ -2294,6 +2345,7 @@
                             <label class="form-check-label" for="has_product_tds_sensor">
                                 Has Product TDS Sensor
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-check form-switch mb-3">
@@ -2301,6 +2353,7 @@
                             <label class="form-check-label" for="has_brine_tds_sensor">
                                 Has Brine TDS Sensor
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="form-check form-switch mb-3">
@@ -2308,6 +2361,7 @@
                             <label class="form-check-label" for="has_motor_temperature_sensor">
                                 Has Motor Temperature Sensor
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div class="text-center">
@@ -2323,42 +2377,47 @@
                         <h4>System Safeguards</h4>
 
                         <div class="mb-3">
-                          <div class="input-group">
+                          <div class="input-group has-validation">
                             <span class="input-group-text">Flush Timeout</span>
                             <input id="flush_timeout" type="text" class="form-control text-end">
                             <span class="input-group-text">seconds</span>
+                            <div class="invalid-feedback"></div>
                           </div>
                         </div>
 
                         <div class="mb-3">
-                          <div class="input-group">
+                          <div class="input-group has-validation">
                             <span class="input-group-text">High Pressure Timeout</span>
                             <input id="membrane_pressure_timeout" type="text" class="form-control text-end">
                             <span class="input-group-text">seconds</span>
+                            <div class="invalid-feedback"></div>
                           </div>
                         </div>
 
                         <div class="mb-3">
-                          <div class="input-group">
+                          <div class="input-group has-validation">
                             <span class="input-group-text">Product Flowrate Timeout</span>
                             <input id="product_flowrate_timeout" type="text" class="form-control text-end">
                             <span class="input-group-text">seconds</span>
+                            <div class="invalid-feedback"></div>
                           </div>
                         </div>
 
                         <div class="mb-3">
-                          <div class="input-group">
+                          <div class="input-group has-validation">
                             <span class="input-group-text">Product Salinity Timeout</span>
                             <input id="product_salinity_timeout" type="text" class="form-control text-end">
                             <span class="input-group-text">seconds</span>
+                            <div class="invalid-feedback"></div>
                           </div>
                         </div>
 
                         <div class="mb-3">
-                          <div class="input-group">
+                          <div class="input-group has-validation">
                             <span class="input-group-text">Production Runtime Timeout</span>
                             <input id="production_runtime_timeout" type="text" class="form-control text-end">
                             <span class="input-group-text">hours</span>
+                            <div class="invalid-feedback"></div>
                           </div>
                         </div>
 
@@ -2369,20 +2428,23 @@
                             <label class="form-check-label" for="enable_membrane_pressure_high_check">
                                 Membrane Pressure High
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="enable_membrane_pressure_high_check_form" class="row">
                           <div class="col-12 col-md-6">
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                               <input type="text" class="form-control text-end" id="membrane_pressure_high_threshold">
                               <span class="input-group-text">PSI</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                           <div class="col-12 col-md-6">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <input type="text" class="form-control text-end" id="membrane_pressure_high_delay">
                               <span class="input-group-text">Delay (ms)</span>
-                            </div>
+                              <div class="invalid-feedback"></div>
+                           </div>
                           </div>
                         </div>
 
@@ -2391,19 +2453,22 @@
                             <label class="form-check-label" for="enable_membrane_pressure_low_check">
                                 Membrane Pressure Low
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="enable_membrane_pressure_low_check_form" class="row">
                           <div class="col-12 col-md-6">
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                               <input type="text" class="form-control text-end" id="membrane_pressure_low_threshold">
                               <span class="input-group-text">PSI</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                           <div class="col-12 col-md-6">
-                            <div class="input-group">
+                            <div class="input-group has-validation has-validation">
                               <input type="text" class="form-control text-end" id="membrane_pressure_low_delay">
                               <span class="input-group-text">Delay (ms)</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                         </div>
@@ -2413,19 +2478,22 @@
                             <label class="form-check-label" for="enable_filter_pressure_high_check">
                                 Filter Pressure High
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="enable_filter_pressure_high_check_form" class="row">
                           <div class="col-12 col-md-6">
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                               <input type="text" class="form-control text-end" id="filter_pressure_high_threshold">
                               <span class="input-group-text">PSI</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                           <div class="col-12 col-md-6">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <input type="text" class="form-control text-end" id="filter_pressure_high_delay">
                               <span class="input-group-text">Delay (ms)</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                         </div>
@@ -2435,20 +2503,23 @@
                             <label class="form-check-label" for="enable_filter_pressure_low_check">
                                 Filter Pressure Low
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="enable_filter_pressure_low_check_form" class="row">
                           <div class="col-12 col-md-6">
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                               <input type="text" class="form-control text-end" id="filter_pressure_low_threshold">
                               <span class="input-group-text">PSI</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                           <div class="col-12 col-md-6">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <input type="text" class="form-control text-end" id="filter_pressure_low_delay">
                               <span class="input-group-text">Delay (ms)</span>
-                            </div>
+                              <div class="invalid-feedback"></div>
+                           </div>
                           </div>
                         </div>
                         
@@ -2457,19 +2528,22 @@
                             <label class="form-check-label" for="enable_product_flowrate_high_check">
                                 Product Flowrate High
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="enable_product_flowrate_high_check_form" class="row">
                           <div class="col-12 col-md-6">
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                               <input type="text" class="form-control text-end" id="product_flowrate_high_threshold">
                               <span class="input-group-text">LPH</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                           <div class="col-12 col-md-6">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <input type="text" class="form-control text-end" id="product_flowrate_high_delay">
                               <span class="input-group-text">Delay (ms)</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                         </div>
@@ -2479,20 +2553,23 @@
                             <label class="form-check-label" for="enable_product_flowrate_low_check">
                                 Product Flowrate Low
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="enable_product_flowrate_low_check_form" class="row">
                           <div class="col-12 col-md-6">
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                               <input type="text" class="form-control text-end" id="product_flowrate_low_threshold">
                               <span class="input-group-text">LPH</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                           <div class="col-12 col-md-6">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <input type="text" class="form-control text-end" id="product_flowrate_low_delay">
                               <span class="input-group-text">Delay (ms)</span>
-                            </div>
+                              <div class="invalid-feedback"></div>
+                           </div>
                           </div>
                         </div>
                         
@@ -2501,19 +2578,22 @@
                             <label class="form-check-label" for="enable_run_total_flowrate_low_check">
                                 Run Total Flowrate Low
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="enable_run_total_flowrate_low_check_form" class="row">
                           <div class="col-12 col-md-6">
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                               <input type="text" class="form-control text-end" id="run_total_flowrate_low_threshold">
                               <span class="input-group-text">LPH</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                           <div class="col-12 col-md-6">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <input type="text" class="form-control text-end" id="run_total_flowrate_low_delay">
                               <span class="input-group-text">Delay (ms)</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                         </div>
@@ -2523,19 +2603,22 @@
                             <label class="form-check-label" for="enable_pickle_total_flowrate_low_check">
                                 De/Pickle Total Flowrate Low
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="enable_pickle_total_flowrate_low_check_form" class="row">
                           <div class="col-12 col-md-6">
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                               <input type="text" class="form-control text-end" id="pickle_total_flowrate_low_threshold">
                               <span class="input-group-text">LPH</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                           <div class="col-12 col-md-6">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <input type="text" class="form-control text-end" id="pickle_total_flowrate_low_delay">
                               <span class="input-group-text">Delay (ms)</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                         </div>
@@ -2545,13 +2628,15 @@
                             <label class="form-check-label" for="enable_diverter_valve_closed_check">
                                 Diverter Valve Opening / Closing
                             </label>                            
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="enable_diverter_valve_closed_check_form" class="row">
                           <div class="col-12 col-md-6">
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                               <input type="text" class="form-control text-end" id="diverter_valve_closed_delay">
                               <span class="input-group-text">Delay (ms)</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                         </div>
@@ -2561,19 +2646,22 @@
                             <label class="form-check-label" for="enable_product_salinity_high_check">
                                 Product Salinity High
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="enable_product_salinity_high_check_form" class="row">
                           <div class="col-12 col-md-6">
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                               <input type="text" class="form-control text-end" id="product_salinity_high_threshold">
                               <span class="input-group-text">PPM</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                           <div class="col-12 col-md-6">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <input type="text" class="form-control text-end" id="product_salinity_high_delay">
                               <span class="input-group-text">Delay (ms)</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                         </div>
@@ -2583,19 +2671,22 @@
                             <label class="form-check-label" for="enable_motor_temperature_check">
                                 Motor Temperature
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="enable_motor_temperature_check_form" class="row">
                           <div class="col-12 col-md-6">
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                               <input type="text" class="form-control text-end" id="motor_temperature_high_threshold">
                               <span class="input-group-text">C</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                           <div class="col-12 col-md-6">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <input type="text" class="form-control text-end" id="motor_temperature_high_delay">
                               <span class="input-group-text">Delay (ms)</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                         </div>
@@ -2605,19 +2696,22 @@
                             <label class="form-check-label" for="enable_flush_flowrate_low_check">
                                 Flush Flowrate Low
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="enable_flush_flowrate_low_check_form" class="row">
                           <div class="col-12 col-md-6">
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                               <input type="text" class="form-control text-end" id="flush_flowrate_low_threshold">
                               <span class="input-group-text">LPH</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                           <div class="col-12 col-md-6">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <input type="text" class="form-control text-end" id="flush_flowrate_low_delay">
                               <span class="input-group-text">Delay (ms)</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                         </div>
@@ -2627,19 +2721,22 @@
                             <label class="form-check-label" for="enable_flush_filter_pressure_low_check">
                                 Flush Filter Pressure Low
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="enable_flush_filter_pressure_low_check_form" class="row">
                           <div class="col-12 col-md-6">
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                               <input type="text" class="form-control text-end" id="flush_filter_pressure_low_threshold">
                               <span class="input-group-text">PSI</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                           <div class="col-12 col-md-6">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <input type="text" class="form-control text-end" id="flush_filter_pressure_low_delay">
                               <span class="input-group-text">Delay (ms)</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                         </div>
@@ -2649,19 +2746,22 @@
                             <label class="form-check-label" for="enable_flush_valve_off_check">
                                 Flush Valve Off - Maximum Pressure
                             </label>
+                            <div class="invalid-feedback"></div>
                         </div>
 
                         <div id="enable_flush_valve_off_check_form" class="row">
                           <div class="col-12 col-md-6">
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                               <input type="text" class="form-control text-end" id="enable_flush_valve_off_threshold">
                               <span class="input-group-text">PSI</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                           <div class="col-12 col-md-6">
-                            <div class="input-group">
+                            <div class="input-group has-validation">
                               <input type="text" class="form-control text-end" id="enable_flush_valve_off_delay">
                               <span class="input-group-text">Delay (ms)</span>
+                              <div class="invalid-feedback"></div>
                             </div>
                           </div>
                         </div>
