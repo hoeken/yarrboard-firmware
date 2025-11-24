@@ -3336,7 +3336,8 @@
         numericality: {
           onlyInteger: true,
           greaterThanOrEqualTo: 0
-        }
+        },
+        relayUnique: {}
       },
 
       high_pressure_pump_control: {
@@ -3348,7 +3349,8 @@
         numericality: {
           onlyInteger: true,
           greaterThanOrEqualTo: 0
-        }
+        },
+        relayUnique: {}
       },
 
       high_pressure_valve_control: {
@@ -3445,7 +3447,8 @@
         numericality: {
           onlyInteger: true,
           greaterThanOrEqualTo: 0
-        }
+        },
+        relayUnique: {}
       },
 
       cooling_fan_control: {
@@ -3457,7 +3460,8 @@
         numericality: {
           onlyInteger: true,
           greaterThanOrEqualTo: 0
-        }
+        },
+        relayUnique: {}
       },
 
       cooling_fan_on_temperature: {
@@ -3765,6 +3769,41 @@
 
   YB.Brineomatic = Brineomatic;
   YB.bom = new Brineomatic();
+
+  validate.validators.relayUnique = function (value, options, key, attributes) {
+    const map = {
+      boost_pump_relay_id: "boost_pump_control",
+      flush_valve_relay_id: "flush_valve_control",
+      cooling_fan_relay_id: "cooling_fan_control",
+      high_pressure_relay_id: "high_pressure_pump_control",
+    };
+
+    const controlField = map[key];
+    if (!controlField) return; // not a monitored field
+
+    // Only enforce uniqueness if this control is set to RELAY
+    if (attributes[controlField] !== "RELAY") {
+      return;
+    }
+
+    // Let numericality/presence handle empty/invalid
+    if (value === null || value === undefined || value === "") {
+      return;
+    }
+
+    // Check other fields that are also RELAY
+    for (const [relayKey, ctrlKey] of Object.entries(map)) {
+      if (relayKey === key) continue; // skip self
+      if (attributes[ctrlKey] !== "RELAY") continue;
+
+      if (attributes[relayKey] === value) {
+        // Duplicate found
+        return `must be unique; also used by ${relayKey}`;
+      }
+    }
+
+    // undefined = no error
+  };
 
   // expose to global
   global.YB = YB;
