@@ -2,11 +2,22 @@
 
 ## BRINEOMATIC
 
+* move all the brineomatic stuff in setup() and loop() internal to BOM object.
+    * probably dont need the helper functions like setFilterPressure()
+    * keep setWaterTemperature() and setTankLevel()
+    * create super simple flowmeter object
+* total time tracking is broken
 * configuration system:
     * saveHardwareConfig only allowed in IDLE mode
+    * add boolean to config: flushUseHighPressureMotor
     * make sure we're using the new config:
-        * has_* hardware
-        * error checking booleans
+        * autoflush
+            * remove all autoFlushEnabled calls and variables
+            * use new autoflushMode + others
+        * any calls to our channel objects should be wrapped in a control mode check
+        * has_* hardware before using that hardware
+        * error checking booleans - check enabled flag first
+    * play melodies on success or error
 * show "error" when no value for pressure or tank level
 * add mid-level commands to set_watermaker
     * boost_pump
@@ -23,9 +34,6 @@
     * membrane_pressure_target
     * advanced -> raw *channel ui
 * move everything to SI units, add configurable units
-* stepper PID
-    * calibration
-    * testing
 * ntp server and next flush being an actual time that is stored in preferences (survive reboot)
 * move brineomatic to interrupt based adc
 * add simple HA support to brineomatic?

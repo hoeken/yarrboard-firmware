@@ -105,7 +105,6 @@ class Brineomatic
     RelayChannel* highPressurePump = NULL;
     RelayChannel* coolingFan = NULL;
     ServoChannel* diverterValve = NULL;
-
     ServoChannel* highPressureValveServo = NULL;
     StepperChannel* highPressureValveStepper = NULL;
 
