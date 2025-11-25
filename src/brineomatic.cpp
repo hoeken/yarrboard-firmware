@@ -372,6 +372,11 @@ void Brineomatic::init()
   // membranePressurePID.SetOutputLimits(YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX);
 
   this->initChannels();
+
+  if (YB_HAS_MODBUS) {
+    YB_MODBUS_SERIAL.setPins(YB_MODBUS_RX, YB_MODBUS_TX);
+    YB_MODBUS_SERIAL.begin(YB_MODBUS_SPEED);
+  }
 }
 
 void Brineomatic::initChannels()
