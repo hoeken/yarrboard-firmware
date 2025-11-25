@@ -3,7 +3,6 @@
 ## BRINEOMATIC
 
 * configuration system:
-    * UI control fields should be shown/disabled based on sensors
     * enable/disable safeguards config in UI based on hardware enabled/disabled
 * show "error" when no value for pressure or tank level
 * total time tracking is broken

@@ -124,6 +124,482 @@
     }
   }
 
+  Brineomatic.prototype.createGauges = function () {
+    this.motorTemperatureGauge = c3.generate({
+      bindto: '#motorTemperatureGauge',
+      data: {
+        columns: [
+          ['Motor Temperature', 0]
+        ],
+        type: 'gauge',
+      },
+      gauge: {
+        label: {
+          format: function (value, ratio) {
+            return `${value}°C`;
+          },
+          show: true
+        },
+        min: 0, // 0 is default, //can handle negative min e.g. vacuum / voltage / current flow / rate of change
+        max: 80, // 80 is default
+      },
+      color: {
+        pattern: this.gaugeSetup.motor_temperature.colors,
+        threshold: {
+          unit: 'value',
+          values: this.gaugeSetup.motor_temperature.thresholds
+        }
+      },
+      size: { height: 130, width: 200 },
+      interaction: { enabled: false },
+      transition: { duration: 0 },
+      legend: { hide: true }
+    });
+
+    this.waterTemperatureGauge = c3.generate({
+      bindto: '#waterTemperatureGauge',
+      data: {
+        columns: [
+          ['Water Temperature', 0]
+        ],
+        type: 'gauge',
+      },
+      gauge: {
+        label: {
+          format: function (value, ratio) {
+            return `${value}°C`;
+          },
+          show: true
+        },
+        min: 0, // 0 is default, //can handle negative min e.g. vacuum / voltage / current flow / rate of change
+        max: 50, // 80 is default
+      },
+      color: {
+        pattern: this.gaugeSetup.water_temperature.colors,
+        threshold: {
+          unit: 'value',
+          values: this.gaugeSetup.water_temperature.thresholds
+        }
+      },
+      size: { height: 130, width: 200 },
+      interaction: { enabled: false },
+      transition: { duration: 0 },
+      legend: { hide: true }
+    });
+
+    this.filterPressureGauge = c3.generate({
+      bindto: '#filterPressureGauge',
+      data: {
+        columns: [
+          ['Filter Pressure', 0]
+        ],
+        type: 'gauge',
+      },
+      gauge: {
+        label: {
+          format: function (value, ratio) {
+            return `${value} PSI`;
+          },
+          show: true
+        },
+        min: 0,
+        max: 50,
+      },
+      color: {
+        pattern: this.gaugeSetup.filter_pressure.colors,
+        threshold: {
+          unit: 'value',
+          values: this.gaugeSetup.filter_pressure.thresholds
+        }
+      },
+      size: { height: 130, width: 200 },
+      interaction: { enabled: false },
+      transition: { duration: 0 },
+      legend: { hide: true }
+    });
+
+    this.membranePressureGauge = c3.generate({
+      bindto: '#membranePressureGauge',
+      data: {
+        columns: [
+          ['Membrane Pressure', 0]
+        ],
+        type: 'gauge',
+      },
+      gauge: {
+        label: {
+          format: function (value, ratio) {
+            return `${value} PSI`;
+          },
+          show: true
+        },
+        min: 0,
+        max: 1000,
+      },
+      color: {
+        pattern: this.gaugeSetup.membrane_pressure.colors,
+        threshold: {
+          unit: 'value',
+          values: this.gaugeSetup.membrane_pressure.thresholds
+        }
+      },
+      size: { height: 130, width: 200 },
+      interaction: { enabled: false },
+      transition: { duration: 0 },
+      legend: { hide: true }
+    });
+
+    this.productSalinityGauge = c3.generate({
+      bindto: '#productSalinityGauge',
+      data: {
+        columns: [
+          ['Product Salinity', 0]
+        ],
+        type: 'gauge',
+      },
+      gauge: {
+        label: {
+          format: function (value, ratio) {
+            return `${value} PPM`;
+          },
+          show: true
+        },
+        min: 0,
+        max: 1500,
+      },
+      color: {
+        pattern: this.gaugeSetup.product_salinity.colors,
+        threshold: {
+          unit: 'value',
+          values: this.gaugeSetup.product_salinity.thresholds
+        }
+      },
+      size: { height: 130, width: 200 },
+      interaction: { enabled: false },
+      transition: { duration: 0 },
+      legend: { hide: true }
+    });
+
+    this.brineSalinityGauge = c3.generate({
+      bindto: '#brineSalinityGauge',
+      data: {
+        columns: [
+          ['Brine Salinity', 0]
+        ],
+        type: 'gauge',
+      },
+      gauge: {
+        label: {
+          format: function (value, ratio) {
+            return `${value} PPM`;
+          },
+          show: true
+        },
+        min: 0,
+        max: 1500,
+      },
+      color: {
+        pattern: this.gaugeSetup.brine_salinity.colors,
+        threshold: {
+          unit: 'value',
+          values: this.gaugeSetup.brine_salinity.thresholds
+        }
+      },
+      size: { height: 130, width: 200 },
+      interaction: { enabled: false },
+      transition: { duration: 0 },
+      legend: { hide: true }
+    });
+
+    this.productFlowrateGauge = c3.generate({
+      bindto: '#productFlowrateGauge',
+      data: {
+        columns: [
+          ['Product Flowrate', 0]
+        ],
+        type: 'gauge',
+      },
+      gauge: {
+        label: {
+          format: function (value, ratio) {
+            return `${value} LPH`;
+          },
+          show: true
+        },
+        min: 0,
+        max: 250,
+      },
+      color: {
+        pattern: this.gaugeSetup.product_flowrate.colors,
+        threshold: {
+          unit: 'value',
+          values: this.gaugeSetup.product_flowrate.thresholds
+        }
+      },
+      size: { height: 130, width: 200 },
+      interaction: { enabled: false },
+      transition: { duration: 0 },
+      legend: { hide: true }
+    });
+
+    this.brineFlowrateGauge = c3.generate({
+      bindto: '#brineFlowrateGauge',
+      data: {
+        columns: [
+          ['Brine Flowrate', 0]
+        ],
+        type: 'gauge',
+      },
+      gauge: {
+        label: {
+          format: function (value, ratio) {
+            return `${value} LPH`;
+          },
+          show: true
+        },
+        min: 0,
+        max: 600,
+      },
+      color: {
+        pattern: this.gaugeSetup.brine_flowrate.colors,
+        threshold: {
+          unit: 'value',
+          values: this.gaugeSetup.brine_flowrate.thresholds
+        }
+      },
+      size: { height: 130, width: 200 },
+      interaction: { enabled: false },
+      transition: { duration: 0 },
+      legend: { hide: true }
+    });
+
+    this.totalFlowrateGauge = c3.generate({
+      bindto: '#totalFlowrateGauge',
+      data: {
+        columns: [
+          ['Total Flowrate', 0]
+        ],
+        type: 'gauge',
+      },
+      gauge: {
+        label: {
+          format: function (value, ratio) {
+            return `${value} LPH`;
+          },
+          show: true
+        },
+        min: 0,
+        max: 600,
+      },
+      color: {
+        pattern: this.gaugeSetup.total_flowrate.colors,
+        threshold: {
+          unit: 'value',
+          values: this.gaugeSetup.total_flowrate.thresholds
+        }
+      },
+      size: { height: 130, width: 200 },
+      interaction: { enabled: false },
+      transition: { duration: 0 },
+      legend: { hide: true }
+    });
+
+    this.tankLevelGauge = c3.generate({
+      bindto: '#tankLevelGauge',
+      data: {
+        columns: [
+          ['Tank Level', 0]
+        ],
+        type: 'gauge',
+      },
+      gauge: {
+        label: {
+          format: function (value, ratio) {
+            return `${value}%`;
+          },
+          show: true
+        },
+        min: 0,
+        max: 100,
+      },
+      color: {
+        pattern: this.gaugeSetup.tank_level.colors,
+        threshold: {
+          unit: 'value',
+          values: this.gaugeSetup.tank_level.thresholds
+        }
+      },
+      size: { height: 130, width: 200 },
+      interaction: { enabled: false },
+      transition: { duration: 0 },
+      legend: { hide: true }
+    });
+
+    // Define the data
+    this.timeData = ['x'];
+    this.motorTemperatureData = ['Motor Temperature'];
+    this.waterTemperatureData = ['Water Temperature'];
+    this.filterPressureData = ['Filter Pressure'];
+    this.membranePressureData = ['Membrane Pressure'];
+    this.productSalinityData = ['Product Salinity'];
+    this.productFlowrateData = ['Product Flowrate'];
+    this.tankLevelData = ['Tank Level'];
+
+    this.temperatureChart = c3.generate({
+      bindto: '#temperatureChart',
+      data: {
+        x: 'x', // Define the x-axis data identifier
+        xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
+        columns: [
+          this.timeData,
+          this.motorTemperatureData,
+          this.waterTemperatureData
+        ],
+        type: 'line' // Line chart
+      },
+      axis: {
+        x: {
+          type: 'timeseries',
+          label: 'Time',
+          tick: {
+            format: '%H:%M:%S',
+            culling: true,
+            fit: true
+          }
+        },
+        y: {
+          label: 'Temperature (°C)',
+          min: 0,
+          max: 80 // Adjust as needed
+        }
+      },
+      point: { show: false },
+      interaction: { enabled: true },
+      transition: { duration: 0 }
+    });
+
+    this.pressureChart = c3.generate({
+      bindto: '#pressureChart',
+      data: {
+        x: 'x', // Define the x-axis data identifier
+        xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
+        columns: [
+          this.timeData,
+          this.filterPressureData,
+          this.membranePressureData
+        ],
+        type: 'line' // Line chart
+      },
+      axis: {
+        x: {
+          type: 'timeseries',
+          label: 'Time',
+          tick: {
+            format: '%H:%M:%S'
+          }
+        },
+        y: {
+          label: 'Pressure (PSI))',
+          min: 0,
+          max: 1000
+        }
+      },
+      point: { show: false },
+      interaction: { enabled: true },
+      transition: { duration: 0 }
+    });
+
+    this.productSalinityChart = c3.generate({
+      bindto: '#productSalinityChart',
+      data: {
+        x: 'x', // Define the x-axis data identifier
+        xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
+        columns: [
+          this.timeData,
+          this.productSalinityData
+        ],
+        type: 'line' // Line chart
+      },
+      axis: {
+        x: {
+          type: 'timeseries',
+          label: 'Time',
+          tick: {
+            format: '%H:%M:%S'
+          }
+        },
+        y: {
+          label: 'Product Salinity (PPM))',
+          min: 0,
+          max: 1500
+        }
+      },
+      point: { show: false },
+      interaction: { enabled: true },
+      transition: { duration: 0 }
+    });
+
+    this.productFlowrateChart = c3.generate({
+      bindto: '#productFlowrateChart',
+      data: {
+        x: 'x', // Define the x-axis data identifier
+        xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
+        columns: [
+          this.timeData,
+          this.productFlowrateData
+        ],
+        type: 'line' // Line chart
+      },
+      axis: {
+        x: {
+          type: 'timeseries',
+          label: 'Time',
+          tick: {
+            format: '%H:%M:%S'
+          }
+        },
+        y: {
+          label: 'Product Flowrate (LPH))',
+          min: 0,
+          max: 200
+        }
+      },
+      point: { show: false },
+      interaction: { enabled: true },
+      transition: { duration: 0 }
+    });
+
+    this.tankLevelChart = c3.generate({
+      bindto: '#tankLevelChart',
+      data: {
+        x: 'x', // Define the x-axis data identifier
+        xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
+        columns: [
+          this.timeData,
+          this.tankLevelData
+        ],
+        type: 'line' // Line chart
+      },
+      axis: {
+        x: {
+          type: 'timeseries',
+          label: 'Time',
+          tick: {
+            format: '%H:%M:%S'
+          }
+        },
+        y: {
+          label: 'Tank Level (%))',
+          min: 0,
+          max: 100
+        }
+      },
+      point: { show: false },
+      interaction: { enabled: true },
+      transition: { duration: 0 }
+    });
+  }
+
   Brineomatic.prototype.handleConfigMessage = function (msg) {
     if (msg.brineomatic) {
 
@@ -134,8 +610,6 @@
       $("#ConfigForm").prepend(this.generateEditUI());
       $("#bomStatsDiv").remove();
       $("#statsContainer").prepend(this.generateStatsUI());
-      $("#bomGraphs").remove();
-      $("#graphsPage").prepend(this.generateGraphsUI());
 
       $("#relayConfig").hide();
       $("#servoConfig").hide();
@@ -144,6 +618,8 @@
       this.addEditUIHandlers();
       this.updateEditUIData(msg.brineomatic);
       this.updateEditUI(msg.brineomatic);
+
+      this.updateControlUI(msg.brineomatic);
 
       //edit UI handlers
       $("#bomConfig").show();
@@ -170,482 +646,9 @@
       $('#bomStatsDiv').show();
       $('#brightnessUI').hide();
 
-      this.buildGaugeSetup();
-
       if (!YB.App.isMFD()) {
-        this.motorTemperatureGauge = c3.generate({
-          bindto: '#motorTemperatureGauge',
-          data: {
-            columns: [
-              ['Motor Temperature', 0]
-            ],
-            type: 'gauge',
-          },
-          gauge: {
-            label: {
-              format: function (value, ratio) {
-                return `${value}°C`;
-              },
-              show: true
-            },
-            min: 0, // 0 is default, //can handle negative min e.g. vacuum / voltage / current flow / rate of change
-            max: 80, // 80 is default
-          },
-          color: {
-            pattern: this.gaugeSetup.motor_temperature.colors,
-            threshold: {
-              unit: 'value',
-              values: this.gaugeSetup.motor_temperature.thresholds
-            }
-          },
-          size: { height: 130, width: 200 },
-          interaction: { enabled: false },
-          transition: { duration: 0 },
-          legend: { hide: true }
-        });
-
-        this.waterTemperatureGauge = c3.generate({
-          bindto: '#waterTemperatureGauge',
-          data: {
-            columns: [
-              ['Water Temperature', 0]
-            ],
-            type: 'gauge',
-          },
-          gauge: {
-            label: {
-              format: function (value, ratio) {
-                return `${value}°C`;
-              },
-              show: true
-            },
-            min: 0, // 0 is default, //can handle negative min e.g. vacuum / voltage / current flow / rate of change
-            max: 50, // 80 is default
-          },
-          color: {
-            pattern: this.gaugeSetup.water_temperature.colors,
-            threshold: {
-              unit: 'value',
-              values: this.gaugeSetup.water_temperature.thresholds
-            }
-          },
-          size: { height: 130, width: 200 },
-          interaction: { enabled: false },
-          transition: { duration: 0 },
-          legend: { hide: true }
-        });
-
-        this.filterPressureGauge = c3.generate({
-          bindto: '#filterPressureGauge',
-          data: {
-            columns: [
-              ['Filter Pressure', 0]
-            ],
-            type: 'gauge',
-          },
-          gauge: {
-            label: {
-              format: function (value, ratio) {
-                return `${value} PSI`;
-              },
-              show: true
-            },
-            min: 0,
-            max: 50,
-          },
-          color: {
-            pattern: this.gaugeSetup.filter_pressure.colors,
-            threshold: {
-              unit: 'value',
-              values: this.gaugeSetup.filter_pressure.thresholds
-            }
-          },
-          size: { height: 130, width: 200 },
-          interaction: { enabled: false },
-          transition: { duration: 0 },
-          legend: { hide: true }
-        });
-
-        this.membranePressureGauge = c3.generate({
-          bindto: '#membranePressureGauge',
-          data: {
-            columns: [
-              ['Membrane Pressure', 0]
-            ],
-            type: 'gauge',
-          },
-          gauge: {
-            label: {
-              format: function (value, ratio) {
-                return `${value} PSI`;
-              },
-              show: true
-            },
-            min: 0,
-            max: 1000,
-          },
-          color: {
-            pattern: this.gaugeSetup.membrane_pressure.colors,
-            threshold: {
-              unit: 'value',
-              values: this.gaugeSetup.membrane_pressure.thresholds
-            }
-          },
-          size: { height: 130, width: 200 },
-          interaction: { enabled: false },
-          transition: { duration: 0 },
-          legend: { hide: true }
-        });
-
-        this.productSalinityGauge = c3.generate({
-          bindto: '#productSalinityGauge',
-          data: {
-            columns: [
-              ['Product Salinity', 0]
-            ],
-            type: 'gauge',
-          },
-          gauge: {
-            label: {
-              format: function (value, ratio) {
-                return `${value} PPM`;
-              },
-              show: true
-            },
-            min: 0,
-            max: 1500,
-          },
-          color: {
-            pattern: this.gaugeSetup.product_salinity.colors,
-            threshold: {
-              unit: 'value',
-              values: this.gaugeSetup.product_salinity.thresholds
-            }
-          },
-          size: { height: 130, width: 200 },
-          interaction: { enabled: false },
-          transition: { duration: 0 },
-          legend: { hide: true }
-        });
-
-        this.brineSalinityGauge = c3.generate({
-          bindto: '#brineSalinityGauge',
-          data: {
-            columns: [
-              ['Brine Salinity', 0]
-            ],
-            type: 'gauge',
-          },
-          gauge: {
-            label: {
-              format: function (value, ratio) {
-                return `${value} PPM`;
-              },
-              show: true
-            },
-            min: 0,
-            max: 1500,
-          },
-          color: {
-            pattern: this.gaugeSetup.brine_salinity.colors,
-            threshold: {
-              unit: 'value',
-              values: this.gaugeSetup.brine_salinity.thresholds
-            }
-          },
-          size: { height: 130, width: 200 },
-          interaction: { enabled: false },
-          transition: { duration: 0 },
-          legend: { hide: true }
-        });
-
-        this.productFlowrateGauge = c3.generate({
-          bindto: '#productFlowrateGauge',
-          data: {
-            columns: [
-              ['Product Flowrate', 0]
-            ],
-            type: 'gauge',
-          },
-          gauge: {
-            label: {
-              format: function (value, ratio) {
-                return `${value} LPH`;
-              },
-              show: true
-            },
-            min: 0,
-            max: 250,
-          },
-          color: {
-            pattern: this.gaugeSetup.product_flowrate.colors,
-            threshold: {
-              unit: 'value',
-              values: this.gaugeSetup.product_flowrate.thresholds
-            }
-          },
-          size: { height: 130, width: 200 },
-          interaction: { enabled: false },
-          transition: { duration: 0 },
-          legend: { hide: true }
-        });
-
-        this.brineFlowrateGauge = c3.generate({
-          bindto: '#brineFlowrateGauge',
-          data: {
-            columns: [
-              ['Brine Flowrate', 0]
-            ],
-            type: 'gauge',
-          },
-          gauge: {
-            label: {
-              format: function (value, ratio) {
-                return `${value} LPH`;
-              },
-              show: true
-            },
-            min: 0,
-            max: 600,
-          },
-          color: {
-            pattern: this.gaugeSetup.brine_flowrate.colors,
-            threshold: {
-              unit: 'value',
-              values: this.gaugeSetup.brine_flowrate.thresholds
-            }
-          },
-          size: { height: 130, width: 200 },
-          interaction: { enabled: false },
-          transition: { duration: 0 },
-          legend: { hide: true }
-        });
-
-        this.totalFlowrateGauge = c3.generate({
-          bindto: '#totalFlowrateGauge',
-          data: {
-            columns: [
-              ['Total Flowrate', 0]
-            ],
-            type: 'gauge',
-          },
-          gauge: {
-            label: {
-              format: function (value, ratio) {
-                return `${value} LPH`;
-              },
-              show: true
-            },
-            min: 0,
-            max: 600,
-          },
-          color: {
-            pattern: this.gaugeSetup.total_flowrate.colors,
-            threshold: {
-              unit: 'value',
-              values: this.gaugeSetup.total_flowrate.thresholds
-            }
-          },
-          size: { height: 130, width: 200 },
-          interaction: { enabled: false },
-          transition: { duration: 0 },
-          legend: { hide: true }
-        });
-
-        this.tankLevelGauge = c3.generate({
-          bindto: '#tankLevelGauge',
-          data: {
-            columns: [
-              ['Tank Level', 0]
-            ],
-            type: 'gauge',
-          },
-          gauge: {
-            label: {
-              format: function (value, ratio) {
-                return `${value}%`;
-              },
-              show: true
-            },
-            min: 0,
-            max: 100,
-          },
-          color: {
-            pattern: this.gaugeSetup.tank_level.colors,
-            threshold: {
-              unit: 'value',
-              values: this.gaugeSetup.tank_level.thresholds
-            }
-          },
-          size: { height: 130, width: 200 },
-          interaction: { enabled: false },
-          transition: { duration: 0 },
-          legend: { hide: true }
-        });
-
-        // Define the data
-        this.timeData = ['x'];
-        this.motorTemperatureData = ['Motor Temperature'];
-        this.waterTemperatureData = ['Water Temperature'];
-        this.filterPressureData = ['Filter Pressure'];
-        this.membranePressureData = ['Membrane Pressure'];
-        this.productSalinityData = ['Product Salinity'];
-        this.productFlowrateData = ['Product Flowrate'];
-        this.tankLevelData = ['Tank Level'];
-
-        this.temperatureChart = c3.generate({
-          bindto: '#temperatureChart',
-          data: {
-            x: 'x', // Define the x-axis data identifier
-            xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
-            columns: [
-              this.timeData,
-              this.motorTemperatureData,
-              this.waterTemperatureData
-            ],
-            type: 'line' // Line chart
-          },
-          axis: {
-            x: {
-              type: 'timeseries',
-              label: 'Time',
-              tick: {
-                format: '%H:%M:%S',
-                culling: true,
-                fit: true
-              }
-            },
-            y: {
-              label: 'Temperature (°C)',
-              min: 0,
-              max: 80 // Adjust as needed
-            }
-          },
-          point: { show: false },
-          interaction: { enabled: true },
-          transition: { duration: 0 }
-        });
-
-        this.pressureChart = c3.generate({
-          bindto: '#pressureChart',
-          data: {
-            x: 'x', // Define the x-axis data identifier
-            xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
-            columns: [
-              this.timeData,
-              this.filterPressureData,
-              this.membranePressureData
-            ],
-            type: 'line' // Line chart
-          },
-          axis: {
-            x: {
-              type: 'timeseries',
-              label: 'Time',
-              tick: {
-                format: '%H:%M:%S'
-              }
-            },
-            y: {
-              label: 'Pressure (PSI))',
-              min: 0,
-              max: 1000
-            }
-          },
-          point: { show: false },
-          interaction: { enabled: true },
-          transition: { duration: 0 }
-        });
-
-        this.productSalinityChart = c3.generate({
-          bindto: '#productSalinityChart',
-          data: {
-            x: 'x', // Define the x-axis data identifier
-            xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
-            columns: [
-              this.timeData,
-              this.productSalinityData
-            ],
-            type: 'line' // Line chart
-          },
-          axis: {
-            x: {
-              type: 'timeseries',
-              label: 'Time',
-              tick: {
-                format: '%H:%M:%S'
-              }
-            },
-            y: {
-              label: 'Product Salinity (PPM))',
-              min: 0,
-              max: 1500
-            }
-          },
-          point: { show: false },
-          interaction: { enabled: true },
-          transition: { duration: 0 }
-        });
-
-        this.productFlowrateChart = c3.generate({
-          bindto: '#productFlowrateChart',
-          data: {
-            x: 'x', // Define the x-axis data identifier
-            xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
-            columns: [
-              this.timeData,
-              this.productFlowrateData
-            ],
-            type: 'line' // Line chart
-          },
-          axis: {
-            x: {
-              type: 'timeseries',
-              label: 'Time',
-              tick: {
-                format: '%H:%M:%S'
-              }
-            },
-            y: {
-              label: 'Product Flowrate (LPH))',
-              min: 0,
-              max: 200
-            }
-          },
-          point: { show: false },
-          interaction: { enabled: true },
-          transition: { duration: 0 }
-        });
-
-        this.tankLevelChart = c3.generate({
-          bindto: '#tankLevelChart',
-          data: {
-            x: 'x', // Define the x-axis data identifier
-            xFormat: '%Y-%m-%d %H:%M:%S.%L', // Format for parsing x-axis data including milliseconds
-            columns: [
-              this.timeData,
-              this.tankLevelData
-            ],
-            type: 'line' // Line chart
-          },
-          axis: {
-            x: {
-              type: 'timeseries',
-              label: 'Time',
-              tick: {
-                format: '%H:%M:%S'
-              }
-            },
-            y: {
-              label: 'Tank Level (%))',
-              min: 0,
-              max: 100
-            }
-          },
-          point: { show: false },
-          interaction: { enabled: true },
-          transition: { duration: 0 }
-        });
+        this.buildGaugeSetup();
+        this.createGauges(msg);
       }
     };
 
@@ -1741,114 +1744,114 @@
               </div>
           </div>
           <div id="bomGauges" class="row gx-0 my-3 mfdHide">
-              <div class=" col-md-3 col-sm-4 col-6">
+              <div class="filterPressureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Filter Pressure</h6>
                   <div id="filterPressureGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="membranePressureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Membrane Pressure</h6>
                   <div id="membranePressureGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class=" col-md-3 col-sm-4 col-6">
+              <div class="productSalinityUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Product Salinity</h6>
                   <div id="productSalinityGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class=" col-md-3 col-sm-4 col-6">
+              <div class="brineSalinityUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Brine Salinity</h6>
                   <div id="brineSalinityGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="productFlowrateUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Product Flowrate</h6>
                   <div id="productFlowrateGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="brineFlowrateUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Brine Flowrate</h6>
                   <div id="brineFlowrateGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="totalFlowrateUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Total Flowrate</h6>
                   <div id="totalFlowrateGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="motorTemperatureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Motor Temperature</h6>
                   <div id="motorTemperatureGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="waterTemperatureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Water Temperature</h6>
                   <div id="waterTemperatureGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="tankLevelUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Tank Level</h6>
                   <div id="tankLevelGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class="col-md-3 col-sm-4 col-6 text-center">
+              <div class="productVolumeUI col-md-3 col-sm-4 col-6 text-center">
                   <h6 class="my-0">Product Volume</h6>
                   <h1 class="bomVolumeData my-0 mt-3"></h1>
                   <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
               </div>
-              <div class="col-md-3 col-sm-4 col-6 text-center">
+              <div class="flushVolumeUI col-md-3 col-sm-4 col-6 text-center">
                   <h6 class="my-0">Flush Volume</h6>
                   <h1 class="bomFlushVolumeData my-0 mt-3"></h1>
                   <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
               </div>
           </div>
           <div id="bomGaugesMFD" class="mfdShow row gx-0 gy-3 my-3 text-center">
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="filterPressureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Filter Pressure</h6>
                   <h1 id="filterPressureData" class="my-0"></h1>
                   <h5 id="filterPressureUnits" class="text-body-tertiary">PSI</h5>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="membranePressureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Membrane Pressure</h6>
                   <h1 id="membranePressureData" class="my-0"></h1>
                   <h5 id="membranePressureUnits" class="text-body-tertiary">PSI</h5>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="productSalinityUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Product Salinity</h6>
                   <h1 id="productSalinityData" class="my-0"></h1>
                   <h5 id="productSalinityUnits" class="text-body-tertiary">PPM</h5>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="brineSalinityUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Brine Salinity</h6>
                   <h1 id="brineSalinityData" class="my-0"></h1>
                   <h5 id="brineSalinityUnits" class="text-body-tertiary">PPM</h5>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="productFlowrateUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Product Flowrate</h6>
                   <h1 id="productFlowrateData" class="my-0"></h1>
                   <h5 id="productFlowrateUnits" class="text-body-tertiary">LPH</h5>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="brineFlowrateUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Brine Flowrate</h6>
                   <h1 id="brineFlowrateData" class="my-0"></h1>
                   <h5 id="brineFlowrateUnits" class="text-body-tertiary">LPH</h5>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="totalFlowrateUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Total Flowrate</h6>
                   <h1 id="totalFlowrateData" class="my-0"></h1>
                   <h5 id="totalFlowrateUnits" class="text-body-tertiary">LPH</h5>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="motorTemperatureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Motor Temperature</h6>
                   <h1 id="motorTemperatureData" class="my-0"></h1>
                   <h5 id="motorTemperatureUnits" class="text-body-tertiary">°C</h5>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="waterTemperatureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Water Temperature</h6>
                   <h1 id="waterTemperatureData" class="my-0"></h1>
                   <h5 id="waterTemperatureUnits" class="text-body-tertiary">°C</h5>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="tankLevelUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Tank Level</h6>
                   <h1 id="tankLevelData" class="my-0"></h1>
                   <h5 id="tankLevelUnits" class="text-body-tertiary">%</h5>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="productVolumeUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Product Volume</h6>
                   <h1 class="bomVolumeData" class="my-0"></h1>
                   <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
               </div>
-              <div class="col-md-3 col-sm-4 col-6">
+              <div class="flushVolumeUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Flush Volume</h6>
                   <h1 class="bomFlushVolumeData" class="my-0"></h1>
                   <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
@@ -2936,6 +2939,20 @@
     $("#enable_flush_valve_off_delay").val(data.enable_flush_valve_off_delay);
   }
 
+  Brineomatic.prototype.updateControlUI = function (data) {
+    console.log(data);
+    $(".filterPressureUI").toggle(!!data.has_filter_pressure_sensor);
+    $(".membranePressureUI").toggle(!!data.has_membrane_pressure_sensor);
+    $(".productSalinityUI").toggle(!!data.has_product_tds_sensor);
+    $(".brineSalinityUI").toggle(!!data.has_brine_tds_sensor);
+    $(".productFlowrateUI").toggle(!!data.has_product_flow_sensor);
+    $(".brineFlowrateUI").toggle(!!data.has_brine_flow_sensor);
+    $(".totalFlowrateUI").toggle(!!data.has_brine_flow_sensor && !!data.has_product_flow_sensor);
+    $(".motorTemperatureUI").toggle(!!data.has_motor_temperature_sensor);
+    $(".productVolumeUI").toggle(!!data.has_product_flow_sensor);
+    $(".flushVolumeUI").toggle(!!data.has_brine_flow_sensor);
+  }
+
   Brineomatic.prototype.updateEditUI = function (data) {
     this.updateAutoflushVisibility(data.autoflush_mode);
     this.updateBoostPumpVisibility(data.boost_pump_control);
@@ -3708,6 +3725,11 @@
     //flash whole form green.
     YB.Util.flashClass($("#hardwareSettingsForm"), "border-success");
     YB.Util.flashClass($("#saveHardwareSettings"), "btn-success");
+
+    //update our UI too.
+    this.updateControlUI(data);
+
+    console.log(data);
 
     //okay, send it off.
     data["cmd"] = "brineomatic_save_hardware_config";
