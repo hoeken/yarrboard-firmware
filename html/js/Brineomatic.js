@@ -3388,7 +3388,7 @@
         relayUnique: {}
       },
 
-      high_pressure_pump_control: {
+      high_pressure_modbus_device: {
         inclusion: ["GD20"]
       },
 
