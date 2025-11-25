@@ -105,21 +105,14 @@ class Brineomatic
     ServoChannel* diverterValve = NULL;
     StepperChannel* highPressureValveStepper = NULL;
 
-    float highPressureValveOpenMin;
-    float highPressureValveOpenMax;
-    float highPressureValveCloseMin;
-    float highPressureValveCloseMax;
-    float highPressureValveMaintainOpenMin;
-    float highPressureValveMaintainOpenMax;
-    float highPressureValveMaintainCloseMin;
-    float highPressureValveMaintainCloseMax;
-
-    float KpRamp = 0;
-    float KiRamp = 0;
-    float KdRamp = 0;
-    float KpMaintain = 0;
-    float KiMaintain = 0;
-    float KdMaintain = 0;
+    // float membranePressurePIDOutput;
+    // QuickPID membranePressurePID;
+    // float KpRamp = 0;
+    // float KiRamp = 0;
+    // float KdRamp = 0;
+    // float KpMaintain = 0;
+    // float KiMaintain = 0;
+    // float KdMaintain = 0;
 
     float currentVolume;
     float currentFlushVolume;
@@ -285,9 +278,6 @@ class Brineomatic
     float currentFilterPressure;
     float currentMembranePressure;
     float currentMembranePressureTarget;
-
-    float membranePressurePIDOutput;
-    QuickPID membranePressurePID;
 
     // tracking when we first saw the error condition
     uint32_t membranePressureHighStart = 0;

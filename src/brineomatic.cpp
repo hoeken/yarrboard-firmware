@@ -353,23 +353,6 @@ void Brineomatic::init()
   pickleResult = Result::STARTUP;
   depickleResult = Result::STARTUP;
 
-  // HSR-1425CR
-  //  highPressureValveOpenMax = 125;
-  //  highPressureValveOpenMin = 90;
-  //  highPressureValveCloseMin = 90;
-  //  highPressureValveCloseMax = 55;
-
-  // HSR-2645CR
-  // highPressureValveOpenMax = 125;
-  // highPressureValveOpenMin = 92;
-  // highPressureValveCloseMin = 92;
-  // highPressureValveCloseMax = 55;
-
-  // highPressureValveMaintainOpenMax = 100;
-  // highPressureValveMaintainOpenMin = 92;
-  // highPressureValveMaintainCloseMin = 92;
-  // highPressureValveMaintainCloseMax = 80;
-
   // PID settings - Ramp Up
   // KpRamp = 2.2;
   // KiRamp = 0;
@@ -466,6 +449,12 @@ void Brineomatic::setMembranePressureTarget(float pressure)
 
   // positive target, initialize our PID.
   if (pressure >= 0) {
+    if (highPressureValveControl.equals("STEPPER")) {
+      highPressureValveStepper->gotoAngle(
+        highPressureValveStepperCloseAngle,
+        highPressureValveStepperCloseSpeed);
+    }
+
     // if (highPressureValveControl.equals("SERVO")) {
     //   membranePressurePID.Initialize();
     //   membranePressurePID.Reset();
@@ -1096,38 +1085,35 @@ bool Brineomatic::hasHighPressureValve()
 
 void Brineomatic::manageHighPressureValve()
 {
-  float angle;
+  //
+  // TODO: putting all of this on hold until its time to re-implement PID
+  //
 
-  if (currentStatus != Status::IDLE) {
-    if (hasHighPressureValve()) {
-      if (currentMembranePressureTarget >= 0) {
-        // only use Ki for tuning once we are close to our target.
-        if (abs(currentMembranePressureTarget - currentMembranePressure) / currentMembranePressureTarget > 0.05)
-          membranePressurePID.SetTunings(KpRamp, KiRamp, KdRamp);
-        else
-          membranePressurePID.SetTunings(KpMaintain, KpMaintain, KdMaintain);
+  // float angle;
 
-        // run our PID calculations
-        if (membranePressurePID.Compute()) {
-          // different max values for the ramp
-          if (abs(currentMembranePressureTarget - currentMembranePressure) / currentMembranePressureTarget > 0.05)
-            angle = map(membranePressurePIDOutput, YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX, highPressureValveOpenMax, highPressureValveCloseMax);
-          // smaller max values for maintain.
-          else
-            angle = map(membranePressurePIDOutput, YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX, highPressureValveMaintainOpenMax, highPressureValveMaintainCloseMax);
+  // if (currentStatus != Status::IDLE) {
+  //   if (hasHighPressureValve()) {
+  //     if (currentMembranePressureTarget >= 0) {
+  //       // only use Ki for tuning once we are close to our target.
+  //       if (abs(currentMembranePressureTarget - currentMembranePressure) / currentMembranePressureTarget > 0.05)
+  //         membranePressurePID.SetTunings(KpRamp, KiRamp, KdRamp);
+  //       else
+  //         membranePressurePID.SetTunings(KpMaintain, KpMaintain, KdMaintain);
 
-          // if we're close, just disable so its not constantly drawing current.
-          if (highPressureValveControl.equals("STEPPER")) {
-            if (currentMembranePressureTarget > 0)
-              highPressureValveStepper->gotoAngle(highPressureValveStepperCloseAngle, highPressureValveStepperCloseSpeed);
-            else
-              highPressureValveStepper->gotoAngle(highPressureValveStepperOpenAngle, highPressureValveStepperOpenSpeed);
-          }
-          // YBP.printf("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f\n", round(currentMembranePressure), round(currentMembranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
-        }
-      }
-    }
-  }
+  //       // run our PID calculations
+  //       if (membranePressurePID.Compute()) {
+  //         // different max values for the ramp
+  //         if (abs(currentMembranePressureTarget - currentMembranePressure) / currentMembranePressureTarget > 0.05)
+  //           angle = map(membranePressurePIDOutput, YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX, highPressureValveOpenMax, highPressureValveCloseMax);
+  //         // smaller max values for maintain.
+  //         else
+  //           angle = map(membranePressurePIDOutput, YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX, highPressureValveMaintainOpenMax, highPressureValveMaintainCloseMax);
+
+  //         // YBP.printf("HP PID | current: %.0f / target: %.0f | p: % .3f / i: % .3f / d: % .3f / sum: % .3f | output: %.0f / angle: %.0f\n", round(currentMembranePressure), round(currentMembranePressureTarget), membranePressurePID.GetPterm(), membranePressurePID.GetIterm(), membranePressurePID.GetDterm(), membranePressurePID.GetOutputSum(), membranePressurePIDOutput, angle);
+  //       }
+  //     }
+  //   }
+  // }
 }
 
 void Brineomatic::runStateMachine()
