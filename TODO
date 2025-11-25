@@ -2,8 +2,9 @@
 
 ## BRINEOMATIC
 
-* configuration system:
-    * enable/disable safeguards config in UI based on hardware enabled/disabled
+* hide run.volume when no product flowmeter
+* hide flush.auto when no brine tds
+* hide flush.volume when no brine flowmeter
 * show "error" when no value for pressure or tank level
 * total time tracking is broken
 * move all the brineomatic stuff in setup() and loop() internal to BOM object.

@@ -617,9 +617,7 @@
 
       this.addEditUIHandlers();
       this.updateEditUIData(msg.brineomatic);
-      this.updateEditUI(msg.brineomatic);
-
-      this.updateControlUI(msg.brineomatic);
+      this.updateHardwareUIConfig(msg.brineomatic);
 
       //edit UI handlers
       $("#bomConfig").show();
@@ -2774,7 +2772,7 @@
                         <div class="form-check form-switch mb-3">
                             <input class="form-check-input" type="checkbox" id="enable_flush_valve_off_check">
                             <label class="form-check-label" for="enable_flush_valve_off_check">
-                                Flush Valve Off - Maximum Pressure
+                                Flush Valve Off
                             </label>
                             <div class="invalid-feedback"></div>
                         </div>
@@ -2939,8 +2937,30 @@
     $("#enable_flush_valve_off_delay").val(data.enable_flush_valve_off_delay);
   }
 
-  Brineomatic.prototype.updateControlUI = function (data) {
-    console.log(data);
+  Brineomatic.prototype.updateHardwareUIConfig = function (data) {
+    // control hardware
+    this.updateAutoflushVisibility(data.autoflush_mode);
+    this.updateBoostPumpVisibility(data.boost_pump_control);
+    this.updateHighPressurePumpVisibility(data.high_pressure_pump_control);
+    this.updateHighPressureValveVisibility(data.high_pressure_valve_control);
+    this.updateDiverterValveVisibility(data.diverter_valve_control);
+    this.updateFlushValveVisibility(data.flush_valve_control);
+    this.updateCoolingFanVisibility(data.cooling_fan_control);
+
+    this.updateMembranePressureVisibility(data.has_membrane_pressure_sensor);
+    this.updateFilterPressureVisibility(data.has_filter_pressure_sensor);
+    this.updateProductFlowrateVisibility(data.has_product_flow_sensor);
+    this.updateBrineFlowrateVisibility(data.has_brine_flow_sensor);
+    this.updateProductTDSVisibility(data.has_product_tds_sensor);
+    this.updateBrineTDSVisibility(data.has_brine_tds_sensor);
+    this.updateMotorTemperatureVisibility(data.has_motor_temperature_sensor);
+
+    this.updateDiverterValveClosedCheckVisibility(data.has_product_flow_sensor, data.has_brine_flow_sensor);
+    this.updateFlushValveClosedCheckVisibility(data.has_filter_pressure_sensor, data.has_brine_flow_sensor);
+
+    this.updateSafeguardChecks();
+
+    //control UI gauges
     $(".filterPressureUI").toggle(!!data.has_filter_pressure_sensor);
     $(".membranePressureUI").toggle(!!data.has_membrane_pressure_sensor);
     $(".productSalinityUI").toggle(!!data.has_product_tds_sensor);
@@ -2953,16 +2973,15 @@
     $(".flushVolumeUI").toggle(!!data.has_brine_flow_sensor);
   }
 
-  Brineomatic.prototype.updateEditUI = function (data) {
-    this.updateAutoflushVisibility(data.autoflush_mode);
-    this.updateBoostPumpVisibility(data.boost_pump_control);
-    this.updateHighPressurePumpVisibility(data.high_pressure_pump_control);
-    this.updateHighPressureValveVisibility(data.high_pressure_valve_control);
-    this.updateDiverterValveVisibility(data.diverter_valve_control);
-    this.updateFlushValveVisibility(data.flush_valve_control);
-    this.updateCoolingFanVisibility(data.cooling_fan_control);
-
-    $('#bomConfigForm input.form-check-input').each(function () { $('#bomConfigForm #' + this.id + '_form').toggle(this.checked); });
+  Brineomatic.prototype.updateSafeguardChecks = function () {
+    //sub forms for each checkbox
+    $('#bomConfigForm input.form-check-input').each(function () { });
+    $('#bomConfigForm input.form-check-input').each(function () {
+      if (!this.checked || this.disabled)
+        $('#bomConfigForm #' + this.id + '_form').hide();
+      else
+        $('#bomConfigForm #' + this.id + '_form').show();
+    });
   }
 
   Brineomatic.prototype.addEditUIHandlers = function (data) {
@@ -2992,6 +3011,56 @@
 
     $("#cooling_fan_control").on("change", (e) => {
       YB.bom.updateCoolingFanVisibility(e.target.value);
+    });
+
+    $("#has_membrane_pressure_sensor").on("change", (e) => {
+      YB.bom.updateMembranePressureVisibility(e.target.checked);
+      YB.bom.updateSafeguardChecks();
+    });
+
+    $("#has_filter_pressure_sensor").on("change", (e) => {
+      YB.bom.updateFilterPressureVisibility(e.target.checked);
+
+      let has_brine_flow_sensor = $('#has_brine_flow_sensor').prop('checked');
+      this.updateFlushValveClosedCheckVisibility(e.target.checked, has_brine_flow_sensor);
+
+      YB.bom.updateSafeguardChecks();
+    });
+
+    $("#has_product_flow_sensor").on("change", (e) => {
+      YB.bom.updateProductFlowrateVisibility(e.target.checked);
+
+      let has_brine_flow_sensor = $('#has_brine_flow_sensor').prop('checked');
+      YB.bom.updateDiverterValveClosedCheckVisibility(e.target.checked, has_brine_flow_sensor);
+
+      YB.bom.updateSafeguardChecks();
+    });
+
+    $("#has_brine_flow_sensor").on("change", (e) => {
+      YB.bom.updateBrineFlowrateVisibility(e.target.checked);
+
+      let has_product_flow_sensor = $('#has_product_flow_sensor').prop('checked');
+      YB.bom.updateDiverterValveClosedCheckVisibility(has_product_flow_sensor, e.target.checked);
+
+      let has_filter_pressure_sensor = $('#has_filter_pressure_sensor').prop('checked');
+      this.updateFlushValveClosedCheckVisibility(has_filter_pressure_sensor, e.target.checked);
+
+      YB.bom.updateSafeguardChecks();
+    });
+
+    $("#has_product_tds_sensor").on("change", (e) => {
+      YB.bom.updateProductTDSVisibility(e.target.checked);
+      YB.bom.updateSafeguardChecks();
+    });
+
+    $("#has_brine_tds_sensor").on("change", (e) => {
+      YB.bom.updateBrineTDSVisibility(e.target.checked);
+      YB.bom.updateSafeguardChecks();
+    });
+
+    $("#has_motor_temperature_sensor").on("change", (e) => {
+      YB.bom.updateMotorTemperatureVisibility(e.target.checked);
+      YB.bom.updateSafeguardChecks();
     });
 
     $('#bomConfigForm input.form-check-input').on('change', function () { $('#bomConfigForm #' + this.id + '_form').toggle(this.checked); });
@@ -3167,6 +3236,47 @@
         break;
     }
   };
+
+  Brineomatic.prototype.updateMembranePressureVisibility = function (hasSensor) {
+    $("#enable_membrane_pressure_high_check").prop("disabled", !hasSensor);
+    $("#enable_membrane_pressure_low_check").prop("disabled", !hasSensor);
+  }
+
+  Brineomatic.prototype.updateFilterPressureVisibility = function (hasSensor) {
+    $("#enable_filter_pressure_high_check").prop("disabled", !hasSensor);
+    $("#enable_filter_pressure_low_check").prop("disabled", !hasSensor);
+    $("#enable_flush_filter_pressure_low_check").prop("disabled", !hasSensor);
+  }
+
+  Brineomatic.prototype.updateProductFlowrateVisibility = function (hasSensor) {
+    $("#enable_product_flowrate_high_check").prop("disabled", !hasSensor);
+    $("#enable_product_flowrate_low_check").prop("disabled", !hasSensor);
+  }
+
+  Brineomatic.prototype.updateBrineFlowrateVisibility = function (hasSensor) {
+    $("#enable_run_total_flowrate_low_check").prop("disabled", !hasSensor);
+    $("#enable_pickle_total_flowrate_low_check").prop("disabled", !hasSensor);
+    $("#enable_flush_flowrate_low_check").prop("disabled", !hasSensor);
+  }
+
+  Brineomatic.prototype.updateProductTDSVisibility = function (hasSensor) {
+    $("#enable_product_salinity_high_check").prop("disabled", !hasSensor);
+  }
+
+  Brineomatic.prototype.updateBrineTDSVisibility = function (hasSensor) {
+  }
+
+  Brineomatic.prototype.updateMotorTemperatureVisibility = function (hasSensor) {
+    $("#enable_motor_temperature_check").prop("disabled", !hasSensor);
+  }
+
+  Brineomatic.prototype.updateDiverterValveClosedCheckVisibility = function (has_product_flow_sensor, has_brine_flow_sensor) {
+    $("#enable_diverter_valve_closed_check").prop("disabled", !(has_product_flow_sensor && has_brine_flow_sensor));
+  }
+
+  Brineomatic.prototype.updateFlushValveClosedCheckVisibility = function (has_filter_pressure_sensor, has_brine_flow_sensor) {
+    $("#enable_flush_valve_off_check").prop("disabled", !(has_filter_pressure_sensor || has_brine_flow_sensor));
+  }
 
   Brineomatic.prototype.getBrineomaticConfigFormData = function () {
     const data = {};
@@ -3727,9 +3837,7 @@
     YB.Util.flashClass($("#saveHardwareSettings"), "btn-success");
 
     //update our UI too.
-    this.updateControlUI(data);
-
-    console.log(data);
+    this.updateHardwareUIConfig(data);
 
     //okay, send it off.
     data["cmd"] = "brineomatic_save_hardware_config";
