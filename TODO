@@ -8,8 +8,9 @@
     * create super simple flowmeter object
 * total time tracking is broken
 * configuration system:
+    * UI control fields should be shown/disabled based on sensors
     * saveHardwareConfig only allowed in IDLE mode
-    * play melodies on success or error
+    * enable/disable safeguards config in UI based on hardware enabled/disabled
 * show "error" when no value for pressure or tank level
 * add mid-level commands to set_watermaker
     * boost_pump

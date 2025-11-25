@@ -3148,9 +3148,9 @@
 
     data.autoflush_mode = $("#autoflush_mode").val();
     data.autoflush_salinity = parseFloat($("#autoflush_salinity").val());
-    data.autoflush_duration = parseInt($("#autoflush_duration").val()) * 60 * 1000;
+    data.autoflush_duration = Math.round(parseFloat($("#autoflush_duration").val()) * 60 * 1000);
     data.autoflush_volume = parseFloat($("#autoflush_volume").val());
-    data.autoflush_interval = parseInt($("#autoflush_interval").val()) * 60 * 60 * 1000;
+    data.autoflush_interval = Math.round(parseFloat($("#autoflush_interval").val()) * 60 * 60 * 1000);
     data.autoflush_use_high_pressure_motor = $("#autoflush_use_high_pressure_motor").prop("checked");
 
     data.tank_capacity = parseFloat($("#tank_capacity").val());

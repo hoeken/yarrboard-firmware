@@ -13,6 +13,7 @@
   #include "brineomatic.h"
   #include "debug.h"
   #include "etl/deque.h"
+  #include "piezo.h"
   #include "relay_channel.h"
   #include "servo_channel.h"
   #include "stepper_channel.h"
@@ -545,7 +546,7 @@ void Brineomatic::startVolume(float volume)
 
 void Brineomatic::flush()
 {
-  if (currentStatus == Status::IDLE || currentStatus == Status::PICKLED) {
+  if (currentStatus == Status::IDLE || currentStatus == Status::PICKLED || currentStatus == Status::STOPPING) {
     desiredFlushDuration = 0;
     desiredFlushVolume = 0;
     currentStatus = Status::FLUSHING;
@@ -554,7 +555,7 @@ void Brineomatic::flush()
 
 void Brineomatic::flushDuration(uint32_t duration)
 {
-  if (currentStatus == Status::IDLE || currentStatus == Status::PICKLED) {
+  if (currentStatus == Status::IDLE || currentStatus == Status::PICKLED || currentStatus == Status::STOPPING) {
     desiredFlushDuration = duration;
     desiredFlushVolume = 0;
     currentStatus = Status::FLUSHING;
@@ -563,7 +564,7 @@ void Brineomatic::flushDuration(uint32_t duration)
 
 void Brineomatic::flushVolume(float volume)
 {
-  if (currentStatus == Status::IDLE || currentStatus == Status::PICKLED) {
+  if (currentStatus == Status::IDLE || currentStatus == Status::PICKLED || currentStatus == Status::STOPPING) {
     desiredFlushDuration = 0;
     desiredFlushVolume = volume;
     currentStatus = Status::FLUSHING;
@@ -613,6 +614,7 @@ bool Brineomatic::initializeHardware()
           break;
         }
       }
+      YBP.println("Membrane Pressure off");
     }
 
     // turns our high pressure valve controller off
@@ -621,12 +623,21 @@ bool Brineomatic::initializeHardware()
 
   disableHighPressurePump();
 
-  if (highPressureValveControl.equals("STEPPER"))
-    highPressureValveStepper->home();
+  if (highPressureValveControl.equals("STEPPER")) {
+    if (highPressureValveStepper->home())
+      YBP.println("Stepper Homing OK");
+    else
+      YBP.println("Stepper Homing failed.");
+  }
 
   disableBoostPump();
   closeFlushValve();
   disableCoolingFan();
+
+  if (isFailure)
+    YBP.println("Hardware Init Failed");
+  else
+    YBP.println("Hardware Init OK");
 
   return isFailure;
 }
@@ -649,16 +660,17 @@ bool Brineomatic::isBoostPumpOn()
 void Brineomatic::enableBoostPump()
 {
   if (hasBoostPump()) {
-    boostPumpOnState = true;
+    YBP.println("Boost Pump ON");
     if (boostPumpControl.equals("RELAY"))
       boostPump->setState(true);
-  } else
-    boostPumpOnState = false;
+  }
+  boostPumpOnState = true;
 }
 
 void Brineomatic::disableBoostPump()
 {
   if (hasBoostPump()) {
+    YBP.println("Boost Pump OFF");
     if (boostPumpControl.equals("RELAY"))
       boostPump->setState(false);
   }
@@ -678,18 +690,19 @@ bool Brineomatic::isHighPressurePumpOn()
 void Brineomatic::enableHighPressurePump()
 {
   if (hasHighPressurePump()) {
+    YBP.println("High Pressure Pump ON");
     if (highPressurePumpControl.equals("RELAY"))
       highPressurePump->setState(true);
     else if (highPressurePumpControl.equals("MODBUS"))
       modbusEnableHighPressurePump();
-    highPressurePumpOnState = true;
-  } else
-    highPressurePumpOnState = false;
+  }
+  highPressurePumpOnState = true;
 }
 
 void Brineomatic::disableHighPressurePump()
 {
   if (hasHighPressurePump()) {
+    YBP.println("High Pressure Pump OFF");
     if (highPressurePumpControl.equals("RELAY"))
       highPressurePump->setState(false);
     else if (highPressurePumpControl.equals("MODBUS"))
@@ -725,16 +738,17 @@ bool Brineomatic::isDiverterValveOpen()
 void Brineomatic::openDiverterValve()
 {
   if (hasDiverterValve()) {
-    diverterValveOpenState = true;
+    YBP.println("Diverter Valve Open");
     if (diverterValveControl.equals("SERVO"))
       diverterValve->write(diverterValveOpenAngle);
-  } else
-    diverterValveOpenState = false;
+  }
+  diverterValveOpenState = true;
 }
 
 void Brineomatic::closeDiverterValve()
 {
   if (hasDiverterValve()) {
+    YBP.println("Diverter Valve Closed");
     if (diverterValveControl.equals("SERVO"))
       diverterValve->write(diverterValveCloseAngle);
   }
@@ -754,16 +768,17 @@ bool Brineomatic::isFlushValveOpen()
 void Brineomatic::openFlushValve()
 {
   if (hasFlushValve()) {
+    YBP.println("Flush Valve Open");
     if (flushValveControl.equals("RELAY"))
       flushValve->setState(true);
-    flushValveOpenState = true;
-  } else
-    flushValveOpenState = false;
+  }
+  flushValveOpenState = true;
 }
 
 void Brineomatic::closeFlushValve()
 {
   if (hasFlushValve()) {
+    YBP.println("Flush Valve Closed");
     if (flushValveControl.equals("RELAY"))
       flushValve->setState(false);
   }
@@ -783,16 +798,17 @@ bool Brineomatic::isCoolingFanOn()
 void Brineomatic::enableCoolingFan()
 {
   if (hasCoolingFan()) {
+    // YBP.println("Cooling Fan ON");
     if (coolingFanControl.equals("RELAY"))
       coolingFan->setState(true);
-    coolingFanOnState = true;
-  } else
-    coolingFanOnState = false;
+  }
+  coolingFanOnState = true;
 }
 
 void Brineomatic::disableCoolingFan()
 {
   if (hasCoolingFan()) {
+    // YBP.println("Cooling Fan OFF");
     if (coolingFanControl.equals("RELAY"))
       coolingFan->setState(false);
   }
@@ -1159,6 +1175,7 @@ void Brineomatic::runStateMachine()
     // STARTUP
     //
     case Status::STARTUP:
+      YBP.println("STARTUP");
       initializeHardware();
 
       if (isPickled)
@@ -1201,8 +1218,9 @@ void Brineomatic::runStateMachine()
     // RUNNING
     //
     case Status::RUNNING: {
-      resetErrorTimers();
+      YBP.println("RUNNING");
 
+      resetErrorTimers();
       runtimeStart = millis();
       uint32_t lastRuntimeUpdate = runtimeStart;
 
@@ -1218,7 +1236,7 @@ void Brineomatic::runStateMachine()
       if (hasBoostPump()) {
         YBP.println("Boost Pump Started");
         enableBoostPump();
-        if (hasFilterPressureSensor) {
+        if (hasFilterPressureSensor && enableFilterPressureLowCheck) {
           while (getFilterPressure() < getFilterPressureMinimum()) {
             if (checkStopFlag(runResult))
               return;
@@ -1232,24 +1250,23 @@ void Brineomatic::runStateMachine()
         YBP.println("Boost Pump OK");
       }
 
-      YBP.println("High Pressure Pump Started");
       enableHighPressurePump();
       setMembranePressureTarget(membranePressureTarget);
 
-      if (waitForMembranePressure())
+      if (waitForMembranePressure()) {
+        YBP.println("Membrane Pressure Error");
         return;
+      }
 
-      YBP.println("High Pressure Pump OK");
-
-      if (waitForProductFlowrate())
+      if (waitForProductFlowrate()) {
+        YBP.println("Product Flowrate Error");
         return;
+      }
 
-      YBP.println("Flowrate OK");
-
-      if (waitForProductSalinity())
+      if (waitForProductSalinity()) {
+        YBP.println("Product Salinity Error");
         return;
-
-      YBP.println("Salinity OK");
+      }
 
       closeDiverterValve();
 
@@ -1343,17 +1360,30 @@ void Brineomatic::runStateMachine()
     // STOPPING
     //
     case Status::STOPPING: {
+      YBP.println("STOPPING");
+      YBP.printf("Run Status: %s\n", resultToString(runResult));
+
       resetErrorTimers();
 
-      if (initializeHardware())
+      if (initializeHardware()) {
         currentStatus = Status::IDLE;
-      else {
+        return;
+      } else {
+        if (runResult == Result::SUCCESS_TIME || runResult == Result::SUCCESS_VOLUME || runResult == Result::SUCCESS_VOLUME)
+          playMelodyByName(successMelody.c_str());
+        else
+          playMelodyByName(errorMelody.c_str());
+
         if (autoflushMode.equals("TIME"))
           flushDuration(autoflushDuration);
         else if (autoflushMode.equals("VOLUME"))
           flushVolume(autoflushVolume);
         else if (autoflushMode.equals("SALINITY"))
           flush();
+        else if (autoflushMode.equals("NONE"))
+          currentStatus = Status::IDLE;
+        else
+          currentStatus = Status::IDLE;
       }
 
       break;
@@ -1363,6 +1393,13 @@ void Brineomatic::runStateMachine()
     // FLUSHING
     //
     case Status::FLUSHING: {
+      YBP.println("FLUSHING");
+
+      if (!hasFlushValve()) {
+        currentStatus = Status::IDLE;
+        return;
+      }
+
       resetErrorTimers();
 
       flushStart = millis();
@@ -1399,7 +1436,7 @@ void Brineomatic::runStateMachine()
         // are we going for time?
         if (desiredFlushDuration > 0 && getFlushElapsed() > desiredFlushDuration) {
           flushResult = Result::SUCCESS_TIME;
-          DUMP("DURATION");
+          // DUMP("DURATION");
           break;
         }
 
@@ -1804,6 +1841,8 @@ bool Brineomatic::waitForMembranePressure()
   if (!hasMembranePressureSensor)
     return false;
 
+  YBP.println("Wait for Membrane Pressure");
+
   uint32_t highPressurePumpStart = millis();
   while (getMembranePressure() < getMembranePressureMinimum()) {
 
@@ -1827,6 +1866,8 @@ bool Brineomatic::waitForMembranePressure()
     vTaskDelay(pdMS_TO_TICKS(100));
   }
 
+  YBP.println("High Pressure Pump OK");
+
   return false;
 }
 
@@ -1834,6 +1875,8 @@ bool Brineomatic::waitForProductFlowrate()
 {
   if (!hasProductFlowSensor)
     return false;
+
+  YBP.println("Wait for Product Flowrate");
 
   int flowReady = 0;
   uint32_t flowCheckStart = millis();
@@ -1858,6 +1901,8 @@ bool Brineomatic::waitForProductFlowrate()
     vTaskDelay(pdMS_TO_TICKS(100));
   }
 
+  YBP.println("Flowrate OK");
+
   return false;
 }
 
@@ -1865,6 +1910,8 @@ bool Brineomatic::waitForProductSalinity()
 {
   if (!hasProductTDSSensor)
     return false;
+
+  YBP.println("Wait for Product Salinity");
 
   int salinityReady = 0;
   uint32_t salinityCheckStart = millis();
@@ -1888,6 +1935,8 @@ bool Brineomatic::waitForProductSalinity()
     vTaskDelay(pdMS_TO_TICKS(100));
   }
 
+  YBP.println("Salinity OK");
+
   return false;
 }
 
@@ -1895,6 +1944,11 @@ bool Brineomatic::waitForFlushValveOff()
 {
   if (!enableFlushValveOffCheck)
     return false;
+
+  if (!hasFilterPressureSensor && !hasBrineFlowSensor)
+    return false;
+
+  YBP.println("Wait for Flush Valve Off");
 
   uint32_t start = millis();
 
