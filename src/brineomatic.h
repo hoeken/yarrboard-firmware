@@ -97,7 +97,6 @@ class Brineomatic
     static constexpr const char* COOLING_FAN_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
 
     bool isPickled;
-    bool flushUseHighPressureMotor = false;
 
     RelayChannel* flushValve = NULL;
     RelayChannel* boostPump = NULL;
@@ -314,6 +313,7 @@ class Brineomatic
     uint32_t autoflushDuration;
     float autoflushVolume;
     uint32_t autoflushInterval;
+    bool autoflushUseHighPressureMotor;
 
     float tankLevelFull;            // 0 = empty, 1 = full
     float tankCapacity;             // Liters

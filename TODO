@@ -9,7 +9,6 @@
 * total time tracking is broken
 * configuration system:
     * saveHardwareConfig only allowed in IDLE mode
-    * add boolean to config: flushUseHighPressureMotor
     * make sure we're using the new config:
         * any calls to our channel objects should be wrapped in a control mode check
         * has_* hardware before using that hardware

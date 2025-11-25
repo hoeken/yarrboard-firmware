@@ -1363,7 +1363,7 @@ void Brineomatic::runStateMachine()
 
       // start up our hardware
       openFlushValve();
-      if (flushUseHighPressureMotor)
+      if (autoflushUseHighPressureMotor)
         enableHighPressurePump();
 
       // check our sensors while we flush
@@ -1375,7 +1375,7 @@ void Brineomatic::runStateMachine()
         if (checkFlushFlowrateLow())
           break;
 
-        if (hasHighPressurePump() && flushUseHighPressureMotor && checkMotorTemperature(flushResult))
+        if (hasHighPressurePump() && autoflushUseHighPressureMotor && checkMotorTemperature(flushResult))
           break;
 
         if (checkStopFlag(flushResult))
@@ -1872,6 +1872,7 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["autoflush_duration"] = this->autoflushDuration;
   bom["autoflush_volume"] = this->autoflushVolume;
   bom["autoflush_interval"] = this->autoflushInterval;
+  bom["autoflush_use_high_pressure_motor"] = this->autoflushUseHighPressureMotor;
 
   bom["flush_timeout"] = this->flushTimeout;
   bom["membrane_pressure_timeout"] = this->membranePressureTimeout;
@@ -2040,6 +2041,10 @@ bool Brineomatic::validateGeneralConfigJSON(JsonVariantConst config, char* error
     if (!checkNumGT(config, "autoflush_interval", 0, error, err_size))
       return false;
   }
+
+  if (config["autoflush_use_high_pressure_motor"])
+    if (!checkIsBool(config, "autoflush_use_high_pressure_motor", error, err_size))
+      return false;
 
   // tank_capacity (required, number > 0)
   if (!checkPresence(config, "tank_capacity", error, err_size))
@@ -2659,6 +2664,7 @@ void Brineomatic::loadGeneralConfigJSON(JsonVariantConst config)
   this->autoflushDuration = config["autoflush_duration"] | YB_AUTOFLUSH_DURATION;
   this->autoflushVolume = config["autoflush_volume"] | YB_AUTOFLUSH_VOLUME;
   this->autoflushInterval = config["autoflush_interval"] | YB_AUTOFLUSH_INTERVAL;
+  this->autoflushUseHighPressureMotor = config["autoflush_use_high_pressure_motor"] | YB_AUTOFLUSH_USE_HIGH_PRESSURE_MOTOR;
   this->tankCapacity = config["tank_capacity"] | YB_TANK_CAPACITY;
   this->temperatureUnits = config["temperature_units"] | YB_TEMPERATURE_UNITS;
   this->pressureUnits = config["pressure_units"] | YB_PRESSURE_UNITS;

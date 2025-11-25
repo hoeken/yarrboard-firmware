@@ -1919,7 +1919,7 @@
                           <div class="input-group has-validation">
                             <span class="input-group-text">Autoflush Duration</span>
                             <input id="autoflush_duration" type="text" class="form-control text-end">
-                            <span class="input-group-text">liters</span>
+                            <span class="input-group-text">minutes</span>
                             <div class="invalid-feedback"></div>
                           </div>
                         </div>
@@ -1940,6 +1940,14 @@
                             <span class="input-group-text">hours</span>
                             <div class="invalid-feedback"></div>
                           </div>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                          <input class="form-check-input" type="checkbox" id="autoflush_use_high_pressure_motor">
+                          <label class="form-check-label" for="autoflush_use_high_pressure_motor">
+                            Use high pressure motor during autoflush
+                          </label>
+                          <div class="invalid-feedback"></div>
                         </div>
 
                         <hr class="bold">
@@ -2785,6 +2793,7 @@
     $("#autoflush_duration").val(data.autoflush_duration / (60 * 1000));
     $("#autoflush_volume").val(data.autoflush_volume);
     $("#autoflush_interval").val(data.autoflush_interval / (60 * 60 * 1000));
+    $("#autoflush_use_high_pressure_motor").prop('checked', data.autoflush_use_high_pressure_motor);
 
     $("#tank_capacity").val(data.tank_capacity);
     $("#temperature_units").val(data.temperature_units);
@@ -2961,22 +2970,26 @@
     $("#autoflush_duration").closest(".mb-3").hide();
     $("#autoflush_volume").closest(".mb-3").hide();
     $("#autoflush_interval").closest(".mb-3").hide();
+    $("#autoflush_use_high_pressure_motor").closest(".mb-3").hide();
 
     // Show based on mode
     switch (mode) {
       case "SALINITY":
         $("#autoflush_salinity").closest(".mb-3").show();
         $("#autoflush_interval").closest(".mb-3").show();
+        $("#autoflush_use_high_pressure_motor").closest(".mb-3").show();
         break;
 
       case "TIME":
         $("#autoflush_duration").closest(".mb-3").show();
         $("#autoflush_interval").closest(".mb-3").show();
+        $("#autoflush_use_high_pressure_motor").closest(".mb-3").show();
         break;
 
       case "VOLUME":
         $("#autoflush_volume").closest(".mb-3").show();
         $("#autoflush_interval").closest(".mb-3").show();
+        $("#autoflush_use_high_pressure_motor").closest(".mb-3").show();
         break;
 
       case "NONE":
@@ -3122,6 +3135,7 @@
     data.autoflush_duration = parseInt($("#autoflush_duration").val()) * 60 * 1000;
     data.autoflush_volume = parseFloat($("#autoflush_volume").val());
     data.autoflush_interval = parseInt($("#autoflush_interval").val()) * 60 * 60 * 1000;
+    data.autoflush_use_high_pressure_motor = $("#autoflush_use_high_pressure_motor").prop("checked");
 
     data.tank_capacity = parseFloat($("#tank_capacity").val());
     data.temperature_units = $("#temperature_units").val();
@@ -3260,7 +3274,7 @@
     return {
       autoflush_mode: {
         presence: true,
-        inclusion: ["NONE", "TIME", "SALINITY", "MANUAL"]
+        inclusion: ["NONE", "TIME", "SALINITY", "VOLUME"]
       },
 
       autoflush_salinity: {
@@ -3286,6 +3300,10 @@
         numericality: {
           greaterThan: 0
         }
+      },
+
+      autoflush_use_high_pressure_motor: {
+        inclusion: [true, false]
       },
 
       tank_capacity: {

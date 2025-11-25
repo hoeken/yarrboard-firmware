@@ -37,6 +37,10 @@
   #define YB_AUTOFLUSH_INTERVAL (3 * 24 * 60 * 60 * 1000)
 #endif
 
+#ifndef YB_AUTOFLUSH_USE_HIGH_PRESSURE_MOTOR
+  #define YB_AUTOFLUSH_USE_HIGH_PRESSURE_MOTOR false
+#endif
+
 #ifndef YB_TEMPERATURE_UNITS
   #define YB_TEMPERATURE_UNITS "celsius"
 #endif
