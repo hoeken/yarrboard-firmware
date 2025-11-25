@@ -644,6 +644,9 @@ bool Brineomatic::initializeHardware()
 
 bool Brineomatic::autoflushEnabled()
 {
+  if (!hasFlushValve())
+    return false;
+
   return !autoflushMode.equals("NONE");
 }
 
