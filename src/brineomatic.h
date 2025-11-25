@@ -434,8 +434,8 @@ class Brineomatic
     bool checkFilterPressureLow();
     bool checkProductFlowrateLow();
     bool checkProductFlowrateHigh();
-    bool checkBrineFlowrateLow(float flowrate, Result& result);
-    bool checkTotalFlowrateLow(float flowrate);
+    bool checkPickleTotalFlowrateLow(Result& result);
+    bool checkRunTotalFlowrateLow();
     bool checkFlushFilterPressureLow();
     bool checkFlushFlowrateLow();
     bool checkDiverterValveClosed();

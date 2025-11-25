@@ -1247,7 +1247,7 @@ void Brineomatic::runStateMachine()
         if (checkMembranePressureHigh())
           return;
 
-        if (checkTotalFlowrateLow(runTotalFlowrateLowThreshold))
+        if (checkRunTotalFlowrateLow())
           return;
 
         if (checkProductFlowrateLow())
@@ -1438,7 +1438,7 @@ void Brineomatic::runStateMachine()
         if (stopFlag)
           break;
 
-        if (checkBrineFlowrateLow(pickleTotalFlowrateLowThreshold, pickleResult)) {
+        if (checkPickleTotalFlowrateLow(pickleResult)) {
           currentStatus = Status::IDLE;
           initializeHardware();
           return;
@@ -1482,7 +1482,7 @@ void Brineomatic::runStateMachine()
         if (stopFlag)
           break;
 
-        if (checkBrineFlowrateLow(pickleTotalFlowrateLowThreshold, depickleResult)) {
+        if (checkPickleTotalFlowrateLow(depickleResult)) {
           currentStatus = Status::IDLE;
           initializeHardware();
           return;
@@ -1544,6 +1544,9 @@ bool Brineomatic::checkMembranePressureHigh()
   if (!hasMembranePressureSensor)
     return false;
 
+  if (!enableMembranePressureHighCheck)
+    return false;
+
   return checkTimedError(
     getMembranePressure() > membranePressureHighThreshold,
     membranePressureHighStart,
@@ -1555,6 +1558,9 @@ bool Brineomatic::checkMembranePressureHigh()
 bool Brineomatic::checkMembranePressureLow()
 {
   if (!hasMembranePressureSensor)
+    return false;
+
+  if (!enableMembranePressureLowCheck)
     return false;
 
   return checkTimedError(
@@ -1570,6 +1576,9 @@ bool Brineomatic::checkFilterPressureHigh()
   if (!hasFilterPressureSensor)
     return false;
 
+  if (!enableFilterPressureHighCheck)
+    return false;
+
   return checkTimedError(
     getFilterPressure() > filterPressureHighThreshold,
     filterPressureHighStart,
@@ -1581,6 +1590,9 @@ bool Brineomatic::checkFilterPressureHigh()
 bool Brineomatic::checkFilterPressureLow()
 {
   if (!hasFilterPressureSensor)
+    return false;
+
+  if (!enableFilterPressureLowCheck)
     return false;
 
   return checkTimedError(
@@ -1596,6 +1608,9 @@ bool Brineomatic::checkProductFlowrateLow()
   if (!hasProductFlowSensor)
     return false;
 
+  if (!enableProductFlowrateLowCheck)
+    return false;
+
   return checkTimedError(
     getProductFlowrate() < getProductFlowrateMinimum(),
     productFlowrateLowStart,
@@ -1609,6 +1624,9 @@ bool Brineomatic::checkProductFlowrateHigh()
   if (!hasProductFlowSensor)
     return false;
 
+  if (!enableProductFlowrateHighCheck)
+    return false;
+
   return checkTimedError(
     getProductFlowrate() > productFlowrateHighThreshold,
     productFlowrateHighStart,
@@ -1617,13 +1635,16 @@ bool Brineomatic::checkProductFlowrateHigh()
     runResult);
 }
 
-bool Brineomatic::checkBrineFlowrateLow(float flowrate, Result& result)
+bool Brineomatic::checkPickleTotalFlowrateLow(Result& result)
 {
   if (!hasBrineFlowSensor)
     return false;
 
+  if (!enablePickleTotalFlowrateLowCheck)
+    return false;
+
   return checkTimedError(
-    getBrineFlowrate() < flowrate,
+    getBrineFlowrate() < pickleTotalFlowrateLowThreshold,
     brineFlowrateLowStart,
     pickleTotalFlowrateLowDelay,
     Result::ERR_BRINE_FLOWRATE_LOW,
@@ -1633,6 +1654,9 @@ bool Brineomatic::checkBrineFlowrateLow(float flowrate, Result& result)
 bool Brineomatic::checkFlushFilterPressureLow()
 {
   if (!hasFilterPressureSensor)
+    return false;
+
+  if (!enableFlushFilterPressureLowCheck)
     return false;
 
   return checkTimedError(
@@ -1645,18 +1669,30 @@ bool Brineomatic::checkFlushFilterPressureLow()
 
 bool Brineomatic::checkFlushFlowrateLow()
 {
+  if (!hasBrineFlowSensor)
+    return false;
+
+  if (!enableFlushFlowrateLowCheck)
+    return false;
+
   return checkTimedError(
-    getTotalFlowrate() < flushFlowrateLowThreshold,
+    getBrineFlowrate() < flushFlowrateLowThreshold,
     flushFlowrateLowStart,
     flushFlowrateLowDelay,
     Result::ERR_FLUSH_FLOWRATE_LOW,
     flushResult);
 }
 
-bool Brineomatic::checkTotalFlowrateLow(float flowrate)
+bool Brineomatic::checkRunTotalFlowrateLow()
 {
+  if (!hasBrineFlowSensor)
+    return false;
+
+  if (!enableRunTotalFlowrateLowCheck)
+    return false;
+
   return checkTimedError(
-    getTotalFlowrate() < flowrate,
+    getTotalFlowrate() < runTotalFlowrateLowThreshold,
     totalFlowrateLowStart,
     runTotalFlowrateLowDelay,
     Result::ERR_TOTAL_FLOWRATE_LOW,
@@ -1669,6 +1705,9 @@ bool Brineomatic::checkDiverterValveClosed()
     return false;
 
   if (!hasBrineFlowSensor)
+    return false;
+
+  if (!enableDiverterValveClosedCheck)
     return false;
 
   return checkTimedError(
@@ -1684,6 +1723,9 @@ bool Brineomatic::checkProductSalinityHigh()
   if (!hasProductTDSSensor)
     return false;
 
+  if (!enableProductSalinityHighCheck)
+    return false;
+
   return checkTimedError(
     getProductSalinity() > getProductSalinityMaximum(),
     productSalinityHighStart,
@@ -1695,6 +1737,9 @@ bool Brineomatic::checkProductSalinityHigh()
 bool Brineomatic::checkMotorTemperature(Result& result)
 {
   if (!hasMotorTemperatureSensor)
+    return false;
+
+  if (!enableMotorTemperatureCheck)
     return false;
 
   return checkTimedError(
@@ -1740,7 +1785,7 @@ bool Brineomatic::waitForMembranePressure()
   while (getMembranePressure() < getMembranePressureMinimum()) {
 
     // let the spice flow
-    if (checkTotalFlowrateLow(runTotalFlowrateLowThreshold))
+    if (checkRunTotalFlowrateLow())
       return true;
 
     // check this here in case our PID goes crazy
@@ -1825,6 +1870,9 @@ bool Brineomatic::waitForProductSalinity()
 
 bool Brineomatic::waitForFlushValveOff()
 {
+  if (!enableFlushValveOffCheck)
+    return false;
+
   uint32_t start = millis();
 
   bool done = false;
