@@ -3373,7 +3373,7 @@
 
       high_pressure_valve_control: {
         presence: true,
-        inclusion: ["NONE", "MANUAL", "STEPPER", "SERVO"]
+        inclusion: ["NONE", "MANUAL", "STEPPER"]
       },
 
       membrane_pressure_target: {

@@ -10,7 +10,6 @@
 * configuration system:
     * saveHardwareConfig only allowed in IDLE mode
     * make sure we're using the new config:
-        * any calls to our channel objects should be wrapped in a control mode check
         * has_* hardware before using that hardware
         * error checking booleans - check enabled flag first
     * play melodies on success or error

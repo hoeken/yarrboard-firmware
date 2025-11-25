@@ -91,7 +91,7 @@ class Brineomatic
 
     static constexpr const char* BOOST_PUMP_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
     static constexpr const char* HIGH_PRESSURE_PUMP_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
-    static constexpr const char* HIGH_PRESSURE_VALVE_CONTROLS[] = {"NONE", "MANUAL", "STEPPER", "SERVO"};
+    static constexpr const char* HIGH_PRESSURE_VALVE_CONTROLS[] = {"NONE", "MANUAL", "STEPPER"};
     static constexpr const char* DIVERTER_VALVE_CONTROLS[] = {"NONE", "MANUAL", "SERVO"};
     static constexpr const char* FLUSH_VALVE_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
     static constexpr const char* COOLING_FAN_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
@@ -103,7 +103,6 @@ class Brineomatic
     RelayChannel* highPressurePump = NULL;
     RelayChannel* coolingFan = NULL;
     ServoChannel* diverterValve = NULL;
-    ServoChannel* highPressureValveServo = NULL;
     StepperChannel* highPressureValveStepper = NULL;
 
     float highPressureValveOpenMin;
