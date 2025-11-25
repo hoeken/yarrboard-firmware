@@ -597,13 +597,16 @@ bool Brineomatic::initializeHardware()
   // actively running, zero out our pressure
   if (currentMembranePressureTarget > 0) {
     setMembranePressureTarget(0);
-    uint32_t membranePressureStart = millis();
-    while (getMembranePressure() > 65) {
-      vTaskDelay(pdMS_TO_TICKS(100));
 
-      if (millis() - membranePressureStart > membranePressureTimeout) {
-        isFailure = true;
-        break;
+    if (hasMembranePressureSensor) {
+      uint32_t membranePressureStart = millis();
+      while (getMembranePressure() > 65) {
+        vTaskDelay(pdMS_TO_TICKS(100));
+
+        if (millis() - membranePressureStart > membranePressureTimeout) {
+          isFailure = true;
+          break;
+        }
       }
     }
 
@@ -776,7 +779,7 @@ void Brineomatic::disableCoolingFan()
 void Brineomatic::manageCoolingFan()
 {
   if (currentStatus != Status::MANUAL) {
-    if (hasCoolingFan()) {
+    if (hasCoolingFan() && hasMotorTemperatureSensor) {
       if (getMotorTemperature() >= coolingFanOnTemperature)
         enableCoolingFan();
       else if (getMotorTemperature() <= coolingFanOffTemperature)
@@ -995,15 +998,21 @@ uint32_t Brineomatic::getFinishCountdown()
       if (countdown > 0)
         return countdown;
     } else if (desiredVolume > 0) {
-      float remainingVolume = desiredVolume - currentVolume;
-      uint32_t remainingMillis = (remainingVolume / getProductFlowrate()) * 3600 * 1000;
-      return remainingMillis;
+      float flowrate = getProductFlowrate();
+      if (flowrate > 0) {
+        float remainingVolume = desiredVolume - currentVolume;
+        uint32_t remainingMillis = (remainingVolume / flowrate) * 3600 * 1000;
+        return remainingMillis;
+      }
     }
     // if we have tank capacity and a flowrate, we can estimate.
     else if (getTankCapacity() > 0 && getProductFlowrate() > 0) {
       float remainingVolume = getTankCapacity() * (1.0 - getTankLevel());
-      uint32_t remainingMillis = (remainingVolume / getProductFlowrate()) * (3600 * 1000);
-      return remainingMillis;
+      float flowrate = getProductFlowrate();
+      if (flowrate > 0) {
+        uint32_t remainingMillis = (remainingVolume / flowrate) * (3600 * 1000);
+        return remainingMillis;
+      }
     }
   }
 
@@ -1028,9 +1037,12 @@ uint32_t Brineomatic::getFlushCountdown()
     if (countdown > 0)
       return countdown;
   } else if (desiredFlushVolume) {
-    float remainingVolume = desiredFlushVolume - getFlushVolume();
-    uint32_t remainingMillis = (remainingVolume / getBrineFlowrate()) * 3600 * 1000;
-    return remainingMillis;
+    float flowrate = getBrineFlowrate();
+    if (flowrate > 0) {
+      float remainingVolume = desiredFlushVolume - getFlushVolume();
+      uint32_t remainingMillis = (remainingVolume / flowrate) * 3600 * 1000;
+      return remainingMillis;
+    }
   } else {
     int32_t countdown = flushTimeout - (millis() - flushStart);
     if (countdown > 0)
@@ -1183,14 +1195,16 @@ void Brineomatic::runStateMachine()
       if (hasBoostPump()) {
         YBP.println("Boost Pump Started");
         enableBoostPump();
-        while (getFilterPressure() < getFilterPressureMinimum()) {
-          if (checkStopFlag(runResult))
-            return;
+        if (hasFilterPressureSensor) {
+          while (getFilterPressure() < getFilterPressureMinimum()) {
+            if (checkStopFlag(runResult))
+              return;
 
-          if (checkFilterPressureLow())
-            return;
+            if (checkFilterPressureLow())
+              return;
 
-          vTaskDelay(pdMS_TO_TICKS(100));
+            vTaskDelay(pdMS_TO_TICKS(100));
+          }
         }
         YBP.println("Boost Pump OK");
       }
@@ -1412,7 +1426,6 @@ void Brineomatic::runStateMachine()
       resetErrorTimers();
 
       pickleStart = millis();
-      brineFlowrateLowStart = 0;
 
       if (initializeHardware()) {
         currentStatus = Status::IDLE;
@@ -1458,7 +1471,6 @@ void Brineomatic::runStateMachine()
       resetErrorTimers();
 
       depickleStart = millis();
-      brineFlowrateLowStart = 0;
 
       if (initializeHardware()) {
         currentStatus = Status::IDLE;
@@ -1529,6 +1541,9 @@ bool Brineomatic::checkStopFlag(Result& result)
 
 bool Brineomatic::checkMembranePressureHigh()
 {
+  if (!hasMembranePressureSensor)
+    return false;
+
   return checkTimedError(
     getMembranePressure() > membranePressureHighThreshold,
     membranePressureHighStart,
@@ -1539,6 +1554,9 @@ bool Brineomatic::checkMembranePressureHigh()
 
 bool Brineomatic::checkMembranePressureLow()
 {
+  if (!hasMembranePressureSensor)
+    return false;
+
   return checkTimedError(
     getMembranePressure() < membranePressureLowThreshold,
     membranePressureLowStart,
@@ -1549,6 +1567,9 @@ bool Brineomatic::checkMembranePressureLow()
 
 bool Brineomatic::checkFilterPressureHigh()
 {
+  if (!hasFilterPressureSensor)
+    return false;
+
   return checkTimedError(
     getFilterPressure() > filterPressureHighThreshold,
     filterPressureHighStart,
@@ -1559,6 +1580,9 @@ bool Brineomatic::checkFilterPressureHigh()
 
 bool Brineomatic::checkFilterPressureLow()
 {
+  if (!hasFilterPressureSensor)
+    return false;
+
   return checkTimedError(
     getFilterPressure() < filterPressureLowThreshold,
     filterPressureLowStart,
@@ -1569,6 +1593,9 @@ bool Brineomatic::checkFilterPressureLow()
 
 bool Brineomatic::checkProductFlowrateLow()
 {
+  if (!hasProductFlowSensor)
+    return false;
+
   return checkTimedError(
     getProductFlowrate() < getProductFlowrateMinimum(),
     productFlowrateLowStart,
@@ -1579,6 +1606,9 @@ bool Brineomatic::checkProductFlowrateLow()
 
 bool Brineomatic::checkProductFlowrateHigh()
 {
+  if (!hasProductFlowSensor)
+    return false;
+
   return checkTimedError(
     getProductFlowrate() > productFlowrateHighThreshold,
     productFlowrateHighStart,
@@ -1589,6 +1619,9 @@ bool Brineomatic::checkProductFlowrateHigh()
 
 bool Brineomatic::checkBrineFlowrateLow(float flowrate, Result& result)
 {
+  if (!hasBrineFlowSensor)
+    return false;
+
   return checkTimedError(
     getBrineFlowrate() < flowrate,
     brineFlowrateLowStart,
@@ -1599,6 +1632,9 @@ bool Brineomatic::checkBrineFlowrateLow(float flowrate, Result& result)
 
 bool Brineomatic::checkFlushFilterPressureLow()
 {
+  if (!hasFilterPressureSensor)
+    return false;
+
   return checkTimedError(
     getFilterPressure() < flushFilterPressureLowThreshold,
     flushFilterPressureLowStart,
@@ -1629,6 +1665,12 @@ bool Brineomatic::checkTotalFlowrateLow(float flowrate)
 
 bool Brineomatic::checkDiverterValveClosed()
 {
+  if (!hasProductFlowSensor)
+    return false;
+
+  if (!hasBrineFlowSensor)
+    return false;
+
   return checkTimedError(
     getTotalFlowrate() > getBrineFlowrate() + getProductFlowrate(),
     diverterValveOpenStart,
@@ -1639,6 +1681,9 @@ bool Brineomatic::checkDiverterValveClosed()
 
 bool Brineomatic::checkProductSalinityHigh()
 {
+  if (!hasProductTDSSensor)
+    return false;
+
   return checkTimedError(
     getProductSalinity() > getProductSalinityMaximum(),
     productSalinityHighStart,
@@ -1649,6 +1694,9 @@ bool Brineomatic::checkProductSalinityHigh()
 
 bool Brineomatic::checkMotorTemperature(Result& result)
 {
+  if (!hasMotorTemperatureSensor)
+    return false;
+
   return checkTimedError(
     getMotorTemperature() > getMotorTemperatureMaximum(),
     motorTemperatureStart,
@@ -1680,8 +1728,14 @@ bool Brineomatic::checkTimedError(bool condition,
   return false;
 }
 
+// return true on error
+// return false on success
 bool Brineomatic::waitForMembranePressure()
 {
+  // skip this if we dont have the sensor
+  if (!hasMembranePressureSensor)
+    return false;
+
   uint32_t highPressurePumpStart = millis();
   while (getMembranePressure() < getMembranePressureMinimum()) {
 
@@ -1710,14 +1764,17 @@ bool Brineomatic::waitForMembranePressure()
 
 bool Brineomatic::waitForProductFlowrate()
 {
+  if (!hasProductFlowSensor)
+    return false;
+
   int flowReady = 0;
   uint32_t flowCheckStart = millis();
 
   while (flowReady < 10) {
     if (checkMembranePressureHigh())
-      return false;
+      return true;
     if (checkStopFlag(runResult))
-      return false;
+      return true;
 
     if (getProductFlowrate() > getProductFlowrateMinimum() && getProductFlowrate() < productFlowrateHighThreshold)
       flowReady++;
@@ -1738,13 +1795,16 @@ bool Brineomatic::waitForProductFlowrate()
 
 bool Brineomatic::waitForProductSalinity()
 {
+  if (!hasProductTDSSensor)
+    return false;
+
   int salinityReady = 0;
   uint32_t salinityCheckStart = millis();
   while (salinityReady < 10) {
     if (checkMembranePressureHigh())
-      return false;
+      return true;
     if (checkStopFlag(runResult))
-      return false;
+      return true;
 
     if (getProductSalinity() < getProductSalinityMaximum())
       salinityReady++;
@@ -1766,12 +1826,24 @@ bool Brineomatic::waitForProductSalinity()
 bool Brineomatic::waitForFlushValveOff()
 {
   uint32_t start = millis();
-  while (getFilterPressure() > 2 || getBrineFlowrate() > 0) {
+
+  bool done = false;
+  while (!done) {
     if (millis() - start > flushValveOffDelay) {
       currentStatus = Status::IDLE;
       flushResult = Result::ERR_FLUSH_VALVE_ON;
       return true;
     }
+
+    done = true;
+
+    if (hasFilterPressureSensor)
+      if (getFilterPressure() > 2)
+        done = false;
+
+    if (hasBrineFlowSensor)
+      if (getBrineFlowrate() > 0)
+        done = false;
 
     vTaskDelay(pdMS_TO_TICKS(100));
   }
