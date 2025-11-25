@@ -655,7 +655,6 @@
 
   Brineomatic.prototype.handleUpdateMessage = function (msg) {
     if (msg.brineomatic) {
-
       let motor_temperature = Math.round(msg.motor_temperature);
       let water_temperature = Math.round(msg.water_temperature);
       let product_flowrate = Math.round(msg.product_flowrate);
@@ -972,6 +971,17 @@
       }
       else
         $('#bomFanStatus').hide();
+
+      //disable our hardware form when not idle.
+      if (msg.status == "IDLE") {
+        $("#hardwareSettingsForm")
+          .find("input, select, textarea, button")
+          .prop("disabled", false);
+      } else {
+        $("#hardwareSettingsForm")
+          .find("input, select, textarea, button")
+          .prop("disabled", true);
+      }
     }
   }
 
@@ -2081,7 +2091,7 @@
                             <div class="invalid-feedback"></div>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-3" style="display: none">
                           <div class="input-group has-validation">
                             <span class="input-group-text">Pressure Target</span>
                             <input id="membrane_pressure_target" type="text" class="form-control text-end">
@@ -3045,11 +3055,9 @@
 
     switch (mode) {
       case "MANUAL":
-        pressureTargetDiv.show();
         break;
 
       case "STEPPER":
-        pressureTargetDiv.show();
         stepperDiv.show();
         break;
 

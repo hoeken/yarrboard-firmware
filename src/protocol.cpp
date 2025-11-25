@@ -1384,6 +1384,9 @@ void handleBrineomaticSaveGeneralConfig(JsonVariantConst input, JsonVariant outp
 
 void handleBrineomaticSaveHardwareConfig(JsonVariantConst input, JsonVariant output)
 {
+  if (strcmp(wm.getStatus(), "IDLE"))
+    return generateErrorJSON(output, "Must be in IDLE mode to update hardware config.");
+
   char error[128];
   if (!wm.validateHardwareConfigJSON(input, error, sizeof(error)))
     return generateErrorJSON(output, error);
