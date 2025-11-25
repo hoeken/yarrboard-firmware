@@ -90,7 +90,8 @@ class Brineomatic
     static constexpr const char* const FLOWRATE_UNITS[] = {"lph", "gph"};
 
     static constexpr const char* BOOST_PUMP_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
-    static constexpr const char* HIGH_PRESSURE_PUMP_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
+    static constexpr const char* HIGH_PRESSURE_PUMP_CONTROLS[] = {"NONE", "MANUAL", "RELAY", "MODBUS"};
+    static constexpr const char* HIGH_PRESSURE_PUMP_MODBUS_DEVICES[] = {"GD20"};
     static constexpr const char* HIGH_PRESSURE_VALVE_CONTROLS[] = {"NONE", "MANUAL", "STEPPER"};
     static constexpr const char* DIVERTER_VALVE_CONTROLS[] = {"NONE", "MANUAL", "SERVO"};
     static constexpr const char* FLUSH_VALVE_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
@@ -161,6 +162,8 @@ class Brineomatic
     bool hasHighPressurePump();
     void enableHighPressurePump();
     void disableHighPressurePump();
+    void modbusEnableHighPressurePump();
+    void modbusDisableHighPressurePump();
 
     bool isDiverterValveOpen();
     bool hasDiverterValve();
@@ -322,6 +325,7 @@ class Brineomatic
 
     String highPressurePumpControl;
     uint8_t highPressureRelayId;
+    String highPressurePumpModbusDevice;
 
     String highPressureValveControl;
     uint8_t highPressureValveStepperId;

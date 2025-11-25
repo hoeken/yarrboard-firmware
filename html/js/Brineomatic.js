@@ -2047,6 +2047,7 @@
                                 <option value="NONE">None</option>
                                 <option value="MANUAL">Manual</option>
                                 <option value="RELAY">Relay</option>
+                                <option value="MODBUS">Modbus / RS-485</option>
                             </select>
                             <label for="high_pressure_pump_control">High Pressure Pump Control</label>
                             <div class="invalid-feedback"></div>
@@ -2057,6 +2058,14 @@
                               ${relayOptions}
                             </select>
                             <label for="high_pressure_relay_id">High Pressure Pump Relay Channel</label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <select id="high_pressure_modbus_device" class="form-select" aria-label="High Pressure Pump Modbus Device">
+                              <option value="GD20">INVT GD20</option>
+                            </select>
+                            <label for="high_pressure_modbus_device">High Pressure Pump Modbus Device</label>
                             <div class="invalid-feedback"></div>
                         </div>
 
@@ -2811,6 +2820,7 @@
 
     $("#high_pressure_pump_control").val(data.high_pressure_pump_control);
     $("#high_pressure_relay_id").val(data.high_pressure_relay_id);
+    $("#high_pressure_modbus_device").val(data.high_pressure_modbus_device);
 
     $("#high_pressure_valve_control").val(data.high_pressure_valve_control);
     $("#membrane_pressure_target").val(data.membrane_pressure_target);
@@ -3011,11 +3021,17 @@
 
   Brineomatic.prototype.updateHighPressurePumpVisibility = function (mode) {
     const relayDiv = $("#high_pressure_relay_id").closest(".form-floating");
+    const modbusDiv = $("#high_pressure_modbus_device").closest(".form-floating");
 
     if (mode === "RELAY") {
       relayDiv.show();
+      modbusDiv.hide();
+    } else if (mode === "MODBUS") {
+      relayDiv.hide();
+      modbusDiv.show();
     } else {
       relayDiv.hide();
+      modbusDiv.hide();
     }
   };
 
@@ -3157,6 +3173,7 @@
 
     data.high_pressure_pump_control = $("#high_pressure_pump_control").val();
     data.high_pressure_relay_id = parseInt($("#high_pressure_relay_id").val());
+    data.high_pressure_modbus_device = $("#high_pressure_modbus_device").val();
 
     data.high_pressure_valve_control = $("#high_pressure_valve_control").val();
     data.membrane_pressure_target = parseFloat($("#membrane_pressure_target").val());
@@ -3360,7 +3377,7 @@
 
       high_pressure_pump_control: {
         presence: true,
-        inclusion: ["NONE", "MANUAL", "RELAY"]
+        inclusion: ["NONE", "MANUAL", "RELAY", "MODBUS"]
       },
 
       high_pressure_relay_id: {
@@ -3369,6 +3386,10 @@
           greaterThanOrEqualTo: 0
         },
         relayUnique: {}
+      },
+
+      high_pressure_pump_control: {
+        inclusion: ["GD20"]
       },
 
       high_pressure_valve_control: {

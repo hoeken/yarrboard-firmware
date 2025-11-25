@@ -8,7 +8,6 @@
     * create super simple flowmeter object
 * total time tracking is broken
 * configuration system:
-    * add MODBUS option
     * saveHardwareConfig only allowed in IDLE mode
     * play melodies on success or error
 * show "error" when no value for pressure or tank level

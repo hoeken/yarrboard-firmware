@@ -675,6 +675,8 @@ void Brineomatic::enableHighPressurePump()
   if (hasHighPressurePump()) {
     if (highPressurePumpControl.equals("RELAY"))
       highPressurePump->setState(true);
+    else if (highPressurePumpControl.equals("MODBUS"))
+      modbusEnableHighPressurePump();
     highPressurePumpOnState = true;
   } else
     highPressurePumpOnState = false;
@@ -685,8 +687,24 @@ void Brineomatic::disableHighPressurePump()
   if (hasHighPressurePump()) {
     if (highPressurePumpControl.equals("RELAY"))
       highPressurePump->setState(false);
+    else if (highPressurePumpControl.equals("MODBUS"))
+      modbusDisableHighPressurePump();
   }
   highPressurePumpOnState = false;
+}
+
+void Brineomatic::modbusEnableHighPressurePump()
+{
+  if (highPressurePumpModbusDevice.equals("GD20")) {
+    YBP.println("GD20 Pump Enable");
+  }
+}
+
+void Brineomatic::modbusDisableHighPressurePump()
+{
+  if (highPressurePumpModbusDevice.equals("GD20")) {
+    YBP.println("GD20 Pump Disable");
+  }
 }
 
 bool Brineomatic::hasDiverterValve()
@@ -1991,6 +2009,7 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
 
   bom["high_pressure_pump_control"] = this->highPressurePumpControl;
   bom["high_pressure_relay_id"] = this->highPressureRelayId;
+  bom["high_pressure_modbus_device"] = this->highPressurePumpModbusDevice;
 
   bom["high_pressure_valve_control"] = this->highPressureValveControl;
   bom["membrane_pressure_target"] = this->membranePressureTarget;
@@ -2226,6 +2245,11 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariantConst config, char* erro
     auto* ch = getChannelById(config["high_pressure_relay_id"], relay_channels);
     if (!ch)
       return fail("High Pressure Pump relay id invalid.", error, err_size);
+  }
+
+  if (config["high_pressure_modbus_device"]) {
+    if (!checkInclusion(config, "high_pressure_modbus_device", HIGH_PRESSURE_PUMP_MODBUS_DEVICES, error, err_size))
+      return false;
   }
 
   if (!checkPresence(config, "high_pressure_valve_control", error, err_size))
@@ -2779,6 +2803,7 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariantConst config)
 
   this->highPressurePumpControl = config["high_pressure_pump_control"] | YB_HIGH_PRESSURE_PUMP_CONTROL;
   this->highPressureRelayId = config["high_pressure_relay_id"] | YB_HIGH_PRESSURE_RELAY_ID;
+  this->highPressurePumpModbusDevice = config["high_pressure_modbus_device"] | YB_HIGH_PRESSURE_PUMP_MODBUS_DEVICE;
 
   this->highPressureValveControl = config["high_pressure_valve_control"] | YB_HIGH_PRESSURE_VALVE_CONTROL;
   this->membranePressureTarget = config["membrane_pressure_target"] | YB_MEMBRANE_PRESSURE_TARGET;
