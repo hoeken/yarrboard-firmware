@@ -20,29 +20,8 @@
   #include "validate.h"
   #include <ADS1X15.h>
   #include <Arduino.h>
-  #include <DallasTemperature.h>
-  #include <GravityTDS.h>
-  #include <OneWire.h>
 
 Brineomatic wm;
-
-static volatile uint16_t product_flowmeter_pulse_counter = 0;
-uint32_t lastProductFlowmeterCheckMicros = 0;
-float productFlowmeterPulsesPerLiter = YB_PRODUCT_FLOWMETER_DEFAULT_PPL;
-
-void IRAM_ATTR product_flowmeter_interrupt()
-{
-  product_flowmeter_pulse_counter = product_flowmeter_pulse_counter + 1;
-}
-
-static volatile uint16_t brine_flowmeter_pulse_counter = 0;
-uint32_t lastBrineFlowmeterCheckMicros = 0;
-float brineFlowmeterPulsesPerLiter = YB_BRINE_FLOWMETER_DEFAULT_PPL;
-
-void IRAM_ATTR brine_flowmeter_interrupt()
-{
-  brine_flowmeter_pulse_counter = brine_flowmeter_pulse_counter + 1;
-}
 
 ADS1115 brineomatic_adc(YB_ADS1115_ADDRESS);
 byte current_ads1115_channel = 0;
@@ -52,22 +31,6 @@ GravityTDS gravityTds;
 void brineomatic_setup()
 {
   wm.init();
-
-  // do our init for our product flowmeter
-  product_flowmeter_pulse_counter = 0;
-  lastProductFlowmeterCheckMicros = 0;
-  #ifdef YB_PRODUCT_FLOWMETER_PIN
-  pinMode(YB_PRODUCT_FLOWMETER_PIN, INPUT);
-  attachInterrupt(digitalPinToInterrupt(YB_PRODUCT_FLOWMETER_PIN), product_flowmeter_interrupt, FALLING);
-  #endif
-
-  // do our init for our brine flowmeter
-  brine_flowmeter_pulse_counter = 0;
-  lastBrineFlowmeterCheckMicros = 0;
-  #ifdef YB_BRINE_FLOWMETER_PIN
-  pinMode(YB_BRINE_FLOWMETER_PIN, INPUT);
-  attachInterrupt(digitalPinToInterrupt(YB_BRINE_FLOWMETER_PIN), brine_flowmeter_interrupt, FALLING);
-  #endif
 
   Wire.begin(YB_I2C_SDA_PIN, YB_I2C_SCL_PIN);
   Wire.setClock(YB_I2C_SPEED);
@@ -109,8 +72,8 @@ void brineomatic_loop()
     lastOutput = millis();
   }
 
-  measure_product_flowmeter();
-  measure_brine_flowmeter();
+  wm.measureProductFlowmeter();
+  wm.measureBrineFlowmeter();
   wm.measureMotorTemperature();
 
   if (brineomatic_adc.isReady()) {
@@ -152,68 +115,50 @@ void brineomatic_state_machine(void* pvParameters)
   }
 }
 
-void measure_product_flowmeter()
+void Brineomatic::measureProductFlowmeter()
 {
-  // check roughly every second
-  uint32_t elapsed = micros() - lastProductFlowmeterCheckMicros;
-  if (elapsed >= 1000000) {
-    // calculate flowrate
-    float elapsed_seconds = elapsed / 1000000;
+  if (!hasProductFlowSensor)
+    return;
 
-    // Calculate liters per second
-    float liters_per_second = (product_flowmeter_pulse_counter / productFlowmeterPulsesPerLiter) / elapsed_seconds;
+  #ifdef YB_PRODUCT_FLOWMETER_PIN
+  if (productFlowmeter.measure()) {
+    float flowrate = productFlowmeter.getFlowrate();
+    float volume = productFlowmeter.getVolume();
 
-    // Convert to liters per hour
-    float flowrate = liters_per_second * 3600;
-
-    // update our volume
     if ((wm.hasDiverterValve() && !wm.isDiverterValveOpen()) || !wm.hasDiverterValve()) {
-      wm.currentVolume += product_flowmeter_pulse_counter / productFlowmeterPulsesPerLiter;
-      wm.totalVolume += product_flowmeter_pulse_counter / productFlowmeterPulsesPerLiter;
+      currentVolume += volume;
+      totalVolume += volume;
     }
 
-    // reset counter
-    product_flowmeter_pulse_counter = 0;
-
-    // store microseconds when tacho was measured the last time
-    lastProductFlowmeterCheckMicros = micros();
-
-    // update our model
-    wm.setProductFlowrate(flowrate);
+    setProductFlowrate(flowrate);
   }
+  #endif
 }
 
-void measure_brine_flowmeter()
+void Brineomatic::measureBrineFlowmeter()
 {
-  // check roughly every second
-  uint32_t elapsed = micros() - lastBrineFlowmeterCheckMicros;
-  if (elapsed >= 1000000) {
-    // calculate flowrate
-    float elapsed_seconds = elapsed / 1000000;
+  if (!hasBrineFlowSensor)
+    return;
 
-    // Calculate liters per second
-    float liters_per_second = (brine_flowmeter_pulse_counter / brineFlowmeterPulsesPerLiter) / elapsed_seconds;
-
-    // Convert to liters per hour
-    float flowrate = liters_per_second * 3600;
+  #ifdef YB_BRINE_FLOWMETER_PIN
+  if (brineFlowmeter.measure()) {
+    float flowrate = brineFlowmeter.getFlowrate();
+    float volume = brineFlowmeter.getVolume();
 
     // update our volume
-    if (wm.isFlushValveOpen())
-      wm.currentFlushVolume += brine_flowmeter_pulse_counter / brineFlowmeterPulsesPerLiter;
+    if (isFlushValveOpen())
+      currentFlushVolume += volume;
 
-    // reset counter
-    brine_flowmeter_pulse_counter = 0;
-
-    // store microseconds when tacho was measured the last time
-    lastBrineFlowmeterCheckMicros = micros();
-
-    // update our model
-    wm.setBrineFlowrate(flowrate);
+    setBrineFlowrate(flowrate);
   }
+  #endif
 }
 
 void Brineomatic::measureMotorTemperature()
 {
+  if (!hasMotorTemperatureSensor)
+    return;
+
   if (ds18b20.isConversionComplete()) {
     float tempC = ds18b20.getTempC(motorThermometer);
 
@@ -368,6 +313,16 @@ void Brineomatic::init()
   ds18b20.setResolution(motorThermometer, 9);
   ds18b20.setWaitForConversion(false);
   ds18b20.requestTemperatures();
+
+  // do our init for our product flowmeter
+  #ifdef YB_PRODUCT_FLOWMETER_PIN
+  productFlowmeter.begin(YB_PRODUCT_FLOWMETER_PIN, productFlowmeterPPL);
+  #endif
+
+  // do our init for our brine flowmeter
+  #ifdef YB_BRINE_FLOWMETER_PIN
+  brineFlowmeter.begin(YB_BRINE_FLOWMETER_PIN, brineFlowmeterPPL);
+  #endif
 
   if (YB_HAS_MODBUS) {
     YB_MODBUS_SERIAL.setPins(YB_MODBUS_RX, YB_MODBUS_TX);

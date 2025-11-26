@@ -9,9 +9,13 @@
 #ifndef YARR_BRINEOMATIC_H
 #define YARR_BRINEOMATIC_H
 
+#include "Flowmeter.h"
 #include "brineomatic_config.h"
 #include "etl/deque.h"
 #include <ArduinoJson.h>
+#include <DallasTemperature.h>
+#include <GravityTDS.h>
+#include <OneWire.h>
 #include <QuickPID.h>
 
 class RelayChannel;
@@ -23,8 +27,6 @@ void brineomatic_loop();
 
 void brineomatic_state_machine(void* pvParameters);
 
-void measure_product_flowmeter();
-void measure_brine_flowmeter();
 void measure_product_salinity(int16_t reading);
 void measure_brine_salinity(int16_t reading);
 void measure_filter_pressure(int16_t reading);
@@ -109,6 +111,9 @@ class Brineomatic
     DallasTemperature ds18b20;
     DeviceAddress motorThermometer;
 
+    Flowmeter productFlowmeter;
+    Flowmeter brineFlowmeter;
+
     // float membranePressurePIDOutput;
     // QuickPID membranePressurePID;
     // float KpRamp = 0;
@@ -130,6 +135,8 @@ class Brineomatic
     void initChannels();
 
     void measureMotorTemperature();
+    void measureProductFlowmeter();
+    void measureBrineFlowmeter();
 
     void setFilterPressure(float pressure);
     void setMembranePressure(float pressure);
