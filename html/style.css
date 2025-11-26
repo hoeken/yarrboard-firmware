@@ -192,3 +192,17 @@ hr.bold {
     border: 0;
     border-top: 2px solid currentColor;
 }
+
+.filterPressureError,
+.membranePressureError,
+.motorTemperatureError,
+.tankLevelError {
+    display: none;
+}
+
+.filterPressureError>.d-flex,
+.membranePressureError>.d-flex,
+.motorTemperatureError>.d-flex,
+.tankLevelError>.d-flex {
+    height: 100px;
+}

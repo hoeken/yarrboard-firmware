@@ -676,6 +676,23 @@
         membrane_pressure = 0;
       let tank_level = Math.round(msg.tank_level * 100);
 
+      //errors or no?
+      let err = filter_pressure < 0;
+      $(".filterPressureContent").toggle(!err);
+      $(".filterPressureError").toggle(err);
+
+      err = membrane_pressure < 0;
+      $(".membranePressureContent").toggle(!err);
+      $(".membranePressureError").toggle(err);
+
+      err = motor_temperature < 0;
+      $(".motorTemperatureContent").toggle(!err);
+      $(".motorTemperatureError").toggle(err);
+
+      err = tank_level < 0;
+      $(".tankLevelContent").toggle(!err);
+      $(".tankLevelError").toggle(err);
+
       //update our gauges.
       if (!YB.App.isMFD()) {
         if (YB.App.currentPage == "control") {
@@ -689,54 +706,6 @@
           this.brineFlowrateGauge.load({ columns: [['Brine Flowrate', brine_flowrate]] });
           this.totalFlowrateGauge.load({ columns: [['Total Flowrate', total_flowrate]] });
           this.tankLevelGauge.load({ columns: [['Tank Level', tank_level]] });
-        }
-
-        if (YB.App.currentPage == "graphs") {
-
-          //only occasionally update our graph to keep it responsive
-          if (Date.now() - this.lastChartUpdate > 1000) {
-            this.lastChartUpdate = Date.now();
-
-            const currentTime = new Date(); // Get current time in ISO format
-            const formattedTime = d3.timeFormat('%Y-%m-%d %H:%M:%S.%L')(currentTime);
-
-            this.temperatureChart.flow({
-              columns: [
-                ['x', formattedTime],
-                ['Motor Temperature', motor_temperature],
-                ['Water Temperature', water_temperature]
-              ]
-            });
-
-            this.pressureChart.flow({
-              columns: [
-                ['x', formattedTime],
-                ['Filter Pressure', filter_pressure],
-                ['Membrane Pressure', membrane_pressure]
-              ]
-            });
-
-            this.productSalinityChart.flow({
-              columns: [
-                ['x', formattedTime],
-                ['Product Salinity', product_salinity]
-              ]
-            });
-
-            this.productFlowrateChart.flow({
-              columns: [
-                ['x', formattedTime],
-                ['Product Flowrate', product_flowrate]
-              ]
-            });
-
-            this.tankLevelChart.flow({
-              columns: [
-                ['x', formattedTime],
-                ['Tank Level', tank_level]
-              ]
-            });
-          }
         }
       } else {
         $("#filterPressureData").html(filter_pressure);
@@ -1743,11 +1712,25 @@
           <div id="bomGauges" class="row gx-0 my-3 mfdHide">
               <div class="filterPressureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Filter Pressure</h6>
-                  <div id="filterPressureGauge" class="d-flex justify-content-center"></div>
+                  <div class="filterPressureError">
+                    <div class="d-flex align-items-center justify-content-center">
+                      <h4 class="text-danger text-center m-0">No Data</h4>
+                    </div>
+                  </div>
+                  <div class="filterPressureContent">
+                    <div id="filterPressureGauge" class="d-flex justify-content-center"></div>
+                  </div>
               </div>
               <div class="membranePressureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Membrane Pressure</h6>
-                  <div id="membranePressureGauge" class="d-flex justify-content-center"></div>
+                  <div class="membranePressureError">
+                    <div class="d-flex align-items-center justify-content-center">
+                      <h4 class="text-danger text-center m-0">No Data</h4>
+                    </div>
+                  </div>
+                  <div class="membranePressureContent">
+                    <div id="membranePressureGauge" class="d-flex justify-content-center"></div>
+                  </div>
               </div>
               <div class="productSalinityUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Product Salinity</h6>
@@ -1771,7 +1754,14 @@
               </div>
               <div class="motorTemperatureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Motor Temperature</h6>
-                  <div id="motorTemperatureGauge" class="d-flex justify-content-center"></div>
+                  <div class="motorTemperatureError">
+                    <div class="d-flex align-items-center justify-content-center">
+                      <h4 class="text-danger text-center m-0">No Data</h4>
+                    </div>
+                  </div>
+                  <div class="motorTemperatureContent">
+                    <div id="motorTemperatureGauge" class="d-flex justify-content-center"></div>
+                  </div>
               </div>
               <div class="waterTemperatureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Water Temperature</h6>
@@ -1779,7 +1769,14 @@
               </div>
               <div class="tankLevelUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Tank Level</h6>
-                  <div id="tankLevelGauge" class="d-flex justify-content-center"></div>
+                  <div class="tankLevelError">
+                    <div class="d-flex align-items-center justify-content-center">
+                      <h4 class="text-danger text-center m-0">No Data</h4>
+                    </div>
+                  </div>
+                  <div class="tankLevelContent">
+                    <div id="tankLevelGauge" class="d-flex justify-content-center"></div>
+                  </div>
               </div>
               <div class="productVolumeUI col-md-3 col-sm-4 col-6 text-center">
                   <h6 class="my-0">Product Volume</h6>
@@ -1795,13 +1792,27 @@
           <div id="bomGaugesMFD" class="mfdShow row gx-0 gy-3 my-3 text-center">
               <div class="filterPressureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Filter Pressure</h6>
-                  <h1 id="filterPressureData" class="my-0"></h1>
-                  <h5 id="filterPressureUnits" class="text-body-tertiary">PSI</h5>
+                  <div class="filterPressureError">
+                    <div class="d-flex align-items-center justify-content-center">
+                      <h4 class="text-danger text-center m-0">No Data</h4>
+                    </div>
+                  </div>
+                  <div class="filterPressureContent">
+                    <h1 id="filterPressureData" class="my-0"></h1>
+                    <h5 id="filterPressureUnits" class="text-body-tertiary">PSI</h5>
+                  </div>
               </div>
               <div class="membranePressureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Membrane Pressure</h6>
-                  <h1 id="membranePressureData" class="my-0"></h1>
-                  <h5 id="membranePressureUnits" class="text-body-tertiary">PSI</h5>
+                  <div class="membranePressureError">
+                    <div class="d-flex align-items-center justify-content-center">
+                      <h4 class="text-danger text-center m-0">No Data</h4>
+                    </div>
+                  </div>
+                  <div class="membranePressureContent">
+                    <h1 id="membranePressureData" class="my-0"></h1>
+                    <h5 id="membranePressureUnits" class="text-body-tertiary">PSI</h5>
+                  </div>
               </div>
               <div class="productSalinityUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Product Salinity</h6>
@@ -1830,8 +1841,15 @@
               </div>
               <div class="motorTemperatureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Motor Temperature</h6>
-                  <h1 id="motorTemperatureData" class="my-0"></h1>
-                  <h5 id="motorTemperatureUnits" class="text-body-tertiary">°C</h5>
+                  <div class="motorTemperatureError">
+                    <div class="d-flex align-items-center justify-content-center">
+                      <h4 class="text-danger text-center m-0">No Data</h4>
+                    </div>
+                  </div>
+                  <div class="motorTemperatureContent">
+                    <h1 id="motorTemperatureData" class="my-0"></h1>
+                    <h5 id="motorTemperatureUnits" class="text-body-tertiary">°C</h5>
+                  </div>
               </div>
               <div class="waterTemperatureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Water Temperature</h6>
@@ -1840,8 +1858,15 @@
               </div>
               <div class="tankLevelUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Tank Level</h6>
-                  <h1 id="tankLevelData" class="my-0"></h1>
-                  <h5 id="tankLevelUnits" class="text-body-tertiary">%</h5>
+                  <div class="tankLevelError">
+                    <div class="d-flex align-items-center justify-content-center">
+                      <h4 class="text-danger text-center m-0">No Data</h4>
+                    </div>
+                  </div>
+                  <div class="tankLevelContent">
+                    <h1 id="tankLevelData" class="my-0"></h1>
+                    <h5 id="tankLevelUnits" class="text-body-tertiary">%</h5>
+                  </div>
               </div>
               <div class="productVolumeUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Product Volume</h6>

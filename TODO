@@ -2,11 +2,6 @@
 
 ## BRINEOMATIC
 
-* show "error" when no value:
-    * filter pressure
-    * membrane pressure
-    * motor temperature
-    * tank level
 * total time tracking is broken
 * move all the brineomatic stuff in setup() and loop() internal to BOM object.
     * probably dont need the helper functions like setFilterPressure()

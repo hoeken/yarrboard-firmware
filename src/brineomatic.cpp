@@ -267,7 +267,7 @@ void measure_filter_pressure(int16_t reading)
   float amperage = (voltage / YB_420_RESISTOR) * 1000;
 
   // we wan
-  if (amperage < 1.0) {
+  if (amperage < 3.5) {
     // YBP.println("No LP Sensor Detected");
     wm.setFilterPressure(-999);
     return;
@@ -285,7 +285,7 @@ void measure_membrane_pressure(int16_t reading)
   float voltage = brineomatic_adc.toVoltage(reading);
   float amperage = (voltage / YB_420_RESISTOR) * 1000;
 
-  if (amperage < 1.0) {
+  if (amperage < 3.5) {
     // YBP.println("No HP Sensor Detected");
     wm.setMembranePressure(-999);
     return;
@@ -853,11 +853,7 @@ void Brineomatic::manageCoolingFan()
 
 float Brineomatic::getFilterPressure()
 {
-  // ignore residual pressure in idle mode.
-  if (currentStatus == Status::IDLE && currentFilterPressure <= 2)
-    return 0;
-  else
-    return currentFilterPressure;
+  return currentFilterPressure;
 }
 
 float Brineomatic::getFilterPressureMinimum()
