@@ -26,11 +26,6 @@
 
 Brineomatic wm;
 
-// Setup a oneWire instance to communicate with any OneWire devices
-OneWire oneWire(YB_DS18B20_PIN);
-DallasTemperature ds18b20(&oneWire);
-DeviceAddress motorThermometer;
-
 static volatile uint16_t product_flowmeter_pulse_counter = 0;
 uint32_t lastProductFlowmeterCheckMicros = 0;
 float productFlowmeterPulsesPerLiter = YB_PRODUCT_FLOWMETER_DEFAULT_PPL;
@@ -74,20 +69,6 @@ void brineomatic_setup()
   attachInterrupt(digitalPinToInterrupt(YB_BRINE_FLOWMETER_PIN), brine_flowmeter_interrupt, FALLING);
   #endif
 
-  // DS18B20 Sensor
-  ds18b20.begin();
-  YBP.print("Found ");
-  YBP.print(ds18b20.getDeviceCount(), DEC);
-  YBP.println(" DS18B20 devices.");
-
-  // lookup our address
-  if (!ds18b20.getAddress(motorThermometer, 0))
-    YBP.println("Unable to find address for DS18B20");
-
-  ds18b20.setResolution(motorThermometer, 9);
-  ds18b20.setWaitForConversion(false);
-  ds18b20.requestTemperatures();
-
   Wire.begin(YB_I2C_SDA_PIN, YB_I2C_SCL_PIN);
   Wire.setClock(YB_I2C_SPEED);
   brineomatic_adc.begin();
@@ -130,7 +111,7 @@ void brineomatic_loop()
 
   measure_product_flowmeter();
   measure_brine_flowmeter();
-  measure_temperature();
+  wm.measureMotorTemperature();
 
   if (brineomatic_adc.isReady()) {
     int16_t value = brineomatic_adc.getValue();
@@ -231,15 +212,14 @@ void measure_brine_flowmeter()
   }
 }
 
-void measure_temperature()
+void Brineomatic::measureMotorTemperature()
 {
   if (ds18b20.isConversionComplete()) {
     float tempC = ds18b20.getTempC(motorThermometer);
 
-    if (tempC == DEVICE_DISCONNECTED_C) {
-      wm.setMotorTemperature(-999);
-    }
-    wm.setMotorTemperature(tempC);
+    if (tempC == DEVICE_DISCONNECTED_C)
+      setMotorTemperature(-999);
+    setMotorTemperature(tempC);
 
     ds18b20.requestTemperatures();
   }
@@ -302,7 +282,8 @@ void measure_membrane_pressure(int16_t reading)
   wm.setMembranePressure(highPressureReading);
 }
 
-Brineomatic::Brineomatic()
+Brineomatic::Brineomatic() : oneWire(YB_DS18B20_PIN), // constructor arg for OneWire
+                             ds18b20(&oneWire)        // DallasTemperature needs pointer to OneWire
 {
 }
 
@@ -373,6 +354,20 @@ void Brineomatic::init()
   // membranePressurePID.SetOutputLimits(YB_BOM_PID_OUTPUT_MIN, YB_BOM_PID_OUTPUT_MAX);
 
   this->initChannels();
+
+  // DS18B20 Sensor
+  ds18b20.begin();
+  YBP.print("Found ");
+  YBP.print(ds18b20.getDeviceCount(), DEC);
+  YBP.println(" DS18B20 devices.");
+
+  // lookup our address
+  if (!ds18b20.getAddress(motorThermometer, 0))
+    YBP.println("Unable to find address for DS18B20");
+
+  ds18b20.setResolution(motorThermometer, 9);
+  ds18b20.setWaitForConversion(false);
+  ds18b20.requestTemperatures();
 
   if (YB_HAS_MODBUS) {
     YB_MODBUS_SERIAL.setPins(YB_MODBUS_RX, YB_MODBUS_TX);

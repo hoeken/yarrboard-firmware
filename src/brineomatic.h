@@ -25,7 +25,6 @@ void brineomatic_state_machine(void* pvParameters);
 
 void measure_product_flowmeter();
 void measure_brine_flowmeter();
-void measure_temperature();
 void measure_product_salinity(int16_t reading);
 void measure_brine_salinity(int16_t reading);
 void measure_filter_pressure(int16_t reading);
@@ -106,6 +105,10 @@ class Brineomatic
     ServoChannel* diverterValve = NULL;
     StepperChannel* highPressureValveStepper = NULL;
 
+    OneWire oneWire;
+    DallasTemperature ds18b20;
+    DeviceAddress motorThermometer;
+
     // float membranePressurePIDOutput;
     // QuickPID membranePressurePID;
     // float KpRamp = 0;
@@ -125,6 +128,8 @@ class Brineomatic
     Brineomatic();
     void init();
     void initChannels();
+
+    void measureMotorTemperature();
 
     void setFilterPressure(float pressure);
     void setMembranePressure(float pressure);
