@@ -2,15 +2,18 @@
 
 ## BRINEOMATIC
 
-* hide run.volume when no product flowmeter
-* hide flush.auto when no brine tds
-* hide flush.volume when no brine flowmeter
-* show "error" when no value for pressure or tank level
+* show "error" when no value:
+    * filter pressure
+    * membrane pressure
+    * motor temperature
+    * tank level
 * total time tracking is broken
 * move all the brineomatic stuff in setup() and loop() internal to BOM object.
     * probably dont need the helper functions like setFilterPressure()
     * keep setWaterTemperature() and setTankLevel()
     * create super simple flowmeter object
+* ntp server and next flush being an actual time that is stored in preferences (survive reboot)
+* move brineomatic to interrupt based adc
 * add mid-level commands to set_watermaker
     * boost_pump
     * high_pressure_pump
@@ -26,8 +29,6 @@
     * membrane_pressure_target
     * advanced -> raw *channel ui
 * move everything to SI units, add configurable units
-* ntp server and next flush being an actual time that is stored in preferences (survive reboot)
-* move brineomatic to interrupt based adc
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker
     * sensors for each output type

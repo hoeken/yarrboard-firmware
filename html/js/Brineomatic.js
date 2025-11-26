@@ -1484,7 +1484,7 @@
                           <div class="modal-body">
                               <div class="container-fluid">
                                   <div class="row">
-                                      <div class="col-md-4">
+                                      <div id="startRunAutomaticDialog" class="col">
                                           <h5>Automatic</h5>
                                           <div class="small" style="height: 110px">
                                               Run until full.
@@ -1493,7 +1493,7 @@
                                               class="btn btn-success my-3" data-bs-dismiss="modal"
                                               style="width: 100%">Start</button>
                                       </div>
-                                      <div class="col-md-4">
+                                      <div id="startRunDurationDialog" class="col">
                                           <h5>Duration</h5>
                                           <div class="small" style="height: 70px">
                                               Run for the time below.
@@ -1510,7 +1510,7 @@
                                               class="btn btn-success my-3" data-bs-dismiss="modal"
                                               style="width: 100%">Start</button>
                                       </div>
-                                      <div class="col-md-4">
+                                      <div id="startRunVolumeDialog" class="col">
                                           <h5>Volume</h5>
                                           <div class="small" style="height: 70px">
                                               Make the amount of water below.
@@ -1552,7 +1552,7 @@
                           <div class="modal-body">
                               <div class="container-fluid">
                                   <div class="row">
-                                      <div class="col-md-4">
+                                      <div id="startFlushAutomaticDialog" class="col">
                                           <h5>Automatic</h5>
                                           <div class="small" style="height: 110px">
                                               Flush until clean
@@ -1561,7 +1561,7 @@
                                               class="btn btn-primary my-3" data-bs-dismiss="modal"
                                               style="width: 100%">Flush</button>
                                       </div>
-                                      <div class="col-md-4">
+                                      <div id="startFlushDurationDialog" class="col">
                                           <h5>Duration</h5>
                                           <div class="small" style="height: 70px">
                                               Flush for the time below.
@@ -1578,7 +1578,7 @@
                                               class="btn btn-primary my-3" data-bs-dismiss="modal"
                                               style="width: 100%">Flush</button>
                                       </div>
-                                      <div class="col-md-4">
+                                      <div id="startFlushVolumeDialog" class="col">
                                           <h5>Volume</h5>
                                           <div class="small" style="height: 70px">
                                               Flush the volume of water below.
@@ -3128,6 +3128,13 @@
       relayDiv.hide();
       modbusDiv.hide();
     }
+
+    $("#runBrineomatic").toggleClass("bomIDLE", mode !== "NONE");
+    $("#runBrineomatic").toggle(mode !== "NONE");
+    $("#pickleBrineomatic").toggleClass("bomIDLE", mode !== "NONE");
+    $("#pickleBrineomatic").toggle(mode !== "NONE");
+    $("#depickleBrineomatic").toggleClass("bomPICKLED", mode !== "NONE");
+    $("#depickleBrineomatic").toggle(mode !== "NONE");
   };
 
   Brineomatic.prototype.updateHighPressureValveVisibility = function (mode) {
@@ -3206,13 +3213,9 @@
   }
 
   Brineomatic.prototype.updateFlushValveVisibility = function (mode) {
-    const relayDiv = $("#flush_valve_relay_id").closest(".form-floating");
-
-    if (mode === "RELAY") {
-      relayDiv.show();
-    } else {
-      relayDiv.hide();
-    }
+    $("#flush_valve_relay_id").closest(".form-floating").toggle(mode === "RELAY");
+    $("#flushBrineomatic").toggleClass("bomIDLE bomPICKLED", mode !== "NONE");
+    $("#flushBrineomatic").toggle(mode !== "NONE")
   };
 
   Brineomatic.prototype.updateCoolingFanVisibility = function (mode) {
@@ -3250,12 +3253,16 @@
   Brineomatic.prototype.updateProductFlowrateVisibility = function (hasSensor) {
     $("#enable_product_flowrate_high_check").prop("disabled", !hasSensor);
     $("#enable_product_flowrate_low_check").prop("disabled", !hasSensor);
+
+    $("#startRunVolumeDialog").toggle(hasSensor);
   }
 
   Brineomatic.prototype.updateBrineFlowrateVisibility = function (hasSensor) {
     $("#enable_run_total_flowrate_low_check").prop("disabled", !hasSensor);
     $("#enable_pickle_total_flowrate_low_check").prop("disabled", !hasSensor);
     $("#enable_flush_flowrate_low_check").prop("disabled", !hasSensor);
+
+    $("#startFlushVolumeDialog").toggle(hasSensor);
   }
 
   Brineomatic.prototype.updateProductTDSVisibility = function (hasSensor) {
@@ -3263,6 +3270,7 @@
   }
 
   Brineomatic.prototype.updateBrineTDSVisibility = function (hasSensor) {
+    $("#startFlushAutomaticDialog").toggle(hasSensor);
   }
 
   Brineomatic.prototype.updateMotorTemperatureVisibility = function (hasSensor) {
