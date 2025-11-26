@@ -48,7 +48,6 @@
     this.handleConfigMessage = this.handleConfigMessage.bind(this);
     this.handleUpdateMessage = this.handleUpdateMessage.bind(this);
     this.handleStatsMessage = this.handleStatsMessage.bind(this);
-    this.handleGraphDataMessage = this.handleGraphDataMessage.bind(this);
 
     this.handleBrineomaticConfigSave = this.handleBrineomaticConfigSave.bind(this);
     this.handleHardwareConfigSave = this.handleHardwareConfigSave.bind(this);
@@ -57,7 +56,6 @@
     YB.App.addMessageHandler("config", this.handleConfigMessage);
     YB.App.addMessageHandler("update", this.handleUpdateMessage);
     YB.App.addMessageHandler("stats", this.handleStatsMessage);
-    YB.App.addMessageHandler("graph_data", this.handleGraphDataMessage);
 
     this.idle = this.idle.bind(this);
     this.startAutomatic = this.startAutomatic.bind(this);
@@ -963,88 +961,6 @@
       $("#bomTotalCycles").html(msg.total_cycles.toLocaleString('en-US'));
       $("#bomTotalVolume").html(`${totalVolume}L`);
       $("#bomTotalRuntime").html(`${totalRuntime} hours`);
-    }
-  }
-
-  Brineomatic.prototype.handleGraphDataMessage = function (msg) {
-    if (YB.App.currentPage == "graphs") {
-      this.timeData = [this.timeData[0]];
-      // Replace the rest of this.timeData with incremented timestamps
-      const currentTime = new Date(); // Get current time in ISO format
-      const timeIncrement = 5000; // Increment in milliseconds (5 seconds)
-      for (let i = msg.motor_temperature.length; i > 0; i -= 1) {
-        const newTime = new Date(currentTime.getTime() - i * timeIncrement);
-        const formattedNewTime = d3.timeFormat('%Y-%m-%d %H:%M:%S.%L')(newTime);
-        this.timeData.push(formattedNewTime);
-      }
-
-      if (msg.motor_temperature || msg.water_temperature) {
-        if (msg.motor_temperature)
-          this.motorTemperatureData = [this.motorTemperatureData[0]].concat(msg.motor_temperature);
-        if (msg.water_temperature)
-          this.waterTemperatureData = [this.waterTemperatureData[0]].concat(msg.water_temperature);
-
-        this.temperatureChart.load({
-          columns: [
-            this.timeData,
-            this.motorTemperatureData,
-            this.waterTemperatureData
-          ]
-        });
-      }
-
-      if (msg.filter_pressure || msg.membrane_pressure) {
-        if (msg.filter_pressure)
-          this.filterPressureData = [this.filterPressureData[0]].concat(msg.filter_pressure);
-        if (msg.membrane_pressure)
-          this.membranePressureData = [this.membranePressureData[0]].concat(msg.membrane_pressure);
-        this.pressureChart.load({
-          columns: [
-            this.timeData,
-            this.filterPressureData,
-            this.membranePressureData
-          ]
-        });
-      }
-
-      if (msg.product_salinity) {
-        this.productSalinityData = [this.productSalinityData[0]].concat(msg.product_salinity);
-
-        this.productSalinityChart.load({
-          columns: [
-            this.timeData,
-            this.productSalinityData
-          ]
-        });
-
-      }
-
-      if (msg.product_flowrate) {
-        this.productFlowrateData = [this.productFlowrateData[0]].concat(msg.product_flowrate);
-
-        this.productFlowrateChart.load({
-          columns: [
-            this.timeData,
-            this.productFlowrateData
-          ]
-        });
-      }
-
-      if (msg.tank_level) {
-        this.tankLevelData = [this.tankLevelData[0]].concat(msg.tank_level);
-
-        this.tankLevelChart.load({
-          columns: [
-            this.timeData,
-            this.tankLevelData
-          ]
-        });
-      }
-
-      //start getting updates too.
-      YB.App.startUpdateData();
-
-      YB.App.pageReady.graphs = true;
     }
   }
 
@@ -3898,74 +3814,6 @@
     data["cmd"] = "brineomatic_save_safeguards_config";
     YB.client.send(data, true);
   };
-
-  Brineomatic.prototype.generateGraphsUI = function () {
-    return /* html */ `
-      <div id="bomGraphs" class="col-md-12 mfdHide">
-        <h3>Graphs</h3>
-        <!-- Nav tabs -->
-        <ul class="nav nav-tabs" id="bomGraphsTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="bomTemperatureGraphTab" data-bs-toggle="tab"
-                    data-bs-target="#bomTemperatureGraphPanel" type="button" role="tab"
-                    aria-controls="bomTemperatureGraphPanel" aria-selected="true">Temperature</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="bomPressureGraphTab" data-bs-toggle="tab"
-                    data-bs-target="#bomPressureGraphPanel" type="button" role="tab"
-                    aria-controls="bomPressureGraphPanel" aria-selected="false">Pressure</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="bomProductSalinityGraphTab" data-bs-toggle="tab"
-                    data-bs-target="#bomProductSalinityGraphPanel" type="button" role="tab"
-                    aria-controls="bomProductSalinityGraphPanel" aria-selected="false">Product
-                    Salinity</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="bomProductFlowrateGraphTab" data-bs-toggle="tab"
-                    data-bs-target="#bomProductFlowrateGraphPanel" type="button" role="tab"
-                    aria-controls="bomProductFlowrateGraphPanel" aria-selected="false">Product
-                    Flowrate</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="bomTankLevelGraphTab" data-bs-toggle="tab"
-                    data-bs-target="#bomTankLevelGraphPanel" type="button" role="tab"
-                    aria-controls="bomTankLevelGraphPanel" aria-selected="false">Tank
-                    Level</button>
-            </li>
-        </ul>
-
-        <!-- Tab panes -->
-        <div class="tab-content">
-            <div class="tab-pane fade show active" id="bomTemperatureGraphPanel" role="tabpanel"
-                aria-labelledby="bomTemperatureGraphPanel">
-                <h4>Temperatures</h4>
-                <div id="temperatureChart" class="row"></div>
-            </div>
-            <div class="tab-pane fade" id="bomPressureGraphPanel" role="tabpanel"
-                aria-labelledby="bomPressureGraphPanel">
-                <h4>Pressures</h4>
-                <div id="pressureChart" class="row"></div>
-            </div>
-            <div class="tab-pane fade" id="bomProductSalinityGraphPanel" role="tabpanel"
-                aria-labelledby="bomProductSalinityGraphPanel">
-                <h4>Product Salinity</h4>
-                <div id="productSalinityChart" class="row"></div>
-            </div>
-            <div class="tab-pane fade" id="bomProductFlowrateGraphPanel" role="tabpanel"
-                aria-labelledby="bomProductFlowrateGraphPanel">
-                <h4>Product Flowrate</h4>
-                <div id="productFlowrateChart" class="row"></div>
-            </div>
-            <div class="tab-pane fade" id="bomTankLevelGraphPanel" role="tabpanel"
-                aria-labelledby="bomTankLevelGraphPanel">
-                <h4>Tank Level</h4>
-                <div id="tankLevelChart" class="row"></div>
-            </div>
-        </div>
-      </div>
-    `;
-  }
 
   YB.Brineomatic = Brineomatic;
   YB.bom = new Brineomatic();

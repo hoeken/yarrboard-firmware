@@ -175,11 +175,6 @@
       if (page == "stats")
         YB.App.getStatsData();
 
-      //request our historical graph data (if any)
-      if (page == "graphs") {
-        YB.App.getGraphData();
-      }
-
       //request our control updates.
       if (page == "control")
         YB.App.startUpdateData();
@@ -412,14 +407,6 @@
       }
     },
 
-    getGraphData: function () {
-      if (YB.client.isOpen() && (YB.App.role == 'guest' || YB.App.role == 'admin')) {
-        YB.client.send({
-          "cmd": "get_graph_data"
-        });
-      }
-    },
-
     startUpdateData: function () {
       if (!YB.App.updateIntervalId) {
         //YB.log("starting updates");
@@ -436,7 +423,7 @@
         YB.client.getUpdate();
 
         //keep loading it while we are here.
-        if (YB.App.currentPage == "control" || YB.App.currentPage == "graphs" || (YB.App.currentPage == "config" && YB.App.config && YB.App.config.hasOwnProperty("adc")))
+        if (YB.App.currentPage == "control" || (YB.App.currentPage == "config" && YB.App.config && YB.App.config.hasOwnProperty("adc")))
           return;
         else {
           //YB.log("stopping updates");

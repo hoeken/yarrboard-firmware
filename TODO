@@ -2,7 +2,6 @@
 
 ## BRINEOMATIC
 
-* ntp server and next flush being an actual time that is stored in preferences (survive reboot)
 * add mid-level commands to set_watermaker
     * boost_pump
     * high_pressure_pump
@@ -15,7 +14,6 @@
     * diverter valve
     * flush valve
     * fan
-    * membrane_pressure_target
     * advanced -> raw *channel ui
 * move everything to SI units, add configurable units
 * add simple HA support to brineomatic?
