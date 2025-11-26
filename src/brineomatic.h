@@ -10,6 +10,7 @@
 #define YARR_BRINEOMATIC_H
 
 #include "Flowmeter.h"
+#include "G20Modbus.h"
 #include "adchelper.h"
 #include "brineomatic_config.h"
 #include "etl/deque.h"
@@ -116,6 +117,8 @@ class Brineomatic
     ADS1115 _adc;
     ADS1115Helper* adcHelper;
 
+    GD20Modbus* gd20;
+
     // float membranePressurePIDOutput;
     // QuickPID membranePressurePID;
     // float KpRamp = 0;
@@ -135,6 +138,8 @@ class Brineomatic
     Brineomatic();
     void init();
     void initChannels();
+    void initModbus();
+
     void loop();
 
     void measureMotorTemperature();

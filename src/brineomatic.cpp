@@ -172,10 +172,15 @@ void Brineomatic::init()
   adcHelper = new ADS1115Helper(YB_ADS1115_VREF, &_adc, YB_ADS1115_SAMPLES, YB_ADS1115_WINDOW);
   adcHelper->attachReadyPinInterrupt(YB_ADS1115_READY_PIN, FALLING);
 
-  if (YB_HAS_MODBUS) {
-    YB_MODBUS_SERIAL.setPins(YB_MODBUS_RX, YB_MODBUS_TX);
-    YB_MODBUS_SERIAL.begin(YB_MODBUS_SPEED);
-  }
+  initModbus();
+}
+
+void Brineomatic::initModbus()
+{
+  #ifdef YB_HAS_MODBUS
+  if (highPressurePumpModbusDevice == "GD20")
+    gd20 = new GD20Modbus(0, YB_MODBUS_SERIAL, YB_MODBUS_RX, YB_MODBUS_TX);
+  #endif
 }
 
 void Brineomatic::loop()
@@ -620,16 +625,23 @@ void Brineomatic::disableHighPressurePump()
 
 void Brineomatic::modbusEnableHighPressurePump()
 {
+  #ifdef YB_HAS_MODBUS
   if (highPressurePumpModbusDevice.equals("GD20")) {
     YBP.println("GD20 Pump Enable");
+    gd20->setFrequency(25.0);
+    gd20->runMotor();
   }
+  #endif
 }
 
 void Brineomatic::modbusDisableHighPressurePump()
 {
+  #ifdef YB_HAS_MODBUS
   if (highPressurePumpModbusDevice.equals("GD20")) {
     YBP.println("GD20 Pump Disable");
+    gd20->stopMotor();
   }
+  #endif
 }
 
 bool Brineomatic::hasDiverterValve()

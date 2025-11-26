@@ -67,12 +67,11 @@
 #define YB_STEPPER_ENABLE_PINS   {11}
 #define YB_STEPPER_DIAG_PINS     {8}
 
-#ifndef YB_HAS_MODBUS
-  #define YB_HAS_MODBUS false
-#endif
-#define YB_MODBUS_SERIAL Serial2
-#define YB_MODBUS_RX     15
-#define YB_MODBUS_TX     16
-#define YB_MODBUS_SPEED  9600
+#define YB_HAS_MODBUS
+#define YB_MODBUS_SERIAL   Serial2
+#define YB_MODBUS_RX       47
+#define YB_MODBUS_TX       48
+#define YB_MODBUS_DERE_PIN 5
+#define YB_MODBUS_SPEED    9600
 
 #endif // _CONFIG_BRINEOMATIC_REV_B
