@@ -958,7 +958,7 @@
     if (msg.brineomatic) {
       let totalVolume = Math.round(msg.total_volume);
       totalVolume = totalVolume.toLocaleString('en-US');
-      let totalRuntime = (msg.total_runtime / (60 * 60 * 1000)).toFixed(1);
+      let totalRuntime = (msg.total_runtime / (60 * 60)).toFixed(1);
       totalRuntime = totalRuntime.toLocaleString('en-US');
       $("#bomTotalCycles").html(msg.total_cycles.toLocaleString('en-US'));
       $("#bomTotalVolume").html(`${totalVolume}L`);

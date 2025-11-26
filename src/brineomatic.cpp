@@ -1350,7 +1350,7 @@ void Brineomatic::runStateMachine()
         }
 
         // save our total runtime occasionally
-        if (millis() - lastRuntimeUpdate > 10 * 60 * 1000) {
+        if (millis() - lastRuntimeUpdate > 15 * 60 * 1000) {
           totalRuntime += (millis() - lastRuntimeUpdate) / 1000; // store as seconds
           preferences.putULong("bomTotRuntime", totalRuntime);
           lastRuntimeUpdate = millis();
@@ -1424,9 +1424,6 @@ void Brineomatic::runStateMachine()
 
       flushStart = millis();
       currentFlushVolume = 0;
-
-      DUMP(desiredFlushDuration);
-      DUMP(desiredFlushVolume);
 
       if (initializeHardware()) {
         currentStatus = Status::IDLE;
