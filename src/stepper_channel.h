@@ -35,6 +35,7 @@ class StepperChannel : public BaseChannel
 
     void setup();
     void setSpeed(float rpm);
+    void setStepsPerDegree(float steps);
     float getSpeed();
     float getAngle();
     int32_t getPosition();
@@ -66,7 +67,7 @@ class StepperChannel : public BaseChannel
     byte _dir_pin;
     byte _enable_pin;
 
-    float _steps_per_degree = (float)YB_STEPPER_STEPS_PER_REVOLUTION / 360.0;
+    float _steps_per_degree = 200 * YB_STEPPER_MICROSTEPS;
     uint32_t _acceleration = _steps_per_degree * 720; // steps/s^2
     float _default_speed_rpm = 10.0;                  // typical homing speed
     float _home_speed_rpm = 35.0;                     // homing speed

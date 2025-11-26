@@ -249,12 +249,17 @@ void StepperChannel::printDebug()
 
 void StepperChannel::setSpeed(float rpm)
 {
-  uint32_t hz = (rpm * (float)YB_STEPPER_STEPS_PER_REVOLUTION) / 60.0;
+  uint32_t hz = (rpm * _steps_per_degree * 360.0) / 60.0;
   _stepper->setSpeedInHz(hz);
 
   currentSpeed = rpm;
 
   // YBP.printf("CH%d | Set RPM: %.1f | Hz: %d\n", this->id, rpm, hz);
+}
+
+void StepperChannel::setStepsPerDegree(float steps)
+{
+  _steps_per_degree = steps;
 }
 
 float StepperChannel::getSpeed()
