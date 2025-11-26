@@ -27,9 +27,6 @@ void brineomatic_loop();
 
 void brineomatic_state_machine(void* pvParameters);
 
-void measure_filter_pressure(int16_t reading);
-void measure_membrane_pressure(int16_t reading);
-
 class Brineomatic
 {
   public:
@@ -133,12 +130,15 @@ class Brineomatic
     Brineomatic();
     void init();
     void initChannels();
+    void loop();
 
     void measureMotorTemperature();
     void measureProductFlowmeter();
     void measureBrineFlowmeter();
     void measureProductSalinity(int16_t reading);
     void measureBrineSalinity(int16_t reading);
+    void measureFilterPressure(int16_t reading);
+    void measureMembranePressure(int16_t reading);
 
     void setFilterPressure(float pressure);
     void setMembranePressure(float pressure);

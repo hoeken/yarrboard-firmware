@@ -50,10 +50,6 @@
 #define YB_LP_SENSOR_CHANNEL   2
 #define YB_HP_SENSOR_CHANNEL   3
 #define YB_420_RESISTOR        165.0
-#define YB_LP_SENSOR_MIN       0.0
-#define YB_LP_SENSOR_MAX       50.0
-#define YB_HP_SENSOR_MIN       0.0
-#define YB_HP_SENSOR_MAX       1000.0
 
 #define YB_HAS_STEPPER_CHANNELS
 #define YB_STEPPER_DRIVER_TMC2209

@@ -61,10 +61,6 @@ uint32_t lastOutput;
 
 void brineomatic_loop()
 {
-  wm.measureProductFlowmeter();
-  wm.measureBrineFlowmeter();
-  wm.measureMotorTemperature();
-
   if (brineomatic_adc.isReady()) {
     int16_t value = brineomatic_adc.getValue();
 
@@ -74,9 +70,9 @@ void brineomatic_loop()
       else if (current_ads1115_channel == 1)
         wm.measureProductSalinity(value);
       else if (current_ads1115_channel == 2)
-        measure_filter_pressure(value);
+        wm.measureFilterPressure(value);
       else if (current_ads1115_channel == 3)
-        measure_membrane_pressure(value);
+        wm.measureMembranePressure(value);
     } else
       YBP.println("ADC Error.");
 
@@ -89,8 +85,7 @@ void brineomatic_loop()
     brineomatic_adc.requestADC(current_ads1115_channel);
   }
 
-  wm.manageHighPressureValve();
-  wm.manageCoolingFan();
+  wm.loop();
 }
 
 // State machine task function
@@ -175,32 +170,29 @@ void Brineomatic::measureBrineSalinity(int16_t reading)
   setBrineSalinity(tdsReading);
 }
 
-void measure_filter_pressure(int16_t reading)
+void Brineomatic::measureFilterPressure(int16_t reading)
 {
   float voltage = brineomatic_adc.toVoltage(reading);
   float amperage = (voltage / YB_420_RESISTOR) * 1000;
 
-  // we wan
   if (amperage < 3.5) {
-    // YBP.println("No LP Sensor Detected");
-    wm.setFilterPressure(-999);
+    setFilterPressure(-999);
     return;
   }
 
   if (amperage < 4.0)
     amperage = 4.0;
 
-  float lowPressureReading = map_generic(amperage, 4.0, 20.0, 0.0, YB_LP_SENSOR_MAX);
-  wm.setFilterPressure(lowPressureReading);
+  float pressure = map_generic(amperage, 4.0, 20.0, filterPressureSensorMin, filterPressureSensorMax);
+  setFilterPressure(pressure);
 }
 
-void measure_membrane_pressure(int16_t reading)
+void Brineomatic::measureMembranePressure(int16_t reading)
 {
   float voltage = brineomatic_adc.toVoltage(reading);
   float amperage = (voltage / YB_420_RESISTOR) * 1000;
 
   if (amperage < 3.5) {
-    // YBP.println("No HP Sensor Detected");
     wm.setMembranePressure(-999);
     return;
   }
@@ -208,12 +200,8 @@ void measure_membrane_pressure(int16_t reading)
   if (amperage < 4.0)
     amperage = 4.0;
 
-  float highPressureReading = map_generic(amperage, 4.0, 20.0, 0.0, YB_HP_SENSOR_MAX);
-
-  // if (highPressureReading > ge)
-  //   YBP.printf("high pressure: %.3f\n", highPressureReading);
-
-  wm.setMembranePressure(highPressureReading);
+  float pressure = map_generic(amperage, 4.0, 20.0, membranePressureSensorMin, membranePressureSensorMax);
+  setMembranePressure(pressure);
 }
 
 Brineomatic::Brineomatic() : oneWire(YB_DS18B20_PIN), // constructor arg for OneWire
@@ -319,6 +307,15 @@ void Brineomatic::init()
     YB_MODBUS_SERIAL.setPins(YB_MODBUS_RX, YB_MODBUS_TX);
     YB_MODBUS_SERIAL.begin(YB_MODBUS_SPEED);
   }
+}
+
+void Brineomatic::loop()
+{
+  measureProductFlowmeter();
+  measureBrineFlowmeter();
+  measureMotorTemperature();
+  manageHighPressureValve();
+  manageCoolingFan();
 }
 
 void Brineomatic::initChannels()
