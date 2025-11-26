@@ -43,8 +43,11 @@
 #define YB_ADC_DRIVER_ADS1115
 #define YB_I2C_SDA_PIN         13
 #define YB_I2C_SCL_PIN         12
+#define YB_ADS1115_READY_PIN   42
 #define YB_ADS1115_VREF        4.096
 #define YB_ADS1115_ADDRESS     0x49
+#define YB_ADS1115_SAMPLES     50
+#define YB_ADS1115_WINDOW      250
 #define YB_BRINE_TDS_CHANNEL   0
 #define YB_PRODUCT_TDS_CHANNEL 1
 #define YB_LP_SENSOR_CHANNEL   2

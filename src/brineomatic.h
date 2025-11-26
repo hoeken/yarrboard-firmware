@@ -10,6 +10,7 @@
 #define YARR_BRINEOMATIC_H
 
 #include "Flowmeter.h"
+#include "adchelper.h"
 #include "brineomatic_config.h"
 #include "etl/deque.h"
 #include <ADS1X15.h>
@@ -113,7 +114,7 @@ class Brineomatic
     GravityTDS gravityTds;
 
     ADS1115 _adc;
-    byte current_ads1115_channel = 0;
+    ADS1115Helper* adcHelper;
 
     // float membranePressurePIDOutput;
     // QuickPID membranePressurePID;
@@ -139,10 +140,10 @@ class Brineomatic
     void measureMotorTemperature();
     void measureProductFlowmeter();
     void measureBrineFlowmeter();
-    void measureProductSalinity(int16_t reading);
-    void measureBrineSalinity(int16_t reading);
-    void measureFilterPressure(int16_t reading);
-    void measureMembranePressure(int16_t reading);
+    void measureProductSalinity();
+    void measureBrineSalinity();
+    void measureFilterPressure();
+    void measureMembranePressure();
 
     void setFilterPressure(float pressure);
     void setMembranePressure(float pressure);

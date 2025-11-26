@@ -168,8 +168,8 @@ void Brineomatic::init()
   _adc.setGain(1);     // ±4.096V
   _adc.setDataRate(3); // 64 samples per second.
 
-  current_ads1115_channel = 0;
-  _adc.requestADC(current_ads1115_channel);
+  adcHelper = new ADS1115Helper(YB_ADS1115_VREF, &_adc, YB_ADS1115_SAMPLES, YB_ADS1115_WINDOW);
+  adcHelper->attachReadyPinInterrupt(YB_ADS1115_READY_PIN, FALLING);
 
   if (YB_HAS_MODBUS) {
     YB_MODBUS_SERIAL.setPins(YB_MODBUS_RX, YB_MODBUS_TX);
@@ -179,30 +179,13 @@ void Brineomatic::init()
 
 void Brineomatic::loop()
 {
-  if (_adc.isReady()) {
-    int16_t value = _adc.getValue();
+  adcHelper->onLoop();
+  adcHelper->printDebug();
 
-    if (_adc.getError() == ADS1X15_OK) {
-      if (current_ads1115_channel == 0)
-        wm.measureBrineSalinity(value);
-      else if (current_ads1115_channel == 1)
-        wm.measureProductSalinity(value);
-      else if (current_ads1115_channel == 2)
-        wm.measureFilterPressure(value);
-      else if (current_ads1115_channel == 3)
-        wm.measureMembranePressure(value);
-    } else
-      YBP.println("ADC Error.");
-
-    // update to our channel index
-    current_ads1115_channel++;
-    if (current_ads1115_channel == 4)
-      current_ads1115_channel = 0;
-
-    // request new conversion
-    _adc.requestADC(current_ads1115_channel);
-  }
-
+  measureBrineSalinity();
+  measureProductSalinity();
+  measureFilterPressure();
+  measureMembranePressure();
   measureProductFlowmeter();
   measureBrineFlowmeter();
   measureMotorTemperature();
@@ -265,25 +248,27 @@ void Brineomatic::measureMotorTemperature()
   }
 }
 
-void Brineomatic::measureProductSalinity(int16_t reading)
+void Brineomatic::measureProductSalinity()
 {
+  int16_t reading = adcHelper->getAverageReading(YB_PRODUCT_TDS_CHANNEL);
   gravityTds.setTemperature(getWaterTemperature());
   gravityTds.update(reading);
   float tdsReading = gravityTds.getTdsValue();
   setProductSalinity(tdsReading);
 }
 
-void Brineomatic::measureBrineSalinity(int16_t reading)
+void Brineomatic::measureBrineSalinity()
 {
+  int16_t reading = adcHelper->getAverageReading(YB_BRINE_TDS_CHANNEL);
   gravityTds.setTemperature(getWaterTemperature());
   gravityTds.update(reading);
   float tdsReading = gravityTds.getTdsValue();
   setBrineSalinity(tdsReading);
 }
 
-void Brineomatic::measureFilterPressure(int16_t reading)
+void Brineomatic::measureFilterPressure()
 {
-  float voltage = _adc.toVoltage(reading);
+  float voltage = adcHelper->getAverageVoltage(YB_LP_SENSOR_CHANNEL);
   float amperage = (voltage / YB_420_RESISTOR) * 1000;
 
   if (amperage < 3.5) {
@@ -298,9 +283,9 @@ void Brineomatic::measureFilterPressure(int16_t reading)
   setFilterPressure(pressure);
 }
 
-void Brineomatic::measureMembranePressure(int16_t reading)
+void Brineomatic::measureMembranePressure()
 {
-  float voltage = _adc.toVoltage(reading);
+  float voltage = adcHelper->getAverageVoltage(YB_HP_SENSOR_CHANNEL);
   float amperage = (voltage / YB_420_RESISTOR) * 1000;
 
   if (amperage < 3.5) {
