@@ -13,8 +13,11 @@
 #include "time.h"
 #include <Arduino.h>
 
+extern bool ntp_is_ready;
+
 void ntp_setup();
 void ntp_loop();
+int64_t ntp_get_time();
 
 void timeAvailable(struct timeval* t);
 void printLocalTime();

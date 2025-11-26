@@ -13,6 +13,7 @@
   #include "brineomatic.h"
   #include "debug.h"
   #include "etl/deque.h"
+  #include "ntp.h"
   #include "piezo.h"
   #include "relay_channel.h"
   #include "servo_channel.h"
@@ -179,6 +180,12 @@ void Brineomatic::init()
 
 void Brineomatic::loop()
 {
+  // get NTP time when ready.
+  if (ntp_is_ready && lastAutoflushTimeNTP == 0) {
+    lastAutoflushTimeNTP = ntp_get_time();
+    preferences.putLong64("lastautoflush", lastAutoflushTimeNTP);
+  }
+
   adcHelper->onLoop();
   adcHelper->printDebug();
 
@@ -208,7 +215,7 @@ void Brineomatic::measureProductFlowmeter()
       totalVolume += volume;
     }
 
-    setProductFlowrate(flowrate);
+    currentProductFlowrate = flowrate;
   }
   #endif
 }
@@ -227,7 +234,7 @@ void Brineomatic::measureBrineFlowmeter()
     if (isFlushValveOpen())
       currentFlushVolume += volume;
 
-    setBrineFlowrate(flowrate);
+    currentBrineFlowrate = flowrate;
   }
   #endif
 }
@@ -238,12 +245,7 @@ void Brineomatic::measureMotorTemperature()
     return;
 
   if (ds18b20.isConversionComplete()) {
-    float tempC = ds18b20.getTempC(motorThermometer);
-
-    if (tempC == DEVICE_DISCONNECTED_C)
-      setMotorTemperature(-999);
-    setMotorTemperature(tempC);
-
+    currentMotorTemperature = ds18b20.getTempC(motorThermometer);
     ds18b20.requestTemperatures();
   }
 }
@@ -253,8 +255,7 @@ void Brineomatic::measureProductSalinity()
   int16_t reading = adcHelper->getAverageReading(YB_PRODUCT_TDS_CHANNEL);
   gravityTds.setTemperature(getWaterTemperature());
   gravityTds.update(reading);
-  float tdsReading = gravityTds.getTdsValue();
-  setProductSalinity(tdsReading);
+  currentProductSalinity = gravityTds.getTdsValue();
 }
 
 void Brineomatic::measureBrineSalinity()
@@ -262,8 +263,7 @@ void Brineomatic::measureBrineSalinity()
   int16_t reading = adcHelper->getAverageReading(YB_BRINE_TDS_CHANNEL);
   gravityTds.setTemperature(getWaterTemperature());
   gravityTds.update(reading);
-  float tdsReading = gravityTds.getTdsValue();
-  setBrineSalinity(tdsReading);
+  currentBrineSalinity = gravityTds.getTdsValue();
 }
 
 void Brineomatic::measureFilterPressure()
@@ -271,16 +271,20 @@ void Brineomatic::measureFilterPressure()
   float voltage = adcHelper->getAverageVoltage(YB_LP_SENSOR_CHANNEL);
   float amperage = (voltage / YB_420_RESISTOR) * 1000;
 
-  if (amperage < 3.5) {
-    setFilterPressure(-999);
+  if (INTERVAL(2500)) {
+    DUMP(voltage);
+    DUMP(amperage);
+  }
+
+  if (amperage < 3.0) {
+    currentFilterPressure = -999;
     return;
   }
 
   if (amperage < 4.0)
     amperage = 4.0;
 
-  float pressure = map_generic(amperage, 4.0, 20.0, filterPressureSensorMin, filterPressureSensorMax);
-  setFilterPressure(pressure);
+  currentFilterPressure = map_generic(amperage, 4.0, 20.0, filterPressureSensorMin, filterPressureSensorMax);
 }
 
 void Brineomatic::measureMembranePressure()
@@ -288,16 +292,15 @@ void Brineomatic::measureMembranePressure()
   float voltage = adcHelper->getAverageVoltage(YB_HP_SENSOR_CHANNEL);
   float amperage = (voltage / YB_420_RESISTOR) * 1000;
 
-  if (amperage < 3.5) {
-    wm.setMembranePressure(-999);
+  if (amperage < 3.0) {
+    currentMembranePressure = -999;
     return;
   }
 
   if (amperage < 4.0)
     amperage = 4.0;
 
-  float pressure = map_generic(amperage, 4.0, 20.0, membranePressureSensorMin, membranePressureSensorMax);
-  setMembranePressure(pressure);
+  currentMembranePressure = map_generic(amperage, 4.0, 20.0, membranePressureSensorMin, membranePressureSensorMax);
 }
 
 void Brineomatic::initChannels()
@@ -369,16 +372,6 @@ void Brineomatic::initChannels()
   }
 }
 
-void Brineomatic::setFilterPressure(float pressure)
-{
-  currentFilterPressure = pressure;
-}
-
-void Brineomatic::setMembranePressure(float pressure)
-{
-  currentMembranePressure = pressure;
-}
-
 void Brineomatic::setMembranePressureTarget(float pressure)
 {
   currentMembranePressureTarget = pressure;
@@ -415,31 +408,6 @@ void Brineomatic::setMembranePressureTarget(float pressure)
       highPressureValveStepper->disable();
     }
   }
-}
-
-void Brineomatic::setProductFlowrate(float flowrate)
-{
-  currentProductFlowrate = flowrate;
-}
-
-void Brineomatic::setBrineFlowrate(float flowrate)
-{
-  currentBrineFlowrate = flowrate;
-}
-
-void Brineomatic::setMotorTemperature(float temp)
-{
-  currentMotorTemperature = temp;
-}
-
-void Brineomatic::setProductSalinity(float salinity)
-{
-  currentProductSalinity = salinity;
-}
-
-void Brineomatic::setBrineSalinity(float salinity)
-{
-  currentBrineSalinity = salinity;
 }
 
 void Brineomatic::idle()
@@ -954,8 +922,15 @@ const char* Brineomatic::resultToString(Result result)
 
 uint32_t Brineomatic::getNextFlushCountdown()
 {
-  if (currentStatus == Status::IDLE && autoflushEnabled())
-    return autoflushInterval - (millis() - lastAutoFlushTime);
+  if (currentStatus == Status::IDLE && autoflushEnabled()) {
+    uint32_t elapsed;
+    if (ntp_is_ready && lastAutoflushTimeNTP > 1700000000)
+      elapsed = (ntp_get_time() - lastAutoflushTimeNTP) * 1000;
+    else
+      elapsed = millis() - lastAutoFlushTime;
+
+    return autoflushInterval - elapsed;
+  }
 
   return 0;
 }
@@ -1123,6 +1098,7 @@ void Brineomatic::runStateMachine()
       else {
         if (autoflushEnabled()) {
           lastAutoFlushTime = millis();
+          lastAutoflushTimeNTP = preferences.getLong64("lastautoflush");
         }
         currentStatus = Status::IDLE;
       }
@@ -1144,13 +1120,21 @@ void Brineomatic::runStateMachine()
     // IDLE
     //
     case Status::IDLE:
-      if (autoflushEnabled() && millis() - lastAutoFlushTime > autoflushInterval) {
-        if (autoflushMode.equals("TIME"))
-          flushDuration(autoflushDuration);
-        else if (autoflushMode.equals("VOLUME"))
-          flushVolume(autoflushVolume);
-        else if (autoflushMode.equals("SALINITY"))
-          flush();
+      if (autoflushEnabled()) {
+        uint32_t elapsed;
+        if (ntp_is_ready && lastAutoflushTimeNTP > 1700000000)
+          elapsed = (ntp_get_time() - lastAutoflushTimeNTP) * 1000;
+        else
+          elapsed = millis() - lastAutoFlushTime;
+
+        if (elapsed > autoflushInterval) {
+          if (autoflushMode.equals("TIME"))
+            flushDuration(autoflushDuration);
+          else if (autoflushMode.equals("VOLUME"))
+            flushVolume(autoflushVolume);
+          else if (autoflushMode.equals("SALINITY"))
+            flush();
+        }
       }
       break;
 
@@ -1402,8 +1386,13 @@ void Brineomatic::runStateMachine()
         vTaskDelay(pdMS_TO_TICKS(100));
       }
 
-      if (autoflushEnabled())
+      if (autoflushEnabled()) {
         lastAutoFlushTime = millis();
+        if (ntp_is_ready) {
+          lastAutoflushTimeNTP = ntp_get_time();
+          preferences.putLong64("lastautoflush", lastAutoflushTimeNTP);
+        }
+      }
 
       // keep track over restarts.
       preferences.putBool("bomPickled", false);

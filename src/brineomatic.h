@@ -145,15 +145,8 @@ class Brineomatic
     void measureFilterPressure();
     void measureMembranePressure();
 
-    void setFilterPressure(float pressure);
-    void setMembranePressure(float pressure);
     void setMembranePressureTarget(float pressure);
-    void setProductFlowrate(float flowrate);
-    void setBrineFlowrate(float flowrate);
-    void setMotorTemperature(float temp);
     void setWaterTemperature(float temp);
-    void setProductSalinity(float salinity);
-    void setBrineSalinity(float salinity);
     void setTankLevel(float level);
 
     void idle();
@@ -279,6 +272,7 @@ class Brineomatic
     uint32_t runtimeElapsed = 0;
     uint32_t flushStart = 0;
     uint32_t lastAutoFlushTime = 0;
+    int64_t lastAutoflushTimeNTP = 0;
     uint32_t pickleStart = 0;
     uint32_t depickleStart = 0;
     uint32_t pickleDuration;
