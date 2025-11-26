@@ -26,8 +26,6 @@ Brineomatic wm;
 ADS1115 brineomatic_adc(YB_ADS1115_ADDRESS);
 byte current_ads1115_channel = 0;
 
-GravityTDS gravityTds;
-
 void brineomatic_setup()
 {
   wm.init();
@@ -47,10 +45,6 @@ void brineomatic_setup()
   current_ads1115_channel = 0;
   brineomatic_adc.requestADC(current_ads1115_channel);
 
-  gravityTds.setAref(YB_ADS1115_VREF); // reference voltage on ADC
-  gravityTds.setAdcRange(15);          // 16 bit ADC, but its differential, so lose 1 bit.
-  gravityTds.begin();                  // initialization
-
   // Create a FreeRTOS task for the state machine
   xTaskCreatePinnedToCore(
     brineomatic_state_machine, // Task function
@@ -67,11 +61,6 @@ uint32_t lastOutput;
 
 void brineomatic_loop()
 {
-  if (millis() - lastOutput > 2000) {
-    // for debug stuff here.
-    lastOutput = millis();
-  }
-
   wm.measureProductFlowmeter();
   wm.measureBrineFlowmeter();
   wm.measureMotorTemperature();
@@ -81,9 +70,9 @@ void brineomatic_loop()
 
     if (brineomatic_adc.getError() == ADS1X15_OK) {
       if (current_ads1115_channel == 0)
-        measure_brine_salinity(value);
+        wm.measureBrineSalinity(value);
       else if (current_ads1115_channel == 1)
-        measure_product_salinity(value);
+        wm.measureProductSalinity(value);
       else if (current_ads1115_channel == 2)
         measure_filter_pressure(value);
       else if (current_ads1115_channel == 3)
@@ -170,20 +159,20 @@ void Brineomatic::measureMotorTemperature()
   }
 }
 
-void measure_product_salinity(int16_t reading)
+void Brineomatic::measureProductSalinity(int16_t reading)
 {
-  gravityTds.setTemperature(wm.getWaterTemperature()); // set the temperature and execute temperature compensation
-  gravityTds.update(reading);                          // sample and calculate
-  float tdsReading = gravityTds.getTdsValue();         // then get the value
-  wm.setProductSalinity(tdsReading);
+  gravityTds.setTemperature(getWaterTemperature());
+  gravityTds.update(reading);
+  float tdsReading = gravityTds.getTdsValue();
+  setProductSalinity(tdsReading);
 }
 
-void measure_brine_salinity(int16_t reading)
+void Brineomatic::measureBrineSalinity(int16_t reading)
 {
-  gravityTds.setTemperature(wm.getWaterTemperature()); // set the temperature and execute temperature compensation
-  gravityTds.update(reading);                          // sample and calculate
-  float tdsReading = gravityTds.getTdsValue();         // then get the value
-  wm.setBrineSalinity(tdsReading);
+  gravityTds.setTemperature(getWaterTemperature());
+  gravityTds.update(reading);
+  float tdsReading = gravityTds.getTdsValue();
+  setBrineSalinity(tdsReading);
 }
 
 void measure_filter_pressure(int16_t reading)
@@ -314,15 +303,17 @@ void Brineomatic::init()
   ds18b20.setWaitForConversion(false);
   ds18b20.requestTemperatures();
 
-  // do our init for our product flowmeter
   #ifdef YB_PRODUCT_FLOWMETER_PIN
   productFlowmeter.begin(YB_PRODUCT_FLOWMETER_PIN, productFlowmeterPPL);
   #endif
 
-  // do our init for our brine flowmeter
   #ifdef YB_BRINE_FLOWMETER_PIN
   brineFlowmeter.begin(YB_BRINE_FLOWMETER_PIN, brineFlowmeterPPL);
   #endif
+
+  gravityTds.setAref(YB_ADS1115_VREF); // reference voltage on ADC
+  gravityTds.setAdcRange(15);          // 16 bit ADC, but its differential, so lose 1 bit.
+  gravityTds.begin();                  // initialization
 
   if (YB_HAS_MODBUS) {
     YB_MODBUS_SERIAL.setPins(YB_MODBUS_RX, YB_MODBUS_TX);

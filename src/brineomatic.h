@@ -27,8 +27,6 @@ void brineomatic_loop();
 
 void brineomatic_state_machine(void* pvParameters);
 
-void measure_product_salinity(int16_t reading);
-void measure_brine_salinity(int16_t reading);
 void measure_filter_pressure(int16_t reading);
 void measure_membrane_pressure(int16_t reading);
 
@@ -114,6 +112,8 @@ class Brineomatic
     Flowmeter productFlowmeter;
     Flowmeter brineFlowmeter;
 
+    GravityTDS gravityTds;
+
     // float membranePressurePIDOutput;
     // QuickPID membranePressurePID;
     // float KpRamp = 0;
@@ -137,6 +137,8 @@ class Brineomatic
     void measureMotorTemperature();
     void measureProductFlowmeter();
     void measureBrineFlowmeter();
+    void measureProductSalinity(int16_t reading);
+    void measureBrineSalinity(int16_t reading);
 
     void setFilterPressure(float pressure);
     void setMembranePressure(float pressure);
