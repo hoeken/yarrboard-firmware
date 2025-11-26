@@ -148,6 +148,7 @@ uint32_t ADCHelper::loadReading(uint8_t channel)
 void ADCHelper::attachReadyPinInterrupt(uint8_t pin, int mode)
 {
   _pin = pin;
+  pinMode(_pin, INPUT_PULLUP);
   attachInterruptArg(_pin, &ADCHelper::onReadyISR, this, mode);
 }
 

@@ -187,7 +187,6 @@ void Brineomatic::loop()
   }
 
   adcHelper->onLoop();
-  adcHelper->printDebug();
 
   measureBrineSalinity();
   measureProductSalinity();
@@ -271,12 +270,7 @@ void Brineomatic::measureFilterPressure()
   float voltage = adcHelper->getAverageVoltage(YB_LP_SENSOR_CHANNEL);
   float amperage = (voltage / YB_420_RESISTOR) * 1000;
 
-  if (INTERVAL(2500)) {
-    DUMP(voltage);
-    DUMP(amperage);
-  }
-
-  if (amperage < 3.0) {
+  if (amperage < 3.5) {
     currentFilterPressure = -999;
     return;
   }
@@ -292,7 +286,7 @@ void Brineomatic::measureMembranePressure()
   float voltage = adcHelper->getAverageVoltage(YB_HP_SENSOR_CHANNEL);
   float amperage = (voltage / YB_420_RESISTOR) * 1000;
 
-  if (amperage < 3.0) {
+  if (amperage < 3.5) {
     currentMembranePressure = -999;
     return;
   }
