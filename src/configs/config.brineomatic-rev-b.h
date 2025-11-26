@@ -61,7 +61,7 @@
 #define YB_STEPPER_RX_PIN        10
 #define YB_STEPPER_TX_PIN        9
 #define YB_STEPPER_CHANNEL_COUNT 1
-#define YB_STEPPER_MICROSTEPS    64
+#define YB_STEPPER_MICROSTEPS    32
 #define YB_STEPPER_STEP_PINS     {7}
 #define YB_STEPPER_DIR_PINS      {6}
 #define YB_STEPPER_ENABLE_PINS   {11}

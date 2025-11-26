@@ -260,6 +260,9 @@ void StepperChannel::setSpeed(float rpm)
 void StepperChannel::setStepsPerDegree(float steps)
 {
   _steps_per_degree = steps;
+  _acceleration = _steps_per_degree * 720; // steps/s^2
+  _backoff_steps = 15 * _steps_per_degree; // release distance
+  _stepper->setAcceleration(_acceleration);
 }
 
 float StepperChannel::getSpeed()
@@ -353,8 +356,6 @@ bool StepperChannel::home(float rpm)
 
 bool StepperChannel::homeWithSpeed(float rpm)
 {
-  DUMP(rpm);
-
   // back off a tiny bit first
   setSpeed(rpm);
   _stepper->move(_backoff_steps);

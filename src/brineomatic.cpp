@@ -359,10 +359,11 @@ void Brineomatic::initChannels()
     highPressureValveStepper->isEnabled = true;
     highPressureValveStepper->setName("High Pressure Valve");
     highPressureValveStepper->setKey("hp_valve");
-    highPressureValveStepper->setStepsPerDegree(
-      (360.0 / highPressureValveStepperStepAngle) *
-      YB_STEPPER_MICROSTEPS *
-      highPressureValveStepperGearRatio);
+
+    float stepsPerDegree =
+      (YB_STEPPER_MICROSTEPS * highPressureValveStepperGearRatio) /
+      highPressureValveStepperStepAngle;
+    highPressureValveStepper->setStepsPerDegree(stepsPerDegree);
   }
 }
 
