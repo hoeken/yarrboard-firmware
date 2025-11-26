@@ -5,9 +5,8 @@
 * move all the brineomatic stuff in setup() and loop() internal to BOM object.
     * probably dont need the helper functions like setFilterPressure()
     * keep setWaterTemperature() and setTankLevel()
-    * create super simple flowmeter object
-* ntp server and next flush being an actual time that is stored in preferences (survive reboot)
 * move brineomatic to interrupt based adc
+* ntp server and next flush being an actual time that is stored in preferences (survive reboot)
 * add mid-level commands to set_watermaker
     * boost_pump
     * high_pressure_pump

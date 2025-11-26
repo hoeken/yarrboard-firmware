@@ -12,6 +12,7 @@
 #include "Flowmeter.h"
 #include "brineomatic_config.h"
 #include "etl/deque.h"
+#include <ADS1X15.h>
 #include <ArduinoJson.h>
 #include <DallasTemperature.h>
 #include <GravityTDS.h>
@@ -110,6 +111,9 @@ class Brineomatic
     Flowmeter brineFlowmeter;
 
     GravityTDS gravityTds;
+
+    ADS1115 _adc;
+    byte current_ads1115_channel = 0;
 
     // float membranePressurePIDOutput;
     // QuickPID membranePressurePID;
