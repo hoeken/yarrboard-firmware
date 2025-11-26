@@ -736,7 +736,10 @@ void Brineomatic::manageCoolingFan()
 
 float Brineomatic::getFilterPressure()
 {
-  return currentFilterPressure;
+  if (currentStatus == Status::IDLE)
+    return 0;
+  else
+    return currentFilterPressure;
 }
 
 float Brineomatic::getFilterPressureMinimum()
@@ -746,7 +749,10 @@ float Brineomatic::getFilterPressureMinimum()
 
 float Brineomatic::getMembranePressure()
 {
-  return currentMembranePressure;
+  if (currentStatus == Status::IDLE)
+    return 0;
+  else
+    return currentMembranePressure;
 }
 
 float Brineomatic::getMembranePressureMinimum()
