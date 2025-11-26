@@ -644,10 +644,9 @@
       $('#bomStatsDiv').show();
       $('#brightnessUI').hide();
 
-      if (!YB.App.isMFD()) {
-        this.buildGaugeSetup();
-        this.createGauges(msg);
-      }
+      this.buildGaugeSetup();
+      if (!YB.App.isMFD())
+        this.createGauges();
     };
 
     //finally, show our interface.
