@@ -38,27 +38,16 @@ void stepper_channels_setup()
 
 void stepper_channels_loop()
 {
+  // for (auto& ch : stepper_channels) {
+  //   if (INTERVAL(2500))
+  //     ch.printDebug();
+  // }
 }
 
 void StepperChannel::init(uint8_t id)
 {
   BaseChannel::init(id);
   this->channel_type = "stepper";
-
-  this->_step_pin = _step_pins[id - 1];
-  pinMode(_step_pin, OUTPUT);
-
-  this->_dir_pin = _dir_pins[id - 1];
-  pinMode(_dir_pin, OUTPUT);
-
-  this->_enable_pin = _enable_pins[id - 1];
-  pinMode(_enable_pin, OUTPUT);
-
-  #ifdef YB_STEPPER_DIAG_PINS
-  this->_diag_pin = _diag_pins[id - 1];
-  pinMode(_diag_pin, INPUT);
-  attachInterruptArg(_diag_pin, &StepperChannel::stallGuardISR, this, RISING);
-  #endif
 
   snprintf(this->name, sizeof(this->name), "Stepper Channel %d", id);
 }
@@ -88,9 +77,24 @@ void StepperChannel::generateUpdate(JsonVariant config)
 
 void StepperChannel::setup()
 {
+  this->_step_pin = _step_pins[id - 1];
+  pinMode(_step_pin, OUTPUT);
+
+  this->_dir_pin = _dir_pins[id - 1];
+  pinMode(_dir_pin, OUTPUT);
+
+  this->_enable_pin = _enable_pins[id - 1];
+  pinMode(_enable_pin, OUTPUT);
+
+  #ifdef YB_STEPPER_DIAG_PINS
+  this->_diag_pin = _diag_pins[id - 1];
+  pinMode(_diag_pin, INPUT);
+  attachInterruptArg(_diag_pin, &StepperChannel::stallGuardISR, this, RISING);
+  #endif
+
   // setup our TMC2209 parameters
   #ifdef YB_STEPPER_DRIVER_TMC2209
-  _tmc2209.setup(Serial2, 115200, TMC2209::SERIAL_ADDRESS_0, YB_STEPPER_RX_PIN, YB_STEPPER_TX_PIN);
+  _tmc2209.setup(YB_STEPPER_SERIAL_PORT, YB_STEPPER_SERIAL_SPEED, TMC2209::SERIAL_ADDRESS_0, YB_STEPPER_RX_PIN, YB_STEPPER_TX_PIN);
   _tmc2209.setMicrostepsPerStep(YB_STEPPER_MICROSTEPS);
   _tmc2209.setStandstillMode(_tmc2209.BRAKING);
   _tmc2209.setRunCurrent(_run_current);
@@ -104,7 +108,7 @@ void StepperChannel::setup()
   _tmc2209.enableCoolStep(1, 0);
   _tmc2209.setStallGuardThreshold(_stall_guard);
   _tmc2209.enable();
-  // printDebug(0);
+  // printDebug();
   #endif
 
   // setup our actual stepper controller
@@ -114,14 +118,14 @@ void StepperChannel::setup()
 
     _stepper->setEnablePin(_enable_pin);
     _stepper->setAutoEnable(true);
-    _stepper->setDelayToDisable(10000);
+    _stepper->setDelayToDisable(autoDisableMillis);
 
     setSpeed(_default_speed_rpm);
     _stepper->setAcceleration(_acceleration);
   }
 }
 
-void StepperChannel::printDebug(unsigned int milliDelay)
+void StepperChannel::printDebug()
 {
   #ifdef YB_STEPPER_DRIVER_TMC2209
   YBP.println("*************************");
@@ -318,8 +322,15 @@ bool StepperChannel::isEndstopHit()
 
 bool StepperChannel::home()
 {
+  return home(_home_speed_rpm);
+}
+
+bool StepperChannel::home(float rpm)
+{
   // home at a lower current so we dont jam
   _tmc2209.setRunCurrent(_run_current * 0.60);
+
+  _home_speed_rpm = rpm;
 
   bool ret = false;
   if (homeWithSpeed(_home_speed_rpm))
@@ -337,6 +348,8 @@ bool StepperChannel::home()
 
 bool StepperChannel::homeWithSpeed(float rpm)
 {
+  DUMP(rpm);
+
   // back off a tiny bit first
   setSpeed(rpm);
   _stepper->move(_backoff_steps);

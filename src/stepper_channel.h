@@ -26,7 +26,7 @@ class StepperChannel : public BaseChannel
     float currentAngle = 0.0;
     float currentSpeed = 0.0;
     uint32_t currentPosition = 0;
-    float autoDisableMillis = 5000;
+    uint32_t autoDisableMillis = 10000;
 
     void init(uint8_t id) override;
     bool loadConfig(JsonVariantConst config, char* error, size_t len) override;
@@ -41,18 +41,18 @@ class StepperChannel : public BaseChannel
     void gotoAngle(float angle, float rpm = -1);
     void gotoPosition(int32_t position, float rpm = -1);
     bool home();
+    bool home(float rpm);
     bool homeWithSpeed(float rpm);
     void waitUntilStopped();
 
     bool isEndstopHit();
     void disable();
 
-    void printDebug(unsigned int milliDelay);
+    void printDebug();
 
   private:
     unsigned long lastUpdateMillis = 0;
 
-    HardwareSerial& _serial = Serial2;
     TMC2209 _tmc2209;
     byte _diag_pin;
     uint8_t _run_current = 67;

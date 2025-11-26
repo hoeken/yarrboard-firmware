@@ -307,7 +307,7 @@ class Brineomatic
     uint32_t autoflushInterval;
     bool autoflushUseHighPressureMotor;
 
-    float tankLevelFull;            // 0 = empty, 1 = full
+    float tankLevelFull = 0.99;     // 0 = empty, 1 = full
     float tankCapacity;             // Liters
     float coolingFanOnTemperature;  // Celcius
     float coolingFanOffTemperature; // Celcius

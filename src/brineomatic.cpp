@@ -400,6 +400,7 @@ void Brineomatic::initChannels()
 
   if (boostPumpControl.equals("RELAY")) {
     boostPump = getChannelById(boostPumpRelayId, relay_channels);
+    boostPump->isEnabled = true;
     boostPump->setName("Boost Pump");
     boostPump->setKey("boost_pump");
     strncpy(boostPump->type, "water_pump", sizeof(boostPump->type));
@@ -407,6 +408,7 @@ void Brineomatic::initChannels()
 
   if (flushValveControl.equals("RELAY")) {
     flushValve = getChannelById(flushValveRelayId, relay_channels);
+    flushValve->isEnabled = true;
     flushValve->setName("Flush Valve");
     flushValve->setKey("flush_valve");
     strncpy(flushValve->type, "solenoid", sizeof(flushValve->type));
@@ -414,6 +416,7 @@ void Brineomatic::initChannels()
 
   if (coolingFanControl.equals("RELAY")) {
     coolingFan = getChannelById(coolingFanRelayId, relay_channels);
+    coolingFan->isEnabled = true;
     coolingFan->setName("Cooling Fan");
     coolingFan->setKey("cooling_fan");
     strncpy(coolingFan->type, "fan", sizeof(coolingFan->type));
@@ -421,6 +424,7 @@ void Brineomatic::initChannels()
 
   if (highPressurePumpControl.equals("RELAY")) {
     highPressurePump = getChannelById(highPressureRelayId, relay_channels);
+    highPressurePump->isEnabled = true;
     highPressurePump->setName("High Pressure Pump");
     highPressurePump->setKey("hp_pump");
     strncpy(highPressurePump->type, "water_pump", sizeof(highPressurePump->type));
@@ -428,12 +432,14 @@ void Brineomatic::initChannels()
 
   if (diverterValveControl.equals("SERVO")) {
     diverterValve = getChannelById(diverterValveServoId, servo_channels);
+    diverterValve->isEnabled = true;
     diverterValve->setName("Diverter Valve");
     diverterValve->setKey("diverter_valve");
   }
 
   if (highPressureValveControl.equals("STEPPER")) {
     highPressureValveStepper = getChannelById(highPressureValveStepperId, stepper_channels);
+    highPressureValveStepper->isEnabled = true;
     highPressureValveStepper->setName("High Pressure Valve");
     highPressureValveStepper->setKey("hp_valve");
   }
@@ -453,12 +459,19 @@ void Brineomatic::setMembranePressureTarget(float pressure)
 {
   currentMembranePressureTarget = pressure;
 
-  // positive target, initialize our PID.
+  // we got a real pressure
   if (pressure >= 0) {
     if (highPressureValveControl.equals("STEPPER")) {
-      highPressureValveStepper->gotoAngle(
-        highPressureValveStepperCloseAngle,
-        highPressureValveStepperCloseSpeed);
+      // static angle mode for now.
+      if (pressure > 0) {
+        highPressureValveStepper->gotoAngle(
+          highPressureValveStepperCloseAngle,
+          highPressureValveStepperCloseSpeed);
+      } else {
+        highPressureValveStepper->gotoAngle(
+          highPressureValveStepperOpenAngle,
+          highPressureValveStepperOpenSpeed);
+      }
     }
 
     // if (highPressureValveControl.equals("SERVO")) {
@@ -606,15 +619,19 @@ bool Brineomatic::initializeHardware()
 
     if (hasMembranePressureSensor) {
       uint32_t membranePressureStart = millis();
+      YBP.println("Waiting for zero pressure.");
       while (getMembranePressure() > 65) {
-        vTaskDelay(pdMS_TO_TICKS(100));
+        if (INTERVAL(250))
+          YBP.print(".");
 
         if (millis() - membranePressureStart > membranePressureTimeout) {
+          YBP.println("Membrane pressure timeout.");
           isFailure = true;
           break;
         }
+        vTaskDelay(pdMS_TO_TICKS(100));
       }
-      YBP.println("Membrane Pressure off");
+      YBP.println("\nMembrane Pressure off");
     }
 
     // turns our high pressure valve controller off
@@ -624,7 +641,7 @@ bool Brineomatic::initializeHardware()
   disableHighPressurePump();
 
   if (highPressureValveControl.equals("STEPPER")) {
-    if (highPressureValveStepper->home())
+    if (highPressureValveStepper->home(highPressureValveStepperOpenSpeed))
       YBP.println("Stepper Homing OK");
     else
       YBP.println("Stepper Homing failed.");
@@ -851,7 +868,7 @@ float Brineomatic::getMembranePressure()
 
 float Brineomatic::getMembranePressureMinimum()
 {
-  return filterPressureHighThreshold;
+  return membranePressureLowThreshold;
 }
 
 float Brineomatic::getProductFlowrate()
