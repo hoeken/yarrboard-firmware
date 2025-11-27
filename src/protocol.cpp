@@ -1344,30 +1344,77 @@ void handleManualWatermaker(JsonVariantConst input, JsonVariant output)
 
 void handleSetWatermaker(JsonVariantConst input, JsonVariant output)
 {
-  if (input["water_temperature"].is<JsonVariantConst>()) {
+  if (input["water_temperature"]) {
     float temp = input["water_temperature"];
     wm.setWaterTemperature(temp);
+    return;
   }
 
-  if (input["tank_level"].is<JsonVariantConst>()) {
+  if (input["tank_level"]) {
     float level = input["tank_level"];
     wm.setTankLevel(level);
+    return;
   }
 
-  if (input["diverter_valve"].is<JsonVariantConst>()) {
-    bool state = input["open"];
-    if (state)
-      wm.openDiverterValve();
-    else
-      wm.closeDiverterValve();
+  if (strcmp(wm.getStatus(), "MANUAL"))
+    return generateErrorJSON(output, "Watermaker must be in MANUAL mode.");
+
+  String state;
+
+  if (input["boost_pump"]) {
+    if (wm.hasBoostPump()) {
+      state = input["boost_pump"] | "OFF";
+      if (state.equals("ON"))
+        wm.enableBoostPump();
+      else
+        wm.disableBoostPump();
+    } else
+      return generateErrorJSON(output, "Watermaker does not have a boost pump.");
   }
 
-  // if (input["kp_maintain"].is<JsonVariantConst>())
-  //   wm.KpMaintain = input["kp_maintain"];
-  // if (input["ki_maintain"].is<JsonVariantConst>())
-  //   wm.KiMaintain = input["ki_maintain"];
-  // if (input["kd_maintain"].is<JsonVariantConst>())
-  //   wm.KdMaintain = input["kd_maintain"];
+  if (input["high_pressure_pump"]) {
+    if (wm.hasHighPressurePump()) {
+      state = input["high_pressure_pump"] | "OFF";
+      if (state.equals("ON"))
+        wm.enableHighPressurePump();
+      else
+        wm.disableHighPressurePump();
+    } else
+      return generateErrorJSON(output, "Watermaker does not have a high pressure pump.");
+  }
+
+  if (input["diverter_valve"]) {
+    if (wm.hasDiverterValve()) {
+      state = input["diverter_valve"] | "CLOSE";
+      if (state.equals("OPEN"))
+        wm.openDiverterValve();
+      else
+        wm.closeDiverterValve();
+    } else
+      return generateErrorJSON(output, "Watermaker does not have a diverter valve.");
+  }
+
+  if (input["flush_valve"]) {
+    if (wm.hasFlushValve()) {
+      state = input["flush_valve"] | "CLOSE";
+      if (state.equals("OPEN"))
+        wm.openFlushValve();
+      else
+        wm.closeFlushValve();
+    } else
+      return generateErrorJSON(output, "Watermaker does not have a flush valve.");
+  }
+
+  if (input["cooling_fan"]) {
+    if (wm.hasCoolingFan()) {
+      state = input["cooling_fan"] | "ON";
+      if (state.equals("ON"))
+        wm.enableCoolingFan();
+      else
+        wm.disableCoolingFan();
+    } else
+      return generateErrorJSON(output, "Watermaker does not have a cooling fan.");
+  }
 }
 
 void handleBrineomaticSaveGeneralConfig(JsonVariantConst input, JsonVariant output)
