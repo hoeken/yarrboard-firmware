@@ -996,10 +996,12 @@
         $("#hardwareSettingsForm")
           .find("input, select, textarea, button")
           .prop("disabled", false);
+        $("#hardwareSettingsDisabled").hide();
       } else {
         $("#hardwareSettingsForm")
           .find("input, select, textarea, button")
           .prop("disabled", true);
+        $("#hardwareSettingsDisabled").show();
       }
     }
   }
@@ -2093,7 +2095,7 @@
                         </div>
 
                         <hr class="bold">
-                        
+
                         <div class="form-floating mb-3">
                             <select id="success_melody" class="form-select" aria-label="Success Melody">
                             </select>
@@ -2119,6 +2121,9 @@
                 <div class="mb-3">
                     <div id="hardwareSettingsForm" class="p-3 border border-secondary rounded h-100 scrollFix">
                         <h4>Hardware Configuration</h4>
+                        <div id="hardwareSettingsDisabled" class="alert alert-warning" role="alert" style="display: none">
+                          Hardware configuration disabled.  <b>IDLE</b> mode only.
+                        </div>
                         <div class="form-floating mb-3">
                             <select id="boost_pump_control" class="form-select" aria-label="Boost Pump">
                                 <option value="NONE">None</option>
@@ -2478,10 +2483,14 @@
                             <div class="invalid-feedback"></div>
                         </div>
 
-                        <div class="text-center">
+                        <div class="text-center mb-3">
                             <button id="saveHardwareSettings" type="button" class="btn btn-primary">
                                 Save Hardware Settings
                             </button>
+                        </div>
+
+                        <div class="alert alert-info mb-0" role="alert">
+                          Brineomatic will restart after updating hardware configuration.
                         </div>
                     </div>
                 </div>
