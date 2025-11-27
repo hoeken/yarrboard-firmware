@@ -1,20 +1,75 @@
 ## Version 2.1.0
 
-* native USB serial support
-* nicer debug system, and bring full debug to the web console.
-* add play_piezo command
-    * name -> premade melody
-    * notes -> array of freq/duration
-* added icons for adding to home screen on apple / android
-* added a bunch of premade piezo melodys
+### 🚀 New Features
 
-### Brineomatic
+- **General Features**
+ - Native USB serial support, no need for serial converter.
+ - Nicer debug system, with full debug via web console (click the copyright year)
+ - Better piezo support with selectable premade melodies
+ - Updated Brineomatic icon + support for adding bookmark to home screen on Apple / Android
+ - MQTT for brineomatic now has all data
+ - Added flush volume tracking
+ - Autoflush now has 3 modes: automatic (salinity), duration, and volume
 
-* mqqt now has all data
-* now checking brine flow during flush / run / pickle / depickle
-* error checking all now timeout based
-* added flush volume tracking
-* flush now has 3 modes: automatic (salinity), duration, and volume
+- **Modbus Support**
+  - First pass at GD20 VFD Modbus integration.
+  - Added modbus configuration options: `slaveId` and `frequency`.
+
+- **Mid-Level Hardware Control**
+  - Added mid-level commands to control hardware.
+  - Mid-level UI control implemented.
+
+- **Config System Enhancements**
+  - Added `autoflushUseHighPressureMotor` config option.
+  - Added `loadConfig()` for JSON-based configuration.
+  - Autoflush now respects config values.
+  - Hardware initialization now respects configuration.
+  - Enforced unique relay IDs on the client side.
+  - UI now shows/disables control fields dynamically based on available sensors.
+  - Safeguards UI fields enabled/disabled based on hardware.
+  - Config form UI is responsive.
+
+### 🛠️ Improvements & Refactoring
+- Major refactor of sensors into the main Brineomatic object:
+  - Flowmeters
+  - TDS
+  - Pressure sensors
+  - Temperature readings
+- Refactored ADS1115 into object structure.
+- Adopted ADCHelper interrupt-style ADC reading with averages.
+- Removed/cleaned up old PID code.
+- Tidied/removed old graph code.
+- Updated hardware checks to use control settings (`has*`).
+- Channel ID validity now verified in config.
+- Added helper text to hardware config form.
+- Moved firmware section to top of system UI.
+- UI is now more dynamic based on hardware availability.
+- Web UI now collects, validates, and sends config data.
+- Error checking is now timeout based
+
+### 🐛 Bug Fixes
+- Firmware updater works again; fixed firmware path issues.
+- Fixed stepper motor issues, including:
+  - Degree/angle configuration now respected.
+  - Several stepper bugs addressed.
+- Fixed ADC alert line pull-up issue.
+- Pressures now read zero at idle.
+- Fixed B&G MFD display error.
+- Fixed copy-paste issues and several small float/int bugs.
+- Fixed total time tracking.
+- Now properly shows errors when sensors are missing.
+- Can't flush without a valve.
+- Ensured `saveHardwareConfig` only allowed in **IDLE** mode.
+- Server-side and client-side validation improved and now working.
+- Ensured channel object calls wrapped in control-mode checks.
+- Fixed various UI bugs in new config interface.
+
+### ⚙️ Behavioral Changes
+- Modbus initialization only happens when appropriate.
+- Autostore now works via NTP.
+- Error-enable booleans are now respected.
+- Hardware enable booleans now used for sensor logic.
+- saveHardwareConfig locked to IDLE state to avoid unsafe actions.
 
 ## Version 2.0.0
 
