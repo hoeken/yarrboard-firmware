@@ -29,9 +29,6 @@ void ntp_loop()
 // Callback function (get's called when time adjusts via NTP)
 void timeAvailable(struct timeval* t)
 {
-  YBP.print("NTP update: ");
-  printLocalTime();
-
   ntp_is_ready = true;
 }
 

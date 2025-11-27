@@ -116,8 +116,7 @@ void full_setup()
   YBP.removePrinter(startupLogger);
 
   // network logger is a troublemaker
-  // need to fix the memory issues before we can use this.
-  // YBP.addPrinter(networkLogger);
+  YBP.addPrinter(networkLogger);
 
   lastLoopMicros = micros();
 }

@@ -235,27 +235,31 @@ void server_loop()
 
 void sendToAllWebsockets(const char* jsonString, UserRole auth_level)
 {
-  if (xSemaphoreTake(sendMutex, portMAX_DELAY) == pdTRUE) {
-    // make sure we're allowed to see the message
-    if (auth_level > app_default_role) {
-      for (byte i = 0; i < YB_CLIENT_LIMIT; i++) {
-        if (authenticatedClients[i].socket) {
-          // make sure its a valid client
-          PsychicWebSocketClient* client =
-            websocketHandler.getClient(authenticatedClients[i].socket);
-          if (client == NULL)
-            continue;
+  // make sure we're allowed to see the message
+  if (auth_level > app_default_role) {
+    for (byte i = 0; i < YB_CLIENT_LIMIT; i++) {
+      if (authenticatedClients[i].socket) {
+        // make sure its a valid client
+        PsychicWebSocketClient* client =
+          websocketHandler.getClient(authenticatedClients[i].socket);
+        if (client == NULL)
+          continue;
 
-          if (authenticatedClients[i].role >= auth_level)
+        if (authenticatedClients[i].role >= auth_level) {
+          if (xSemaphoreTake(sendMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
             client->sendMessage(jsonString);
+            xSemaphoreGive(sendMutex);
+          } else {
+            // dont use YBP here because it will get recursive.
+            Serial.println("sendToAllWebsockets send mutex fail");
+          }
         }
       }
     }
-    // nope, just sent it to all.
-    else
-      websocketHandler.sendAll(jsonString);
-
-    xSemaphoreGive(sendMutex);
+  }
+  // nope, just send it to all.
+  else {
+    websocketHandler.sendAll(jsonString);
   }
 }
 
@@ -385,9 +389,11 @@ void handleWebsocketMessageLoop(WebsocketRequest* request)
       serializeJson(output, jsonBuffer, jsonSize + 1);
       jsonBuffer[jsonSize] = '\0'; // null terminate
 
-      if (xSemaphoreTake(sendMutex, portMAX_DELAY) == pdTRUE) {
+      if (xSemaphoreTake(sendMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
         client->sendMessage(jsonBuffer);
         xSemaphoreGive(sendMutex);
+      } else {
+        Serial.println("handleWebsocketMessageLoop send mutex fail");
       }
 
       // keep track!
