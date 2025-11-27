@@ -1,6 +1,6 @@
-## Version 2.1.0
+# Version 2.1.0
 
-### 🚀 New Features
+## 🚀 New Features
 
 - **General Features**
  - Native USB serial support, no need for serial converter.
@@ -29,7 +29,7 @@
   - Safeguards UI fields enabled/disabled based on hardware.
   - Config form UI is responsive.
 
-### 🛠️ Improvements & Refactoring
+## 🛠️ Improvements & Refactoring
 - Major refactor of sensors into the main Brineomatic object:
   - Flowmeters
   - TDS
@@ -47,7 +47,7 @@
 - Web UI now collects, validates, and sends config data.
 - Error checking is now timeout based
 
-### 🐛 Bug Fixes
+## 🐛 Bug Fixes
 - Firmware updater works again; fixed firmware path issues.
 - Fixed stepper motor issues, including:
   - Degree/angle configuration now respected.
@@ -64,26 +64,26 @@
 - Ensured channel object calls wrapped in control-mode checks.
 - Fixed various UI bugs in new config interface.
 
-### ⚙️ Behavioral Changes
+## ⚙️ Behavioral Changes
 - Modbus initialization only happens when appropriate.
 - Autostore now works via NTP.
 - Error-enable booleans are now respected.
 - Hardware enable booleans now used for sensor logic.
 - saveHardwareConfig locked to IDLE state to avoid unsafe actions.
 
-## Version 2.0.0
+# Version 2.0.0
 
 Massive under the hood rewrite of just about everything.
 More stability, better UI, setting the stage for good things to come.
 
-### Frontend
+## Frontend
 
 * Split the app into multiple files and classes, with a new BaseChannel system
 * Much cleaner UI for editing configurations and settings
 * added app hooks for registering message handlers for a more modular system
 * Added Improv Wifi provisioning support
 
-### Backend
+## Backend
 
 * Updated channels to have a BaseChannel class with lots of deduplication of code
 * Lots of stability fixes
@@ -91,18 +91,18 @@ More stability, better UI, setting the stage for good things to come.
 * Added MQTT + Home Assistant support.
 * Laid the groundwork for making yarrboard-firmware into a library
 
-## Version 1.1.1
+# Version 1.1.1
 
 * Minor ui improvements for debugging
 
-## Version 1.1.0
+# Version 1.1.0
 
 * New crash handler and coredump recording.
 
-## Version 1.0.1
+# Version 1.0.1
 
 * Better release automation.
 
-## Version 1.0.0
+# Version 1.0.0
 
 * First 'official' release into the wild.

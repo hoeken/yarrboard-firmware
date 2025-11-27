@@ -58,8 +58,8 @@ if __name__ == '__main__':
 
 	config = []
 
-	# get only the latest version section from CHANGELOG
-	with open("CHANGELOG", "r") as f:
+	# get only the latest version section from CHANGELOG.md
+	with open("CHANGELOG.md", "r") as f:
 		content = f.read()
 
 	# Extract the *first* version block
@@ -67,10 +67,10 @@ if __name__ == '__main__':
 	#   ## Version <version>
 	#   ...lines...
 	# up until the next `## Version` OR end of file
-	pattern = rf"(## Version {re.escape(version)}(?:\n(?!## Version).*)*)"
+	pattern = rf"(# Version {re.escape(version)}(?:\n(?!# Version).*)*)"
 	m = re.search(pattern, content, re.MULTILINE)
 	if not m:
-		print("🔴 Could not extract latest version block from CHANGELOG.  Needs this format: ## Version x.y.z 🔴")
+		print("🔴 Could not extract latest version block from CHANGELOG.md  Needs this format: ## Version x.y.z 🔴")
 		sys.exit(1)
 
 	changelog = m.group(1).strip()
