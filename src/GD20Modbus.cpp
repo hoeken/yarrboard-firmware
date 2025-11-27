@@ -12,8 +12,6 @@ void GD20Modbus::begin(uint8_t slaveID)
 {
   _slaveID = slaveID;
 
-  DUMP(slaveID);
-
   pinMode(YB_MODBUS_DERE_PIN, OUTPUT);
   digitalWrite(YB_MODBUS_DERE_PIN, LOW);
 
@@ -31,7 +29,6 @@ void GD20Modbus::begin(uint8_t slaveID)
 
 void GD20Modbus::setFrequency(float freqHz)
 {
-  DUMP(freqHz);
   uint16_t value = (uint16_t)(freqHz * 100);
   node.writeSingleRegister(REG_FREQ_SET, value);
 }
