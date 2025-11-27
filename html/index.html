@@ -561,6 +561,46 @@
                 <div id="systemPage" class="pageContainer" style="display:none">
                     <div class="row justify-content-center">
                         <div class="col-md-12 mb-3">
+                            <div clas="row">
+                                <h5>Firmware</h5>
+                                <div id="firmware_checking" class="alert alert-secondary" role="alert">
+                                    Checking for new firmware...
+                                </div>
+                                <div id="firmware_up_to_date" class="alert alert-success" role="alert"
+                                    style="display: none">
+                                    Firmware is up to date.
+                                </div>
+                                <div id="firmware_update_available" style="display: none"
+                                    class="alert alert-primary mt-3" role="alert">
+                                    <h1>New Firmware Available</h1>
+                                    <ul>
+                                        <li>Version: <span id="new_firmware_version"></span> (<a id="firmware_bin"
+                                                href="">Firmware</a>)</li>
+                                    </ul>
+                                    <div id="firmware_changelog" style="display: none">
+                                        <h1>Changelog</h1>
+                                    </div>
+                                    <button id="btn_update_firmware" type="button" class="btn btn-primary"
+                                        onclick="YB.App.updateFirmware()">Update
+                                        Firmware</button>
+                                    <br />
+                                    <div id="progress_wrapper" style="display: none" class="mt-4">
+                                        <p>Update may take a while, please be patient. After an update, this
+                                            page
+                                            will
+                                            refresh. You may need to clear your browser cache after updating the
+                                            firmware if you are having issues.</p>
+                                        Firmware Update:
+                                        <div class="progress" role="progressbar" aria-label="Firmware Update"
+                                            aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                            <div id="firmware_progress"
+                                                class="progress-bar progress-bar-striped progress-bar-animated"
+                                                style="width: 0%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="row">
                                 <div id="adminAlertPlaceholder"></div>
                                 <h5>Board Configuration</h5>
@@ -622,43 +662,6 @@
                                             </svg>
                                             Download
                                         </button>
-                                    </div>
-                                </div>
-                                <h5>Firmware</h5>
-                                <div id="firmware_checking" class="alert alert-secondary" role="alert">
-                                    Checking for new firmware...
-                                </div>
-                                <div id="firmware_up_to_date" class="alert alert-success" role="alert"
-                                    style="display: none">
-                                    Firmware is up to date.
-                                </div>
-                                <div id="firmware_update_available" style="display: none"
-                                    class="alert alert-primary mt-3" role="alert">
-                                    <h1>New Firmware Available</h1>
-                                    <ul>
-                                        <li>Version: <span id="new_firmware_version"></span> (<a id="firmware_bin"
-                                                href="">Firmware</a>)</li>
-                                    </ul>
-                                    <div id="firmware_changelog" style="display: none">
-                                        <h1>Changelog</h1>
-                                    </div>
-                                    <button id="btn_update_firmware" type="button" class="btn btn-primary"
-                                        onclick="YB.App.updateFirmware()">Update Firmware</button>
-                                    <br />
-                                    <div id="progress_wrapper" style="display: none" class="mt-4">
-                                        <p>Update may take a while, please be patient. After an update, this
-                                            page
-                                            will
-                                            refresh. You may need to clear your browser cache after updating the
-                                            firmware if you are having issues.</p>
-                                        Firmware Update:
-                                        <div class="progress" role="progressbar" aria-label="Firmware Update"
-                                            aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                                            <div id="firmware_progress"
-                                                class="progress-bar progress-bar-striped progress-bar-animated"
-                                                style="width: 0%">
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
