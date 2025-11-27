@@ -2,24 +2,10 @@
 
 ## BRINEOMATIC
 
-* add mid-level commands to set_watermaker
-    * boost_pump
-    * high_pressure_pump
-    * flush_valve
-    * fan
-    * diverter valve
-* add mid level UI icons/commands for watermaker parts:
-    * boost_pump
-    * hp pump
-    * diverter valve
-    * flush valve
-    * fan
-    * advanced -> raw *channel ui
+* what needs to be configurable with GD20?
+    * slaveId?
+    * frequency?
 * move everything to SI units, add configurable units
-* add simple HA support to brineomatic?
-    * on/off switch to start/stop the watermaker
-    * sensors for each output type
-    * YAML dashboard
 
 ## FROTHFET
 
@@ -37,6 +23,10 @@
 
 ## LONG TERM:
 
+* add simple HA support to brineomatic?
+    * on/off switch to start/stop the watermaker
+    * sensors for each output type
+    * YAML dashboard
 * fork + modify esp32FOTA to use bundled certificates
 * UI
     * combine config and settings page into a single mega page

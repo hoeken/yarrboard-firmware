@@ -68,6 +68,12 @@
     this.depickle = this.depickle.bind(this);
     this.stop = this.stop.bind(this);
     this.manual = this.manual.bind(this);
+
+    this.toggleBoostPump = this.toggleBoostPump.bind(this);
+    this.toggleHighPressurePump = this.toggleHighPressurePump.bind(this);
+    this.toggleDiverterValve = this.toggleDiverterValve.bind(this);
+    this.toggleFlushValve = this.toggleFlushValve.bind(this);
+    this.toggleCoolingFan = this.toggleCoolingFan.bind(this);
   }
 
   Brineomatic.prototype.buildGaugeSetup = function () {
@@ -633,10 +639,17 @@
       $("#brineomaticStop").on("click", this.stop);
       $("#brineomaticManual").on("click", this.manual);
 
+      $("#boostPumpControlButton").on("click", this.toggleBoostPump);
+      $("#highPressurePumpControlButton").on("click", this.toggleHighPressurePump);
+      $("#diverterValveControlButton").on("click", this.toggleDiverterValve);
+      $("#flushValveControlButton").on("click", this.toggleFlushValve);
+      $("#coolingFanControlButton").on("click", this.toggleCoolingFan);
+      $("#advancedModeButton").on("click", this.advanced);
+
       //visibility
-      $('#relayControlDiv').addClass("bomMANUAL");
-      $('#servoControlDiv').addClass("bomMANUAL");
-      $('#stepperControlDiv').addClass("bomMANUAL");
+      $('#relayControlDiv').hide();
+      $('#servoControlDiv').hide();
+      $('#stepperControlDiv').hide();
       $('#bomInformationDiv').show();
       $('#bomControlDiv').show();
       $('#bomStatsDiv').show();
@@ -867,77 +880,116 @@
       if (YB.App.config.brineomatic.has_boost_pump) {
         $('#bomBoostPumpStatus span').removeClass();
         $('#bomBoostPumpStatus span').addClass("badge");
+        $('#boostPumpControlUI').show();
         if (msg.boost_pump_on) {
           $("#bomBoostPumpStatus span").addClass("text-bg-primary");
           $('#bomBoostPumpStatus span').html("ON");
+          $('#manualBoostPumpStatus').html("ON");
+          $('#boostPumpControlButton').removeClass("btn-secondary").addClass("btn-success");
         }
         else {
           $("#bomBoostPumpStatus span").addClass("text-bg-secondary");
           $('#bomBoostPumpStatus span').html("OFF");
+          $('#manualBoostPumpStatus').html("OFF");
+          $('#boostPumpControlButton').removeClass("btn-success").addClass("btn-secondary");
         }
       }
-      else
+      else {
         $('#bomBoostPumpStatus').hide();
+        $('#boostPumpControlUI').hide();
+      }
 
       if (YB.App.config.brineomatic.has_high_pressure_pump) {
         $('#bomHighPressurePumpStatus span').removeClass();
         $('#bomHighPressurePumpStatus span').addClass("badge");
+        $('#highPressurePumpControlUI').show();
         if (msg.high_pressure_pump_on) {
           $("#bomHighPressurePumpStatus span").addClass("text-bg-primary");
           $('#bomHighPressurePumpStatus span').html("ON");
+          $('#manualHighPressurePumpStatus').html("ON");
+          $('#highPressurePumpControlButton').removeClass("btn-secondary").addClass("btn-success");
         }
         else {
           $("#bomHighPressurePumpStatus span").addClass("text-bg-secondary");
           $('#bomHighPressurePumpStatus span').html("OFF");
+          $('#manualHighPressurePumpStatus').html("OFF");
+          $('#highPressurePumpControlButton').removeClass("btn-success").addClass("btn-secondary");
         }
       }
-      else
+      else {
+        $('#highPressurePumpControlUI').hide();
         $('#bomHighPressurePumpStatus').hide();
+      }
 
       if (YB.App.config.brineomatic.has_diverter_valve) {
         $('#bomDiverterValveStatus span').removeClass();
         $('#bomDiverterValveStatus span').addClass("badge");
+        $('#diverterValveControlUI').show();
+
         if (msg.diverter_valve_open) {
           $("#bomDiverterValveStatus span").addClass("text-bg-secondary");
           $('#bomDiverterValveStatus span').html("OVERBOARD");
+          $('#manualDiverterValveStatus').html("OVERBOARD");
+          $('#diverterValveControlButton').removeClass("btn-success").addClass("btn-secondary");
         }
         else {
           $("#bomDiverterValveStatus span").addClass("text-bg-primary");
           $('#bomDiverterValveStatus span').html("TO TANK");
+          $('#manualDiverterValveStatus').html("TO TANK");
+          $('#diverterValveControlButton').removeClass("btn-secondary").addClass("btn-success");
         }
       }
-      else
+      else {
+        $('#diverterValveControlUI').hide();
         $('#bomDiverterValveStatus').hide();
+
+      }
 
       if (YB.App.config.brineomatic.has_flush_valve) {
         $('#bomFlushValveStatus span').removeClass();
         $('#bomFlushValveStatus span').addClass("badge");
+        $('#flushValveControlUI').show();
+
         if (msg.flush_valve_open) {
           $("#bomFlushValveStatus span").addClass("text-bg-primary");
           $('#bomFlushValveStatus span').html("OPEN");
+          $('#manualFlushValveStatus').html("OPEN");
+          $('#flushValveControlButton').removeClass("btn-secondary").addClass("btn-success");
         }
         else {
           $("#bomFlushValveStatus span").addClass("text-bg-secondary");
           $('#bomFlushValveStatus span').html("CLOSED");
+          $('#manualFlushValveStatus').html("CLOSED");
+          $('#flushValveControlButton').removeClass("btn-success").addClass("btn-secondary");
         }
       }
-      else
+      else {
+        $('#flushValveControlUI').hide();
         $('#bomFlushValveStatus').hide();
+      }
 
       if (YB.App.config.brineomatic.has_cooling_fan) {
         $('#bomFanStatus span').removeClass();
         $('#bomFanStatus span').addClass("badge");
+        $('#coolingFanControlUI').show();
+
         if (msg.cooling_fan_on) {
           $("#bomFanStatus span").addClass("text-bg-primary");
           $('#bomFanStatus span').html("ON");
+          $('#manualCoolingFanStatus').html("ON");
+          $('#coolingFanControlButton').removeClass("btn-secondary").addClass("btn-success");
         }
         else {
           $('#bomFanStatus span').html("OFF");
           $("#bomFanStatus span").addClass("text-bg-secondary");
+          $('#manualCoolingFanStatus').html("OFF");
+          $('#coolingFanControlButton').removeClass("btn-success").addClass("btn-secondary");
         }
       }
-      else
+      else {
+        $('#coolingFanControlUI').show();
         $('#bomFanStatus').hide();
+      }
 
       //disable our hardware form when not idle.
       if (msg.status == "IDLE") {
@@ -1126,14 +1178,69 @@
 
   Brineomatic.prototype.idle = function (e) {
     $(e.currentTarget).blur();
+
+    $("#servoControlDiv").hide();
+    $("#stepperControlDiv").hide();
+    $('#servoControlDiv').removeClass("bomMANUAL");
+    $('#stepperControlDiv').removeClass("bomMANUAL");
+
+
     YB.client.send({
       "cmd": "idle_watermaker",
     }, true);
   }
 
+  Brineomatic.prototype.advanced = function (e) {
+    $(e.currentTarget).blur();
+    $("#servoControlDiv").hide();
+    $("#stepperControlDiv").hide();
+    $('#servoControlDiv').toggleClass("bomMANUAL");
+    $('#stepperControlDiv').toggleClass("bomMANUAL");
+  }
+
+  Brineomatic.prototype.toggleBoostPump = function (e) {
+    $(e.currentTarget).blur();
+    YB.client.send({
+      "cmd": "set_watermaker",
+      "boost_pump": "TOGGLE"
+    });
+  }
+
+  Brineomatic.prototype.toggleHighPressurePump = function (e) {
+    $(e.currentTarget).blur();
+    YB.client.send({
+      "cmd": "set_watermaker",
+      "high_pressure_pump": "TOGGLE"
+    });
+  }
+
+  Brineomatic.prototype.toggleDiverterValve = function (e) {
+    $(e.currentTarget).blur();
+    YB.client.send({
+      "cmd": "set_watermaker",
+      "diverter_valve": "TOGGLE"
+    });
+  }
+
+  Brineomatic.prototype.toggleFlushValve = function (e) {
+    $(e.currentTarget).blur();
+    YB.client.send({
+      "cmd": "set_watermaker",
+      "flush_valve": "TOGGLE"
+    });
+  }
+
+  Brineomatic.prototype.toggleCoolingFan = function (e) {
+    $(e.currentTarget).blur();
+    YB.client.send({
+      "cmd": "set_watermaker",
+      "cooling_fan": "TOGGLE"
+    });
+  }
+
   Brineomatic.prototype.generateControlUI = function () {
     return /* html */ `
-      <div id="bomInterface" class="row mx-0" style="visibility:hidden">
+      <div id="bomInterface" class="row px-1 mx-0" style="visibility:hidden">
           <div id="bomInformationDiv" style="display:none" class="col-md-6">
               <h1 class="text-center">Mode: <span class="badge" id="bomStatus"></span></h1>
               <table id="bomTable" class="table table-hover">
@@ -1793,6 +1900,45 @@
                   <h6 class="my-0">Flush Volume</h6>
                   <h1 class="bomFlushVolumeData" class="my-0"></h1>
                   <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
+              </div>
+          </div>
+          <div id="bomManualControls" class="col bomMANUAL">
+            <h4>Manual Watermaker Controls</h4>
+            <div class="row gx-3 gy-3 my-3">
+              <div id="boostPumpControlUI" class="col-xs-12 sm-6 col-md-4 text-center">
+                <button id="boostPumpControlButton" type="button" class="btn btn-secondary relayButton">
+                  <h4>Boost Pump</h4>
+                  <div id="manualBoostPumpStatus">OFF</div>
+                </button>
+              </div>
+              <div id="highPressurePumpControlUI" class="col-xs-12 sm-6 col-md-4 text-center">
+                <button id="highPressurePumpControlButton" type="button" class="btn btn-secondary relayButton">
+                  <h4>High Pressure Pump</h4>
+                  <div id="manualHighPressurePumpStatus">OFF</div>
+                </button>
+              </div>
+              <div id="diverterValveControlUI" class="col-xs-12 sm-6 col-md-4 text-center">
+                <button id="diverterValveControlButton" type="button" class="btn btn-secondary relayButton">
+                  <h4>Diverter Valve</h4>
+                  <div id="manualDiverterValveStatus">CLOSED</div>
+                </button>
+              </div>
+              <div id="flushValveControlUI" class="col-xs-12 sm-6 col-md-4 text-center">
+                <button id="flushValveControlButton" type="button" class="btn btn-secondary relayButton">
+                  <h4>Flush Valve</h4>
+                  <div id="manualFlushValveStatus">CLOSED</div>
+                </button>
+              </div>
+              <div id="coolingFanControlUI" class="col-xs-12 sm-6 col-md-4 text-center">
+                <button id="coolingFanControlButton" type="button" class="btn btn-secondary relayButton">
+                  <h4>Cooling Fan</h4>
+                  <div id="manualCoolingFanStatus">CLOSED</div>
+                </button>
+              </div>
+              <div class="col-xs-12 sm-6 col-md-4 text-center">
+                <button id="advancedModeButton" type="button" class="btn btn-secondary relayButton">
+                  <h4 class="my-0">Advanced Mode</h4>
+                </button>
               </div>
           </div>
       </div>
@@ -3053,6 +3199,7 @@
     } else {
       relayDiv.hide();
     }
+    $("#boostPumpControlUI").toggle(mode !== "NONE");
   }
 
   Brineomatic.prototype.updateHighPressurePumpVisibility = function (mode) {
@@ -3076,6 +3223,8 @@
     $("#pickleBrineomatic").toggle(mode !== "NONE");
     $("#depickleBrineomatic").toggleClass("bomPICKLED", mode !== "NONE");
     $("#depickleBrineomatic").toggle(mode !== "NONE");
+
+    $("#highPressurePumpControlUI").toggle(mode !== "NONE");
   };
 
   Brineomatic.prototype.updateHighPressureValveVisibility = function (mode) {
@@ -3121,6 +3270,8 @@
         // nothing shown
         break;
     }
+
+    $("#diverterValveControlUI").toggle(mode !== "NONE");
   };
 
   Brineomatic.prototype.generateStatsUI = function () {
@@ -3157,6 +3308,7 @@
     $("#flush_valve_relay_id").closest(".form-floating").toggle(mode === "RELAY");
     $("#flushBrineomatic").toggleClass("bomIDLE bomPICKLED", mode !== "NONE");
     $("#flushBrineomatic").toggle(mode !== "NONE")
+    $("#flushValveControlUI").toggle(mode !== "NONE");
   };
 
   Brineomatic.prototype.updateCoolingFanVisibility = function (mode) {
@@ -3178,6 +3330,8 @@
       default:
         break;
     }
+
+    $("#coolingFanControlUI").toggle(mode !== "NONE");
   };
 
   Brineomatic.prototype.updateMembranePressureVisibility = function (hasSensor) {

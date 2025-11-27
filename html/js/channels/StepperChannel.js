@@ -26,7 +26,7 @@
 
   StepperChannel.prototype.generateControlUI = function () {
     return `
-      <div id="stepperControlCard${this.id}" class="col-xs-12 col-sm-6">
+      <div id="stepperControlCard${this.id}" class="col-12">
         <div class="p-3 bg-secondary border border-secondary rounded text-white">
           <!-- Header row -->
           <div class="d-flex justify-content-between align-items-center mb-2">

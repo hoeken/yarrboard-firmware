@@ -1364,6 +1364,12 @@ void handleSetWatermaker(JsonVariantConst input, JsonVariant output)
   if (input["boost_pump"]) {
     if (wm.hasBoostPump()) {
       state = input["boost_pump"] | "OFF";
+
+      if (state.equals("TOGGLE")) {
+        if (!wm.isBoostPumpOn())
+          state = "ON";
+      }
+
       if (state.equals("ON"))
         wm.enableBoostPump();
       else
@@ -1375,6 +1381,12 @@ void handleSetWatermaker(JsonVariantConst input, JsonVariant output)
   if (input["high_pressure_pump"]) {
     if (wm.hasHighPressurePump()) {
       state = input["high_pressure_pump"] | "OFF";
+
+      if (state.equals("TOGGLE")) {
+        if (!wm.isHighPressurePumpOn())
+          state = "ON";
+      }
+
       if (state.equals("ON"))
         wm.enableHighPressurePump();
       else
@@ -1386,6 +1398,12 @@ void handleSetWatermaker(JsonVariantConst input, JsonVariant output)
   if (input["diverter_valve"]) {
     if (wm.hasDiverterValve()) {
       state = input["diverter_valve"] | "CLOSE";
+
+      if (state.equals("TOGGLE")) {
+        if (!wm.isDiverterValveOpen())
+          state = "OPEN";
+      }
+
       if (state.equals("OPEN"))
         wm.openDiverterValve();
       else
@@ -1397,6 +1415,12 @@ void handleSetWatermaker(JsonVariantConst input, JsonVariant output)
   if (input["flush_valve"]) {
     if (wm.hasFlushValve()) {
       state = input["flush_valve"] | "CLOSE";
+
+      if (state.equals("TOGGLE")) {
+        if (!wm.isFlushValveOpen())
+          state = "OPEN";
+      }
+
       if (state.equals("OPEN"))
         wm.openFlushValve();
       else
@@ -1408,6 +1432,12 @@ void handleSetWatermaker(JsonVariantConst input, JsonVariant output)
   if (input["cooling_fan"]) {
     if (wm.hasCoolingFan()) {
       state = input["cooling_fan"] | "ON";
+
+      if (state.equals("TOGGLE")) {
+        if (!wm.isCoolingFanOn())
+          state = "ON";
+      }
+
       if (state.equals("ON"))
         wm.enableCoolingFan();
       else
@@ -1442,6 +1472,9 @@ void handleBrineomaticSaveHardwareConfig(JsonVariantConst input, JsonVariant out
 
   if (!saveConfig(error, sizeof(error)))
     return generateErrorJSON(output, error);
+
+  // easiest to just restart - lots of init.
+  ESP.restart();
 }
 
 void handleBrineomaticSaveSafeguardsConfig(JsonVariantConst input, JsonVariant output)
