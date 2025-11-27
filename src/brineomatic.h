@@ -344,6 +344,8 @@ class Brineomatic
     String highPressurePumpControl;
     uint8_t highPressureRelayId;
     String highPressurePumpModbusDevice;
+    uint8_t highPressurePumpModbusSlaveId;
+    float highPressurePumpModbusFrequency;
 
     String highPressureValveControl;
     uint8_t highPressureValveStepperId;

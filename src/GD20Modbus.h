@@ -17,8 +17,8 @@
 class GD20Modbus
 {
   public:
-    GD20Modbus(uint8_t slaveID, HardwareSerial& serial, int rxPin, int txPin);
-    void begin();
+    GD20Modbus(HardwareSerial& serial, int rxPin, int txPin);
+    void begin(uint8_t slaveID);
     void setFrequency(float freqHz);
     void runMotor();
     void stopMotor();

@@ -1,11 +1,4 @@
-# GENERAL
-
-## BRINEOMATIC
-
-* what needs to be configurable with GD20?
-    * slaveId?
-    * frequency?
-* move everything to SI units, add configurable units
+# v2.2
 
 ## FROTHFET
 
@@ -21,13 +14,16 @@
 * add OVERHEAT as a state - similar to trip, must be turned off before turn on.
     * if we have temperature, we should also check that before we enable the channel
 
-## LONG TERM:
+### BRINEOMATIC
 
+* move everything to SI units, add configurable units
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker
     * sensors for each output type
     * YAML dashboard
-* fork + modify esp32FOTA to use bundled certificates
+
+## LONG TERM:
+
 * UI
     * combine config and settings page into a single mega page
     * dio channels
@@ -36,9 +32,8 @@
     * should we move this to the firmware instead?
     * frothfet plugin - use key for paths instead of id
     * signalk sendit plugin - use key for paths instead of id
-* brineomatic graphs
-    * app.addPage("page", "content", openCallback);
-    * app.onOpenPage(page, callback);
+* app.addPage("page", "content", openCallback);
+* app.onOpenPage(page, callback);
 * remove all onclick calls from the html.
 * global cleanup of strcpy, sprintf, etc.
 * espwebtools?  https://esphome.github.io/esp-web-tools/

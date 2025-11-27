@@ -180,8 +180,11 @@ void Brineomatic::initModbus()
   #ifdef YB_HAS_MODBUS
   if (highPressurePumpControl == "MODBUS") {
     if (highPressurePumpModbusDevice == "GD20") {
-      gd20 = new GD20Modbus(0, YB_MODBUS_SERIAL, YB_MODBUS_RX, YB_MODBUS_TX);
-      gd20->begin();
+      gd20 = new GD20Modbus(YB_MODBUS_SERIAL, YB_MODBUS_RX, YB_MODBUS_TX);
+      gd20->begin(highPressurePumpModbusSlaveId);
+
+      uint16_t status = gd20->readStatusWord();
+      gd20->decodeStatus(status);
     }
   }
   #endif
@@ -632,7 +635,7 @@ void Brineomatic::modbusEnableHighPressurePump()
   #ifdef YB_HAS_MODBUS
   if (highPressurePumpModbusDevice.equals("GD20")) {
     YBP.println("GD20 Pump Enable");
-    gd20->setFrequency(25.0);
+    gd20->setFrequency(highPressurePumpModbusFrequency);
     gd20->runMotor();
   }
   #endif
@@ -2012,6 +2015,8 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["high_pressure_pump_control"] = this->highPressurePumpControl;
   bom["high_pressure_relay_id"] = this->highPressureRelayId;
   bom["high_pressure_modbus_device"] = this->highPressurePumpModbusDevice;
+  bom["high_pressure_modbus_slave_id"] = this->highPressurePumpModbusSlaveId;
+  bom["high_pressure_modbus_frequency"] = this->highPressurePumpModbusFrequency;
 
   bom["high_pressure_valve_control"] = this->highPressureValveControl;
   bom["membrane_pressure_target"] = this->membranePressureTarget;
@@ -2806,6 +2811,8 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariantConst config)
   this->highPressurePumpControl = config["high_pressure_pump_control"] | YB_HIGH_PRESSURE_PUMP_CONTROL;
   this->highPressureRelayId = config["high_pressure_relay_id"] | YB_HIGH_PRESSURE_RELAY_ID;
   this->highPressurePumpModbusDevice = config["high_pressure_modbus_device"] | YB_HIGH_PRESSURE_PUMP_MODBUS_DEVICE;
+  this->highPressurePumpModbusSlaveId = config["high_pressure_modbus_slave_id"] | YB_HIGH_PRESSURE_PUMP_MODBUS_SLAVE_ID;
+  this->highPressurePumpModbusFrequency = config["high_pressure_modbus_frequency"] | YB_HIGH_PRESSURE_PUMP_MODBUS_FREQUENCY;
 
   this->highPressureValveControl = config["high_pressure_valve_control"] | YB_HIGH_PRESSURE_VALVE_CONTROL;
   this->membranePressureTarget = config["membrane_pressure_target"] | YB_MEMBRANE_PRESSURE_TARGET;

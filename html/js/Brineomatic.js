@@ -2163,12 +2163,31 @@
                             <div class="invalid-feedback"></div>
                         </div>
 
-                        <div class="form-floating mb-3">
+                        <div class="high_pressure_modbus_options form-floating mb-3">
                             <select id="high_pressure_modbus_device" class="form-select" aria-label="High Pressure Pump Modbus Device">
                               <option value="GD20">INVT GD20</option>
                             </select>
                             <label for="high_pressure_modbus_device">High Pressure Pump Modbus Device</label>
                             <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="high_pressure_modbus_options row g-3 mb-3">
+                          <div class="col-12 col-md-6 mt-1">
+                            <div class="input-group has-validation">
+                              <span class="input-group-text">Modbus Slave ID</span>
+                              <input type="text" class="form-control text-end" id="high_pressure_modbus_slave_id">
+                              <div class="invalid-feedback"></div>
+                            </div>
+                          </div>
+
+                          <div class="col-12 col-md-6 mt-1">
+                            <div class="input-group has-validation">
+                              <span class="input-group-text">Frequency</span>
+                              <input type="text" class="form-control text-end" id="high_pressure_modbus_frequency">
+                              <span class="input-group-text">hz</span>
+                              <div class="invalid-feedback"></div>
+                            </div>
+                          </div>
                         </div>
 
                         <hr class="bold">
@@ -2927,6 +2946,8 @@
     $("#high_pressure_pump_control").val(data.high_pressure_pump_control);
     $("#high_pressure_relay_id").val(data.high_pressure_relay_id);
     $("#high_pressure_modbus_device").val(data.high_pressure_modbus_device);
+    $("#high_pressure_modbus_slave_id").val(data.high_pressure_modbus_slave_id);
+    $("#high_pressure_modbus_frequency").val(data.high_pressure_modbus_frequency);
 
     $("#high_pressure_valve_control").val(data.high_pressure_valve_control);
     $("#membrane_pressure_target").val(data.membrane_pressure_target);
@@ -3213,17 +3234,17 @@
 
   Brineomatic.prototype.updateHighPressurePumpVisibility = function (mode) {
     const relayDiv = $("#high_pressure_relay_id").closest(".form-floating");
-    const modbusDiv = $("#high_pressure_modbus_device").closest(".form-floating");
+    const modbusOptions = $(".high_pressure_modbus_options");
 
     if (mode === "RELAY") {
       relayDiv.show();
-      modbusDiv.hide();
+      modbusOptions.hide();
     } else if (mode === "MODBUS") {
       relayDiv.hide();
-      modbusDiv.show();
+      modbusOptions.show();
     } else {
       relayDiv.hide();
-      modbusDiv.hide();
+      modbusOptions.hide();
     }
 
     $("#runBrineomatic").toggleClass("bomIDLE", mode !== "NONE");
@@ -3420,6 +3441,8 @@
     data.high_pressure_pump_control = $("#high_pressure_pump_control").val();
     data.high_pressure_relay_id = parseInt($("#high_pressure_relay_id").val());
     data.high_pressure_modbus_device = $("#high_pressure_modbus_device").val();
+    data.high_pressure_modbus_slave_id = parseInt($("#high_pressure_modbus_slave_id").val());
+    data.high_pressure_modbus_frequency = parseFloat($("#high_pressure_modbus_frequency").val());
 
     data.high_pressure_valve_control = $("#high_pressure_valve_control").val();
     data.membrane_pressure_target = parseFloat($("#membrane_pressure_target").val());
@@ -3636,6 +3659,21 @@
 
       high_pressure_modbus_device: {
         inclusion: ["GD20"]
+      },
+
+      high_pressure_modbus_slave_id: {
+        numericality: {
+          onlyInteger: true,
+          greaterThanOrEqualTo: 0,
+          lessThanOrEqualTo: 255
+        }
+      },
+
+      high_pressure_modbus_frequency: {
+        numericality: {
+          greaterThanOrEqualTo: 0.0,
+          lessThanOrEqualTo: 400.0
+        }
       },
 
       high_pressure_valve_control: {
