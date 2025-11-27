@@ -3,13 +3,13 @@
 ## 🚀 New Features
 
 - **General Features**
- - Native USB serial support, no need for serial converter.
- - Nicer debug system, with full debug via web console (click the copyright year)
- - Better piezo support with selectable premade melodies
- - Updated Brineomatic icon + support for adding bookmark to home screen on Apple / Android
- - MQTT for brineomatic now has all data
- - Added flush volume tracking
- - Autoflush now has 3 modes: automatic (salinity), duration, and volume
+  - Native USB serial support, no need for serial converter.
+  - Nicer debug system, with full debug via web console (click the copyright year)
+  - Better piezo support with selectable premade melodies
+  - Updated Brineomatic icon + support for adding bookmark to home screen on Apple / Android
+  - MQTT for brineomatic now has all data
+  - Added flush volume tracking
+  - Autoflush now has 3 modes: automatic (salinity), duration, and volume
 
 - **Modbus Support**
   - First pass at GD20 VFD Modbus integration.
