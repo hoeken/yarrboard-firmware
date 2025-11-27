@@ -1,4 +1,4 @@
-#include "G20Modbus.h"
+#include "GD20Modbus.h"
 #include "debug.h"
 
 ModbusMaster GD20Modbus::node;

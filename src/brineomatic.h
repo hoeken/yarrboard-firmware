@@ -10,7 +10,7 @@
 #define YARR_BRINEOMATIC_H
 
 #include "Flowmeter.h"
-#include "G20Modbus.h"
+#include "GD20Modbus.h"
 #include "adchelper.h"
 #include "brineomatic_config.h"
 #include "etl/deque.h"

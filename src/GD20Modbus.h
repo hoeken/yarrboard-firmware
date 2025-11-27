@@ -1,5 +1,5 @@
-#ifndef YARR_G20MODBUS_H
-#define YARR_G20MODBUS_H
+#ifndef YARR_GD20MODBUS_H
+#define YARR_GD20MODBUS_H
 
 #include <Arduino.h>
 #include <ModbusMaster.h>

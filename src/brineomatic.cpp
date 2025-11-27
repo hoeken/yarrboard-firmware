@@ -178,8 +178,10 @@ void Brineomatic::init()
 void Brineomatic::initModbus()
 {
   #ifdef YB_HAS_MODBUS
-  if (highPressurePumpModbusDevice == "GD20")
+  if (highPressurePumpModbusDevice == "GD20") {
     gd20 = new GD20Modbus(0, YB_MODBUS_SERIAL, YB_MODBUS_RX, YB_MODBUS_TX);
+    gd20->begin();
+  }
   #endif
 }
 
