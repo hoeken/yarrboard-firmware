@@ -1,6 +1,8 @@
 #include "GD20Modbus.h"
 #include "debug.h"
 
+#ifdef YB_HAS_MODBUS
+
 ModbusMaster GD20Modbus::node;
 
 GD20Modbus::GD20Modbus(uint8_t slaveID, HardwareSerial& serial, int rxPin, int txPin)
@@ -87,3 +89,5 @@ void GD20Modbus::decodeStatus(uint16_t status)
   if (status & 0x0080)
     YBP.println(" - Acc/Dec Running");
 }
+
+#endif

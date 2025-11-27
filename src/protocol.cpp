@@ -1514,7 +1514,9 @@ void generateConfigJSON(JsonVariant output)
   output["git_hash"] = GIT_HASH;
   output["build_time"] = BUILD_TIME;
 
+#ifdef YB_HAS_PIEZO
   generateMelodyJSON(output);
+#endif
   generateBoardConfigJSON(output);
 
   output["is_development"] = YB_IS_DEVELOPMENT;

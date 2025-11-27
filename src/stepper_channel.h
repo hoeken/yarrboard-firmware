@@ -9,15 +9,18 @@
 #ifndef YARR_STEPPER_CHANNEL_H
 #define YARR_STEPPER_CHANNEL_H
 
-#include "FastAccelStepper.h"
 #include "config.h"
-#ifdef YB_STEPPER_DRIVER_TMC2209
-  #include "TMC2209.h"
-#endif
-#include "base_channel.h"
-#include "prefs.h"
-#include "protocol.h"
-#include <Arduino.h>
+
+#ifdef YB_HAS_STEPPER_CHANNELS
+
+  #include "FastAccelStepper.h"
+  #ifdef YB_STEPPER_DRIVER_TMC2209
+    #include "TMC2209.h"
+  #endif
+  #include "base_channel.h"
+  #include "prefs.h"
+  #include "protocol.h"
+  #include <Arduino.h>
 
 class StepperChannel : public BaseChannel
 {
@@ -86,4 +89,5 @@ extern etl::array<StepperChannel, YB_STEPPER_CHANNEL_COUNT> stepper_channels;
 void stepper_channels_setup();
 void stepper_channels_loop();
 
+#endif
 #endif /* !YARR_STEPPER_CHANNEL_H */
