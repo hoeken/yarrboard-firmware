@@ -86,6 +86,11 @@ void Brineomatic::init()
   else
     totalCycles = 0;
 
+  if (autoflushEnabled()) {
+    lastAutoflushTimeMillis = millis();
+    lastAutoflushTimeNTP = preferences.getLong64("lastautoflush");
+  }
+
   boostPumpOnState = false;
   highPressurePumpOnState = false;
   diverterValveOpenState = true;
@@ -947,7 +952,7 @@ uint32_t Brineomatic::getNextFlushCountdown()
     if (ntp_is_ready && lastAutoflushTimeNTP > 1700000000)
       elapsed = (ntp_get_time() - lastAutoflushTimeNTP) * 1000;
     else
-      elapsed = millis() - lastAutoFlushTime;
+      elapsed = millis() - lastAutoflushTimeMillis;
 
     return autoflushInterval - elapsed;
   }
@@ -1115,13 +1120,8 @@ void Brineomatic::runStateMachine()
 
       if (isPickled)
         currentStatus = Status::PICKLED;
-      else {
-        if (autoflushEnabled()) {
-          lastAutoFlushTime = millis();
-          lastAutoflushTimeNTP = preferences.getLong64("lastautoflush");
-        }
+      else
         currentStatus = Status::IDLE;
-      }
       break;
 
     //
@@ -1145,7 +1145,7 @@ void Brineomatic::runStateMachine()
         if (ntp_is_ready && lastAutoflushTimeNTP > 1700000000)
           elapsed = (ntp_get_time() - lastAutoflushTimeNTP) * 1000;
         else
-          elapsed = millis() - lastAutoFlushTime;
+          elapsed = millis() - lastAutoflushTimeMillis;
 
         if (elapsed > autoflushInterval) {
           if (autoflushMode.equals("TIME"))
@@ -1407,7 +1407,7 @@ void Brineomatic::runStateMachine()
       }
 
       if (autoflushEnabled()) {
-        lastAutoFlushTime = millis();
+        lastAutoflushTimeMillis = millis();
         if (ntp_is_ready) {
           lastAutoflushTimeNTP = ntp_get_time();
           preferences.putLong64("lastautoflush", lastAutoflushTimeNTP);
