@@ -93,7 +93,6 @@
 
       //light/dark theme init.
       let theme = YB.App.getPreferredTheme();
-      YB.log(`preferred theme: ${theme}`);
       YB.App.setTheme(theme);
       $("#darkSwitch").change(YB.App.updateThemeSwitch);
 
@@ -101,7 +100,6 @@
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
         const storedTheme = YB.App.getStoredTheme();
         if (storedTheme !== 'light' && storedTheme !== 'dark') {
-          YB.log(`Theme watcher triggered`);
           YB.App.setTheme(YB.App.getPreferredTheme());
         }
       });
@@ -1000,7 +998,6 @@
 
       // if browser supports prefers-color-scheme
       if (window.matchMedia('(prefers-color-scheme: dark)').media !== 'not all') {
-        YB.log(`prefers color scheme`);
         if (window.matchMedia('(prefers-color-scheme: dark)').matches)
           return "dark";
         if (window.matchMedia('(prefers-color-scheme: light)').matches)
@@ -1009,13 +1006,13 @@
 
       //do we have stored one?
       const storedTheme = YB.App.getStoredTheme();
-      YB.log(`stored: ${storedTheme}`);
+      // YB.log(`stored: ${storedTheme}`);
       if (storedTheme)
         return storedTheme;
 
       //did we get one passed in? b&g, etc pass in like this.
       let mode = YB.Util.getQueryVariable("mode");
-      YB.log(`mode: ${mode}`);
+      // YB.log(`mode: ${mode}`);
       if (mode !== null) {
         if (mode == "night")
           return "dark";
@@ -1086,10 +1083,8 @@
 
       YB.App.config = msg;
 
-      console.log(msg);
-
       //we can check for new firmware now.
-      // YB.App.checkForUpdates();
+      YB.App.checkForUpdates();
 
       //is it our first boot?
       if (msg.first_boot && YB.App.currentPage != "network")
@@ -1638,8 +1633,6 @@
     },
 
     handleErrorMessage: function (msg) {
-      YB.log(msg.message);
-
       //did we turn login off?
       if (msg.message == "Login not required.") {
         Cookies.remove("username");

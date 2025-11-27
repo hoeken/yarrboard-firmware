@@ -84,7 +84,7 @@ if __name__ == '__main__':
 		bdata = {}
 		bdata['type'] = board
 		bdata['version'] = version
-		bdata['url'] = f'https://raw.githubusercontent.com/hoeken/yarrboard-firmware/main/firmware/releases/{board}-{version}.bin'
+		bdata['url'] = f'https://raw.githubusercontent.com/hoeken/yarrboard-firmware/main/releases/{board}-{version}.bin'
 		bdata['changelog'] = changelog
 		config.append(bdata)
 		

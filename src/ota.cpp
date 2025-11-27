@@ -43,9 +43,9 @@ void ota_setup()
     ArduinoOTA.begin();
   }
 
-  FOTA.setManifestURL("https://raw.githubusercontent.com/hoeken/yarrboard/main/firmware/firmware.json");
-  // FOTA.setRootCA();
+  FOTA.setManifestURL("https://raw.githubusercontent.com/hoeken/yarrboard-firmware/main/firmware.json");
   FOTA.setPubKey(MyPubKey);
+  FOTA.useBundledCerts();
 
   FOTA.setUpdateBeginFailCb([](int partition) {
     YBP.printf("[ota] Update could not begin with %s partition\n", partition == U_SPIFFS ? "spiffs" : "firmware");
