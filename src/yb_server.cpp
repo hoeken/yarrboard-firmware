@@ -145,21 +145,21 @@ void server_setup()
   });
 
   // Our websocket handler
-  websocketHandler.onFrame(
-    [](PsychicWebSocketRequest* request, httpd_ws_frame* frame) {
-      handleWebSocketMessage(request, frame->payload, frame->len);
-      return ESP_OK;
-    });
+  websocketHandler.onFrame([](PsychicWebSocketRequest* request, httpd_ws_frame* frame) {
+    handleWebSocketMessage(request, frame->payload, frame->len);
+    return ESP_OK;
+  });
   websocketHandler.onOpen([](PsychicWebSocketClient* client) {
-    YBP.printf("[socket] connection #%u connected from %s\n",
-                  client->socket(), client->remoteIP().toString());
-    websocketClientCount++; });
+    // YBP.printf("[socket] connection #%u connected from %s\n",
+    //               client->socket(), client->remoteIP().toString());
+    websocketClientCount++;
+  });
   websocketHandler.onClose([](PsychicWebSocketClient* client) {
-    YBP.printf("[socket] connection #%u closed from %s\n", client->socket(),
-                  client->remoteIP().toString());
+    // YBP.printf("[socket] connection #%u closed from %s\n", client->socket(),
+    //               client->remoteIP().toString());
+    removeClientFromAuthList(client);
     websocketClientCount--;
-
-    removeClientFromAuthList(client); });
+  });
   server->on("/ws", &websocketHandler);
 
   server->onOpen([](PsychicClient* client) { httpClientCount++; });
@@ -246,12 +246,12 @@ void sendToAllWebsockets(const char* jsonString, UserRole auth_level)
           continue;
 
         if (authenticatedClients[i].role >= auth_level) {
-          if (xSemaphoreTake(sendMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+          if (xSemaphoreTake(sendMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
             client->sendMessage(jsonString);
             xSemaphoreGive(sendMutex);
           } else {
             // dont use YBP here because it will get recursive.
-            Serial.println("sendToAllWebsockets send mutex fail");
+            Serial.println("client->sendMessage mutex fail");
           }
         }
       }
@@ -259,7 +259,13 @@ void sendToAllWebsockets(const char* jsonString, UserRole auth_level)
   }
   // nope, just send it to all.
   else {
-    websocketHandler.sendAll(jsonString);
+    if (xSemaphoreTake(sendMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
+      websocketHandler.sendAll(jsonString);
+      xSemaphoreGive(sendMutex);
+    } else {
+      // dont use YBP here because it will get recursive.
+      Serial.println("websocketHandler.sendAll mutex fail");
+    }
   }
 }
 
