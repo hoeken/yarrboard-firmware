@@ -185,13 +185,15 @@ void generateFullConfigJSON(JsonVariant output)
 void generateBoardConfigJSON(JsonVariant output)
 {
   // our identifying info
+  output["name"] = board_name;
+  output["uuid"] = uuid;
   output["firmware_version"] = YB_FIRMWARE_VERSION;
   output["hardware_version"] = YB_HARDWARE_VERSION;
   output["esp_idf_version"] = esp_get_idf_version();
   output["arduino_version"] = arduino_version;
   output["psychic_http_version"] = PSYCHIC_VERSION_STR;
-  output["name"] = board_name;
-  output["uuid"] = uuid;
+  output["git_hash"] = GIT_HASH;
+  output["build_time"] = BUILD_TIME;
 
 // output / pwm channels
 #ifdef YB_HAS_PWM_CHANNELS
