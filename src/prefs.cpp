@@ -359,28 +359,33 @@ bool loadConfigFromFile(const char* file, char* error, size_t len)
 
 bool loadConfigFromJSON(JsonVariantConst config, char* error, size_t len)
 {
-  if (!config["network"]) {
-    snprintf(error, len, "Missing 'network' config");
-    return false;
-  }
-  if (!loadNetworkConfigFromJSON(config["network"], error, len))
-    return false;
+  bool result = true;
 
-  if (!config["app"]) {
-    snprintf(error, len, "Missing 'app' config");
-    return false;
-  }
-  if (!loadAppConfigFromJSON(config["app"], error, len))
-    return false;
+  if (config["network"]) {
+    if (!loadNetworkConfigFromJSON(config["network"], error, len)) {
+      YBP.print(error);
+      result = false;
+    }
+  } else
+    YBP.println("Missing 'network' config");
 
-  if (!config["board"]) {
-    snprintf(error, len, "Missing 'board' config");
-    return false;
-  }
-  if (!loadBoardConfigFromJSON(config["board"], error, len))
-    return false;
+  if (config["app"]) {
+    if (!loadAppConfigFromJSON(config["app"], error, len)) {
+      YBP.print(error);
+      result = false;
+    }
+  } else
+    YBP.println("Missing 'app' config");
 
-  return true;
+  if (config["board"]) {
+    if (!loadBoardConfigFromJSON(config["board"], error, len)) {
+      YBP.print(error);
+      result = false;
+    }
+  } else
+    YBP.println("Missing 'board' config");
+
+  return result;
 }
 
 bool loadNetworkConfigFromJSON(JsonVariantConst config, char* error, size_t len)
@@ -469,47 +474,89 @@ bool loadAppConfigFromJSON(JsonVariantConst config, char* error, size_t len)
 
 bool loadBoardConfigFromJSON(JsonVariantConst config, char* error, size_t len)
 {
+  bool result = true;
   const char* value;
 
   value = config["name"].as<const char*>();
   snprintf(board_name, sizeof(board_name), "%s", (value && *value) ? value : YB_BOARD_NAME);
 
 #ifdef YB_HAS_ADC_CHANNELS
-  if (!loadChannelsConfigFromJSON("adc", adc_channels, config, error, len))
-    return false;
+  if (config["adc"]) {
+    if (!loadChannelsConfigFromJSON("adc", adc_channels, config, error, len)) {
+      YBP.println(error);
+      result = false;
+    }
+  }
 #endif
 
 #ifdef YB_HAS_PWM_CHANNELS
-  if (!loadChannelsConfigFromJSON("pwm", pwm_channels, config, error, len))
-    return false;
+  if (config["pwm"]) {
+    if (!loadChannelsConfigFromJSON("pwm", pwm_channels, config, error, len)) {
+      YBP.println(error);
+      result = false;
+    }
+  }
 #endif
 
 #ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
-  if (!loadChannelsConfigFromJSON("dio", digital_input_channels, config, error, len))
-    return false;
+  if (config["dio"]) {
+    if (!loadChannelsConfigFromJSON("dio", digital_input_channels, config, error, len)) {
+      YBP.println(error);
+      result = false;
+    }
+  }
 #endif
 
 #ifdef YB_HAS_RELAY_CHANNELS
-  if (!loadChannelsConfigFromJSON("relay", relay_channels, config, error, len))
-    return false;
+  if (config["relay"]) {
+    if (!loadChannelsConfigFromJSON("relay", relay_channels, config, error, len)) {
+      YBP.println(error);
+      result = false;
+    }
+  }
 #endif
 
 #ifdef YB_HAS_SERVO_CHANNELS
-  if (!loadChannelsConfigFromJSON("servo", servo_channels, config, error, len))
-    return false;
+  if (config["servo"]) {
+    if (!loadChannelsConfigFromJSON("servo", servo_channels, config, error, len)) {
+      YBP.println(error);
+      result = false;
+    }
+  }
 #endif
 
 #ifdef YB_HAS_STEPPER_CHANNELS
-  if (!loadChannelsConfigFromJSON("stepper", stepper_channels, config, error, len))
-    return false;
+  if (config["stepper"]) {
+    if (!loadChannelsConfigFromJSON("stepper", stepper_channels, config, error, len)) {
+      YBP.println(error);
+      result = false;
+    }
+  }
 #endif
 
 #ifdef YB_IS_BRINEOMATIC
-  if (wm.validateConfigJSON(config["brineomatic"], error, len))
-    wm.loadConfigJSON(config["brineomatic"]);
-  else
-    return false;
+  if (config["brineomatic"]) {
+    JsonVariantConst bom = config["brineomatic"].as<JsonVariantConst>();
+
+    if (!wm.validateGeneralConfigJSON(bom, error, len)) {
+      YBP.println(error);
+      result = false;
+    } else
+      wm.loadGeneralConfigJSON(bom);
+
+    if (!wm.validateHardwareConfigJSON(bom, error, len)) {
+      YBP.println(error);
+      result = false;
+    } else
+      wm.loadHardwareConfigJSON(bom);
+
+    if (!wm.validateSafeguardsConfigJSON(bom, error, len)) {
+      YBP.println(error);
+      result = false;
+    } else
+      wm.loadSafeguardsConfigJSON(bom);
+  }
 #endif
 
-  return true;
+  return result;
 }
