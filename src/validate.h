@@ -49,7 +49,7 @@ bool checkInclusion(JsonVariantConst config, const char* key, const char* const 
       return true;
   }
 
-  snprintf(error, err_size, "Invalid value for field '%s'", key);
+  snprintf(error, err_size, "Invalid value '%s' for field '%s'", v, key);
   return false;
 }
 
