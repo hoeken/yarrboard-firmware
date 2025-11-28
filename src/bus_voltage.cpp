@@ -37,8 +37,6 @@ void bus_voltage_setup()
   Wire.begin(YB_I2C_SDA_PIN, YB_I2C_SCL_PIN);
   Wire.setClock(YB_I2C_SPEED);
   #endif
-
-  YBP.println("Bus Voltage OK");
 }
 
 void bus_voltage_loop()

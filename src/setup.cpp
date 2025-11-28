@@ -194,6 +194,9 @@ void full_loop()
   // our debug.
   // it.print(5000);
 
+  // if (INTERVAL(1000))
+  //   DUMP(millis());
+
   // calculate our framerate
   unsigned long loopDelta = micros() - lastLoopMicros;
   lastLoopMicros = micros();
