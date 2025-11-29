@@ -39,27 +39,27 @@
 
 char board_name[YB_BOARD_NAME_LENGTH] = YB_BOARD_NAME;
 char startup_melody[YB_BOARD_NAME_LENGTH] = YB_PIEZO_DEFAULT_MELODY;
-char admin_user[YB_USERNAME_LENGTH] = "admin";
-char admin_pass[YB_PASSWORD_LENGTH] = "admin";
-char guest_user[YB_USERNAME_LENGTH] = "guest";
-char guest_pass[YB_PASSWORD_LENGTH] = "guest";
+char admin_user[YB_USERNAME_LENGTH] = YB_DEFAULT_ADMIN_USER;
+char admin_pass[YB_PASSWORD_LENGTH] = YB_DEFAULT_ADMIN_PASS;
+char guest_user[YB_USERNAME_LENGTH] = YB_DEFAULT_GUEST_USER;
+char guest_pass[YB_PASSWORD_LENGTH] = YB_DEFAULT_GUEST_PASS;
 char mqtt_server[YB_MQTT_SERVER_LENGTH] = "";
 char mqtt_user[YB_USERNAME_LENGTH] = "";
 char mqtt_pass[YB_PASSWORD_LENGTH] = "";
 String mqtt_cert = "";
-unsigned int app_update_interval = 500;
-bool app_enable_mfd = true;
-bool app_enable_api = true;
-bool app_enable_serial = false;
-bool app_enable_ota = false;
-bool app_enable_ssl = false;
-bool app_enable_mqtt = false;
-bool app_enable_ha_integration = false;
-bool app_use_hostname_as_mqtt_uuid = true;
+unsigned int app_update_interval = YB_DEFAULT_APP_UPDATE_INTERVAL;
+bool app_enable_mfd = YB_DEFAULT_APP_ENABLE_MFD;
+bool app_enable_api = YB_DEFAULT_APP_ENABLE_API;
+bool app_enable_serial = YB_DEFAULT_APP_ENABLE_SERIAL;
+bool app_enable_ota = YB_DEFAULT_APP_ENABLE_OTA;
+bool app_enable_ssl = YB_DEFAULT_APP_ENABLE_SSL;
+bool app_enable_mqtt = YB_DEFAULT_APP_ENABLE_SSL;
+bool app_enable_ha_integration = YB_DEFAULT_APP_ENABLE_HA_INTEGRATION;
+bool app_use_hostname_as_mqtt_uuid = YB_DEFAULT_USE_HOSTNAME_AS_MQTT_UUID;
 bool is_serial_authenticated = false;
-UserRole app_default_role = NOBODY;
-UserRole serial_role = NOBODY;
-UserRole api_role = NOBODY;
+UserRole app_default_role = YB_DEFAULT_APP_DEFAULT_ROLE;
+UserRole serial_role = YB_DEFAULT_APP_DEFAULT_ROLE;
+UserRole api_role = YB_DEFAULT_APP_DEFAULT_ROLE;
 String app_theme = "light";
 float globalBrightness = 1.0;
 
@@ -313,8 +313,8 @@ void handleSetGeneralConfig(JsonVariantConst input, JsonVariant output)
   }
 
   // update variable
-  strlcpy(board_name, input["board_name"] | "Yarrboard", sizeof(board_name));
-  strlcpy(startup_melody, input["startup_melody"] | "NONE", sizeof(startup_melody));
+  strlcpy(board_name, input["board_name"] | YB_BOARD_NAME, sizeof(board_name));
+  strlcpy(startup_melody, input["startup_melody"] | YB_PIEZO_DEFAULT_MELODY, sizeof(startup_melody));
 
   // save it to file.
   char error[128];
@@ -363,14 +363,10 @@ void handleSetNetworkConfig(JsonVariantConst input, JsonVariant output)
   char new_wifi_ssid[YB_WIFI_SSID_LENGTH];
   char new_wifi_pass[YB_WIFI_PASSWORD_LENGTH];
 
-  strlcpy(new_wifi_mode, input["wifi_mode"] | "ap", sizeof(new_wifi_mode));
-  strlcpy(new_wifi_ssid, input["wifi_ssid"] | "SSID", sizeof(new_wifi_ssid));
-  strlcpy(new_wifi_pass, input["wifi_pass"] | "PASS", sizeof(new_wifi_pass));
-  strlcpy(local_hostname, input["local_hostname"] | "yarrboard", sizeof(local_hostname));
-
-  YBP.println(new_wifi_mode);
-  YBP.println(new_wifi_ssid);
-  YBP.println(new_wifi_pass);
+  strlcpy(new_wifi_mode, input["wifi_mode"] | YB_DEFAULT_AP_MODE, sizeof(new_wifi_mode));
+  strlcpy(new_wifi_ssid, input["wifi_ssid"] | YB_DEFAULT_AP_SSID, sizeof(new_wifi_ssid));
+  strlcpy(new_wifi_pass, input["wifi_pass"] | YB_DEFAULT_AP_PASS, sizeof(new_wifi_pass));
+  strlcpy(local_hostname, input["local_hostname"] | YB_DEFAULT_HOSTNAME, sizeof(local_hostname));
 
   // make sure we can connect before we save
   if (!strcmp(new_wifi_mode, "client")) {
@@ -463,17 +459,19 @@ void handleSetAuthenticationConfig(JsonVariantConst input, JsonVariant output)
   }
 
   // get our data
-  strlcpy(admin_user, input["admin_user"] | "admin", sizeof(admin_user));
-  strlcpy(admin_pass, input["admin_pass"] | "admin", sizeof(admin_pass));
-  strlcpy(guest_user, input["guest_user"] | "guest", sizeof(guest_user));
-  strlcpy(guest_pass, input["guest_pass"] | "guest", sizeof(guest_pass));
+  strlcpy(admin_user, input["admin_user"] | YB_DEFAULT_ADMIN_USER, sizeof(admin_user));
+  strlcpy(admin_pass, input["admin_pass"] | YB_DEFAULT_ADMIN_PASS, sizeof(admin_pass));
+  strlcpy(guest_user, input["guest_user"] | YB_DEFAULT_GUEST_USER, sizeof(guest_user));
+  strlcpy(guest_pass, input["guest_pass"] | YB_DEFAULT_GUEST_PASS, sizeof(guest_pass));
 
-  if (!strcmp(input["default_role"], "admin"))
-    app_default_role = ADMIN;
-  else if (!strcmp(input["default_role"], "guest"))
-    app_default_role = GUEST;
-  else
-    app_default_role = NOBODY;
+  if (input["default_role"]) {
+    if (!strcmp(input["default_role"], "admin"))
+      app_default_role = ADMIN;
+    else if (!strcmp(input["default_role"], "guest"))
+      app_default_role = GUEST;
+    else
+      app_default_role = NOBODY;
+  }
 
   // save it to file.
   char error[128] = "Unknown";
@@ -485,13 +483,11 @@ void handleSetWebServerConfig(JsonVariantConst input, JsonVariant output)
 {
   bool old_app_enable_ssl = app_enable_ssl;
 
-  app_enable_mfd = input["app_enable_mfd"];
-  app_enable_api = input["app_enable_api"];
-  app_enable_ota = input["app_enable_ota"];
-  app_enable_ssl = input["app_enable_ssl"];
-
-  server_cert = input["server_cert"].as<String>();
-  server_key = input["server_key"].as<String>();
+  app_enable_mfd = input["app_enable_mfd"] | YB_DEFAULT_APP_ENABLE_MFD;
+  app_enable_api = input["app_enable_api"] | YB_DEFAULT_APP_ENABLE_API;
+  app_enable_ssl = input["app_enable_ssl"] | app_enable_ssl;
+  server_cert = input["server_cert"] | "";
+  server_key = input["server_key"] | "";
 
   // save it to file.
   char error[128] = "Unknown";
@@ -528,8 +524,8 @@ void handleSetMQTTConfig(JsonVariantConst input, JsonVariant output)
 
 void handleSetMiscellaneousConfig(JsonVariantConst input, JsonVariant output)
 {
-  app_enable_serial = input["app_enable_serial"];
-  app_enable_ota = input["app_enable_ota"];
+  app_enable_serial = input["app_enable_serial"] | YB_DEFAULT_APP_ENABLE_SERIAL;
+  app_enable_ota = input["app_enable_ota"] | YB_DEFAULT_APP_ENABLE_OTA;
 
   // save it to file.
   char error[128] = "Unknown";

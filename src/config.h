@@ -34,14 +34,64 @@
 #ifndef YB_BOARD_NAME
   #define YB_BOARD_NAME "Yarrboard"
 #endif
+#ifndef YB_PIEZO_DEFAULT_MELODY
+  #define YB_PIEZO_DEFAULT_MELODY "NONE"
+#endif
 #ifndef YB_DEFAULT_HOSTNAME
   #define YB_DEFAULT_HOSTNAME "yarrboard"
+#endif
+#ifndef YB_DEFAULT_AP_MODE
+  #define YB_DEFAULT_AP_MODE "ap"
 #endif
 #ifndef YB_DEFAULT_AP_SSID
   #define YB_DEFAULT_AP_SSID "Yarrboard"
 #endif
 #ifndef YB_DEFAULT_AP_PASS
   #define YB_DEFAULT_AP_PASS ""
+#endif
+#ifndef YB_DEFAULT_ADMIN_USER
+  #define YB_DEFAULT_ADMIN_USER "admin"
+#endif
+#ifndef YB_DEFAULT_ADMIN_PASS
+  #define YB_DEFAULT_ADMIN_PASS "admin"
+#endif
+#ifndef YB_DEFAULT_GUEST_USER
+  #define YB_DEFAULT_GUEST_USER "guest"
+#endif
+#ifndef YB_DEFAULT_GUEST_PASS
+  #define YB_DEFAULT_GUEST_PASS "guest"
+#endif
+
+#ifndef YB_DEFAULT_APP_UPDATE_INTERVAL
+  #define YB_DEFAULT_APP_UPDATE_INTERVAL 500
+#endif
+
+#ifndef YB_DEFAULT_APP_ENABLE_MFD
+  #define YB_DEFAULT_APP_ENABLE_MFD true
+#endif
+#ifndef YB_DEFAULT_APP_ENABLE_API
+  #define YB_DEFAULT_APP_ENABLE_API true
+#endif
+#ifndef YB_DEFAULT_APP_ENABLE_SERIAL
+  #define YB_DEFAULT_APP_ENABLE_SERIAL false
+#endif
+#ifndef YB_DEFAULT_APP_ENABLE_OTA
+  #define YB_DEFAULT_APP_ENABLE_OTA false
+#endif
+#ifndef YB_DEFAULT_APP_ENABLE_SSL
+  #define YB_DEFAULT_APP_ENABLE_SSL false
+#endif
+#ifndef YB_DEFAULT_APP_ENABLE_MQTT
+  #define YB_DEFAULT_APP_ENABLE_MQTT false
+#endif
+#ifndef YB_DEFAULT_APP_ENABLE_HA_INTEGRATION
+  #define YB_DEFAULT_APP_ENABLE_HA_INTEGRATION false
+#endif
+#ifndef YB_DEFAULT_USE_HOSTNAME_AS_MQTT_UUID
+  #define YB_DEFAULT_USE_HOSTNAME_AS_MQTT_UUID true
+#endif
+#ifndef YB_DEFAULT_APP_DEFAULT_ROLE
+  #define YB_DEFAULT_APP_DEFAULT_ROLE NOBODY
 #endif
 
 // time before saving fade pwm to preserve flash
@@ -120,10 +170,6 @@ typedef enum { YBP_MODE_WEBSOCKET,
 // Detect whether this build environment provides UsbSerial
 #if defined(ARDUINO_USB_MODE) && ARDUINO_USB_MODE == 1
   #define YB_USB_SERIAL 1
-#endif
-
-#ifndef YB_PIEZO_DEFAULT_MELODY
-  #define YB_PIEZO_DEFAULT_MELODY "NONE"
 #endif
 
 #endif // YARR_CONFIG_H

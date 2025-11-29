@@ -415,16 +415,16 @@ bool loadAppConfigFromJSON(JsonVariantConst config, char* error, size_t len)
   snprintf(startup_melody, sizeof(startup_melody), "%s", (value && *value) ? value : YB_PIEZO_DEFAULT_MELODY);
 
   value = config["admin_user"].as<const char*>();
-  snprintf(admin_user, sizeof(admin_user), "%s", (value && *value) ? value : "admin");
+  snprintf(admin_user, sizeof(admin_user), "%s", (value && *value) ? value : YB_DEFAULT_ADMIN_USER);
 
   value = config["admin_pass"].as<const char*>();
-  snprintf(admin_pass, sizeof(admin_pass), "%s", (value && *value) ? value : "admin");
+  snprintf(admin_pass, sizeof(admin_pass), "%s", (value && *value) ? value : YB_DEFAULT_ADMIN_PASS);
 
   value = config["guest_user"].as<const char*>();
-  snprintf(guest_user, sizeof(guest_user), "%s", (value && *value) ? value : "guest");
+  snprintf(guest_user, sizeof(guest_user), "%s", (value && *value) ? value : YB_DEFAULT_GUEST_USER);
 
   value = config["guest_pass"].as<const char*>();
-  snprintf(guest_pass, sizeof(guest_pass), "%s", (value && *value) ? value : "guest");
+  snprintf(guest_pass, sizeof(guest_pass), "%s", (value && *value) ? value : YB_DEFAULT_GUEST_PASS);
 
   value = config["mqtt_server"].as<const char*>();
   snprintf(mqtt_server, sizeof(mqtt_server), "%s", (value && *value) ? value : "");
@@ -446,10 +446,12 @@ bool loadAppConfigFromJSON(JsonVariantConst config, char* error, size_t len)
   }
 
   // what is our default role?
-  app_default_role = NOBODY;
+  app_default_role = YB_DEFAULT_APP_DEFAULT_ROLE;
   value = config["default_role"].as<const char*>();
   if (value && *value) {
-    if (!strcmp(value, "admin"))
+    if (!strcmp(value, "nobody"))
+      app_default_role = NOBODY;
+    else if (!strcmp(value, "admin"))
       app_default_role = ADMIN;
     else if (!strcmp(value, "guest"))
       app_default_role = GUEST;
@@ -457,17 +459,17 @@ bool loadAppConfigFromJSON(JsonVariantConst config, char* error, size_t len)
   serial_role = app_default_role;
   api_role = app_default_role;
 
-  app_enable_mfd = config["app_enable_mfd"];
-  app_enable_api = config["app_enable_api"];
-  app_enable_serial = config["app_enable_serial"];
-  app_enable_ota = config["app_enable_ota"];
-  app_enable_ssl = config["app_enable_ssl"];
-  app_enable_mqtt = config["app_enable_mqtt"];
-  app_enable_ha_integration = config["app_enable_ha_integration"];
-  app_use_hostname_as_mqtt_uuid = config["app_use_hostname_as_mqtt_uuid"];
+  app_enable_mfd = config["app_enable_mfd"] | YB_DEFAULT_APP_ENABLE_MFD;
+  app_enable_api = config["app_enable_api"] | YB_DEFAULT_APP_ENABLE_API;
+  app_enable_serial = config["app_enable_serial"] | YB_DEFAULT_APP_ENABLE_SERIAL;
+  app_enable_ota = config["app_enable_ota"] | YB_DEFAULT_APP_ENABLE_OTA;
+  app_enable_ssl = config["app_enable_ssl"] | YB_DEFAULT_APP_ENABLE_SSL;
+  app_enable_mqtt = config["app_enable_mqtt"] | YB_DEFAULT_APP_ENABLE_MQTT;
+  app_enable_ha_integration = config["app_enable_ha_integration"] | YB_DEFAULT_APP_ENABLE_HA_INTEGRATION;
+  app_use_hostname_as_mqtt_uuid = config["app_use_hostname_as_mqtt_uuid"] | YB_DEFAULT_USE_HOSTNAME_AS_MQTT_UUID;
 
-  server_cert = config["server_cert"].as<String>();
-  server_key = config["server_key"].as<String>();
+  server_cert = config["server_cert"] | "";
+  server_key = config["server_key"] | "";
 
   return true;
 }
