@@ -357,7 +357,7 @@ bool loadConfigFromFile(const char* file, char* error, size_t len)
   return loadConfigFromJSON(doc, error, len);
 }
 
-bool loadConfigFromJSON(JsonVariantConst config, char* error, size_t len)
+bool loadConfigFromJSON(JsonVariant config, char* error, size_t len)
 {
   bool result = true;
 
@@ -388,72 +388,78 @@ bool loadConfigFromJSON(JsonVariantConst config, char* error, size_t len)
   return result;
 }
 
-bool loadNetworkConfigFromJSON(JsonVariantConst config, char* error, size_t len)
+bool loadNetworkConfigFromJSON(JsonVariant config, char* error, size_t len)
 {
-  const char* value;
+  const char* v;
 
-  value = config["local_hostname"].as<const char*>();
-  snprintf(local_hostname, sizeof(local_hostname), "%s", (value && *value) ? value : YB_DEFAULT_HOSTNAME);
+  // local_hostname
+  v = config["local_hostname"] | YB_DEFAULT_HOSTNAME;
+  strlcpy(local_hostname, v, sizeof(local_hostname));
 
-  value = config["wifi_ssid"].as<const char*>();
-  snprintf(wifi_ssid, sizeof(wifi_ssid), "%s", (value && *value) ? value : YB_DEFAULT_AP_SSID);
+  // wifi_ssid
+  v = config["wifi_ssid"] | YB_DEFAULT_AP_SSID;
+  strlcpy(wifi_ssid, v, sizeof(wifi_ssid));
 
-  value = config["wifi_pass"].as<const char*>();
-  snprintf(wifi_pass, sizeof(wifi_pass), "%s", (value && *value) ? value : YB_DEFAULT_AP_PASS);
+  // wifi_pass
+  v = config["wifi_pass"] | YB_DEFAULT_AP_PASS;
+  strlcpy(wifi_pass, v, sizeof(wifi_pass));
 
-  value = config["wifi_mode"].as<const char*>();
-  snprintf(wifi_mode, sizeof(wifi_mode), "%s", (value && *value) ? value : "ap");
+  // wifi_mode
+  v = config["wifi_mode"] | YB_DEFAULT_AP_MODE;
+  strlcpy(wifi_mode, v, sizeof(wifi_mode));
 
   return true;
 }
 
-bool loadAppConfigFromJSON(JsonVariantConst config, char* error, size_t len)
+bool loadAppConfigFromJSON(JsonVariant config, char* error, size_t len)
 {
-  const char* value;
+  const char* v;
 
-  value = config["startup_melody"].as<const char*>();
-  snprintf(startup_melody, sizeof(startup_melody), "%s", (value && *value) ? value : YB_PIEZO_DEFAULT_MELODY);
+  // startup_melody
+  v = config["startup_melody"] | YB_PIEZO_DEFAULT_MELODY;
+  strlcpy(startup_melody, v, sizeof(startup_melody));
 
-  value = config["admin_user"].as<const char*>();
-  snprintf(admin_user, sizeof(admin_user), "%s", (value && *value) ? value : YB_DEFAULT_ADMIN_USER);
+  // admin_user
+  v = config["admin_user"] | YB_DEFAULT_ADMIN_USER;
+  strlcpy(admin_user, v, sizeof(admin_user));
 
-  value = config["admin_pass"].as<const char*>();
-  snprintf(admin_pass, sizeof(admin_pass), "%s", (value && *value) ? value : YB_DEFAULT_ADMIN_PASS);
+  // admin_pass
+  v = config["admin_pass"] | YB_DEFAULT_ADMIN_PASS;
+  strlcpy(admin_pass, v, sizeof(admin_pass));
 
-  value = config["guest_user"].as<const char*>();
-  snprintf(guest_user, sizeof(guest_user), "%s", (value && *value) ? value : YB_DEFAULT_GUEST_USER);
+  // guest_user
+  v = config["guest_user"] | YB_DEFAULT_GUEST_USER;
+  strlcpy(guest_user, v, sizeof(guest_user));
 
-  value = config["guest_pass"].as<const char*>();
-  snprintf(guest_pass, sizeof(guest_pass), "%s", (value && *value) ? value : YB_DEFAULT_GUEST_PASS);
+  // guest_pass
+  v = config["guest_pass"] | YB_DEFAULT_GUEST_PASS;
+  strlcpy(guest_pass, v, sizeof(guest_pass));
 
-  value = config["mqtt_server"].as<const char*>();
-  snprintf(mqtt_server, sizeof(mqtt_server), "%s", (value && *value) ? value : "");
+  // MQTT fields
+  v = config["mqtt_server"] | "";
+  strlcpy(mqtt_server, v, sizeof(mqtt_server));
 
-  value = config["mqtt_user"].as<const char*>();
-  snprintf(mqtt_user, sizeof(mqtt_user), "%s", (value && *value) ? value : "");
+  v = config["mqtt_user"] | "";
+  strlcpy(mqtt_user, v, sizeof(mqtt_user));
 
-  value = config["mqtt_pass"].as<const char*>();
-  snprintf(mqtt_pass, sizeof(mqtt_user), "%s", (value && *value) ? value : "");
-
+  v = config["mqtt_pass"] | "";
+  strlcpy(mqtt_pass, v, sizeof(mqtt_pass));
   mqtt_cert = config["mqtt_cert"] | "";
 
-  if (config["app_update_interval"].is<unsigned int>()) {
-    app_update_interval = config["app_update_interval"] | 1000;
+  if (config["app_update_interval"]) {
+    app_update_interval = config["app_update_interval"] | YB_DEFAULT_APP_UPDATE_INTERVAL;
     app_update_interval = max(100u, app_update_interval);
     app_update_interval = min(10000u, app_update_interval);
-  } else {
-    app_update_interval = 1000;
   }
 
-  // what is our default role?
   app_default_role = YB_DEFAULT_APP_DEFAULT_ROLE;
-  value = config["default_role"].as<const char*>();
-  if (value && *value) {
-    if (!strcmp(value, "nobody"))
+  if (config["default_role"]) {
+    v = config["default_role"];
+    if (!strcmp(v, "nobody"))
       app_default_role = NOBODY;
-    else if (!strcmp(value, "admin"))
+    else if (!strcmp(v, "admin"))
       app_default_role = ADMIN;
-    else if (!strcmp(value, "guest"))
+    else if (!strcmp(v, "guest"))
       app_default_role = GUEST;
   }
   serial_role = app_default_role;
@@ -474,13 +480,12 @@ bool loadAppConfigFromJSON(JsonVariantConst config, char* error, size_t len)
   return true;
 }
 
-bool loadBoardConfigFromJSON(JsonVariantConst config, char* error, size_t len)
+bool loadBoardConfigFromJSON(JsonVariant config, char* error, size_t len)
 {
   bool result = true;
-  const char* value;
 
-  value = config["name"].as<const char*>();
-  snprintf(board_name, sizeof(board_name), "%s", (value && *value) ? value : YB_BOARD_NAME);
+  const char* v = config["name"] | YB_BOARD_NAME;
+  strlcpy(board_name, v, sizeof(board_name));
 
 #ifdef YB_HAS_ADC_CHANNELS
   if (config["adc"]) {
@@ -538,25 +543,18 @@ bool loadBoardConfigFromJSON(JsonVariantConst config, char* error, size_t len)
 
 #ifdef YB_IS_BRINEOMATIC
   if (config["brineomatic"]) {
-    JsonVariantConst bom = config["brineomatic"].as<JsonVariantConst>();
+    JsonVariant bom = config["brineomatic"].as<JsonVariant>();
 
-    if (!wm.validateGeneralConfigJSON(bom, error, len)) {
+    // validate prunes invalid entries, so it's safe to load even on error.
+    // we don't want a single bad config option to nuke the whole config loading.
+    if (!wm.validateConfigJSON(bom, error, len)) {
       YBP.println(error);
       result = false;
-    } else
-      wm.loadGeneralConfigJSON(bom);
+    }
 
-    if (!wm.validateHardwareConfigJSON(bom, error, len)) {
-      YBP.println(error);
-      result = false;
-    } else
-      wm.loadHardwareConfigJSON(bom);
-
-    if (!wm.validateSafeguardsConfigJSON(bom, error, len)) {
-      YBP.println(error);
-      result = false;
-    } else
-      wm.loadSafeguardsConfigJSON(bom);
+    wm.loadGeneralConfigJSON(bom);
+    wm.loadHardwareConfigJSON(bom);
+    wm.loadSafeguardsConfigJSON(bom);
   }
 #endif
 

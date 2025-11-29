@@ -246,15 +246,15 @@ class Brineomatic
     void generateUpdateJSON(JsonVariant output);
     void generateConfigJSON(JsonVariant output);
 
-    bool validateConfigJSON(JsonVariantConst config, char* error, size_t err_size);
-    bool validateGeneralConfigJSON(JsonVariantConst config, char* error, size_t err_size);
-    bool validateHardwareConfigJSON(JsonVariantConst config, char* error, size_t err_size);
-    bool validateSafeguardsConfigJSON(JsonVariantConst config, char* error, size_t err_size);
+    bool validateConfigJSON(JsonVariant config, char* error, size_t err_size);
+    bool validateGeneralConfigJSON(JsonVariant config, char* error, size_t err_size);
+    bool validateHardwareConfigJSON(JsonVariant config, char* error, size_t err_size);
+    bool validateSafeguardsConfigJSON(JsonVariant config, char* error, size_t err_size);
 
-    void loadConfigJSON(JsonVariantConst config);
-    void loadGeneralConfigJSON(JsonVariantConst config);
-    void loadHardwareConfigJSON(JsonVariantConst config);
-    void loadSafeguardsConfigJSON(JsonVariantConst config);
+    void loadConfigJSON(JsonVariant config);
+    void loadGeneralConfigJSON(JsonVariant config);
+    void loadHardwareConfigJSON(JsonVariant config);
+    void loadSafeguardsConfigJSON(JsonVariant config);
 
     void updateMQTT();
 

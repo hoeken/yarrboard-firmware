@@ -67,4 +67,12 @@ bool checkNumGE(JsonVariantConst config, const char* key, float minv,
 bool checkNumGT(JsonVariantConst config, const char* key, float minv,
   char* error, size_t err_size);
 
+// Returns false if minv ≤ v ≤ maxv
+bool checkNumRange(JsonVariantConst config,
+  const char* key,
+  float minv,
+  float maxv,
+  char* error,
+  size_t err_size);
+
 #endif // YB_VALIDATE_H

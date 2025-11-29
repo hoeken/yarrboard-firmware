@@ -1,4 +1,5 @@
 #include "validate.h"
+#include "debug.h"
 #include <cstring>
 
 // --------------------------------------------
@@ -6,8 +7,10 @@
 // --------------------------------------------
 bool fail(const char* msg, char* error, size_t err_size)
 {
-  if (error && err_size > 0)
+  if (error && err_size > 0) {
+    YBP.println(error);
     snprintf(error, err_size, "%s", msg);
+  }
   return false;
 }
 
@@ -17,6 +20,7 @@ bool fail(const char* msg, char* error, size_t err_size)
 bool checkPresence(JsonVariantConst config, const char* key, char* error, size_t err_size)
 {
   if (!config[key]) {
+    YBP.println(error);
     snprintf(error, err_size, "Missing required field '%s'", key);
     return false;
   }
@@ -29,6 +33,7 @@ bool checkPresence(JsonVariantConst config, const char* key, char* error, size_t
 bool checkIsInteger(JsonVariantConst config, const char* key, char* error, size_t err_size)
 {
   if (!config[key].is<int>()) {
+    YBP.println(error);
     snprintf(error, err_size, "Field '%s' must be an integer", key);
     return false;
   }
@@ -39,6 +44,7 @@ bool checkIsNumber(JsonVariantConst config, const char* key,
   char* error, size_t err_size)
 {
   if (!config[key].is<float>() && !config[key].is<int>()) {
+    YBP.println(error);
     snprintf(error, err_size, "Field '%s' must be numeric", key);
     return false;
   }
@@ -50,6 +56,7 @@ bool checkIsBool(JsonVariantConst config, const char* key,
 {
   JsonVariantConst v = config[key];
   if (!v.is<bool>()) {
+    YBP.println(error);
     snprintf(error, err_size, "Field '%s' must be boolean", key);
     return false;
   }
@@ -63,6 +70,7 @@ bool checkIntGE(JsonVariantConst config, const char* key, int minv, char* error,
 {
   int v = config[key].as<int>();
   if (v < minv) {
+    YBP.println(error);
     snprintf(error, err_size, "Field '%s' must be >= %d", key, minv);
     return false;
   }
@@ -74,6 +82,7 @@ bool checkNumGE(JsonVariantConst config, const char* key, float minv,
 {
   float v = config[key].as<float>();
   if (v < minv) {
+    YBP.println(error);
     snprintf(error, err_size, "Field '%s' must be >= %.3f", key, minv);
     return false;
   }
@@ -85,8 +94,33 @@ bool checkNumGT(JsonVariantConst config, const char* key, float minv,
 {
   float v = config[key].as<float>();
   if (v <= minv) {
+    YBP.println(error);
     snprintf(error, err_size, "Field '%s' must be > %.3f", key, minv);
     return false;
   }
+  return true;
+}
+
+bool checkNumRange(JsonVariantConst config,
+  const char* key,
+  float minv,
+  float maxv,
+  char* error,
+  size_t err_size)
+{
+  float v = config[key].as<float>();
+
+  if (v < minv) {
+    YBP.println(error);
+    snprintf(error, err_size, "Field '%s' must be >= %.3f", key, minv);
+    return false;
+  }
+
+  if (v > maxv) {
+    YBP.println(error);
+    snprintf(error, err_size, "Field '%s' must be <= %.3f", key, maxv);
+    return false;
+  }
+
   return true;
 }

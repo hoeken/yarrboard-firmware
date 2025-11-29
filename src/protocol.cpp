@@ -1066,7 +1066,6 @@ void handleSetStepperChannel(JsonVariantConst input, JsonVariant output)
   // update our rpm
   if (input["rpm"]) {
     float rpm = input["rpm"];
-    DUMP(rpm);
     ch->setSpeed(rpm);
   }
 
@@ -1445,11 +1444,15 @@ void handleSetWatermaker(JsonVariantConst input, JsonVariant output)
 
 void handleBrineomaticSaveGeneralConfig(JsonVariantConst input, JsonVariant output)
 {
+  // we need a mutable format for the validation
+  JsonDocument doc;
+  doc.set(input);
+
   char error[128];
-  if (!wm.validateGeneralConfigJSON(input, error, sizeof(error)))
+  if (!wm.validateGeneralConfigJSON(doc, error, sizeof(error)))
     return generateErrorJSON(output, error);
 
-  wm.loadGeneralConfigJSON(input);
+  wm.loadGeneralConfigJSON(doc);
 
   if (!saveConfig(error, sizeof(error)))
     return generateErrorJSON(output, error);
@@ -1457,14 +1460,18 @@ void handleBrineomaticSaveGeneralConfig(JsonVariantConst input, JsonVariant outp
 
 void handleBrineomaticSaveHardwareConfig(JsonVariantConst input, JsonVariant output)
 {
+  // we need a mutable format for the validation
+  JsonDocument doc;
+  doc.set(input);
+
   if (strcmp(wm.getStatus(), "IDLE"))
     return generateErrorJSON(output, "Must be in IDLE mode to update hardware config.");
 
   char error[128];
-  if (!wm.validateHardwareConfigJSON(input, error, sizeof(error)))
+  if (!wm.validateHardwareConfigJSON(doc, error, sizeof(error)))
     return generateErrorJSON(output, error);
 
-  wm.loadHardwareConfigJSON(input);
+  wm.loadHardwareConfigJSON(doc);
 
   if (!saveConfig(error, sizeof(error)))
     return generateErrorJSON(output, error);
@@ -1475,11 +1482,16 @@ void handleBrineomaticSaveHardwareConfig(JsonVariantConst input, JsonVariant out
 
 void handleBrineomaticSaveSafeguardsConfig(JsonVariantConst input, JsonVariant output)
 {
-  char error[128];
-  if (!wm.validateSafeguardsConfigJSON(input, error, sizeof(error)))
-    return generateErrorJSON(output, error);
+  // we need a mutable format for the validation
+  JsonDocument doc;
+  doc.set(input);
 
-  wm.loadSafeguardsConfigJSON(input);
+  char error[128];
+  if (!wm.validateSafeguardsConfigJSON(doc, error, sizeof(error))) {
+    return generateErrorJSON(output, error);
+  }
+
+  wm.loadSafeguardsConfigJSON(doc);
 
   if (!saveConfig(error, sizeof(error)))
     return generateErrorJSON(output, error);

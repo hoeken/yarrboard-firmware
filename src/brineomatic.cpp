@@ -515,6 +515,8 @@ bool Brineomatic::initializeHardware()
 {
   bool isFailure = false;
 
+  YBP.println("Hardware Init Start");
+
   openDiverterValve();
 
   // actively running, zero out our pressure
@@ -545,10 +547,12 @@ bool Brineomatic::initializeHardware()
   disableHighPressurePump();
 
   if (highPressureValveControl.equals("STEPPER")) {
-    if (highPressureValveStepper->home(highPressureValveStepperOpenSpeed))
-      YBP.println("Stepper Homing OK");
-    else
-      YBP.println("Stepper Homing failed.");
+    if (highPressureValveStepper->home(highPressureValveStepperOpenSpeed)) {
+      YBP.println("Stepper homing OK");
+    } else {
+      isFailure = true;
+      YBP.println("Stepper homing failed.");
+    }
   }
 
   disableBoostPump();
@@ -2116,407 +2120,558 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["enable_flush_valve_off_delay"] = this->flushValveOffDelay;
 }
 
-bool Brineomatic::validateConfigJSON(JsonVariantConst config, char* error, size_t err_size)
+bool Brineomatic::validateConfigJSON(JsonVariant config, char* error, size_t err_size)
 {
+  bool ok = true;
+
   if (!validateGeneralConfigJSON(config, error, err_size))
-    return false;
+    ok = false;
   if (!validateHardwareConfigJSON(config, error, err_size))
-    return false;
+    ok = false;
   if (!validateSafeguardsConfigJSON(config, error, err_size))
-    return false;
+    ok = false;
 
   return true;
 }
 
-bool Brineomatic::validateGeneralConfigJSON(JsonVariantConst config, char* error, size_t err_size)
+bool Brineomatic::validateGeneralConfigJSON(JsonVariant config, char* error, size_t err_size)
 {
+  bool ok = true;
+
   if (config["autoflush_mode"]) {
-    if (!checkInclusion(config, "autoflush_mode", Brineomatic::AUTOFLUSH_MODES, error, err_size))
-      return false;
+    if (!checkInclusion(config, "autoflush_mode", Brineomatic::AUTOFLUSH_MODES, error, err_size)) {
+      ok = false;
+      config.remove("autoflush_mode");
+    }
   }
 
   // autoflush_salinity (integer >= 0)
   if (config["autoflush_salinity"]) {
-    if (!checkIsInteger(config, "autoflush_salinity", error, err_size))
-      return false;
-    if (!checkNumGT(config, "autoflush_salinity", 0, error, err_size))
-      return false;
+    if (!checkIsInteger(config, "autoflush_salinity", error, err_size) ||
+        !checkNumGT(config, "autoflush_salinity", 0, error, err_size)) {
+      config.remove("autoflush_salinity");
+      ok = false;
+    }
   }
 
   // autoflush_duration (number >= 0)
   if (config["autoflush_duration"]) {
-    if (!checkIsNumber(config, "autoflush_duration", error, err_size))
-      return false;
-    if (!checkNumGT(config, "autoflush_duration", 0, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "autoflush_duration", error, err_size) ||
+        !checkNumGT(config, "autoflush_duration", 0, error, err_size)) {
+      config.remove("autoflush_duration");
+      ok = false;
+    }
   }
 
+  // autoflush_volume (number >= 0)
   if (config["autoflush_volume"]) {
-    if (!checkIsNumber(config, "autoflush_volume", error, err_size))
-      return false;
-    if (!checkNumGT(config, "autoflush_volume", 0, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "autoflush_volume", error, err_size) ||
+        !checkNumGT(config, "autoflush_volume", 0, error, err_size)) {
+      config.remove("autoflush_volume");
+      ok = false;
+    }
   }
 
+  // autoflush_interval (number >= 0)
   if (config["autoflush_interval"]) {
-    if (!checkIsNumber(config, "autoflush_interval", error, err_size))
-      return false;
-    if (!checkNumGT(config, "autoflush_interval", 0, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "autoflush_interval", error, err_size) ||
+        !checkNumGT(config, "autoflush_interval", 0, error, err_size)) {
+      config.remove("autoflush_interval");
+      ok = false;
+    }
   }
 
-  if (config["autoflush_use_high_pressure_motor"])
-    if (!checkIsBool(config, "autoflush_use_high_pressure_motor", error, err_size))
-      return false;
-
-  if (config["autoflush_mode"]) {
-    if (!checkIsNumber(config, "tank_capacity", error, err_size))
-      return false;
-    if (!checkNumGT(config, "tank_capacity", 0, error, err_size))
-      return false;
+  // autoflush_use_high_pressure_motor (bool)
+  if (config["autoflush_use_high_pressure_motor"]) {
+    if (!checkIsBool(config, "autoflush_use_high_pressure_motor", error, err_size)) {
+      config.remove("autoflush_use_high_pressure_motor");
+      ok = false;
+    }
   }
 
-  // enum-like fields
-  if (config["temperature_units"])
-    if (!checkInclusion(config, "temperature_units", Brineomatic::TEMPERATURE_UNITS, error, err_size))
-      return false;
+  // tank_capacity (number > 0)
+  if (config["tank_capacity"]) {
+    if (!checkIsNumber(config, "tank_capacity", error, err_size) ||
+        !checkNumGT(config, "tank_capacity", 0, error, err_size)) {
+      config.remove("tank_capacity");
+      ok = false;
+    }
+  }
 
-  if (config["pressure_units"])
-    if (!checkInclusion(config, "pressure_units", Brineomatic::PRESSURE_UNITS, error, err_size))
-      return false;
+  // temperature_units (enum-like)
+  if (config["temperature_units"]) {
+    if (!checkInclusion(config, "temperature_units", Brineomatic::TEMPERATURE_UNITS, error, err_size)) {
+      config.remove("temperature_units");
+      ok = false;
+    }
+  }
 
-  if (config["volume_units"])
-    if (!checkInclusion(config, "volume_units", Brineomatic::VOLUME_UNITS, error, err_size))
-      return false;
+  // pressure_units (enum-like)
+  if (config["pressure_units"]) {
+    if (!checkInclusion(config, "pressure_units", Brineomatic::PRESSURE_UNITS, error, err_size)) {
+      config.remove("pressure_units");
+      ok = false;
+    }
+  }
 
-  if (config["flowrate_units"])
-    if (!checkInclusion(config, "flowrate_units", Brineomatic::FLOWRATE_UNITS, error, err_size))
-      return false;
+  // volume_units (enum-like)
+  if (config["volume_units"]) {
+    if (!checkInclusion(config, "volume_units", Brineomatic::VOLUME_UNITS, error, err_size)) {
+      config.remove("volume_units");
+      ok = false;
+    }
+  }
 
-  return true;
+  // flowrate_units (enum-like)
+  if (config["flowrate_units"]) {
+    if (!checkInclusion(config, "flowrate_units", Brineomatic::FLOWRATE_UNITS, error, err_size)) {
+      config.remove("flowrate_units");
+      ok = false;
+    }
+  }
+
+  return ok;
 }
 
-bool Brineomatic::validateHardwareConfigJSON(JsonVariantConst config, char* error, size_t err_size)
+bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
+  char* error,
+  size_t err_size)
 {
+  bool ok = true;
   String control;
 
+  // ---------------------------------------------------------
+  // Boost Pump
+  // ---------------------------------------------------------
+
   if (config["boost_pump_control"]) {
-    if (!checkInclusion(config, "boost_pump_control", BOOST_PUMP_CONTROLS, error, err_size))
-      return false;
+    if (!checkInclusion(config, "boost_pump_control", BOOST_PUMP_CONTROLS, error, err_size)) {
+      config.remove("boost_pump_control");
+      ok = false;
+    }
   }
 
   if (config["boost_pump_relay_id"]) {
-    if (!checkIsInteger(config, "boost_pump_relay_id", error, err_size))
-      return false;
-    if (!checkIntGE(config, "boost_pump_relay_id", 0, error, err_size))
-      return false;
+    if (!checkIsInteger(config, "boost_pump_relay_id", error, err_size) ||
+        !checkIntGE(config, "boost_pump_relay_id", 0, error, err_size)) {
+      config.remove("boost_pump_relay_id");
+      ok = false;
+    }
   }
 
   if (config["boost_pump_control"]) {
     control = config["boost_pump_control"].as<String>();
     if (control.equals("RELAY")) {
       auto* ch = getChannelById(config["boost_pump_relay_id"], relay_channels);
-      if (!ch)
-        return fail("Boost Pump relay id invalid.", error, err_size);
+      if (!ch) {
+        YBP.printf("Boost pump relay id %d not found\n", config["boost_pump_relay_id"]);
+        config.remove("boost_pump_relay_id");
+        ok = false;
+      }
     }
   }
 
+  // ---------------------------------------------------------
+  // High Pressure Pump
+  // ---------------------------------------------------------
+
   if (config["high_pressure_pump_control"]) {
-    if (!checkInclusion(config, "high_pressure_pump_control", HIGH_PRESSURE_PUMP_CONTROLS, error, err_size))
-      return false;
+    if (!checkInclusion(config, "high_pressure_pump_control", HIGH_PRESSURE_PUMP_CONTROLS, error, err_size)) {
+      config.remove("high_pressure_pump_control");
+      ok = false;
+    }
   }
 
   if (config["high_pressure_relay_id"]) {
-    if (!checkIsInteger(config, "high_pressure_relay_id", error, err_size))
-      return false;
-    if (!checkIntGE(config, "high_pressure_relay_id", 0, error, err_size))
-      return false;
+    if (!checkIsInteger(config, "high_pressure_relay_id", error, err_size) ||
+        !checkIntGE(config, "high_pressure_relay_id", 0, error, err_size)) {
+      config.remove("high_pressure_relay_id");
+      ok = false;
+    }
   }
 
   if (config["high_pressure_pump_control"]) {
     control = config["high_pressure_pump_control"].as<String>();
     if (control.equals("RELAY")) {
       auto* ch = getChannelById(config["high_pressure_relay_id"], relay_channels);
-      if (!ch)
-        return fail("High Pressure Pump relay id invalid.", error, err_size);
+      if (!ch) {
+        YBP.printf("High Pressure pump relay id %d not found\n", config["boost_pump_relay_id"]);
+        config.remove("high_pressure_relay_id");
+        ok = false;
+      }
     }
   }
 
+  // modbus device selection
   if (config["high_pressure_modbus_device"]) {
-    if (!checkInclusion(config, "high_pressure_modbus_device", HIGH_PRESSURE_PUMP_MODBUS_DEVICES, error, err_size))
-      return false;
+    if (!checkInclusion(config, "high_pressure_modbus_device", HIGH_PRESSURE_PUMP_MODBUS_DEVICES, error, err_size)) {
+      config.remove("high_pressure_modbus_device");
+      ok = false;
+    }
   }
 
-  if (config["high_pressure_valve_control"])
-    if (!checkInclusion(config, "high_pressure_valve_control", HIGH_PRESSURE_VALVE_CONTROLS, error, err_size))
-      return false;
+  // ---------------------------------------------------------
+  // High Pressure Valve
+  // ---------------------------------------------------------
+
+  if (config["high_pressure_valve_control"]) {
+    if (!checkInclusion(config, "high_pressure_valve_control", HIGH_PRESSURE_VALVE_CONTROLS, error, err_size)) {
+      config.remove("high_pressure_valve_control");
+      ok = false;
+    }
+  }
 
   if (config["membrane_pressure_target"]) {
-    if (!checkIsNumber(config, "membrane_pressure_target", error, err_size))
-      return false;
-    if (!checkNumGT(config, "membrane_pressure_target", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "membrane_pressure_target", error, err_size) ||
+        !checkNumGT(config, "membrane_pressure_target", 0.0f, error, err_size)) {
+      config.remove("membrane_pressure_target");
+      ok = false;
+    }
   }
 
   if (config["high_pressure_valve_stepper_id"]) {
-    if (!checkIsInteger(config, "high_pressure_valve_stepper_id", error, err_size))
-      return false;
-    if (!checkIntGE(config, "high_pressure_valve_stepper_id", 0, error, err_size))
-      return false;
+    if (!checkIsInteger(config, "high_pressure_valve_stepper_id", error, err_size) ||
+        !checkIntGE(config, "high_pressure_valve_stepper_id", 0, error, err_size)) {
+      config.remove("high_pressure_valve_stepper_id");
+      ok = false;
+    }
   }
 
   if (config["high_pressure_valve_control"]) {
     control = config["high_pressure_valve_control"].as<String>();
     if (control.equals("STEPPER")) {
-      auto* ch = getChannelById(config["high_pressure_valve_stepper_id"], stepper_channels);
-      if (!ch)
-        return fail("High Pressure Valve stepper id invalid.", error, err_size);
+      auto* ch = getChannelById(config["high_pressure_valve_stepper_id"],
+        stepper_channels);
+      if (!ch) {
+        YBP.printf("High Pressure Valve stepper id %d not found\n", config["high_pressure_valve_stepper_id"]);
+        config.remove("high_pressure_valve_stepper_id");
+        ok = false;
+      }
     }
   }
 
-  // Stepper angles and speeds
-  auto checkAngle = [&](const char* key, float minv, float maxv) -> bool {
-    if (!checkIsNumber(config, key, error, err_size))
-      return false;
-    float v = config[key].as<float>();
-    if (v < minv) {
-      snprintf(error, err_size, "Field '%s' must be >= %.2f", key, minv);
-      return false;
-    }
-    if (v > maxv) {
-      snprintf(error, err_size, "Field '%s' must be <= %.2f", key, maxv);
-      return false;
-    }
-    return true;
-  };
-
+  // Stepper numeric ranges
   if (config["high_pressure_stepper_step_angle"]) {
-    if (!checkAngle("high_pressure_stepper_step_angle", 0.0001f, 90.0f))
-      return false;
+    if (!checkIsNumber(config, "high_pressure_stepper_step_angle", error, err_size) ||
+        !checkNumRange(config, "high_pressure_stepper_step_angle", 0.0001f, 90.0f, error, err_size)) {
+      config.remove("high_pressure_stepper_step_angle");
+      ok = false;
+    }
   }
 
   if (config["high_pressure_stepper_gear_ratio"]) {
-    if (!checkNumGT(config, "high_pressure_stepper_gear_ratio", 0.0f, error, err_size))
-      return false;
+    if (!checkNumGT(config, "high_pressure_stepper_gear_ratio", 0.0f, error, err_size)) {
+      config.remove("high_pressure_stepper_gear_ratio");
+      ok = false;
+    }
   }
 
   if (config["high_pressure_stepper_close_angle"]) {
-    if (!checkAngle("high_pressure_stepper_close_angle", 0.0f, 5000.0f))
-      return false;
+    if (!checkIsNumber(config, "high_pressure_stepper_close_angle", error, err_size) ||
+        !checkNumRange(config, "high_pressure_stepper_close_angle", 0.0f, 5000.0f, error, err_size)) {
+      config.remove("high_pressure_stepper_close_angle");
+      ok = false;
+    }
   }
 
   if (config["high_pressure_stepper_close_speed"]) {
-    if (!checkAngle("high_pressure_stepper_close_speed", 0.0001f, 200.0f))
-      return false;
+    if (!checkIsNumber(config, "high_pressure_stepper_close_speed", error, err_size) ||
+        !checkNumRange(config, "high_pressure_stepper_close_speed", 0.0001f, 200.0f, error, err_size)) {
+      config.remove("high_pressure_stepper_close_speed");
+      ok = false;
+    }
   }
 
   if (config["high_pressure_stepper_open_angle"]) {
-    if (!checkAngle("high_pressure_stepper_open_angle", 0.0f, 5000.0f))
-      return false;
+    if (!checkIsNumber(config, "high_pressure_stepper_open_angle", error, err_size) ||
+        !checkNumRange(config, "high_pressure_stepper_open_angle", 0.0f, 5000.0f, error, err_size)) {
+      config.remove("high_pressure_stepper_open_angle");
+      ok = false;
+    }
   }
 
   if (config["high_pressure_stepper_open_speed"]) {
-    if (!checkAngle("high_pressure_stepper_open_speed", 0.0001f, 200.0f))
-      return false;
+    if (!checkIsNumber(config, "high_pressure_stepper_open_speed", error, err_size) ||
+        !checkNumRange(config, "high_pressure_stepper_open_speed", 0.0001f, 200.0f, error, err_size)) {
+      config.remove("high_pressure_stepper_open_speed");
+      ok = false;
+    }
   }
 
   // ---------------------------------------------------------
-  // Diverter valve
+  // Diverter Valve
   // ---------------------------------------------------------
 
-  if (config["diverter_valve_control"])
-    if (!checkInclusion(config, "diverter_valve_control", DIVERTER_VALVE_CONTROLS, error, err_size))
-      return false;
+  if (config["diverter_valve_control"]) {
+    if (!checkInclusion(config, "diverter_valve_control", DIVERTER_VALVE_CONTROLS, error, err_size)) {
+      config.remove("diverter_valve_control");
+      ok = false;
+    }
+  }
 
   if (config["diverter_valve_servo_id"]) {
-    if (!checkIsInteger(config, "diverter_valve_servo_id", error, err_size))
-      return false;
-    if (!checkIntGE(config, "diverter_valve_servo_id", 0, error, err_size))
-      return false;
+    if (!checkIsInteger(config, "diverter_valve_servo_id", error, err_size) ||
+        !checkIntGE(config, "diverter_valve_servo_id", 0, error, err_size)) {
+      config.remove("diverter_valve_servo_id");
+      ok = false;
+    }
   }
 
   if (config["diverter_valve_control"]) {
     control = config["diverter_valve_control"].as<String>();
     if (control.equals("SERVO")) {
-      auto* ch = getChannelById(config["diverter_valve_servo_id"], relay_channels);
-      if (!ch)
-        return fail("Diverter Valve servo id invalid.", error, err_size);
+      auto* ch = getChannelById(config["diverter_valve_servo_id"],
+        relay_channels);
+      if (!ch) {
+        YBP.printf("Diverter Valve servo id %d not found\n", config["diverter_valve_servo_id"]);
+        config.remove("diverter_valve_servo_id");
+        ok = false;
+      }
     }
   }
 
   if (config["diverter_valve_open_angle"]) {
-    if (!checkAngle("diverter_valve_open_angle", 0.0f, 180.0f))
-      return false;
+    if (!checkIsNumber(config, "diverter_valve_open_angle", error, err_size) ||
+        !checkNumRange(config, "diverter_valve_open_angle", 0.0f, 180.0f, error, err_size)) {
+      config.remove("diverter_valve_open_angle");
+      ok = false;
+    }
   }
 
   if (config["diverter_valve_close_angle"]) {
-    if (!checkAngle("diverter_valve_close_angle", 0.0f, 180.0f))
-      return false;
+    if (!checkIsNumber(config, "diverter_valve_close_angle", error, err_size) ||
+        !checkNumRange(config, "diverter_valve_close_angle", 0.0f, 180.0f, error, err_size)) {
+      config.remove("diverter_valve_close_angle");
+      ok = false;
+    }
   }
 
   // ---------------------------------------------------------
-  // Flush valve
+  // Flush Valve
   // ---------------------------------------------------------
 
-  if (config["flush_valve_control"])
-    if (!checkInclusion(config, "flush_valve_control", FLUSH_VALVE_CONTROLS, error, err_size))
-      return false;
+  if (config["flush_valve_control"]) {
+    if (!checkInclusion(config, "flush_valve_control", FLUSH_VALVE_CONTROLS, error, err_size)) {
+      config.remove("flush_valve_control");
+      ok = false;
+    }
+  }
 
   if (config["flush_valve_relay_id"]) {
-    if (!checkIsInteger(config, "flush_valve_relay_id", error, err_size))
-      return false;
-    if (!checkIntGE(config, "flush_valve_relay_id", 0, error, err_size))
-      return false;
+    if (!checkIsInteger(config, "flush_valve_relay_id", error, err_size) ||
+        !checkIntGE(config, "flush_valve_relay_id", 0, error, err_size)) {
+      config.remove("flush_valve_relay_id");
+      ok = false;
+    }
   }
 
   if (config["flush_valve_control"]) {
     control = config["flush_valve_control"].as<String>();
     if (control.equals("RELAY")) {
-      auto* ch = getChannelById(config["flush_valve_relay_id"], relay_channels);
-      if (!ch)
-        return fail("Flush Valve relay id invalid.", error, err_size);
+      auto* ch = getChannelById(config["flush_valve_relay_id"],
+        relay_channels);
+      if (!ch) {
+        YBP.printf("Flush Valve relay id %d not found\n", config["flush_valve_relay_id"]);
+        config.remove("flush_valve_relay_id");
+        ok = false;
+      }
     }
   }
 
   // ---------------------------------------------------------
-  // Cooling fan
+  // Cooling Fan
   // ---------------------------------------------------------
 
   if (config["cooling_fan_control"]) {
-    if (!checkInclusion(config, "cooling_fan_control", COOLING_FAN_CONTROLS, error, err_size))
-      return false;
+    if (!checkInclusion(config, "cooling_fan_control", COOLING_FAN_CONTROLS, error, err_size)) {
+      config.remove("cooling_fan_control");
+      ok = false;
+    }
   }
 
   if (config["cooling_fan_relay_id"]) {
-    if (!checkIsInteger(config, "cooling_fan_relay_id", error, err_size))
-      return false;
-    if (!checkIntGE(config, "cooling_fan_relay_id", 0, error, err_size))
-      return false;
+    if (!checkIsInteger(config, "cooling_fan_relay_id", error, err_size) ||
+        !checkIntGE(config, "cooling_fan_relay_id", 0, error, err_size)) {
+      config.remove("cooling_fan_relay_id");
+      ok = false;
+    }
   }
 
   if (config["cooling_fan_control"]) {
     control = config["cooling_fan_control"].as<String>();
     if (control.equals("RELAY")) {
-      auto* ch = getChannelById(config["cooling_fan_relay_id"], relay_channels);
-      if (!ch)
-        return fail("Cooling Fan relay id invalid.", error, err_size);
+      auto* ch = getChannelById(config["cooling_fan_relay_id"],
+        relay_channels);
+      if (!ch) {
+        YBP.printf("Cooling Fan relay id %d not found\n", config["cooling_fan_relay_id"]);
+        config.remove("cooling_fan_relay_id");
+        ok = false;
+      }
     }
   }
 
   if (config["cooling_fan_on_temperature"]) {
-    if (!checkAngle("cooling_fan_on_temperature", 0.0f, 100.0f))
-      return false;
+    if (!checkIsNumber(config, "cooling_fan_on_temperature", error, err_size) ||
+        !checkNumRange(config, "cooling_fan_on_temperature", 0.0f, 100.0f, error, err_size)) {
+      config.remove("cooling_fan_on_temperature");
+      ok = false;
+    }
   }
 
   if (config["cooling_fan_off_temperature"]) {
-    if (!checkAngle("cooling_fan_off_temperature", 0.0f, 100.0f))
-      return false;
+    if (!checkIsNumber(config, "cooling_fan_off_temperature", error, err_size) ||
+        !checkNumRange(config, "cooling_fan_off_temperature", 0.0f, 100.0f, error, err_size)) {
+      config.remove("cooling_fan_off_temperature");
+      ok = false;
+    }
   }
 
   // ---------------------------------------------------------
-  // Sensor booleans
+  // Sensor Flags and Ranges
   // ---------------------------------------------------------
 
-  if (config["has_membrane_pressure_sensor"])
-    if (!checkIsBool(config, "has_membrane_pressure_sensor", error, err_size))
-      return false;
+  if (config["has_membrane_pressure_sensor"]) {
+    if (!checkIsBool(config, "has_membrane_pressure_sensor", error, err_size)) {
+      config.remove("has_membrane_pressure_sensor");
+      ok = false;
+    }
+  }
 
   if (config["membrane_pressure_sensor_min"]) {
-    if (!checkNumGE(config, "membrane_pressure_sensor_min", 0.0f, error, err_size))
-      return false;
+    if (!checkNumGE(config, "membrane_pressure_sensor_min", 0.0f, error, err_size)) {
+      config.remove("membrane_pressure_sensor_min");
+      ok = false;
+    }
   }
 
   if (config["membrane_pressure_sensor_max"]) {
-    if (!checkNumGT(config, "membrane_pressure_sensor_max", 0.0f, error, err_size))
-      return false;
+    if (!checkNumGT(config, "membrane_pressure_sensor_max", 0.0f, error, err_size)) {
+      config.remove("membrane_pressure_sensor_max");
+      ok = false;
+    }
   }
 
-  if (config["has_filter_pressure_sensor"])
-    if (!checkIsBool(config, "has_filter_pressure_sensor", error, err_size))
-      return false;
+  if (config["has_filter_pressure_sensor"]) {
+    if (!checkIsBool(config, "has_filter_pressure_sensor", error, err_size)) {
+      config.remove("has_filter_pressure_sensor");
+      ok = false;
+    }
+  }
 
   if (config["filter_pressure_sensor_min"]) {
-    if (!checkNumGE(config, "filter_pressure_sensor_min", 0.0f, error, err_size))
-      return false;
+    if (!checkNumGE(config, "filter_pressure_sensor_min", 0.0f, error, err_size)) {
+      config.remove("filter_pressure_sensor_min");
+      ok = false;
+    }
   }
 
   if (config["filter_pressure_sensor_max"]) {
-    if (!checkNumGT(config, "filter_pressure_sensor_max", 0.0f, error, err_size))
-      return false;
+    if (!checkNumGT(config, "filter_pressure_sensor_max", 0.0f, error, err_size)) {
+      config.remove("filter_pressure_sensor_max");
+      ok = false;
+    }
   }
 
-  if (config["has_product_tds_sensor"])
-    if (!checkIsBool(config, "has_product_tds_sensor", error, err_size))
-      return false;
+  if (config["has_product_tds_sensor"]) {
+    if (!checkIsBool(config, "has_product_tds_sensor", error, err_size)) {
+      config.remove("has_product_tds_sensor");
+      ok = false;
+    }
+  }
 
-  if (config["has_brine_tds_sensor"])
-    if (!checkIsBool(config, "has_brine_tds_sensor", error, err_size))
-      return false;
+  if (config["has_brine_tds_sensor"]) {
+    if (!checkIsBool(config, "has_brine_tds_sensor", error, err_size)) {
+      config.remove("has_brine_tds_sensor");
+      ok = false;
+    }
+  }
 
-  if (config["has_product_flow_sensor"])
-    if (!checkIsBool(config, "has_product_flow_sensor", error, err_size))
-      return false;
+  if (config["has_product_flow_sensor"]) {
+    if (!checkIsBool(config, "has_product_flow_sensor", error, err_size)) {
+      config.remove("has_product_flow_sensor");
+      ok = false;
+    }
+  }
 
   if (config["product_flowmeter_ppl"]) {
-    if (!checkNumGT(config, "product_flowmeter_ppl", 0.0f, error, err_size))
-      return false;
+    if (!checkNumGT(config, "product_flowmeter_ppl", 0.0f, error, err_size)) {
+      config.remove("product_flowmeter_ppl");
+      ok = false;
+    }
   }
 
-  if (config["has_brine_flow_sensor"])
-    if (!checkIsBool(config, "has_brine_flow_sensor", error, err_size))
-      return false;
+  if (config["has_brine_flow_sensor"]) {
+    if (!checkIsBool(config, "has_brine_flow_sensor", error, err_size)) {
+      config.remove("has_brine_flow_sensor");
+      ok = false;
+    }
+  }
 
   if (config["brine_flowmeter_ppl"]) {
-    if (!checkNumGT(config, "brine_flowmeter_ppl", 0.0f, error, err_size))
-      return false;
+    if (!checkNumGT(config, "brine_flowmeter_ppl", 0.0f, error, err_size)) {
+      config.remove("brine_flowmeter_ppl");
+      ok = false;
+    }
   }
 
-  if (config["has_motor_temperature_sensor"])
-    if (!checkIsBool(config, "has_motor_temperature_sensor", error, err_size))
-      return false;
+  if (config["has_motor_temperature_sensor"]) {
+    if (!checkIsBool(config, "has_motor_temperature_sensor", error, err_size)) {
+      config.remove("has_motor_temperature_sensor");
+      ok = false;
+    }
+  }
 
-  return true;
+  return ok;
 }
 
-bool Brineomatic::validateSafeguardsConfigJSON(JsonVariantConst config, char* error, size_t err_size)
+bool Brineomatic::validateSafeguardsConfigJSON(JsonVariant config,
+  char* error,
+  size_t err_size)
 {
+  bool ok = true;
+
   // ---------------------------------------------------------
   // Basic timeout fields (number > 0)
   // ---------------------------------------------------------
 
   if (config["flush_timeout"]) {
-    if (!checkIsNumber(config, "flush_timeout", error, err_size))
-      return false;
-    if (!checkNumGT(config, "flush_timeout", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "flush_timeout", error, err_size) ||
+        !checkNumGT(config, "flush_timeout", 0.0f, error, err_size)) {
+      config.remove("flush_timeout");
+      ok = false;
+    }
   }
 
   if (config["membrane_pressure_timeout"]) {
-    if (!checkIsNumber(config, "membrane_pressure_timeout", error, err_size))
-      return false;
-    if (!checkNumGT(config, "membrane_pressure_timeout", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "membrane_pressure_timeout", error, err_size) ||
+        !checkNumGT(config, "membrane_pressure_timeout", 0.0f, error, err_size)) {
+      config.remove("membrane_pressure_timeout");
+      ok = false;
+    }
   }
 
   if (config["product_flowrate_timeout"]) {
-    if (!checkIsNumber(config, "product_flowrate_timeout", error, err_size))
-      return false;
-    if (!checkNumGT(config, "product_flowrate_timeout", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "product_flowrate_timeout", error, err_size) ||
+        !checkNumGT(config, "product_flowrate_timeout", 0.0f, error, err_size)) {
+      config.remove("product_flowrate_timeout");
+      ok = false;
+    }
   }
 
   if (config["product_salinity_timeout"]) {
-    if (!checkIsNumber(config, "product_salinity_timeout", error, err_size))
-      return false;
-    if (!checkNumGT(config, "product_salinity_timeout", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "product_salinity_timeout", error, err_size) ||
+        !checkNumGT(config, "product_salinity_timeout", 0.0f, error, err_size)) {
+      config.remove("product_salinity_timeout");
+      ok = false;
+    }
   }
 
   if (config["production_runtime_timeout"]) {
-    if (!checkIsNumber(config, "production_runtime_timeout", error, err_size))
-      return false;
-    if (!checkNumGT(config, "production_runtime_timeout", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "production_runtime_timeout", error, err_size) ||
+        !checkNumGT(config, "production_runtime_timeout", 0.0f, error, err_size)) {
+      config.remove("production_runtime_timeout");
+      ok = false;
+    }
   }
 
   // ---------------------------------------------------------
@@ -2525,261 +2680,318 @@ bool Brineomatic::validateSafeguardsConfigJSON(JsonVariantConst config, char* er
 
   // enable_membrane_pressure_high_check
   if (config["enable_membrane_pressure_high_check"]) {
-    if (!checkIsBool(config, "enable_membrane_pressure_high_check", error, err_size))
-      return false;
+    if (!checkIsBool(config, "enable_membrane_pressure_high_check", error, err_size)) {
+      config.remove("enable_membrane_pressure_high_check");
+      ok = false;
+    }
   }
   if (config["membrane_pressure_high_threshold"]) {
-    if (!checkIsNumber(config, "membrane_pressure_high_threshold", error, err_size))
-      return false;
-    if (!checkNumGT(config, "membrane_pressure_high_threshold", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "membrane_pressure_high_threshold", error, err_size) ||
+        !checkNumGT(config, "membrane_pressure_high_threshold", 0.0f, error, err_size)) {
+      config.remove("membrane_pressure_high_threshold");
+      ok = false;
+    }
   }
   if (config["membrane_pressure_high_delay"]) {
-    if (!checkIsNumber(config, "membrane_pressure_high_delay", error, err_size))
-      return false;
-    if (!checkNumGE(config, "membrane_pressure_high_delay", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "membrane_pressure_high_delay", error, err_size) ||
+        !checkNumGE(config, "membrane_pressure_high_delay", 0.0f, error, err_size)) {
+      config.remove("membrane_pressure_high_delay");
+      ok = false;
+    }
   }
 
   // enable_membrane_pressure_low_check
   if (config["enable_membrane_pressure_low_check"]) {
-    if (!checkIsBool(config, "enable_membrane_pressure_low_check", error, err_size))
-      return false;
+    if (!checkIsBool(config, "enable_membrane_pressure_low_check", error, err_size)) {
+      config.remove("enable_membrane_pressure_low_check");
+      ok = false;
+    }
   }
   if (config["membrane_pressure_low_threshold"]) {
-    if (!checkIsNumber(config, "membrane_pressure_low_threshold", error, err_size))
-      return false;
-    if (!checkNumGT(config, "membrane_pressure_low_threshold", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "membrane_pressure_low_threshold", error, err_size) ||
+        !checkNumGT(config, "membrane_pressure_low_threshold", 0.0f, error, err_size)) {
+      config.remove("membrane_pressure_low_threshold");
+      ok = false;
+    }
   }
   if (config["membrane_pressure_low_delay"]) {
-    if (!checkIsNumber(config, "membrane_pressure_low_delay", error, err_size))
-      return false;
-    if (!checkNumGE(config, "membrane_pressure_low_delay", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "membrane_pressure_low_delay", error, err_size) ||
+        !checkNumGE(config, "membrane_pressure_low_delay", 0.0f, error, err_size)) {
+      config.remove("membrane_pressure_low_delay");
+      ok = false;
+    }
   }
 
   // enable_filter_pressure_high_check
   if (config["enable_filter_pressure_high_check"]) {
-    if (!checkIsBool(config, "enable_filter_pressure_high_check", error, err_size))
-      return false;
+    if (!checkIsBool(config, "enable_filter_pressure_high_check", error, err_size)) {
+      config.remove("enable_filter_pressure_high_check");
+      ok = false;
+    }
   }
   if (config["filter_pressure_high_threshold"]) {
-    if (!checkIsNumber(config, "filter_pressure_high_threshold", error, err_size))
-      return false;
-    if (!checkNumGT(config, "filter_pressure_high_threshold", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "filter_pressure_high_threshold", error, err_size) ||
+        !checkNumGT(config, "filter_pressure_high_threshold", 0.0f, error, err_size)) {
+      config.remove("filter_pressure_high_threshold");
+      ok = false;
+    }
   }
   if (config["filter_pressure_high_delay"]) {
-    if (!checkIsNumber(config, "filter_pressure_high_delay", error, err_size))
-      return false;
-    if (!checkNumGE(config, "filter_pressure_high_delay", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "filter_pressure_high_delay", error, err_size) ||
+        !checkNumGE(config, "filter_pressure_high_delay", 0.0f, error, err_size)) {
+      config.remove("filter_pressure_high_delay");
+      ok = false;
+    }
   }
 
   // enable_filter_pressure_low_check
   if (config["enable_filter_pressure_low_check"]) {
-    if (!checkIsBool(config, "enable_filter_pressure_low_check", error, err_size))
-      return false;
+    if (!checkIsBool(config, "enable_filter_pressure_low_check", error, err_size)) {
+      config.remove("enable_filter_pressure_low_check");
+      ok = false;
+    }
   }
   if (config["filter_pressure_low_threshold"]) {
-    if (!checkIsNumber(config, "filter_pressure_low_threshold", error, err_size))
-      return false;
-    if (!checkNumGT(config, "filter_pressure_low_threshold", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "filter_pressure_low_threshold", error, err_size) ||
+        !checkNumGT(config, "filter_pressure_low_threshold", 0.0f, error, err_size)) {
+      config.remove("filter_pressure_low_threshold");
+      ok = false;
+    }
   }
   if (config["filter_pressure_low_delay"]) {
-    if (!checkIsNumber(config, "filter_pressure_low_delay", error, err_size))
-      return false;
-    if (!checkNumGE(config, "filter_pressure_low_delay", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "filter_pressure_low_delay", error, err_size) ||
+        !checkNumGE(config, "filter_pressure_low_delay", 0.0f, error, err_size)) {
+      config.remove("filter_pressure_low_delay");
+      ok = false;
+    }
   }
 
   // enable_product_flowrate_high_check
   if (config["enable_product_flowrate_high_check"]) {
-    if (!checkIsBool(config, "enable_product_flowrate_high_check", error, err_size))
-      return false;
+    if (!checkIsBool(config, "enable_product_flowrate_high_check", error, err_size)) {
+      config.remove("enable_product_flowrate_high_check");
+      ok = false;
+    }
   }
   if (config["product_flowrate_high_threshold"]) {
-    if (!checkIsNumber(config, "product_flowrate_high_threshold", error, err_size))
-      return false;
-    if (!checkNumGT(config, "product_flowrate_high_threshold", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "product_flowrate_high_threshold", error, err_size) ||
+        !checkNumGT(config, "product_flowrate_high_threshold", 0.0f, error, err_size)) {
+      config.remove("product_flowrate_high_threshold");
+      ok = false;
+    }
   }
   if (config["product_flowrate_high_delay"]) {
-    if (!checkIsNumber(config, "product_flowrate_high_delay", error, err_size))
-      return false;
-    if (!checkNumGE(config, "product_flowrate_high_delay", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "product_flowrate_high_delay", error, err_size) ||
+        !checkNumGE(config, "product_flowrate_high_delay", 0.0f, error, err_size)) {
+      config.remove("product_flowrate_high_delay");
+      ok = false;
+    }
   }
 
   // enable_product_flowrate_low_check
   if (config["enable_product_flowrate_low_check"]) {
-    if (!checkIsBool(config, "enable_product_flowrate_low_check", error, err_size))
-      return false;
+    if (!checkIsBool(config, "enable_product_flowrate_low_check", error, err_size)) {
+      config.remove("enable_product_flowrate_low_check");
+      ok = false;
+    }
   }
   if (config["product_flowrate_low_threshold"]) {
-    if (!checkIsNumber(config, "product_flowrate_low_threshold", error, err_size))
-      return false;
-    if (!checkNumGT(config, "product_flowrate_low_threshold", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "product_flowrate_low_threshold", error, err_size) ||
+        !checkNumGT(config, "product_flowrate_low_threshold", 0.0f, error, err_size)) {
+      config.remove("product_flowrate_low_threshold");
+      ok = false;
+    }
   }
   if (config["product_flowrate_low_delay"]) {
-    if (!checkIsNumber(config, "product_flowrate_low_delay", error, err_size))
-      return false;
-    if (!checkNumGE(config, "product_flowrate_low_delay", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "product_flowrate_low_delay", error, err_size) ||
+        !checkNumGE(config, "product_flowrate_low_delay", 0.0f, error, err_size)) {
+      config.remove("product_flowrate_low_delay");
+      ok = false;
+    }
   }
 
   // enable_run_total_flowrate_low_check
   if (config["enable_run_total_flowrate_low_check"]) {
-    if (!checkIsBool(config, "enable_run_total_flowrate_low_check", error, err_size))
-      return false;
+    if (!checkIsBool(config, "enable_run_total_flowrate_low_check", error, err_size)) {
+      config.remove("enable_run_total_flowrate_low_check");
+      ok = false;
+    }
   }
   if (config["run_total_flowrate_low_threshold"]) {
-    if (!checkIsNumber(config, "run_total_flowrate_low_threshold", error, err_size))
-      return false;
-    if (!checkNumGT(config, "run_total_flowrate_low_threshold", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "run_total_flowrate_low_threshold", error, err_size) ||
+        !checkNumGT(config, "run_total_flowrate_low_threshold", 0.0f, error, err_size)) {
+      config.remove("run_total_flowrate_low_threshold");
+      ok = false;
+    }
   }
   if (config["run_total_flowrate_low_delay"]) {
-    if (!checkIsNumber(config, "run_total_flowrate_low_delay", error, err_size))
-      return false;
-    if (!checkNumGE(config, "run_total_flowrate_low_delay", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "run_total_flowrate_low_delay", error, err_size) ||
+        !checkNumGE(config, "run_total_flowrate_low_delay", 0.0f, error, err_size)) {
+      config.remove("run_total_flowrate_low_delay");
+      ok = false;
+    }
   }
 
   // enable_pickle_total_flowrate_low_check
   if (config["enable_pickle_total_flowrate_low_check"]) {
-    if (!checkIsBool(config, "enable_pickle_total_flowrate_low_check", error, err_size))
-      return false;
+    if (!checkIsBool(config, "enable_pickle_total_flowrate_low_check", error, err_size)) {
+      config.remove("enable_pickle_total_flowrate_low_check");
+      ok = false;
+    }
   }
   if (config["pickle_total_flowrate_low_threshold"]) {
-    if (!checkIsNumber(config, "pickle_total_flowrate_low_threshold", error, err_size))
-      return false;
-    if (!checkNumGT(config, "pickle_total_flowrate_low_threshold", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "pickle_total_flowrate_low_threshold", error, err_size) ||
+        !checkNumGT(config, "pickle_total_flowrate_low_threshold", 0.0f, error, err_size)) {
+      config.remove("pickle_total_flowrate_low_threshold");
+      ok = false;
+    }
   }
   if (config["pickle_total_flowrate_low_delay"]) {
-    if (!checkIsNumber(config, "pickle_total_flowrate_low_delay", error, err_size))
-      return false;
-    if (!checkNumGE(config, "pickle_total_flowrate_low_delay", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "pickle_total_flowrate_low_delay", error, err_size) ||
+        !checkNumGE(config, "pickle_total_flowrate_low_delay", 0.0f, error, err_size)) {
+      config.remove("pickle_total_flowrate_low_delay");
+      ok = false;
+    }
   }
 
   // enable_diverter_valve_closed_check
   if (config["enable_diverter_valve_closed_check"]) {
-    if (!checkIsBool(config, "enable_diverter_valve_closed_check", error, err_size))
-      return false;
+    if (!checkIsBool(config, "enable_diverter_valve_closed_check", error, err_size)) {
+      config.remove("enable_diverter_valve_closed_check");
+      ok = false;
+    }
   }
   if (config["diverter_valve_closed_delay"]) {
-    if (!checkIsNumber(config, "diverter_valve_closed_delay", error, err_size))
-      return false;
-    if (!checkNumGE(config, "diverter_valve_closed_delay", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "diverter_valve_closed_delay", error, err_size) ||
+        !checkNumGE(config, "diverter_valve_closed_delay", 0.0f, error, err_size)) {
+      config.remove("diverter_valve_closed_delay");
+      ok = false;
+    }
   }
 
   // enable_product_salinity_high_check
   if (config["enable_product_salinity_high_check"]) {
-    if (!checkIsBool(config, "enable_product_salinity_high_check", error, err_size))
-      return false;
+    if (!checkIsBool(config, "enable_product_salinity_high_check", error, err_size)) {
+      config.remove("enable_product_salinity_high_check");
+      ok = false;
+    }
   }
   if (config["product_salinity_high_threshold"]) {
-    if (!checkIsNumber(config, "product_salinity_high_threshold", error, err_size))
-      return false;
-    if (!checkNumGT(config, "product_salinity_high_threshold", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "product_salinity_high_threshold", error, err_size) ||
+        !checkNumGT(config, "product_salinity_high_threshold", 0.0f, error, err_size)) {
+      config.remove("product_salinity_high_threshold");
+      ok = false;
+    }
   }
   if (config["product_salinity_high_delay"]) {
-    if (!checkIsNumber(config, "product_salinity_high_delay", error, err_size))
-      return false;
-    if (!checkNumGE(config, "product_salinity_high_delay", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "product_salinity_high_delay", error, err_size) ||
+        !checkNumGE(config, "product_salinity_high_delay", 0.0f, error, err_size)) {
+      config.remove("product_salinity_high_delay");
+      ok = false;
+    }
   }
 
   // enable_motor_temperature_check
   if (config["enable_motor_temperature_check"]) {
-    if (!checkIsBool(config, "enable_motor_temperature_check", error, err_size))
-      return false;
+    if (!checkIsBool(config, "enable_motor_temperature_check", error, err_size)) {
+      config.remove("enable_motor_temperature_check");
+      ok = false;
+    }
   }
   if (config["motor_temperature_high_threshold"]) {
-    if (!checkIsNumber(config, "motor_temperature_high_threshold", error, err_size))
-      return false;
-    if (!checkNumGT(config, "motor_temperature_high_threshold", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "motor_temperature_high_threshold", error, err_size) ||
+        !checkNumGT(config, "motor_temperature_high_threshold", 0.0f, error, err_size)) {
+      config.remove("motor_temperature_high_threshold");
+      ok = false;
+    }
   }
   if (config["motor_temperature_high_delay"]) {
-    if (!checkIsNumber(config, "motor_temperature_high_delay", error, err_size))
-      return false;
-    if (!checkNumGE(config, "motor_temperature_high_delay", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "motor_temperature_high_delay", error, err_size) ||
+        !checkNumGE(config, "motor_temperature_high_delay", 0.0f, error, err_size)) {
+      config.remove("motor_temperature_high_delay");
+      ok = false;
+    }
   }
 
   // enable_flush_flowrate_low_check
   if (config["enable_flush_flowrate_low_check"]) {
-    if (!checkIsBool(config, "enable_flush_flowrate_low_check", error, err_size))
-      return false;
+    if (!checkIsBool(config, "enable_flush_flowrate_low_check", error, err_size)) {
+      config.remove("enable_flush_flowrate_low_check");
+      ok = false;
+    }
   }
   if (config["flush_flowrate_low_threshold"]) {
-    if (!checkIsNumber(config, "flush_flowrate_low_threshold", error, err_size))
-      return false;
-    if (!checkNumGT(config, "flush_flowrate_low_threshold", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "flush_flowrate_low_threshold", error, err_size) ||
+        !checkNumGT(config, "flush_flowrate_low_threshold", 0.0f, error, err_size)) {
+      config.remove("flush_flowrate_low_threshold");
+      ok = false;
+    }
   }
   if (config["flush_flowrate_low_delay"]) {
-    if (!checkIsNumber(config, "flush_flowrate_low_delay", error, err_size))
-      return false;
-    if (!checkNumGE(config, "flush_flowrate_low_delay", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "flush_flowrate_low_delay", error, err_size) ||
+        !checkNumGE(config, "flush_flowrate_low_delay", 0.0f, error, err_size)) {
+      config.remove("flush_flowrate_low_delay");
+      ok = false;
+    }
   }
 
   // enable_flush_filter_pressure_low_check
   if (config["enable_flush_filter_pressure_low_check"]) {
-    if (!checkIsBool(config, "enable_flush_filter_pressure_low_check", error, err_size))
-      return false;
+    if (!checkIsBool(config, "enable_flush_filter_pressure_low_check", error, err_size)) {
+      config.remove("enable_flush_filter_pressure_low_check");
+      ok = false;
+    }
   }
   if (config["flush_filter_pressure_low_threshold"]) {
-    if (!checkIsNumber(config, "flush_filter_pressure_low_threshold", error, err_size))
-      return false;
-    if (!checkNumGT(config, "flush_filter_pressure_low_threshold", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "flush_filter_pressure_low_threshold", error, err_size) ||
+        !checkNumGT(config, "flush_filter_pressure_low_threshold", 0.0f, error, err_size)) {
+      config.remove("flush_filter_pressure_low_threshold");
+      ok = false;
+    }
   }
   if (config["flush_filter_pressure_low_delay"]) {
-    if (!checkIsNumber(config, "flush_filter_pressure_low_delay", error, err_size))
-      return false;
-    if (!checkNumGE(config, "flush_filter_pressure_low_delay", 0.0f, error, err_size))
-      return false;
+    if (!checkIsNumber(config, "flush_filter_pressure_low_delay", error, err_size) ||
+        !checkNumGE(config, "flush_filter_pressure_low_delay", 0.0f, error, err_size)) {
+      config.remove("flush_filter_pressure_low_delay");
+      ok = false;
+    }
   }
 
   // enable_flush_valve_off_check
   if (config["enable_flush_valve_off_check"]) {
-    if (!checkIsBool(config, "enable_flush_valve_off_check", error, err_size))
-      return false;
-  }
-  if (config["enable_flush_valve_off_threshold"]) {
-    if (!checkIsNumber(config, "enable_flush_valve_off_threshold", error, err_size))
-      return false;
-    if (!checkNumGT(config, "enable_flush_valve_off_threshold", 0.0f, error, err_size))
-      return false;
-  }
-  if (config["enable_flush_valve_off_delay"]) {
-    if (!checkIsNumber(config, "enable_flush_valve_off_delay", error, err_size))
-      return false;
-    if (!checkNumGE(config, "enable_flush_valve_off_delay", 0.0f, error, err_size))
-      return false;
+    if (!checkIsBool(config, "enable_flush_valve_off_check", error, err_size)) {
+      config.remove("enable_flush_valve_off_check");
+      ok = false;
+    }
   }
 
-  return true;
+  if (config["enable_flush_valve_off_threshold"]) {
+    if (!checkIsNumber(config, "enable_flush_valve_off_threshold", error, err_size) ||
+        !checkNumGT(config, "enable_flush_valve_off_threshold", 0.0f, error, err_size)) {
+      config.remove("enable_flush_valve_off_threshold");
+      ok = false;
+    }
+  }
+
+  if (config["enable_flush_valve_off_delay"]) {
+    if (!checkIsNumber(config, "enable_flush_valve_off_delay", error, err_size) ||
+        !checkNumGE(config, "enable_flush_valve_off_delay", 0.0f, error, err_size)) {
+      config.remove("enable_flush_valve_off_delay");
+      ok = false;
+    }
+  }
+
+  return ok;
 }
 
-void Brineomatic::loadConfigJSON(JsonVariantConst config)
+void Brineomatic::loadConfigJSON(JsonVariant config)
 {
   this->loadGeneralConfigJSON(config);
   this->loadHardwareConfigJSON(config);
   this->loadSafeguardsConfigJSON(config);
 }
 
-void Brineomatic::loadGeneralConfigJSON(JsonVariantConst config)
+void Brineomatic::loadGeneralConfigJSON(JsonVariant config)
 {
   this->autoflushMode = config["autoflush_mode"] | YB_AUTOFLUSH_MODE;
   this->autoflushSalinity = config["autoflush_salinity"] | YB_AUTOFLUSH_SALINITY;
@@ -2796,7 +3008,7 @@ void Brineomatic::loadGeneralConfigJSON(JsonVariantConst config)
   this->errorMelody = config["error_melody"] | YB_ERROR_MELODY;
 }
 
-void Brineomatic::loadHardwareConfigJSON(JsonVariantConst config)
+void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
 {
   this->boostPumpControl = config["boost_pump_control"] | YB_BOOST_PUMP_CONTROL;
   this->boostPumpRelayId = config["boost_pump_relay_id"] | YB_BOOST_PUMP_RELAY_ID;
@@ -2850,7 +3062,7 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariantConst config)
   this->hasMotorTemperatureSensor = config["has_motor_temperature_sensor"] | YB_HAS_MOTOR_TEMPERATURE_SENSOR;
 }
 
-void Brineomatic::loadSafeguardsConfigJSON(JsonVariantConst config)
+void Brineomatic::loadSafeguardsConfigJSON(JsonVariant config)
 {
   this->flushTimeout = config["flush_timeout"] | YB_FLUSH_TIMEOUT;
   this->membranePressureTimeout = config["membrane_pressure_timeout"] | YB_MEMBRANE_PRESSURE_TIMEOUT;
@@ -2912,6 +3124,8 @@ void Brineomatic::loadSafeguardsConfigJSON(JsonVariantConst config)
   this->enableFlushValveOffCheck = config["enable_flush_valve_off_check"] | YB_ENABLE_FLUSH_VALVE_OFF_CHECK;
   this->flushValveOffThreshold = config["flush_valve_off_threshold"] | YB_FLUSH_VALVE_OFF_THRESHOLD;
   this->flushValveOffDelay = config["flush_valve_off_delay"] | YB_FLUSH_VALVE_OFF_DELAY;
+
+  TRACE();
 }
 
 void Brineomatic::updateMQTT()

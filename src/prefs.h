@@ -36,10 +36,10 @@ void generateNetworkConfigJSON(JsonVariant output);
 bool saveConfig(char* error, size_t len);
 
 bool loadConfigFromFile(const char* file, char* error, size_t len);
-bool loadConfigFromJSON(JsonVariantConst config, char* error, size_t len);
-bool loadNetworkConfigFromJSON(JsonVariantConst config, char* error, size_t len);
-bool loadAppConfigFromJSON(JsonVariantConst config, char* error, size_t len);
-bool loadBoardConfigFromJSON(JsonVariantConst config, char* error, size_t len);
+bool loadConfigFromJSON(JsonVariant config, char* error, size_t len);
+bool loadNetworkConfigFromJSON(JsonVariant config, char* error, size_t len);
+bool loadAppConfigFromJSON(JsonVariant config, char* error, size_t len);
+bool loadBoardConfigFromJSON(JsonVariant config, char* error, size_t len);
 
 // this needs to be defined in the header due to how templates work
 template <typename Channel, size_t N>
