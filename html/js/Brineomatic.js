@@ -2894,14 +2894,14 @@
                         <div id="enable_flush_valve_off_check_form" class="row">
                           <div class="col-12 col-md-6">
                             <div class="input-group has-validation mb-3">
-                              <input type="text" class="form-control text-end" id="enable_flush_valve_off_threshold">
+                              <input type="text" class="form-control text-end" id="flush_valve_off_threshold">
                               <span class="input-group-text">PSI</span>
                               <div class="invalid-feedback"></div>
                             </div>
                           </div>
                           <div class="col-12 col-md-6">
                             <div class="input-group has-validation">
-                              <input type="text" class="form-control text-end" id="enable_flush_valve_off_delay">
+                              <input type="text" class="form-control text-end" id="flush_valve_off_delay">
                               <span class="input-group-text">Delay (ms)</span>
                               <div class="invalid-feedback"></div>
                             </div>
@@ -3049,8 +3049,8 @@
     $("#flush_filter_pressure_low_delay").val(data.flush_filter_pressure_low_delay);
 
     $("#enable_flush_valve_off_check").prop('checked', data.enable_flush_valve_off_check);
-    $("#enable_flush_valve_off_threshold").val(data.enable_flush_valve_off_threshold);
-    $("#enable_flush_valve_off_delay").val(data.enable_flush_valve_off_delay);
+    $("#flush_valve_off_threshold").val(data.flush_valve_off_threshold);
+    $("#flush_valve_off_delay").val(data.flush_valve_off_delay);
   }
 
   Brineomatic.prototype.updateHardwareUIConfig = function (data) {
@@ -3550,8 +3550,8 @@
     data.flush_filter_pressure_low_delay = parseInt($("#flush_filter_pressure_low_delay").val());
 
     data.enable_flush_valve_off_check = $("#enable_flush_valve_off_check").prop("checked");
-    data.enable_flush_valve_off_threshold = parseFloat($("#enable_flush_valve_off_threshold").val());
-    data.enable_flush_valve_off_delay = parseInt($("#enable_flush_valve_off_delay").val());
+    data.flush_valve_off_threshold = parseFloat($("#flush_valve_off_threshold").val());
+    data.flush_valve_off_delay = parseInt($("#flush_valve_off_delay").val());
 
     return data;
   };
@@ -3939,8 +3939,8 @@
       flush_filter_pressure_low_delay: { numericality: { greaterThanOrEqualTo: 0 } },
 
       enable_flush_valve_off_check: { inclusion: [true, false] },
-      enable_flush_valve_off_threshold: { numericality: { greaterThan: 0 } },
-      enable_flush_valve_off_delay: { numericality: { greaterThanOrEqualTo: 0 } }
+      flush_valve_off_threshold: { numericality: { greaterThan: 0 } },
+      flush_valve_off_delay: { numericality: { greaterThanOrEqualTo: 0 } }
     };
   }
 

@@ -2116,8 +2116,8 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["flush_filter_pressure_low_delay"] = this->flushFilterPressureLowDelay;
 
   bom["enable_flush_valve_off_check"] = this->enableFlushValveOffCheck;
-  bom["enable_flush_valve_off_threshold"] = this->flushValveOffThreshold;
-  bom["enable_flush_valve_off_delay"] = this->flushValveOffDelay;
+  bom["flush_valve_off_threshold"] = this->flushValveOffThreshold;
+  bom["flush_valve_off_delay"] = this->flushValveOffDelay;
 }
 
 bool Brineomatic::validateConfigJSON(JsonVariant config, char* error, size_t err_size)
@@ -2965,18 +2965,18 @@ bool Brineomatic::validateSafeguardsConfigJSON(JsonVariant config,
     }
   }
 
-  if (config["enable_flush_valve_off_threshold"]) {
-    if (!checkIsNumber(config, "enable_flush_valve_off_threshold", error, err_size) ||
-        !checkNumGT(config, "enable_flush_valve_off_threshold", 0.0f, error, err_size)) {
-      config.remove("enable_flush_valve_off_threshold");
+  if (config["flush_valve_off_threshold"]) {
+    if (!checkIsNumber(config, "flush_valve_off_threshold", error, err_size) ||
+        !checkNumGT(config, "flush_valve_off_threshold", 0.0f, error, err_size)) {
+      config.remove("flush_valve_off_threshold");
       ok = false;
     }
   }
 
-  if (config["enable_flush_valve_off_delay"]) {
-    if (!checkIsNumber(config, "enable_flush_valve_off_delay", error, err_size) ||
-        !checkNumGE(config, "enable_flush_valve_off_delay", 0.0f, error, err_size)) {
-      config.remove("enable_flush_valve_off_delay");
+  if (config["flush_valve_off_delay"]) {
+    if (!checkIsNumber(config, "flush_valve_off_delay", error, err_size) ||
+        !checkNumGE(config, "flush_valve_off_delay", 0.0f, error, err_size)) {
+      config.remove("flush_valve_off_delay");
       ok = false;
     }
   }
