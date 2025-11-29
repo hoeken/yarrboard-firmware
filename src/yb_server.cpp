@@ -167,40 +167,46 @@ void server_setup()
   server->onClose([](PsychicClient* client) { httpClientCount--; });
 
   // our main api connection
-  server->on("/api/endpoint", HTTP_POST, [](PsychicRequest* request, PsychicResponse* response) {
+  server->on("/api/endpoint", HTTP_ANY, [](PsychicRequest* request, PsychicResponse* response) {
     JsonDocument json;
 
     String body = request->body();
     DeserializationError err = deserializeJson(json, body);
 
-    return handleWebServerRequest(json, request, response); });
+    handleWebServerRequest(json, request, response);
+
+    return ESP_OK;
+  });
 
   // send config json
-  server->on("/api/config", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
+  server->on("/api/config", HTTP_ANY, [](PsychicRequest* request, PsychicResponse* response) {
     JsonDocument json;
     json["cmd"] = "get_config";
 
     handleWebServerRequest(json, request, response);
 
-    return ESP_OK; });
+    return ESP_OK;
+  });
 
   // send stats json
-  server->on("/api/stats", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
+  server->on("/api/stats", HTTP_ANY, [](PsychicRequest* request, PsychicResponse* response) {
     JsonDocument json;
     json["cmd"] = "get_stats";
 
     handleWebServerRequest(json, request, response);
 
-    return ESP_OK; });
+    return ESP_OK;
+  });
 
   // send update json
-  server->on("/api/update", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
+  server->on("/api/update", HTTP_ANY, [](PsychicRequest* request, PsychicResponse* response) {
     JsonDocument json;
     json["cmd"] = "get_update";
 
     handleWebServerRequest(json, request, response);
 
-    return ESP_OK; });
+    return ESP_OK;
+  });
 
   // downloadable coredump file
   server->on("/coredump.bin", HTTP_GET, [](PsychicRequest* request, PsychicResponse* response) {
