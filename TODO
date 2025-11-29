@@ -1,8 +1,5 @@
 # v2.2
 
-enable_flush_valve_off_threshold
-enable_flush_valve_off_delay
-
 ## FROTHFET
 
 * sporadic crash when fading and saving to prefs at the same time.
