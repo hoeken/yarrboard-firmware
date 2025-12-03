@@ -1,4 +1,4 @@
-# v2.2
+# v2.2 TODO
 
 ## FROTHFET
 
@@ -14,15 +14,16 @@
 * add OVERHEAT as a state - similar to trip, must be turned off before turn on.
     * if we have temperature, we should also check that before we enable the channel
 
-### BRINEOMATIC
+## BRINEOMATIC
 
+* if NPT, add pickled_timestamp to Preferences + show elapsed time since pickled
 * move everything to SI units, add configurable units
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker
     * sensors for each output type
     * YAML dashboard
 
-## LONG TERM:
+# LONG TERM:
 
 * UI
     * combine config and settings page into a single mega page
@@ -32,12 +33,17 @@
     * should we move this to the firmware instead?
     * frothfet plugin - use key for paths instead of id
     * signalk sendit plugin - use key for paths instead of id
-* app.addPage("page", "content", openCallback);
-* app.onOpenPage(page, callback);
 * remove all onclick calls from the html.
 * global cleanup of strcpy, sprintf, etc.
 * espwebtools?  https://esphome.github.io/esp-web-tools/
 * yarrboard c++ framework
+    * more yarrboard.js functions:
+        * app.addPage("page", "content", openCallback);
+        * app.onOpenPage(page, callback);
+        * many other app.* callbacks to register various things.
+    * refactor yarrboard-firmware into yarrboard-framework + separate projects.
+        * modify the gulp.js script to pull from the framework lib directory
+        * project defines gulp rules to pull in custom stuff logo, css, js, etc.
     * create YarrboardApp class
     * copy the ChannelRegistry style from JS and port to c++
     * move channel headers/classes to a channels/ folder
@@ -68,11 +74,6 @@
 * other MFD integrations:
     * garmin?
     * raymarine?
-* refactor yarrboard-firmware into something separate from frothfet / brineomatic / sendit:
-    * what is the structure?
-        * c++ code side: library with lots of callbacks?
-        * javascript side: javascript include with lots of callbacks?
-        * html???
 
 # B&G MFD Dev Info
 B&G : User Agent: Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/5.12.9 Chrome/69.0.3497.128 Safari/537.36
