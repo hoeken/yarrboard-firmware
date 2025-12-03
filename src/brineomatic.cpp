@@ -71,6 +71,11 @@ void Brineomatic::init()
   else
     isPickled = false;
 
+  if (preferences.isKey("bomPickledOn"))
+    pickledOnTimestamp = preferences.getLong64("bomPickledOn");
+  else
+    pickledOnTimestamp = 0;
+
   if (preferences.isKey("bomTotVolume"))
     totalVolume = preferences.getFloat("bomTotVolume");
   else
@@ -1420,6 +1425,8 @@ void Brineomatic::runStateMachine()
 
       // keep track over restarts.
       preferences.putBool("bomPickled", false);
+      pickledOnTimestamp = 0;
+      preferences.putLong64("bomPickledOn", pickledOnTimestamp);
 
       initializeHardware();
       waitForFlushValveOff();
@@ -1472,6 +1479,11 @@ void Brineomatic::runStateMachine()
       // keep track over restarts.
       preferences.putBool("bomPickled", true);
 
+      if (ntp_is_ready) {
+        pickledOnTimestamp = ntp_get_time();
+        preferences.putLong64("bomPickledOn", pickledOnTimestamp);
+      }
+
       break;
 
     //
@@ -1515,6 +1527,8 @@ void Brineomatic::runStateMachine()
 
       // keep track over restarts.
       preferences.putBool("bomPickled", false);
+      pickledOnTimestamp = 0;
+      preferences.putLong64("bomPickledOn", pickledOnTimestamp);
 
       break;
   }
@@ -1980,6 +1994,11 @@ void Brineomatic::generateUpdateJSON(JsonVariant output)
   if (!strcmp(getStatus(), "DEPICKLING")) {
     output["depickle_elapsed"] = getDepickleElapsed();
     output["depickle_countdown"] = getDepickleCountdown();
+  }
+
+  if (!strcmp(getStatus(), "PICKLED")) {
+    if (pickledOnTimestamp > 1700000000)
+      output["pickled_on"] = pickledOnTimestamp;
   }
 }
 

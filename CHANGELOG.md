@@ -1,3 +1,7 @@
+# Version 2.2.0
+
+- Now tracking pickled on timestamp so you can see how long the unit has been pickled for. (Survives reboot)
+
 # Version 2.1.0
 
 ## 🚀 New Features

@@ -797,6 +797,18 @@
       if (msg.pickle_result)
         this.showResult("#bomPickleResult", msg.pickle_result);
 
+      if (msg.pickled_on > 0) {
+        let current_time = Math.floor(Date.now() / 1000);
+        let duration = current_time - msg.pickled_on;
+        let time_ago = YB.Util.secondsToDhms(duration);
+        let date_obj = new Date(msg.pickled_on * 1000);
+        let pickle_date = date_obj.toLocaleString();
+
+        $('#bomPickledSince').html(`${pickle_date} (${time_ago})`);
+        $('#bomPickledSinceRow').show();
+      } else
+        $('#bomPickledSinceRow').hide();
+
       if (msg.depickle_result)
         this.showResult("#bomDePickleResult", msg.depickle_result);
 
@@ -1258,6 +1270,10 @@
                       <tr id="bomPickleResultRow" class="bomPICKLED" style="display: none">
                           <th>Pickle Result</th>
                           <td><span id="bomPickleResult"></span></td>
+                      </tr>
+                      <tr id="bomPickledSinceRow" class="bomPICKLED" style="display: none">
+                          <th>Pickled Since</th>
+                          <td><span id="bomPickledSince"></span></td>
                       </tr>
                       <tr id="bomDePickleResultRow" class="bomIDLE" style="display: none">
                           <th>Depickle Result</th>

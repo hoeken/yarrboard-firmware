@@ -97,6 +97,7 @@ class Brineomatic
     static constexpr const char* COOLING_FAN_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
 
     bool isPickled;
+    int64_t pickledOnTimestamp = 0;
 
     RelayChannel* flushValve = NULL;
     RelayChannel* boostPump = NULL;
@@ -279,8 +280,8 @@ class Brineomatic
     uint32_t lastAutoflushTimeMillis = 0;
     int64_t lastAutoflushTimeNTP = 0;
     uint32_t pickleStart = 0;
-    uint32_t depickleStart = 0;
     uint32_t pickleDuration;
+    uint32_t depickleStart = 0;
     uint32_t depickleDuration;
 
     bool boostPumpOnState;
