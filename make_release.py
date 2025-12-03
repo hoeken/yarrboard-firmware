@@ -12,8 +12,17 @@ if __name__ == '__main__':
 
 	# --- parse arguments ---
 	parser = argparse.ArgumentParser(description="Build Yarrboard firmware release")
-	parser.add_argument("--test", action="store_true",
-											help="Run in test mode (do not actually do anything, but print the results)")
+
+	parser.add_argument(
+		"--test", action="store_true",
+		help="Run in test mode (do not actually do anything, but print the results)")
+
+	parser.add_argument(
+			"--publish",
+			action="store_true",
+			help="Publish the GitHub release automatically"
+	)
+
 	args = parser.parse_args()
 
 	test_mode = args.test  # boolean True/False
@@ -133,11 +142,13 @@ if __name__ == '__main__':
 
 	#some info to the user to finish the release
 	print("Build complete.\n")
+
 	print("Next steps:")
 	print(f'1. Add the new firmware files: git add releases')
 	print(f'2. Commit the new version: git commit -am "Firmware release v{version}"')
 	print(f'3. Push changes to github: git push')
 	print(f'4. Create a new tag: git tag -a v{version} -m "Firmware release v{version}"')
 	print(f'5. Push your tags: git push origin v{version}')
-	print(f'\nOr just run this:\n')
-	print(f'git add releases && git commit -am "Firmware release v{version}" && git push && git tag -a v{version} -m "Firmware release v{version}" && git push origin v{version}')
+	print(f'6. Create your release: gh release create v{version} --notes <changelog> --title "Firmware Release v{version}"')
+	
+	print(f'TODO: update this script to run all the commands');
