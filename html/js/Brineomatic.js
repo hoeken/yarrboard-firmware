@@ -804,7 +804,7 @@
         let date_obj = new Date(msg.pickled_on * 1000);
         let pickle_date = date_obj.toLocaleString();
 
-        $('#bomPickledSince').html(`${pickle_date} (${time_ago})`);
+        $('#bomPickledSince').html(`${pickle_date}<br/>(${time_ago} ago)`);
         $('#bomPickledSinceRow').show();
       } else
         $('#bomPickledSinceRow').hide();
