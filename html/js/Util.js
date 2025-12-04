@@ -84,19 +84,38 @@
       });
     },
 
-    secondsToDhms: function (seconds) {
+    /**
+     * Converts seconds to a human-readable string (Days, Hours, Minutes, Seconds).
+     * @param {number|string} seconds - The total seconds to convert.
+     * @param {number} [details=2] - The number of significant units to display.
+     * 1 = "1 day"
+     * 2 = "1 day, 2 hours"
+     */
+    secondsToDhms: function (seconds, details = 2) {
       seconds = Number(seconds);
+
+      // Calculate all units
+      var months = Math.floor(seconds / (3600 * 24 * 30));
       var d = Math.floor(seconds / (3600 * 24));
       var h = Math.floor(seconds % (3600 * 24) / 3600);
       var m = Math.floor(seconds % 3600 / 60);
       var s = Math.floor(seconds % 60);
 
-      var dDisplay = d > 0 ? d + (d == 1 ? " day, " : " days, ") : "";
-      var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
-      var mDisplay = (m > 0 && d == 0) ? m + (m == 1 ? " minute, " : " minutes, ") : "";
-      var sDisplay = (s > 0 && d == 0 && h == 0 && m == 0) ? s + (s == 1 ? " second" : " seconds") : "";
+      // Create an array of the non-zero parts
+      var parts = [];
 
-      return (dDisplay + hDisplay + mDisplay + sDisplay).replace(/,\s*$/, "");
+      if (months > 0) parts.push(months + (months == 1 ? " month" : " months"));
+      if (d > 0) parts.push(d + (d == 1 ? " day" : " days"));
+      if (h > 0) parts.push(h + (h == 1 ? " hour" : " hours"));
+      if (m > 0) parts.push(m + (m == 1 ? " minute" : " minutes"));
+      if (s > 0) parts.push(s + (s == 1 ? " second" : " seconds"));
+
+      // If the input was 0, return empty string or "0 seconds" depending on preference
+      // The original function returned an empty string for 0, preserving that behavior:
+      if (parts.length === 0) return "";
+
+      // Slice the array to the requested number of details and join them
+      return parts.slice(0, details).join(", ");
     },
 
     getQueryVariable: function (name) {

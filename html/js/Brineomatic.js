@@ -800,9 +800,13 @@
       if (msg.pickled_on > 0) {
         let current_time = Math.floor(Date.now() / 1000);
         let duration = current_time - msg.pickled_on;
-        let time_ago = YB.Util.secondsToDhms(duration);
+        let time_ago = YB.Util.secondsToDhms(duration, 1);
         let date_obj = new Date(msg.pickled_on * 1000);
-        let pickle_date = date_obj.toLocaleString();
+        let pickle_date = date_obj.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric"
+        });
 
         $('#bomPickledSince').html(`${pickle_date}<br/>(${time_ago} ago)`);
         $('#bomPickledSinceRow').show();
