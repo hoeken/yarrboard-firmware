@@ -10,7 +10,6 @@
 
 #ifdef YB_HAS_PWM_CHANNELS
 
-  // #include "INA226.h"
   #include "debug.h"
   #include "pwm_channel.h"
   #include "rgb.h"
@@ -23,6 +22,14 @@ etl::array<PWMChannel, YB_PWM_CHANNEL_COUNT> pwm_channels;
 
 // our channel pins
 byte _pwm_pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_PINS;
+
+  #ifdef YB_PWM_CHANNEL_INA226_ADDRESS
+byte _ina226_addresses[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_INA226_ADDRESS;
+  #endif
+
+  #ifdef YB_PWM_CHANNEL_INA226_ALERT
+byte _ina226_alert_pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_INA226_ALERT;
+  #endif
 
 /* Setting PWM Properties */
 const unsigned int MAX_DUTY_CYCLE = (int)(pow(2, YB_PWM_CHANNEL_RESOLUTION)) - 1;
@@ -153,33 +160,6 @@ void pwm_channels_setup()
     ch.setupOffset();
     ch.setupDefaultState();
   }
-
-  // if (!INA.begin())
-  //   YBP.println("INA226 could not connect.");
-  // else
-  //   YBP.println("INA226 OK");
-
-  // YBP.print("MAN:\t");
-  // YBP.println(INA.getManufacturerID(), HEX);
-  // YBP.print("DIE:\t");
-  // YBP.println(INA.getDieID(), HEX);
-
-  // INA.setBusVoltageConversionTime(7);
-  // INA.setShuntVoltageConversionTime(7);
-
-  // int x = INA.setMaxCurrentShunt(20, 0.002);
-  // YBP.println("normalized = true (default)");
-  // YBP.println(x);
-
-  // YBP.print("LSB:\t");
-  // YBP.println(INA.getCurrentLSB(), 10);
-  // YBP.print("LSB_uA:\t");
-  // YBP.println(INA.getCurrentLSB_uA(), 3);
-  // YBP.print("shunt:\t");
-  // YBP.println(INA.getShunt(), 3);
-  // YBP.print("maxCur:\t");
-  // YBP.println(INA.getMaxCurrent(), 3);
-  // YBP.println();
 }
 
 void pwm_channels_loop()
@@ -224,13 +204,7 @@ void pwm_channels_loop()
 
   // if (millis() - previousINA226UpdateMillis > 1000) {
   //   float v = INA.getBusVoltage();
-  //   float s = INA.getShuntVoltage_mV();
   //   float a = INA.getCurrent();
-  //   float p = INA.getPower();
-
-  //   YBP.printf("V: %.3fv | S: %.3fmV | A: %.3fA | P: %.3fW\n", v, s, a, p);
-
-  //   previousINA226UpdateMillis = millis();
   // }
 }
 
@@ -278,6 +252,60 @@ void PWMChannel::setup()
   #endif
 }
 
+  #ifdef YB_PWM_CHANNEL_HAS_INA226
+void PWMChannel::setupINA226()
+{
+    #ifdef YB_PWM_CHANNEL_INA226_ALERT
+  pinMode(_ina226_alert_pins[this->id - 1], INPUT);
+  attachInterruptArg(
+    digitalPinToInterrupt(_ina226_alert_pins[this->id - 1]),
+    PWMChannel::ina226AlertHandler,
+    this,
+    FALLING);
+    #endif
+
+  YBP.printf("INA226 CH %d Setup\n", this->id);
+
+  ina226 = new INA226(_ina226_addresses[this->id - 1]);
+  if (!ina226->begin())
+    YBP.println("INA226 could not connect.");
+  else
+    YBP.println("INA226 OK");
+
+  YBP.print("MAN:\t");
+  YBP.println(ina226->getManufacturerID(), HEX);
+  YBP.print("DIE:\t");
+  YBP.println(ina226->getDieID(), HEX);
+
+  ina226->setBusVoltageConversionTime(INA226_8300_us);
+  ina226->setShuntVoltageConversionTime(INA226_140_us);
+  ina226->setAverage(INA226_128_SAMPLES);
+
+  YBP.printf("Bus Voltage Conversion Time: %dus\n", ina226->getBusVoltageConversionTime());
+  YBP.printf("Shunt Voltage Conversion Time: %dus\n", ina226->getShuntVoltageConversionTime());
+
+  int x = ina226->setMaxCurrentShunt(YB_PWM_CHANNEL_MAX_AMPS, YB_PWM_CHANNEL_INA226_SHUNT);
+  YBP.println("normalized = true (default)");
+  YBP.println(x);
+
+  YBP.print("LSB:\t");
+  YBP.println(ina226->getCurrentLSB(), 10);
+  YBP.print("LSB_uA:\t");
+  YBP.println(ina226->getCurrentLSB_uA(), 3);
+  YBP.print("shunt:\t");
+  YBP.println(ina226->getShunt(), 3);
+  YBP.print("maxCur:\t");
+  YBP.println(ina226->getMaxCurrent(), 3);
+  YBP.println();
+}
+
+void IRAM_ATTR PWMChannel::ina226AlertHandler(void* arg)
+{
+  PWMChannel* ch = static_cast<PWMChannel*>(arg);
+  // todo: implement this.
+}
+  #endif
+
 void PWMChannel::setupLedc()
 {
 
@@ -307,21 +335,30 @@ void PWMChannel::setupOffset()
   byte readings = 10;
 
   // // average a bunch of readings
-  // float tv = 0;
-  // for (byte i = 0; i < readings; i++)
-  //   tv += this->voltageHelper->getNewVoltage(_adcVoltageChannel);
-  // float v = this->toVoltage(tv / readings);
+  float tv = 0;
+  for (byte i = 0; i < readings; i++) {
+  #ifdef YB_HAS_CHANNEL_VOLTAGE
+    tv += this->voltageHelper->getNewVoltage(_adcVoltageChannel);
+  #elifdef YB_PWM_CHANNEL_HAS_INA226
+    if (ina226->waitConversionReady())
+      tv += ina226->getBusVoltage();
+  #endif
+  }
+  float v = this->toVoltage(tv / readings);
 
-  // // low enough value to be an offset?
-  // this->voltageOffset = 0.0;
-  // if (v < (30.0 * 0.05))
-  //   this->voltageOffset = v;
+  // low enough value to be an offset?
+  this->voltageOffset = 0.0;
+  if (v < (30.0 * 0.05))
+    this->voltageOffset = v;
 
   // average a bunch of readings
   float ta = 0;
   for (byte i = 0; i < readings; i++) {
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
     ta += this->amperageHelper->getNewVoltage(_adcAmperageChannel);
+  #elifdef YB_PWM_CHANNEL_HAS_INA226
+    if (ina226->waitConversionReady())
+      ta += ina226->getCurrent();
   #endif
   }
   float a = this->toAmperage(ta / readings);
@@ -451,6 +488,8 @@ float PWMChannel::getAmperage()
 {
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
   return this->toAmperage(this->amperageHelper->getAverageVoltage(this->_adcAmperageChannel));
+  #elifdef YB_PWM_CHANNEL_HAS_INA226
+  return ina226->getCurrent();
   #else
   return -1;
   #endif
@@ -508,6 +547,8 @@ float PWMChannel::getVoltage()
 {
   #ifdef YB_HAS_CHANNEL_VOLTAGE
   return this->toVoltage(this->voltageHelper->getAverageVoltage(_adcVoltageChannel));
+  #elifdef YB_PWM_CHANNEL_HAS_INA226
+  return ina226->getBusVoltage();
   #else
   return -1;
   #endif

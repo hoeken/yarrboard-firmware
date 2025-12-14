@@ -23,6 +23,10 @@
 #include <Arduino.h>
 #include <SPI.h>
 
+#ifdef YB_PWM_CHANNEL_HAS_INA226
+  #include "INA226.h"
+#endif
+
 class PWMChannel : public BaseChannel
 {
   private:
@@ -55,6 +59,10 @@ class PWMChannel : public BaseChannel
       int total_ms,
       void (*final_cb)(void*),
       void* final_arg);
+
+#ifdef YB_PWM_CHANNEL_HAS_INA226
+    static void IRAM_ATTR ina226AlertHandler(void* arg);
+#endif
 
   public:
     /**
@@ -104,6 +112,7 @@ class PWMChannel : public BaseChannel
     MCP3564Helper* voltageHelper;
   #endif
 #endif
+
     uint8_t _adcVoltageChannel = 0;
     uint8_t _adcAmperageChannel = 0;
 
@@ -125,6 +134,12 @@ class PWMChannel : public BaseChannel
     void setupLedc();
     void setupOffset();
     void setupDefaultState();
+
+#ifdef YB_PWM_CHANNEL_HAS_INA226
+    INA226* ina226;
+    void setupINA226();
+#endif
+
     void saveThrottledDutyCycle();
     float getCurrentDutyCycle();
 
