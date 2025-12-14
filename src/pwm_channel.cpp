@@ -242,6 +242,13 @@ void PWMChannel::setup()
   else
     this->softFuseTripCount = 0;
 
+  // overheat trip count
+  sprintf(prefIndex, "pwmOhtCount%d", this->id);
+  if (preferences.isKey(prefIndex))
+    this->overheatCount = preferences.getUInt(prefIndex);
+  else
+    this->overheatCount = 0;
+
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
   this->amperageHelper = adcCurrentHelper;
   _adcAmperageChannel = this->id - 1;
@@ -450,7 +457,7 @@ float PWMChannel::getCurrentDutyCycle()
 void PWMChannel::updateOutput(bool check_status)
 {
   // first of all, if its tripped or blown zero it out.
-  if (this->status == Status::TRIPPED || this->status == Status::BLOWN) {
+  if (this->status == Status::TRIPPED || this->status == Status::BLOWN || this->status == Status::OVERHEAT) {
     this->outputState = false;
     this->writePWM(0);
     return;
@@ -574,9 +581,10 @@ float PWMChannel::getTemperature()
 
 void PWMChannel::checkStatus()
 {
+  this->checkFuseBypassed();
   this->checkSoftFuse();
   this->checkFuseBlown();
-  this->checkFuseBypassed();
+  this->checkOverheat();
 }
 
 void PWMChannel::updateOutputLED()
@@ -592,6 +600,8 @@ void PWMChannel::updateOutputLED()
     rgb_set_pixel_color(this->id, CRGB::Red);
   else if (this->status == Status::BYPASSED)
     rgb_set_pixel_color(this->id, CRGB::Blue);
+  else if (this->status == Status::OVERHEAT)
+    rgb_set_pixel_color(this->id, CRGB::Orange);
   else
     rgb_set_pixel_color(this->id, CRGB::Black);
   #endif
@@ -712,6 +722,37 @@ void PWMChannel::checkSoftFuse()
       char prefIndex[YB_PREF_KEY_LENGTH];
       sprintf(prefIndex, "pwmTripCount%d", this->id);
       preferences.putUInt(prefIndex, this->softFuseTripCount);
+    }
+  }
+}
+
+void PWMChannel::checkOverheat()
+{
+  // only trip once....
+  if (this->status != Status::OVERHEAT) {
+    // Check our soft fuse, and our max limit for the board.
+    if (this->getTemperature() >= YB_PWM_CHANNEL_MAX_TEMPERATURE) {
+
+      // record some variables
+      this->status = Status::OVERHEAT;
+      this->outputState = false;
+
+      // actually shut it down!
+      this->updateOutput(false);
+
+      // our counter
+      this->overheatCount++;
+
+      // we will want to notify
+      this->sendFastUpdate = true;
+
+      // this is an internally originating change
+      strlcpy(this->source, local_hostname, sizeof(this->source));
+
+      // save to our storage
+      char prefIndex[YB_PREF_KEY_LENGTH];
+      sprintf(prefIndex, "pwmOhtCount%d", this->id);
+      preferences.putUInt(prefIndex, this->overheatCount);
     }
   }
 }
@@ -970,6 +1011,8 @@ const char* PWMChannel::getStatus()
     return "BLOWN";
   else if (this->status == Status::BYPASSED)
     return "BYPASSED";
+  else if (this->status == Status::OVERHEAT)
+    return "OVERHEAT";
   else
     return "OFF";
 }

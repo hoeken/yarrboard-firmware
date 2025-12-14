@@ -77,7 +77,8 @@ class PWMChannel : public BaseChannel
       OFF,
       TRIPPED,
       BLOWN,
-      BYPASSED
+      BYPASSED,
+      OVERHEAT
     };
 
     Status status = Status::OFF;
@@ -89,6 +90,7 @@ class PWMChannel : public BaseChannel
 
     unsigned int stateChangeCount = 0;
     unsigned int softFuseTripCount = 0;
+    unsigned int overheatCount = 0;
 
     // polled from other code; updated in ISR
     volatile bool isFading = false; // used to check if we're actively fading
@@ -172,7 +174,9 @@ class PWMChannel : public BaseChannel
     void checkSoftFuse();
 
     float getWattage();
+
     float getTemperature();
+    void checkOverheat();
 
     void checkIfFadeOver();
     void setState(const char* state);
