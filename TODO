@@ -7,6 +7,11 @@
     * implement PWMChannel::ina226AlertHandler
     * add support for overcurrent alert interrupt to each channel
 * Rev F: add support for LM75 to each channel
+    * add async lookup to loop
+    * add OVERHEAT as a state - similar to trip, must be turned off before turn on.
+    * if we have temperature, we should also check that before we enable the channel
+    * add to update json and client UI
+
 * sporadic crash when fading and saving to prefs at the same time.
 * slow vs fast blow
     * fast checks getLatestReading()
@@ -16,8 +21,6 @@
 * go through and re-adjust the various page sizes for our different viewports
 * protocol documentation
 * add buzzer support - enable alarms for tripped or bypassed on a per-channel basis
-* add OVERHEAT as a state - similar to trip, must be turned off before turn on.
-    * if we have temperature, we should also check that before we enable the channel
 
 ## BRINEOMATIC
 
@@ -28,6 +31,10 @@
     * on/off switch to start/stop the watermaker
     * sensors for each output type
     * YAML dashboard
+
+## SENDIT
+
+* Test new board
 
 # LONG TERM:
 

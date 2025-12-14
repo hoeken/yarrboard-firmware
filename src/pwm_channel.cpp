@@ -31,6 +31,10 @@ byte _ina226_addresses[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_INA226_ADDRESS;
 byte _ina226_alert_pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_INA226_ALERT;
   #endif
 
+  #ifdef YB_PWM_CHANNEL_HAS_LM75
+byte _lm75_addresses[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_LM75_ADDRESS;
+  #endif
+
 /* Setting PWM Properties */
 const unsigned int MAX_DUTY_CYCLE = (int)(pow(2, YB_PWM_CHANNEL_RESOLUTION)) - 1;
 
@@ -249,6 +253,14 @@ void PWMChannel::setup()
   this->voltageHelper = adcVoltageHelper;
   _adcVoltageChannel = this->id - 1;
     #endif
+  #endif
+
+  #ifdef YB_PWM_CHANNEL_HAS_INA226
+  this->setupINA226();
+  #endif
+
+  #ifdef YB_PWM_CHANNEL_HAS_LM75
+  lm75 = new TI_LM75B(_lm75_addresses[this->id - 1]);
   #endif
 }
 

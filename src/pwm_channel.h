@@ -27,6 +27,10 @@
   #include "INA226.h"
 #endif
 
+#ifdef YB_PWM_CHANNEL_HAS_LM75
+  #include <Temperature_LM75_Derived.h>
+#endif
+
 class PWMChannel : public BaseChannel
 {
   private:
@@ -138,6 +142,10 @@ class PWMChannel : public BaseChannel
 #ifdef YB_PWM_CHANNEL_HAS_INA226
     INA226* ina226;
     void setupINA226();
+#endif
+
+#ifdef YB_PWM_CHANNEL_HAS_LM75
+    TI_LM75B* lm75;
 #endif
 
     void saveThrottledDutyCycle();
