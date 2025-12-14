@@ -16,6 +16,8 @@
   #include "./configs/config.frothfet-rev-d.h"
 #elif defined YB_CONFIG_FROTHFET_REV_E
   #include "./configs/config.frothfet-rev-e.h"
+#elif defined YB_CONFIG_FROTHFET_REV_F
+  #include "./configs/config.frothfet-rev-f.h"
 #elif defined YB_CONFIG_BRINEOMATIC_REV_A
   #include "./configs/config.brineomatic-rev-a.h"
 #elif defined YB_CONFIG_BRINEOMATIC_REV_B
