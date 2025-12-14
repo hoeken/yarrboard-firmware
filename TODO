@@ -16,7 +16,6 @@
 
 ## BRINEOMATIC
 
-* if NPT, add pickled_timestamp to Preferences + show elapsed time since pickled
 * move everything to SI units, add configurable units
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker

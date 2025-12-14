@@ -46,7 +46,7 @@ void adc_channels_setup()
 
   // BASIC CONFIG
   _adcVoltageADS1115_1.setMode(ADS1X15_MODE_SINGLE);
-  _adcVoltageADS1115_1.setGain(1);
+  _adcVoltageADS1115_1.setGain(YB_ADC_GAIN);
   _adcVoltageADS1115_1.setDataRate(4);
 
   adcHelper1 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_1);
@@ -60,7 +60,7 @@ void adc_channels_setup()
 
   // BASIC CONFIG
   _adcVoltageADS1115_2.setMode(ADS1X15_MODE_SINGLE);
-  _adcVoltageADS1115_2.setGain(1);
+  _adcVoltageADS1115_2.setGain(YB_ADC_GAIN);
   _adcVoltageADS1115_2.setDataRate(4);
 
   adcHelper2 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_2);
