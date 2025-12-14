@@ -319,8 +319,11 @@ void PWMChannel::setupOffset()
 
   // average a bunch of readings
   float ta = 0;
-  for (byte i = 0; i < readings; i++)
+  for (byte i = 0; i < readings; i++) {
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
     ta += this->amperageHelper->getNewVoltage(_adcAmperageChannel);
+  #endif
+  }
   float a = this->toAmperage(ta / readings);
 
   // amperage zero state
@@ -430,6 +433,7 @@ void PWMChannel::updateOutput(bool check_status)
 
 float PWMChannel::toAmperage(float voltage)
 {
+  #ifdef YB_PWM_CHANNEL_V_PER_AMP
   float amps = (voltage - (3.3 * 0.1)) / (YB_PWM_CHANNEL_V_PER_AMP);
 
   amps = amps - this->amperageOffset;
@@ -438,11 +442,18 @@ float PWMChannel::toAmperage(float voltage)
   amps = max((float)0.0, amps);
 
   return amps;
+  #else
+  return -1;
+  #endif
 }
 
 float PWMChannel::getAmperage()
 {
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
   return this->toAmperage(this->amperageHelper->getAverageVoltage(this->_adcAmperageChannel));
+  #else
+  return -1;
+  #endif
 }
 
 float PWMChannel::getWattage()
@@ -455,6 +466,7 @@ float PWMChannel::getWattage()
 
 float PWMChannel::toVoltage(float adcVoltage)
 {
+  #ifdef YB_PWM_CHANNEL_VOLTAGE_R1
   float v = adcVoltage / (YB_PWM_CHANNEL_VOLTAGE_R2 / (YB_PWM_CHANNEL_VOLTAGE_R2 + YB_PWM_CHANNEL_VOLTAGE_R1));
   v = v - this->voltageOffset;
 
@@ -462,6 +474,9 @@ float PWMChannel::toVoltage(float adcVoltage)
   v = max((float)0.0, v);
 
   return v;
+  #else
+  return -1;
+  #endif
 }
 
 void PWMChannel::checkStatus()
@@ -491,7 +506,11 @@ void PWMChannel::updateOutputLED()
 
 float PWMChannel::getVoltage()
 {
+  #ifdef YB_HAS_CHANNEL_VOLTAGE
   return this->toVoltage(this->voltageHelper->getAverageVoltage(_adcVoltageChannel));
+  #else
+  return -1;
+  #endif
 }
 
 void PWMChannel::checkFuseBlown()
@@ -819,9 +838,13 @@ void PWMChannel::setState(bool newState)
     else
       this->status = Status::OFF;
 
-    // clear our readings since we want fresh readings.
+  // clear our readings since we want fresh readings.
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
     this->amperageHelper->clearReadings(_adcAmperageChannel);
+  #endif
+  #ifdef YB_HAS_CHANNEL_VOLTAGE
     this->voltageHelper->clearReadings(_adcVoltageChannel);
+  #endif
 
     // track when we last changed states.
     this->lastStateChange = millis();

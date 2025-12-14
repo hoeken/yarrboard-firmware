@@ -3,6 +3,9 @@
 ## FROTHFET
 
 * Rev F: add support for INA226 to each channel
+    * update setupOffset()
+    * update getAmperage()
+    * update getVoltage()
 * Rev F: add support for LM75 to each channel
 * Rev F: add support for overcurrent alert interrupt to each channel
 * sporadic crash when fading and saving to prefs at the same time.
