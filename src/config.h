@@ -20,6 +20,8 @@
   #include "./configs/config.brineomatic-rev-a.h"
 #elif defined YB_CONFIG_BRINEOMATIC_REV_B
   #include "./configs/config.brineomatic-rev-b.h"
+#elif defined YB_CONFIG_BRINEOMATIC_REV_C
+  #include "./configs/config.brineomatic-rev-c.h"
 #elif defined YB_CONFIG_SENDIT_REV_A
   #include "./configs/config.sendit-rev-a.h"
 #elif defined YB_CONFIG_SENDIT_REV_B
