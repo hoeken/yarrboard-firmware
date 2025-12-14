@@ -18,7 +18,8 @@
 #define YB_ADC_CALIBRATION_TABLE_MAX     255
 #define YB_I2C_SDA_PIN                   2
 #define YB_I2C_SCL_PIN                   1
-#define YB_ADC_VREF                      4.096
+#define YB_ADC_VREF                      ADS1x15_GAIN_4096MV_FSRANGE_V
+#define YB_ADC_GAIN                      ADS1X15_GAIN_4096MV
 #define YB_ADC_VCC                       3.3
 #define YB_ADC_CHANNEL_COUNT             8
 #define YB_ADC_RESOLUTION                15 // positive only
