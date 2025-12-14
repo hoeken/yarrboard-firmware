@@ -186,6 +186,14 @@ void pwm_channels_loop()
 
   // maintenance on our channels.
   for (auto& ch : pwm_channels) {
+  #ifdef YB_PWM_CHANNEL_HAS_INA226
+    ch.readINA226();
+  #endif
+
+  #ifdef YB_PWM_CHANNEL_HAS_LM75
+    ch.readLM75();
+  #endif
+
     ch.checkStatus();
     ch.saveThrottledDutyCycle();
     ch.checkIfFadeOver();
@@ -311,10 +319,35 @@ void PWMChannel::setupINA226()
   YBP.println();
 }
 
+void PWMChannel::readINA226()
+{
+  // todo: need to calculate the actual voltage update time.
+  if (millis() - lastVoltageUpdate > 100) {
+    lastVoltage = ina226->getBusVoltage();
+    lastVoltageUpdate = millis();
+  }
+
+  // todo: need to calculate the actual amperage update time.
+  if (millis() - lastAmperageUpdate > 100) {
+    lastAmperage = ina226->getCurrent();
+    lastAmperageUpdate = millis();
+  }
+}
+
 void IRAM_ATTR PWMChannel::ina226AlertHandler(void* arg)
 {
   PWMChannel* ch = static_cast<PWMChannel*>(arg);
   // todo: implement this.
+}
+  #endif
+
+  #ifdef YB_PWM_CHANNEL_HAS_LM75
+void PWMChannel::readLM75()
+{
+  if (millis() - lastTemperatureUpdate > 1000) {
+    lastTemperature = lm75->readTemperatureC();
+    lastTemperatureUpdate = millis();
+  }
 }
   #endif
 
@@ -501,7 +534,7 @@ float PWMChannel::getAmperage()
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
   return this->toAmperage(this->amperageHelper->getAverageVoltage(this->_adcAmperageChannel));
   #elifdef YB_PWM_CHANNEL_HAS_INA226
-  return ina226->getCurrent();
+  return lastAmperage;
   #else
   return -1;
   #endif
@@ -525,6 +558,15 @@ float PWMChannel::toVoltage(float adcVoltage)
   v = max((float)0.0, v);
 
   return v;
+  #else
+  return -1;
+  #endif
+}
+
+float PWMChannel::getTemperature()
+{
+  #ifdef YB_PWM_CHANNEL_HAS_LM75
+  return lastTemperature;
   #else
   return -1;
   #endif
@@ -560,7 +602,7 @@ float PWMChannel::getVoltage()
   #ifdef YB_HAS_CHANNEL_VOLTAGE
   return this->toVoltage(this->voltageHelper->getAverageVoltage(_adcVoltageChannel));
   #elifdef YB_PWM_CHANNEL_HAS_INA226
-  return ina226->getBusVoltage();
+  return lastVoltage;
   #else
   return -1;
   #endif
@@ -1137,6 +1179,7 @@ void PWMChannel::generateUpdate(JsonVariant config)
   config["voltage"] = round2(this->getVoltage());
   config["current"] = round2(this->getAmperage());
   config["wattage"] = round2(this->getWattage());
+  config["temperature"] = round2(this->getTemperature());
   config["aH"] = round3(this->ampHours);
   config["wH"] = round3(this->wattHours);
 }

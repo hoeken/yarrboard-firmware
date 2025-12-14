@@ -142,10 +142,18 @@ class PWMChannel : public BaseChannel
 #ifdef YB_PWM_CHANNEL_HAS_INA226
     INA226* ina226;
     void setupINA226();
+    void readINA226();
+    float lastVoltage;
+    uint32_t lastVoltageUpdate = 0;
+    float lastAmperage;
+    uint32_t lastAmperageUpdate = 0;
 #endif
 
 #ifdef YB_PWM_CHANNEL_HAS_LM75
     TI_LM75B* lm75;
+    float lastTemperature;
+    uint32_t lastTemperatureUpdate = 0;
+    void readLM75();
 #endif
 
     void saveThrottledDutyCycle();
@@ -164,6 +172,7 @@ class PWMChannel : public BaseChannel
     void checkSoftFuse();
 
     float getWattage();
+    float getTemperature();
 
     void checkIfFadeOver();
     void setState(const char* state);
