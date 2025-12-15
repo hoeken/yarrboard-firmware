@@ -52,14 +52,14 @@
     * refactor yarrboard-firmware into yarrboard-framework + separate projects.
         * modify the gulp.js script to pull from the framework lib directory
         * project defines gulp rules to pull in custom stuff logo, css, js, etc.
-    * create YarrboardApp class
+            * html/index.html -> overrides framework html
+            * html/logo.png -> overrides framework.html
+            * html/css/* -> gets added to the framework css includes
+            * html/js/* -> gets added to the framework js includes
+    * create YarrboardFramework or YarrboardApp class
     * copy the ChannelRegistry style from JS and port to c++
     * move channel headers/classes to a channels/ folder
     * rename foo_channel.cpp to FooChannel.cpp to match class names
-    * misc functons:
-        * setLogo() or #define to set the logo file
-        * addJS(); -> how do we dynamically add in our js to a precompiled file? gulp?
-        * addCSS(); -> how do we dynamically add in our css to a precompiled file? gulp?
     * create callbacks:
         * onSetup() - main.cpp
         * onLoop() - main.cpp
