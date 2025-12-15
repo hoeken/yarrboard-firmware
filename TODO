@@ -6,9 +6,8 @@
     * implement PWMChannel::ina226AlertHandler
     * add support for overcurrent alert interrupt to each channel
 * Rev F: add support for LM75 to each channel
-    * add to update json and client UI
-    * add overheat trip to stats page
-* Rev F: add enable pin support
+    * add to client UI (orange)
+    * add overheat trip count to stats page
 
 * sporadic crash when fading and saving to prefs at the same time.
 * slow vs fast blow

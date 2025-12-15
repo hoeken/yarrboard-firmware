@@ -164,6 +164,11 @@ void pwm_channels_setup()
     ch.setupOffset();
     ch.setupDefaultState();
   }
+
+  #ifdef YB_PWM_CHANNEL_ENABLE_PIN
+  pinMode(YB_PWM_CHANNEL_ENABLE_PIN, OUTPUT);
+  digitalWrite(YB_PWM_CHANNEL_ENABLE_PIN, LOW);
+  #endif
 }
 
 void pwm_channels_loop()

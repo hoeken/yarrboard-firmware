@@ -14,12 +14,13 @@
 
 #define YB_HAS_PIEZO
 #define YB_PIEZO_ACTIVE
-#define YB_PIEZO_PIN 21
+#define YB_PIEZO_PIN 14
 
 #define YB_HAS_PWM_CHANNELS
-#define YB_PWM_CHANNEL_COUNT 8
-#define YB_PWM_CHANNEL_PINS  {9, 8, 7, 6, 5, 4, 2, 1}
-#define YB_PWM_CHANNEL_INVERTED
+#define YB_PWM_CHANNEL_COUNT           8
+#define YB_PWM_CHANNEL_PINS            {9, 8, 7, 6, 5, 4, 2, 1}
+#define YB_PWM_CHANNEL_ENABLE_PIN      21
+#define YB_PWM_CHANNEL_INVERTED        true
 #define YB_PWM_CHANNEL_FREQUENCY       1000
 #define YB_PWM_CHANNEL_RESOLUTION      12
 #define YB_PWM_CHANNEL_MAX_AMPS        20.0
