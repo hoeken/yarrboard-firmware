@@ -13,9 +13,7 @@
   #include "debug.h"
   #include "pwm_channel.h"
   #include "rgb.h"
-
-// INA226 INA(0x40);
-// unsigned long previousINA226UpdateMillis = 0;
+  #include "soc/gpio_struct.h" // Defines the GPIO struct and the global 'GPIO' variable
 
 // the main star of the event
 etl::array<PWMChannel, YB_PWM_CHANNEL_COUNT> pwm_channels;
@@ -218,11 +216,6 @@ void pwm_channels_loop()
   if (doSendFastUpdate) {
     sendFastUpdate();
   }
-
-  // if (millis() - previousINA226UpdateMillis > 1000) {
-  //   float v = INA.getBusVoltage();
-  //   float a = INA.getCurrent();
-  // }
 }
 
 void PWMChannel::setup()
@@ -349,8 +342,12 @@ void PWMChannel::readINA226()
 void IRAM_ATTR PWMChannel::ina226AlertHandler(void* arg)
 {
   PWMChannel* ch = static_cast<PWMChannel*>(arg);
-  // todo: implement this.
+  ch->status == Status::TRIPPED;
+  ch->updateOutput();
+  ch->softFuseTripCount++;
+  ch->sendFastUpdate = true;
 }
+
   #endif
 
   #ifdef YB_PWM_CHANNEL_HAS_LM75
@@ -463,8 +460,8 @@ void PWMChannel::updateOutput(bool check_status)
 {
   // first of all, if its tripped or blown zero it out.
   if (this->status == Status::TRIPPED || this->status == Status::BLOWN || this->status == Status::OVERHEAT) {
-    this->outputState = false;
     this->writePWM(0);
+    this->outputState = false;
     return;
   }
 

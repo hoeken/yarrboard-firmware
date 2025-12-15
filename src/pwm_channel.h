@@ -81,15 +81,15 @@ class PWMChannel : public BaseChannel
       OVERHEAT
     };
 
-    Status status = Status::OFF;
-    bool outputState = false;
+    volatile Status status = Status::OFF;
+    volatile bool outputState = false;
     char type[30] = "other";
     char defaultState[10] = "OFF";
-    bool sendFastUpdate = false;
+    volatile bool sendFastUpdate = false;
     char source[YB_HOSTNAME_LENGTH];
 
     unsigned int stateChangeCount = 0;
-    unsigned int softFuseTripCount = 0;
+    volatile unsigned int softFuseTripCount = 0;
     unsigned int overheatCount = 0;
 
     // polled from other code; updated in ISR
