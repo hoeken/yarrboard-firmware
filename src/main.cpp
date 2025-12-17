@@ -21,6 +21,11 @@ NavicoController navico(yba);
 ADCController adc(yba);
 #endif
 
+#ifdef YB_HAS_PIEZO
+  #include "controllers/BuzzerController.h"
+BuzzerController buzzer(yba);
+#endif
+
 #include "index.html.gz.h"
 #include "logo.png.gz.h"
 
@@ -30,6 +35,16 @@ void setup()
 
 #ifdef YB_HAS_ADC_CHANNELS
   yba.registerController(adc);
+#endif
+
+#ifdef YB_HAS_PIEZO
+  buzzer.buzzerPin = YB_PIEZO_PIN;
+  #ifdef YB_PIEZO_PASSIVE
+  buzzer.isActive = false;
+  #else
+  buzzer.isActive = true;
+  #endif
+  yba.registerController(buzzer);
 #endif
 
   yba.board_name = YB_BOARD_NAME;
