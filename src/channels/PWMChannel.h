@@ -12,12 +12,14 @@
 #include "adchelper.h"
 #include "config.h"
 #include "controllers/BusVoltageController.h"
+#include "controllers/RGBController.h"
 #include "driver/ledc.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/timers.h"
 #include <Arduino.h>
 #include <SPI.h>
 #include <channels/BaseChannel.h>
+#include <controllers/MQTTController.h>
 
 #ifdef YB_PWM_CHANNEL_HAS_INA226
   #include "INA226.h"
@@ -126,6 +128,11 @@ class PWMChannel : public BaseChannel
 
     bool isDimmable = false;
 
+    ConfigManager* _cfg = nullptr;
+    BusVoltageController* busVoltage = nullptr;
+    RGBControllerInterface* rgb = nullptr;
+    MQTTController* mqtt = nullptr;
+
     void init(uint8_t id) override;
     bool loadConfig(JsonVariantConst config, char* error, size_t len) override;
     void generateConfig(JsonVariant config) override;
@@ -203,13 +210,25 @@ class PWMChannel : public BaseChannel
     // ISR (Arduino style)
     static void ARDUINO_ISR_ATTR gammaISR(void* arg);
     static void continueGammaThunk(void* arg, uint32_t);
+
+  private:
+    /* Setting PWM Properties */
+    const unsigned int MAX_DUTY_CYCLE = (int)(pow(2, YB_PWM_CHANNEL_RESOLUTION)) - 1;
+
+    // our channel pins
+    byte _pwm_pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_PINS;
+
+#ifdef YB_PWM_CHANNEL_INA226_ADDRESS
+    byte _ina226_addresses[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_INA226_ADDRESS;
+#endif
+
+#ifdef YB_PWM_CHANNEL_INA226_ALERT
+    byte _ina226_alert_pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_INA226_ALERT;
+#endif
+
+#ifdef YB_PWM_CHANNEL_HAS_LM75
+    byte _lm75_addresses[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_LM75_ADDRESS;
+#endif
 };
-
-extern etl::array<PWMChannel, YB_PWM_CHANNEL_COUNT> pwm_channels;
-
-void pwm_channels_setup();
-void pwm_channels_loop();
-
-void pwm_handle_ha_command(const char* topic, const char* payload, int retain, int qos, bool dup);
 
 #endif /* !YARR_PWM_CHANNEL_H */
