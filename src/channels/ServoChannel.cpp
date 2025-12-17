@@ -10,7 +10,7 @@
 
 #ifdef YB_HAS_SERVO_CHANNELS
 
-  #include "servo_channel.h"
+  #include "channels/ServoChannel.h"
 
 byte _servo_pins[YB_SERVO_CHANNEL_COUNT] = YB_SERVO_CHANNEL_PINS;
 
