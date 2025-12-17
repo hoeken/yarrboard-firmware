@@ -1,5 +1,5 @@
 #include "GD20Modbus.h"
-#include "debug.h"
+#include <YarrboardDebug.h>
 
 #ifdef YB_HAS_MODBUS
 

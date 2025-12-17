@@ -11,7 +11,6 @@
 #ifdef YB_IS_BRINEOMATIC
 
   #include "brineomatic.h"
-  #include "debug.h"
   #include "etl/deque.h"
   #include "ntp.h"
   #include "piezo.h"
@@ -20,6 +19,7 @@
   #include "stepper_channel.h"
   #include "validate.h"
   #include <Arduino.h>
+  #include <YarrboardDebug.h>
 
 Brineomatic wm;
 

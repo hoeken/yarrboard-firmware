@@ -11,7 +11,7 @@
 #ifdef YB_HAS_ADC_CHANNELS
 
   #include "adc_channel.h"
-  #include "debug.h"
+  #include <YarrboardDebug.h>
 
 // the main star of the event
 etl::array<ADCChannel, YB_ADC_CHANNEL_COUNT> adc_channels;
@@ -411,12 +411,12 @@ bool ADCChannel::addCalibrationValue(CalibrationPoint cp)
 
 void ADCChannel::haGenerateDiscovery(JsonVariant doc)
 {
-  BaseChannel::haGenerateDiscovery(doc);
+  // BaseChannel::haGenerateDiscovery(doc);
 
-  // generate our id / topics
-  sprintf(ha_topic_value, "yarrboard/%s/adc/%s/value", local_hostname, this->key);
+  // // generate our id / topics
+  // sprintf(ha_topic_value, "yarrboard/%s/adc/%s/value", local_hostname, this->key);
 
-  this->haGenerateSensorDiscovery(doc);
+  // this->haGenerateSensorDiscovery(doc);
 }
 
 void ADCChannel::haGenerateSensorDiscovery(JsonVariant doc)

@@ -10,8 +10,8 @@
 
 #ifdef YB_HAS_RELAY_CHANNELS
 
-  #include "debug.h"
   #include "relay_channel.h"
+  #include <YarrboardDebug.h>
 
 // the main star of the event
 etl::array<RelayChannel, YB_RELAY_CHANNEL_COUNT> relay_channels;

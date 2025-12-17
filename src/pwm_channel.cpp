@@ -10,10 +10,10 @@
 
 #ifdef YB_HAS_PWM_CHANNELS
 
-  #include "debug.h"
   #include "pwm_channel.h"
   #include "rgb.h"
   #include "soc/gpio_struct.h" // Defines the GPIO struct and the global 'GPIO' variable
+  #include <YarrboardDebug.h>
 
 // the main star of the event
 etl::array<PWMChannel, YB_PWM_CHANNEL_COUNT> pwm_channels;

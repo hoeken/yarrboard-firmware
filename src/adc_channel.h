@@ -11,15 +11,11 @@
 
 #include "ArduinoJson.h"
 #include "adchelper.h"
-#include "base_channel.h"
 #include "config.h"
 #include "etl/vector.h"
-#include "mqtt.h"
-#include "networking.h"
-#include "prefs.h"
-#include "protocol.h"
 #include <Arduino.h>
 #include <LittleFS.h>
+#include <channels/BaseChannel.h>
 
 #ifdef YB_HAS_ADC_CHANNELS
 

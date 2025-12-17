@@ -10,7 +10,6 @@
 #define YARR_PWM_CHANNEL_H
 
 #include "adchelper.h"
-#include "base_channel.h"
 #include "bus_voltage.h"
 #include "config.h"
 #include "driver/ledc.h"
@@ -22,6 +21,7 @@
 #include "protocol.h"
 #include <Arduino.h>
 #include <SPI.h>
+#include <channels/BaseChannel.h>
 
 #ifdef YB_PWM_CHANNEL_HAS_INA226
   #include "INA226.h"

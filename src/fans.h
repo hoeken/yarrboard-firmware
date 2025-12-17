@@ -6,8 +6,10 @@
   License: GPLv3
 */
 
+#include "config.h"
+
 #ifndef YARR_FANS_H
-#define YARR_FANS_H
+  #define YARR_FANS_H
 
 extern int fans_last_rpm[YB_FAN_COUNT];
 

@@ -9,13 +9,13 @@
 #ifndef YARR_RELAY_CHANNEL_H
 #define YARR_RELAY_CHANNEL_H
 
-#include "base_channel.h"
 #include "config.h"
 #include "etl/array.h"
 #include "mqtt.h"
 #include "prefs.h"
 #include "protocol.h"
 #include <Arduino.h>
+#include <channels/BaseChannel.h>
 
 #ifdef YB_RELAY_DRIVER_TCA9554
   #include "TCA9554.h"
