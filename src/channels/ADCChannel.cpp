@@ -10,6 +10,8 @@
 #include "config.h"
 #include <YarrboardDebug.h>
 
+#ifdef YB_HAS_ADC_CHANNELS
+
 unsigned int ADCChannel::getReading()
 {
   return this->adcHelper->getAverageReading(_adcChannel);
@@ -323,3 +325,5 @@ void ADCChannel::haGenerateSensorDiscovery(JsonVariant doc)
   JsonObject avail = availability.add<JsonObject>();
   avail["topic"] = ha_topic_avail;
 }
+
+#endif

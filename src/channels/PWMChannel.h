@@ -10,15 +10,11 @@
 #define YARR_PWM_CHANNEL_H
 
 #include "adchelper.h"
-#include "bus_voltage.h"
 #include "config.h"
+#include "controllers/BusVoltageController.h"
 #include "driver/ledc.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/timers.h"
-#include "mqtt.h"
-#include "networking.h"
-#include "prefs.h"
-#include "protocol.h"
 #include <Arduino.h>
 #include <SPI.h>
 #include <channels/BaseChannel.h>
