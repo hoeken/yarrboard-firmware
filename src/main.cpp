@@ -29,6 +29,12 @@ void setup()
   yba.registerController(adc);
 #endif
 
+  yba.board_name = YB_BOARD_NAME;
+  yba.default_hostname = YB_DEFAULT_HOSTNAME;
+  yba.firmware_version = YB_FIRMWARE_VERSION;
+  yba.hardware_version = YB_HARDWARE_VERSION;
+  yba.manufacturer = YB_MANUFACTURER;
+
   yba.setup();
 }
 
