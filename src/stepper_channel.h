@@ -17,10 +17,10 @@
   #ifdef YB_STEPPER_DRIVER_TMC2209
     #include "TMC2209.h"
   #endif
-  #include "base_channel.h"
   #include "prefs.h"
   #include "protocol.h"
   #include <Arduino.h>
+  #include <channels/BaseChannel.h>
 
 class StepperChannel : public BaseChannel
 {

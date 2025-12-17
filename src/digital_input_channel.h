@@ -9,11 +9,11 @@
 #ifndef YARR_DIGITAL_INPUT_CHANNEL_H
 #define YARR_DIGITAL_INPUT_CHANNEL_H
 
-#include "base_channel.h"
 #include "config.h"
 #include "prefs.h"
 #include "protocol.h"
 #include <Arduino.h>
+#include <channels/BaseChannel.h>
 
 class DigitalInputChannel : public BaseChannel
 {

@@ -1,7 +1,7 @@
 // IntervalTimer.h
 #pragma once
-#include "debug.h"
 #include <Arduino.h>
+#include <YarrboardDebug.h>
 #include <cstring>
 #include <stdint.h>
 #include <vector>

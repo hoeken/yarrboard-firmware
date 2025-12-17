@@ -10,10 +10,10 @@
 
 #ifdef YB_HAS_FANS
 
-  #include "debug.h"
   #include "fans.h"
   #include "pwm_channel.h"
   #include <Arduino.h>
+  #include <YarrboardDebug.h>
 
 // Lots of code borrowed from: https://github.com/KlausMu/esp32-fan-controller
 

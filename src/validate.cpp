@@ -1,5 +1,5 @@
 #include "validate.h"
-#include "debug.h"
+#include <YarrboardDebug.h>
 #include <cstring>
 
 // --------------------------------------------

@@ -11,7 +11,7 @@
 #ifdef YB_HAS_BUS_VOLTAGE
 
   #include "bus_voltage.h"
-  #include "debug.h"
+  #include <YarrboardDebug.h>
 
 unsigned long lastBusVoltageCheckMillis = 0;
 

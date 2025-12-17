@@ -9,12 +9,10 @@
 #ifndef YARR_SERVO_CHANNEL_H
 #define YARR_SERVO_CHANNEL_H
 
-#include "base_channel.h"
 #include "config.h"
 #include "driver/ledc.h"
-#include "prefs.h"
-#include "protocol.h"
 #include <Arduino.h>
+#include <channels/BaseChannel.h>
 
 class Servo
 {

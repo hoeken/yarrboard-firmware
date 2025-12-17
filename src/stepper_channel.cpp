@@ -10,8 +10,8 @@
 
 #ifdef YB_HAS_STEPPER_CHANNELS
 
-  #include "debug.h"
   #include "stepper_channel.h"
+  #include <YarrboardDebug.h>
 
 byte _step_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_STEP_PINS;
 byte _dir_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_DIR_PINS;

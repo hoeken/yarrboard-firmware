@@ -7,7 +7,7 @@
 */
 
 #include "adchelper.h"
-#include "debug.h"
+#include <YarrboardDebug.h>
 
 ADCHelper::ADCHelper(uint8_t channels, float vref, uint8_t resolution, uint16_t samples, uint32_t window_ms) : _totalChannels(channels),
                                                                                                                _vref(vref),
