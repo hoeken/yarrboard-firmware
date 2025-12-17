@@ -6,123 +6,9 @@
   License: GPLv3
 */
 
+#include "channels/ADCChannel.h"
 #include "config.h"
-
-#ifdef YB_HAS_ADC_CHANNELS
-
-  #include "channels/ADCChannel.h"
-  #include <YarrboardDebug.h>
-
-// the main star of the event
-etl::array<ADCChannel, YB_ADC_CHANNEL_COUNT> adc_channels;
-
-  #ifdef YB_ADC_DRIVER_ADS1115
-ADS1115 _adcVoltageADS1115_1(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_1);
-ADS1115 _adcVoltageADS1115_2(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_2);
-ADS1115Helper* adcHelper1;
-ADS1115Helper* adcHelper2;
-  #elif defined YB_ADC_DRIVER_MCP3564
-MCP3564 _adcAnalogMCP3564(YB_ADC_CS, &SPI, YB_ADC_MOSI, YB_ADC_MISO, YB_ADC_SCK);
-MCP3564Helper* adcHelper1;
-  #endif
-
-unsigned long previousHAUpdateMillis = 0;
-
-void adc_channels_setup()
-{
-  #ifdef YB_ADC_DRIVER_ADS1115
-    #if defined(YB_I2C_SDA_PIN) && defined(YB_I2C_SCL_PIN)
-  Wire.begin(YB_I2C_SDA_PIN, YB_I2C_SCL_PIN);
-    #else
-  Wire.begin(); // fallback to defaults
-    #endif
-  Wire.setClock(YB_I2C_SPEED);
-
-  _adcVoltageADS1115_1.begin();
-  if (_adcVoltageADS1115_1.isConnected())
-    YBP.println("Voltage ADS115 #1 OK");
-  else
-    YBP.println("Voltage ADS115 #1 Not Found");
-
-  // BASIC CONFIG
-  _adcVoltageADS1115_1.setMode(ADS1X15_MODE_SINGLE);
-  _adcVoltageADS1115_1.setGain(YB_ADC_GAIN);
-  _adcVoltageADS1115_1.setDataRate(4);
-
-  adcHelper1 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_1);
-  adcHelper1->attachReadyPinInterrupt(YB_ADS1115_READY_PIN_1, FALLING);
-
-  _adcVoltageADS1115_2.begin();
-  if (_adcVoltageADS1115_2.isConnected())
-    YBP.println("Voltage ADS115 #2 OK");
-  else
-    YBP.println("Voltage ADS115 #2 Not Found");
-
-  // BASIC CONFIG
-  _adcVoltageADS1115_2.setMode(ADS1X15_MODE_SINGLE);
-  _adcVoltageADS1115_2.setGain(YB_ADC_GAIN);
-  _adcVoltageADS1115_2.setDataRate(4);
-
-  adcHelper2 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_2);
-  adcHelper2->attachReadyPinInterrupt(YB_ADS1115_READY_PIN_2, FALLING);
-
-  #elif defined(YB_ADC_DRIVER_MCP3564)
-
-  // turn on our pullup on the IRQ pin.
-  pinMode(YB_ADC_IRQ, INPUT_PULLUP);
-
-  // start up our SPI and ADC objects
-  SPI.begin(YB_ADC_SCK, YB_ADC_MISO, YB_ADC_MOSI, YB_ADC_CS);
-  if (!_adcAnalogMCP3564.begin(0, 3.3)) {
-    YBP.println("failed to initialize MCP3564");
-  } else {
-    YBP.println("MCP3564 ok.");
-  }
-
-  _adcAnalogMCP3564.singleEndedMode();
-  _adcAnalogMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
-  _adcAnalogMCP3564.setAveraging(MCP3x6x::osr::OSR_4096);
-
-  _adcAnalogMCP3564.printConfig();
-
-  adcHelper1 = new MCP3564Helper(3.3, &_adcAnalogMCP3564, 50, 5000);
-  adcHelper1->attachReadyPinInterrupt(YB_ADC_IRQ, FALLING);
-  #endif
-
-  // setup our channels
-  for (auto& ch : adc_channels)
-    ch.setup();
-}
-
-void adc_channels_loop()
-{
-  #ifdef YB_ADC_DRIVER_ADS1115
-  adcHelper1->onLoop();
-  adcHelper2->onLoop();
-  #elif defined(YB_ADC_DRIVER_MCP3564)
-  adcHelper1->onLoop();
-  #endif
-}
-
-void ADCChannel::setup()
-{
-  #ifdef YB_ADC_DRIVER_ADS1115
-  if (this->id <= 4) {
-    this->adcHelper = adcHelper1;
-    _adcChannel = this->id - 1;
-  } else {
-    this->adcHelper = adcHelper2;
-    _adcChannel = this->id - 5;
-  }
-  #elif defined(YB_ADC_DRIVER_MCP3564)
-  this->adcHelper = adcHelper1;
-  _adcChannel = this->id - 1;
-  #endif
-}
-
-void ADCChannel::update()
-{
-}
+#include <YarrboardDebug.h>
 
 unsigned int ADCChannel::getReading()
 {
@@ -437,5 +323,3 @@ void ADCChannel::haGenerateSensorDiscovery(JsonVariant doc)
   JsonObject avail = availability.add<JsonObject>();
   avail["topic"] = ha_topic_avail;
 }
-
-#endif

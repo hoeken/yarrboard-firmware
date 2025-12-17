@@ -17,8 +17,6 @@
 #include <LittleFS.h>
 #include <channels/BaseChannel.h>
 
-#ifdef YB_HAS_ADC_CHANNELS
-
 struct CalibrationPoint {
     float voltage;
     float calibrated;
@@ -45,14 +43,9 @@ class ADCChannel : public BaseChannel
     */
     char type[33] = "raw";
 
-  #ifdef YB_ADC_DRIVER_ADS1115
     ADS1115Helper* adcHelper;
-  #elif YB_ADC_DRIVER_MCP3564
-    MCP3564Helper* adcHelper;
-  #endif
+    uint8_t _adcChannel = 0;
 
-    void setup();
-    void update();
     unsigned int getReading();
     float getVoltage();
 
@@ -74,22 +67,13 @@ class ADCChannel : public BaseChannel
   private:
     char ha_topic_value[128];
 
-    uint8_t _adcChannel = 0;
-
     void _sortAndDedupeCalibrationTable();
 };
-
-extern etl::array<ADCChannel, YB_ADC_CHANNEL_COUNT> adc_channels;
-
-void adc_channels_setup();
-void adc_channels_loop();
 
 template <class X, class M, class N, class O, class Q>
 X map_generic(X x, M in_min, N in_max, O out_min, Q out_max)
 {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
-
-#endif
 
 #endif /* !YARR_ADC_CHANNEL_H */
