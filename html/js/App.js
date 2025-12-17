@@ -881,7 +881,7 @@
         }
 
         $.ajax({
-          url: "https://raw.githubusercontent.com/hoeken/yarrboard-firmware/main/firmware.json",
+          url: YB.App.config.firmware_manifest_url,
           cache: false,
           dataType: "json",
           success: function (jdata) {

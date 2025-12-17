@@ -22,6 +22,8 @@ class ADCController : public ChannelController<ADCChannel, YB_ADC_CHANNEL_COUNT>
     bool setup() override;
     void loop() override;
 
+    void handleConfigADC(JsonVariantConst input, JsonVariant output);
+
   private:
     ADS1115 _adcVoltageADS1115_1;
     ADS1115 _adcVoltageADS1115_2;

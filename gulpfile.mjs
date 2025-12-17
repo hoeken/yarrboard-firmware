@@ -1,8 +1,9 @@
 /*
 
-ESP8266 file system builder
+Yarrboard Framework HTML Builder
 
 Copyright (C) 2016-2017 by Xose Pérez <xose dot perez at gmail dot com>;
+Copyright (C) 2025 by Zach Hoeken <hoeken@gmail.com>;
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,21 +19,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-
-// -----------------------------------------------------------------------------
-// File system builder
-// -----------------------------------------------------------------------------
-
-// const { series, src, dest } = require('gulp');
-// const htmlmin = require('gulp-htmlmin');
-// const cleancss = require('gulp-clean-css');
-// const uglify = require('gulp-uglify-es').default;
-// const gzip = require('gulp-gzip');
-// const del = require('del');
-// const inline = require('gulp-inline');
-// const inlineImages = require('gulp-css-base64');
-// const favicon = require('gulp-base64-favicon');
-// const fs = require('fs');
 
 import gulp from 'gulp';
 const { series, src, dest } = gulp;
@@ -87,36 +73,16 @@ function buildfs_embeded(cb) {
     cb();
 }
 
-function buildfs_yarrboard_logo_gz(cb) {
-    return src('html/logo-yarrboard.png')
-        .pipe(gzip())
-        .pipe(dest("dist"));
-}
-
-function buildfs_frothfet_logo_gz(cb) {
-    return src('html/logo-frothfet.png')
-        .pipe(gzip())
-        .pipe(dest("dist"));
-}
-
-function buildfs_brineomatic_logo_gz(cb) {
-    return src('html/logo-brineomatic.png')
+function buildfs_logo_gz(cb) {
+    return src('html/logo.png')
         .pipe(gzip())
         .pipe(dest("dist"));
 }
 
 function buildfs_logo_embedded(cb) {
-    var source = 'dist/logo-yarrboard.png.gz';
-    var destination = 'src/logo-yarrboard.png.gz.h';
-    write_header_file(source, destination, "logo_yarrboard_gz");
-
-    source = 'dist/logo-brineomatic.png.gz';
-    destination = 'src/logo-brineomatic.png.gz.h';
-    write_header_file(source, destination, "logo_brineomatic_gz");
-
-    source = 'dist/logo-frothfet.png.gz';
-    destination = 'src/logo-frothfet.png.gz.h';
-    write_header_file(source, destination, "logo_frothfet_gz");
+    var source = 'dist/logo.png.gz';
+    var destination = 'src/logo.png.gz.h';
+    write_header_file(source, destination, "logo_gz");
 
     cb();
 }
@@ -149,7 +115,7 @@ function write_header_file(source, destination, name) {
     deleteAsync([source]);
 }
 
-const all = series(clean, buildfs_inline, buildfs_embeded, buildfs_yarrboard_logo_gz, buildfs_frothfet_logo_gz, buildfs_brineomatic_logo_gz, buildfs_logo_embedded);
+const all = series(clean, buildfs_inline, buildfs_embeded, buildfs_logo_gz, buildfs_logo_embedded);
 
 export default all;
 //export build;
