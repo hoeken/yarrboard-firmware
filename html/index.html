@@ -31,7 +31,7 @@
     <script src="js/Brineomatic.js"></script>
     <script src="js/ChannelRegistry.js"></script>
     <script src="js/channels/BaseChannel.js"></script>
-    <!-- <script src="js/channels/ADCChannel.js"></script> -->
+    <script src="js/channels/ADCChannel.js"></script>
     <!-- <script src="js/channels/DigitalInputChannel.js"></script> -->
     <script src="js/channels/PWMChannel.js"></script>
     <script src="js/channels/RelayChannel.js"></script>
@@ -107,20 +107,6 @@
             <div class="mx-3 mt-3">
                 <div id="liveAlertPlaceholder"></div>
                 <div id="controlPage" class="pageContainer row" style="display:none">
-                    <div id="adcControlDiv" style="display:none" class="col-md-12">
-                        <h4 class="text-center">Analog Inputs</h4>
-                        <table id="adcTable" class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Type</th>
-                                    <th scope="col">Value</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adcTableBody" class="table-group-divider"></tbody>
-                        </table>
-                    </div>
                 </div>
                 <div id="configPage" class="pageContainer" style="display:none">
                     <form class="row g-3" id="ConfigForm">

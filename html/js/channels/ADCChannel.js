@@ -2,7 +2,7 @@
   // work in the global YB namespace.
   var YB = global.YB || {};
 
-  const adc_types = {
+  const ADC_TYPES = {
     "raw": "Raw Output",
     "digital_switch": "Digital Switching",
     "thermistor": "Thermistor",
@@ -12,289 +12,18 @@
     "ten_k_pullup": "10k Pullup"
   };
 
-  let adc_running_averages = {};
-
-  const ADCControlRow = (id, name, type) => `
-<tr id="adc${id}" class="adcRow">
-  <td class="adcId align-middle">${id}</td>
-  <td class="adcName align-middle">${name}</td>
-  <td class="adcType align-middle">${adc_types[type]}</td>
-  <td class="adcValue" id="adcValue${id}"></td>
-  <!-- <td class="adcBar align-middle">
-     <div id="adcBar${id}" class="progress" role="progressbar" aria-label="ADC ${id} Reading" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-      <div class="progress-bar" style="width: 0%"></div>
-    </div>
-  </td> -->
-</tr>
-`;
-
-  const ADCCalibrationTableRow = (ch, output, calibrated, index) => {
-    return `
-      <tr id="fADCCalibrationTableRow${ch.id}_${index}">
-        <td>
-          <div class="input-group input-group-sm">
-            <input type="text" class="form-control" id="fADCCalibrationTableOutput${ch.id}_${index}" value="${output}" disabled>
-            <span class="input-group-text ADCUnits${ch.id}">${ch.units}</span>
-          </div>
-        </td>
-        <td>
-          <div class="input-group input-group-sm">
-            <input type="text" class="form-control" id="fADCCalibrationTableCalibrated${ch.id}_${index}" value="${calibrated}" disabled>
-            <span class="input-group-text ADCCalibratedUnits${ch.id}">${ch.calibratedUnits}</span>
-          </div>
-        </td>
-        <td>
-          <button type="button" class="btn btn-sm btn-outline-danger" id="fADCCalibrationTableRemove${ch.id}_${index}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path>
-  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path>
-  </svg>
-          </button>
-        </td>
-      </tr>
-    `;
-  };
-
-  const ADCEditCard = (ch) => {
-    // Build options from adc_types
-    const options = Object.entries(adc_types)
-      .map(([key, label]) => `<option value="${key}">${label}</option>`)
-      .join("\n");
-
-    let calibrationTableHtml = "";
-    if (YB.App.config.adc[ch.id - 1].hasOwnProperty("calibrationTable")) {
-      calibrationTableHtml = YB.App.config.adc[ch.id - 1].calibrationTable
-        .map(([output, calibrated], index) => ADCCalibrationTableRow(ch, output, calibrated, index))
-        .join("\n");
-    }
-
-    return `
-    <div id="adcEditCard${ch.id}" class="col-xs-12 col-sm-6">
-      <div class="p-3 border border-secondary rounded">
-        <h5>ADC #${ch.id}</h5>
-        <div class="form-floating mb-3">
-          <input type="text" class="form-control" id="fADCName${ch.id}" value="${ch.name}">
-          <label for="fADCName${ch.id}">Name</label>
-          <div class="invalid-feedback">Must be 30 characters or less.</div>
-        </div>
-        <div class="form-check form-switch mb-3">
-          <input class="form-check-input" type="checkbox" id="fADCEnabled${ch.id}">
-          <label class="form-check-label" for="fADCEnabled${ch.id}">Enabled</label>
-        </div>
-        <div class="form-floating mb-3">
-          <select id="fADCType${ch.id}" class="form-select" aria-label="Input Type">
-            ${options}
-          </select>
-          <label for="fADCType${ch.id}">Input Type</label>
-        </div>
-        <div class="form-floating mb-3">
-          <select id="fADCDisplayDecimals${ch.id}" class="form-select" aria-label="Display Format">
-            <option value="0">123,456</option>
-            <option value="1">123,456.1</option>
-            <option value="2">123,456.12</option>
-            <option value="3">123,456.123</option>
-            <option value="4">123,456.1234</option>
-          </select>
-          <label for="fADCDisplayDecimals${ch.id}">Display Format</label>
-        </div>
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" id="fADCUseCalibrationTable${ch.id}">
-          <label class="form-check-label" for="fADCUseCalibrationTable${ch.id}">Use Calibration Table</label>
-        </div>
-        <div id="fADCCalibrationTableUI${ch.id}" class="form-floating mt-3" style="display: none">
-          <h5>Calibration Setup</h5>
-          <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="fADCCalibratedUnits${ch.id}" value="${ch.calibratedUnits}">
-            <label for="fADCCalibratedUnits${ch.id}">Calibrated Units</label>
-            <div class="invalid-feedback">Must be 10 characters or less.</div>
-          </div>
-          <div class="form-floating mb-3">
-            <h6>Live Averaged Output <span id="fADCAverageOutputCount${ch.id}" class="small"></span></h6>
-            <div class="input-group">
-              <input id="fADCAverageOutput${ch.id}" type="text" class="form-control" value="0">
-              <span class="input-group-text ADCUnits${ch.id}">${ch.units}</span>
-              <button id="fADCAverageOutputCopy${ch.id}" type="button" class="btn btn-sm btn-primary">
-                Copy
-              </button>
-              <button id="fADCAverageOutputReset${ch.id}" type="button" class="btn btn-sm btn-secondary">
-                Reset
-              </button>
-            </div>
-          </div>
-          <table class="table table-sm">
-            <thead>
-              <tr>
-                <th>Output</th>
-                <th>Calibrated</th>
-                <th class="text-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
-  <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
-  <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
-</svg></th>
-              </tr>
-            </thead>
-            <tbody id="ADCCalibrationTableBody${ch.id}">
-              <tr>
-                <td>
-                  <div class="input-group input-group-sm">
-                    <input type="text" class="form-control" id="fADCCalibrationTableOutput${ch.id}" value="">
-                    <span class="input-group-text ADCUnits${ch.id}">${ch.units}</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="input-group input-group-sm">
-                    <input type="text" class="form-control" id="fADCCalibrationTableCalibrated${ch.id}" value="">
-                    <span class="input-group-text ADCCalibratedUnits${ch.id}">${ch.calibratedUnits}</span>
-                  </div>
-                </td>
-                <td>
-                  <button id="fADCCalibrationTableAdd${ch.id}" type="button" class="btn btn-sm btn-outline-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
-  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-</svg>
-                  </button>
-                </td>
-              </tr>
-              ${calibrationTableHtml}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  `;
-  };
-
-  function adc_calibration_average_copy(e) {
-    let ele = e.currentTarget;
-    let id = ele.id.match(/\d+/)[0];
-
-    let output = parseFloat($(`#fADCAverageOutput${id}`).val());
-    $(`#fADCCalibrationTableOutput${id}`).val(output);
-    $(`#fADCCalibrationTableCalibrated${id}`).focus();
-  }
-
-  function adc_calibration_average_reset(e) {
-    let ele = e.currentTarget;
-    let id = ele.id.match(/\d+/)[0];
-
-    $(`#fADCAverageOutput${id}`).val(0.0);
-    adc_running_averages[id] = [];
-  }
-
-  function validate_adc_add_calibration(e) {
-    let ele = e.currentTarget;
-    let id = ele.id.match(/\d+/)[0];
-
-    let output = parseFloat($(`#fADCCalibrationTableOutput${id}`).val());
-    let calibrated = parseFloat($(`#fADCCalibrationTableCalibrated${id}`).val());
-
-    if (false) {
-      $(ele).removeClass("is-valid");
-      $(ele).addClass("is-invalid");
-    }
-    else {
-      // $(ele).removeClass("is-invalid");
-      // $(ele).addClass("is-valid");
-
-      YB.client.send({
-        "cmd": "config_adc",
-        "id": id,
-        "add_calibration": [output, calibrated]
-      });
-
-      //re-initialize
-      $(`#fADCCalibrationTableOutput${id}`).val("");
-      $(`#fADCCalibrationTableCalibrated${id}`).val("");
-
-      //new row for the ui
-      let index = 0;
-      if (Array.isArray(YB.App.config.adc[id - 1].calibrationTable)) {
-        index = YB.App.config.adc[id - 1].calibrationTable.length;
-      }
-      let newRow = ADCCalibrationTableRow(YB.App.config.adc[id], output, calibrated, index);
-      $(`#ADCCalibrationTableBody${id}`).append(newRow);
-      $(`#fADCCalibrationTableRemove${id}_${index}`).click(validate_adc_remove_calibration);
-      YB.App.config.adc[id - 1].calibrationTable.push([output, calibrated]); //temporarily save it.
-    }
-  }
-
-  function validate_adc_remove_calibration(e) {
-    let ele = e.currentTarget;
-
-    const match = ele.id.match(/(\d+)_(\d+)/);
-    const id = parseInt(match[1], 10);
-    const index = parseInt(match[2], 10);
-
-    const output = parseFloat($(`#fADCCalibrationTableOutput${id}_${index}`).val());
-    const calibrated = parseFloat($(`#fADCCalibrationTableCalibrated${id}_${index}`).val());
-
-    if (false) {
-      $(ele).removeClass("is-valid");
-      $(ele).addClass("is-invalid");
-    }
-    else {
-      // $(ele).removeClass("is-invalid");
-      // $(ele).addClass("is-valid");
-
-      YB.client.send({
-        "cmd": "config_adc",
-        "id": id,
-        "remove_calibration": [output, calibrated]
-      });
-
-      //remove our row.
-      $(`#fADCCalibrationTableRow${id}_${index}`).remove();
-    }
-  }
-
-  function validate_adc_type(e) {
-    let ele = e.target;
-    let id = ele.id.match(/\d+/)[0];
-    let value = ele.value;
-
-    if (value.length <= 0 || value.length > 30) {
-      $(ele).removeClass("is-valid");
-      $(ele).addClass("is-invalid");
-    }
-    else {
-      $(ele).removeClass("is-invalid");
-      $(ele).addClass("is-valid");
-
-      YB.client.send({
-        "cmd": "config_adc",
-        "id": id,
-        "type": value
-      });
-    }
-  }
-
-  function validate_adc_display_decimals(e) {
-    let ele = e.target;
-    let id = ele.id.match(/\d+/)[0];
-    let value = parseInt(ele.value);
-
-    if (value.length <= 0 || value.length > 30) {
-      $(ele).removeClass("is-valid");
-      $(ele).addClass("is-invalid");
-    }
-    else {
-      $(ele).removeClass("is-invalid");
-      $(ele).addClass("is-valid");
-
-      YB.client.send({
-        "cmd": "config_adc",
-        "id": id,
-        "display_decimals": value
-      });
-
-      //update our current config.
-      YB.App.config.adc[id - 1].displayDecimals = value;
-    }
-  }
-
-  // ----- ADCChannel -----
   function ADCChannel() {
-    YB.BaseChannel.call(this, "adc");
+    YB.BaseChannel.call(this, "adc", "ADC");
+
+    this.runningAverage = [];
+
+    // Bind UI handlers
+    this.onAddCalibrationRow = this.onAddCalibrationRow.bind(this);
+    // this.onRemoveCalibrationRow = this.onRemoveCalibrationRow.bind(this);
+    this.onCopyAverage = this.onCopyAverage.bind(this);
+    this.onResetAverage = this.onResetAverage.bind(this);
   }
+
   ADCChannel.prototype = Object.create(YB.BaseChannel.prototype);
   ADCChannel.prototype.constructor = ADCChannel;
 
@@ -303,14 +32,12 @@
     var base = YB.BaseChannel.prototype.getConfigSchema.call(this);
     var schema = Object.assign({}, base);
 
-    // Channel-specific fields
     schema.type = {
       presence: { allowEmpty: false },
       type: "string",
       length: { minimum: 1, maximum: 32 }
     };
 
-    // Integer between 0–6 (display precision)
     schema.displayDecimals = {
       numericality: {
         onlyInteger: true,
@@ -319,7 +46,6 @@
       }
     };
 
-    // Boolean flag for whether calibration is used
     schema.useCalibrationTable = {
       inclusion: {
         within: [true, false],
@@ -327,13 +53,11 @@
       }
     };
 
-    // Optional calibrated units string
     schema.calibratedUnits = {
       type: "string",
-      length: { minimum: 0, maximum: 7 }
+      length: { minimum: 0, maximum: 10 }
     };
 
-    // Optional calibration table — must be array if present
     schema.calibrationTable = {
       type: "array"
     };
@@ -341,11 +65,330 @@
     return schema;
   };
 
-  // Export
+  ADCChannel.prototype.generateControlUI = function () {
+    // Adapted from table row to Card format to match RelayChannel
+    return `
+      <div id="adcControlCard${this.id}" class="col-xs-12 col-sm-6">
+        <table class="w-100 h-100 p-2">
+          <tr>
+            <td>
+              <div class="card p-2 text-center">
+                 <div class="fw-bold">${this.name}</div>
+                 <div class="text-muted small">${ADC_TYPES[this.cfg.type] || this.cfg.type}</div>
+                 <h3 id="adcValue${this.id}">--</h3>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    `;
+  };
+
+  ADCChannel.prototype.updateControlUI = function () {
+    // 1. Get Data
+    // We assume the incoming data packet (this.data) contains 'value' and 'calibrated_value'
+    // per your snippet's logic.
+    let value = parseFloat(this.data.value);
+
+    // Safety check if data hasn't arrived yet
+    if (isNaN(value)) return;
+
+    let calibrated_value = value;
+
+    // 2. Load Defaults from Config
+    let units = this.cfg.units || "";
+
+    // Are we using a calibration table?
+    if (this.cfg.useCalibrationTable) {
+      units = this.cfg.calibratedUnits || "";
+      if (this.data.calibrated_value !== undefined) {
+        calibrated_value = parseFloat(this.data.calibrated_value);
+      }
+    }
+
+    // 3. Update Running Average (Only on Config Page)
+    if (YB.App.currentPage == "config") {
+      // Manage sliding window using instance variable
+      this.runningAverage.push(value);
+
+      if (this.runningAverage.length > 1000) {
+        this.runningAverage.shift();
+      }
+
+      // Calculate Average
+      const average = this.runningAverage.reduce((acc, curr) => acc + curr, 0) / this.runningAverage.length;
+
+      // Update Edit UI inputs (IDs matched to generateEditUI)
+      $(`#f-adc-avg-output-${this.id}`).val(average.toFixed(4));
+      $(`#f-adc-avg-count-${this.id}`).text(`(${this.runningAverage.length} points)`);
+    } else {
+      // Clear average when not on config page to save memory
+      this.runningAverage = [];
+    }
+
+    // 4. Format the Value
+    // We use YB.Util.formatNumber if available, otherwise fall back to toFixed
+    const formatNum = (val, dec) => (YB.Util && YB.Util.formatNumber) ? YB.Util.formatNumber(val, dec) : val.toFixed(dec);
+
+    if (this.cfg.displayDecimals !== undefined && this.cfg.displayDecimals !== null && this.cfg.displayDecimals >= 0) {
+      calibrated_value = formatNum(calibrated_value, this.cfg.displayDecimals);
+    } else {
+      switch (this.cfg.type) {
+        case "thermistor":
+          calibrated_value = formatNum(calibrated_value, 1);
+          break;
+        case "raw":
+        case "4-20ma":
+        case "high_volt_divider":
+        case "low_volt_divider":
+          calibrated_value = formatNum(calibrated_value, 2);
+          break;
+        case "ten_k_pullup":
+          calibrated_value = formatNum(calibrated_value, 0);
+          break;
+        default:
+          calibrated_value = formatNum(calibrated_value, 3);
+      }
+    }
+
+    // 5. Display the Value (Handle specific types)
+    const $display = $(`#adcValue${this.id}`);
+
+    switch (this.cfg.type) {
+      case "digital_switch":
+        if (value)
+          $display.html(`HIGH`);
+        else
+          $display.html(`LOW`);
+        break;
+
+      case "4-20ma":
+        if (value == 0)
+          $display.html(`<span class="text-danger">ERROR: No Signal</span>`);
+        else if (value < 4.0)
+          $display.html(`<span class="text-danger">ERROR: ???</span>`);
+        else
+          $display.html(`${calibrated_value} ${units}`);
+        break;
+
+      case "ten_k_pullup":
+        if (value == -2)
+          $display.html(`<span class="text-danger">Error: No Connection</span>`);
+        else if (value == -1)
+          $display.html(`<span class="text-danger">Error: Negative Voltage</span>`);
+        else
+          $display.html(`${calibrated_value} ${units}`);
+        break;
+
+      default:
+        $display.html(`${calibrated_value} ${units}`);
+    }
+
+    // Toggle card visibility based on enabled state
+    $(`#adcControlCard${this.id}`).toggle(this.enabled);
+  };
+
+  ADCChannel.prototype.generateEditUI = function () {
+    let standardFields = this.generateStandardEditFields();
+
+    // Build options
+    const typeOptions = Object.entries(ADC_TYPES)
+      .map(([key, label]) => `<option value="${key}">${label}</option>`)
+      .join("\n");
+
+    return `
+      <div id="adcEditCard${this.id}" class="col-xs-12 col-sm-6">
+        <div class="p-3 border border-secondary rounded">
+          <h5>ADC Channel #${this.id}</h5>
+          ${standardFields}
+          
+          <div class="form-floating mb-3">
+            <select id="f-adc-type-${this.id}" class="form-select" aria-label="Input Type">
+              ${typeOptions}
+            </select>
+            <label for="f-adc-type-${this.id}">Input Type</label>
+            <div class="invalid-feedback"></div>
+          </div>
+
+          <div class="form-floating mb-3">
+            <select id="f-adc-decimals-${this.id}" class="form-select" aria-label="Display Format">
+              <option value="0">123,456</option>
+              <option value="1">123,456.1</option>
+              <option value="2">123,456.12</option>
+              <option value="3">123,456.123</option>
+              <option value="4">123,456.1234</option>
+            </select>
+            <label for="f-adc-decimals-${this.id}">Display Decimals</label>
+          </div>
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="f-adc-use-cal-${this.id}">
+            <label class="form-check-label" for="f-adc-use-cal-${this.id}">Use Calibration Table</label>
+          </div>
+
+          <div id="f-adc-cal-ui-${this.id}" class="mt-3" style="display: none;">
+             <div class="card card-body bg-light">
+                <h6>Calibration Setup</h6>
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="f-adc-cal-units-${this.id}">
+                  <label for="f-adc-cal-units-${this.id}">Calibrated Units</label>
+                </div>
+
+                <label class="small">Live Average <span id="f-adc-avg-count-${this.id}"></span></label>
+                <div class="input-group mb-3">
+                  <input id="f-adc-avg-output-${this.id}" type="text" class="form-control" readonly>
+                  <button id="btn-adc-copy-${this.id}" type="button" class="btn btn-outline-primary">Copy</button>
+                  <button id="btn-adc-reset-${this.id}" type="button" class="btn btn-outline-secondary">Reset</button>
+                </div>
+
+                <table class="table table-sm table-striped">
+                  <thead>
+                    <tr>
+                      <th>Raw Input</th>
+                      <th>Calibrated</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="adc-cal-table-body-${this.id}"></tbody>
+                  <tfoot>
+                    <tr>
+                      <td><input type="number" step="any" class="form-control form-control-sm" id="f-adc-new-in-${this.id}" placeholder="Raw"></td>
+                      <td><input type="number" step="any" class="form-control form-control-sm" id="f-adc-new-out-${this.id}" placeholder="Target"></td>
+                      <td><button type="button" class="btn btn-sm btn-primary" id="btn-adc-add-row-${this.id}">Add</button></td>
+                    </tr>
+                  </tfoot>
+                </table>
+             </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+  };
+
+  ADCChannel.prototype.setupEditUI = function () {
+    YB.BaseChannel.prototype.setupEditUI.call(this);
+
+    // Populate Data
+    $(`#f-adc-type-${this.id}`).val(this.cfg.type);
+    $(`#f-adc-decimals-${this.id}`).val(this.cfg.displayDecimals);
+    $(`#f-adc-use-cal-${this.id}`).prop('checked', this.cfg.useCalibrationTable);
+    $(`#f-adc-cal-units-${this.id}`).val(this.cfg.calibratedUnits);
+
+    // Render Calibration Table
+    const tableBody = $(`#adc-cal-table-body-${this.id}`);
+    tableBody.empty();
+    if (Array.isArray(this.cfg.calibrationTable)) {
+      this.cfg.calibrationTable.forEach(row => this.renderCalibrationRow(row[0], row[1]));
+    }
+
+    // Toggle Visibility
+    this.toggleCalibrationUI();
+
+    // Event Listeners
+    $(`#f-adc-type-${this.id}`).change(this.onEditForm);
+    $(`#f-adc-decimals-${this.id}`).change(this.onEditForm);
+    $(`#f-adc-use-cal-${this.id}`).change((e) => {
+      this.toggleCalibrationUI();
+      this.onEditForm(e);
+    });
+    $(`#f-adc-cal-units-${this.id}`).change(this.onEditForm);
+
+    // Calibration Interactive Buttons
+    $(`#btn-adc-add-row-${this.id}`).click(this.onAddCalibrationRow);
+    $(`#btn-adc-copy-${this.id}`).click(this.onCopyAverage);
+    $(`#btn-adc-reset-${this.id}`).click(this.onResetAverage);
+  };
+
+  ADCChannel.prototype.getConfigFormData = function () {
+    let newcfg = YB.BaseChannel.prototype.getConfigFormData.call(this);
+
+    newcfg.type = $(`#f-adc-type-${this.id}`).val();
+    newcfg.displayDecimals = parseInt($(`#f-adc-decimals-${this.id}`).val());
+    newcfg.useCalibrationTable = $(`#f-adc-use-cal-${this.id}`).is(':checked');
+    newcfg.calibratedUnits = $(`#f-adc-cal-units-${this.id}`).val();
+
+    // Scrape table data
+    newcfg.calibrationTable = [];
+    $(`#adc-cal-table-body-${this.id} tr`).each(function () {
+      const raw = parseFloat($(this).find('.cal-raw').text());
+      const cal = parseFloat($(this).find('.cal-target').text());
+      if (!isNaN(raw) && !isNaN(cal)) {
+        newcfg.calibrationTable.push([raw, cal]);
+      }
+    });
+
+    return newcfg;
+  };
+
+  ADCChannel.prototype.onEditForm = function (e) {
+    YB.BaseChannel.prototype.onEditForm.call(this, e);
+
+    const enabled = this.enabled;
+    $(`#f-adc-type-${this.id}`).prop('disabled', !enabled);
+    $(`#f-adc-decimals-${this.id}`).prop('disabled', !enabled);
+    $(`#f-adc-use-cal-${this.id}`).prop('disabled', !enabled);
+    // Note: Calibration inner UI enablement is handled by toggleCalibrationUI + enabled check if needed
+  };
+
+  // --- Specific ADC Helper Methods ---
+
+  ADCChannel.prototype.toggleCalibrationUI = function () {
+    const useCal = $(`#f-adc-use-cal-${this.id}`).is(':checked');
+    if (useCal && this.enabled) {
+      $(`#f-adc-cal-ui-${this.id}`).show();
+    } else {
+      $(`#f-adc-cal-ui-${this.id}`).hide();
+    }
+  };
+
+  ADCChannel.prototype.renderCalibrationRow = function (raw, target) {
+    const rowId = `cal-row-${this.id}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+    const html = `
+      <tr id="${rowId}">
+        <td class="cal-raw">${raw}</td>
+        <td class="cal-target">${target}</td>
+        <td>
+           <button type="button" class="btn btn-sm btn-outline-danger remove-cal-row">
+             &times;
+           </button>
+        </td>
+      </tr>
+    `;
+    $(`#adc-cal-table-body-${this.id}`).append(html);
+
+    // Bind removal directly to the new button
+    $(`#${rowId} .remove-cal-row`).click(() => $(`#${rowId}`).remove());
+  };
+
+  ADCChannel.prototype.onAddCalibrationRow = function () {
+    const rawInput = $(`#f-adc-new-in-${this.id}`);
+    const targetInput = $(`#f-adc-new-out-${this.id}`);
+
+    const raw = parseFloat(rawInput.val());
+    const target = parseFloat(targetInput.val());
+
+    if (!isNaN(raw) && !isNaN(target)) {
+      this.renderCalibrationRow(raw, target);
+      rawInput.val('');
+      targetInput.val('');
+    }
+  };
+
+  ADCChannel.prototype.onCopyAverage = function () {
+    const avg = $(`#f-adc-avg-output-${this.id}`).val();
+    $(`#f-adc-new-in-${this.id}`).val(avg);
+  };
+
+  ADCChannel.prototype.onResetAverage = function () {
+    this.runningAverage = [];
+    $(`#f-adc-avg-output-${this.id}`).val(0);
+  };
+
+  // Export and Register
   YB.ADCChannel = ADCChannel;
+  YB.ChannelRegistry.registerChannelType("adc", YB.ADCChannel);
 
-  YB.ChannelRegistry.registerChannelType("adc", YB.ADCChannel)
-
-  // expose to global
   global.YB = YB;
+
 })(this);
