@@ -9,25 +9,28 @@
 #ifndef YARR_PWM_CHANNEL_H
 #define YARR_PWM_CHANNEL_H
 
-#include "adchelper.h"
 #include "config.h"
-#include "controllers/BusVoltageController.h"
-#include "controllers/RGBController.h"
-#include "driver/ledc.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/timers.h"
-#include <Arduino.h>
-#include <SPI.h>
-#include <channels/BaseChannel.h>
-#include <controllers/MQTTController.h>
 
-#ifdef YB_PWM_CHANNEL_HAS_INA226
-  #include "INA226.h"
-#endif
+#ifdef YB_HAS_PWM_CHANNELS
 
-#ifdef YB_PWM_CHANNEL_HAS_LM75
-  #include <Temperature_LM75_Derived.h>
-#endif
+  #include "adchelper.h"
+  #include "controllers/BusVoltageController.h"
+  #include "controllers/RGBController.h"
+  #include "driver/ledc.h"
+  #include "freertos/FreeRTOS.h"
+  #include "freertos/timers.h"
+  #include <Arduino.h>
+  #include <SPI.h>
+  #include <channels/BaseChannel.h>
+  #include <controllers/MQTTController.h>
+
+  #ifdef YB_PWM_CHANNEL_HAS_INA226
+    #include "INA226.h"
+  #endif
+
+  #ifdef YB_PWM_CHANNEL_HAS_LM75
+    #include <Temperature_LM75_Derived.h>
+  #endif
 
 class PWMChannel : public BaseChannel
 {
@@ -62,9 +65,9 @@ class PWMChannel : public BaseChannel
       void (*final_cb)(void*),
       void* final_arg);
 
-#ifdef YB_PWM_CHANNEL_HAS_INA226
+  #ifdef YB_PWM_CHANNEL_HAS_INA226
     static void IRAM_ATTR ina226AlertHandler(void* arg);
-#endif
+  #endif
 
   public:
     /**
@@ -104,17 +107,17 @@ class PWMChannel : public BaseChannel
     unsigned int rampOnMillis = 1000;
     unsigned int rampOffMillis = 1000;
 
-#ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
     MCP3564Helper* amperageHelper;
-#endif
-
-#ifdef YB_HAS_CHANNEL_VOLTAGE
-  #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
-    ADS1115Helper* voltageHelper;
-  #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
-    MCP3564Helper* voltageHelper;
   #endif
-#endif
+
+  #ifdef YB_HAS_CHANNEL_VOLTAGE
+    #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
+    ADS1115Helper* voltageHelper;
+    #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
+    MCP3564Helper* voltageHelper;
+    #endif
+  #endif
 
     uint8_t _adcVoltageChannel = 0;
     uint8_t _adcAmperageChannel = 0;
@@ -143,7 +146,7 @@ class PWMChannel : public BaseChannel
     void setupOffset();
     void setupDefaultState();
 
-#ifdef YB_PWM_CHANNEL_HAS_INA226
+  #ifdef YB_PWM_CHANNEL_HAS_INA226
     INA226* ina226;
     void setupINA226();
     void readINA226();
@@ -151,14 +154,14 @@ class PWMChannel : public BaseChannel
     uint32_t lastVoltageUpdate = 0;
     float lastAmperage;
     uint32_t lastAmperageUpdate = 0;
-#endif
+  #endif
 
-#ifdef YB_PWM_CHANNEL_HAS_LM75
+  #ifdef YB_PWM_CHANNEL_HAS_LM75
     TI_LM75B* lm75;
     float lastTemperature;
     uint32_t lastTemperatureUpdate = 0;
     void readLM75();
-#endif
+  #endif
 
     void saveThrottledDutyCycle();
     float getCurrentDutyCycle();
@@ -218,17 +221,17 @@ class PWMChannel : public BaseChannel
     // our channel pins
     byte _pwm_pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_PINS;
 
-#ifdef YB_PWM_CHANNEL_INA226_ADDRESS
+  #ifdef YB_PWM_CHANNEL_INA226_ADDRESS
     byte _ina226_addresses[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_INA226_ADDRESS;
-#endif
+  #endif
 
-#ifdef YB_PWM_CHANNEL_INA226_ALERT
+  #ifdef YB_PWM_CHANNEL_INA226_ALERT
     byte _ina226_alert_pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_INA226_ALERT;
-#endif
+  #endif
 
-#ifdef YB_PWM_CHANNEL_HAS_LM75
+  #ifdef YB_PWM_CHANNEL_HAS_LM75
     byte _lm75_addresses[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_LM75_ADDRESS;
-#endif
+  #endif
 };
-
+#endif
 #endif /* !YARR_PWM_CHANNEL_H */
