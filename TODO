@@ -49,36 +49,10 @@
         * app.addPage("page", "content", openCallback);
         * app.onOpenPage(page, callback);
         * many other app.* callbacks to register various things.
-    * refactor yarrboard-firmware into yarrboard-framework + separate projects.
-        * modify the gulp.js script to pull from the framework lib directory
-        * project defines gulp rules to pull in custom stuff logo, css, js, etc.
-            * html/index.html -> overrides framework html
-            * html/logo.png -> overrides framework.html
-            * html/css/* -> gets added to the framework css includes
-            * html/js/* -> gets added to the framework js includes
-    * create YarrboardFramework or YarrboardApp class
-    * copy the ChannelRegistry style from JS and port to c++
-    * move channel headers/classes to a channels/ folder
-    * rename foo_channel.cpp to FooChannel.cpp to match class names
-    * create callbacks:
-        * onSetup() - main.cpp
-        * onLoop() - main.cpp
-        * onInit() - prefs.cpp
-        * onGenerateConfig() - prefs.cpp
-        * onLoadConfig() - prefs.cpp
-        * onMQTTUpdate() - mqtt.cpp
-        * onHADiscovery() - mqtt.cpp
-        * onUpdate() - protocol.cpp
-        * onFastUpdate() - protocol.cpp
-        * onStats() - protocol.cpp
-        * onMessage() - gets called for every single message
-        * registerNobodyCommand("command", callback);
-        * registerGuestCommand("command", callback);
-        * registerAdminCommand("command", callback);
-    * for looping only stuff it would be best to do something like this:
-        * yba.registerChannels(channels);
-        * yba.registerMQTTChannels(channels);
-        * yba.registerHAChannels(channels);
+    * refactor yarrboard-firmware into:
+        * frothfet-firmware
+        * brineomatic-firmware
+        * sendit-firmware
 * other MFD integrations:
     * garmin?
     * raymarine?
