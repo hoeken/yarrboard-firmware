@@ -10,7 +10,7 @@
 
 #ifdef YB_HAS_ADC_CHANNELS
 
-  #include "adc_channel.h"
+  #include "channels/ADCChannel.h"
   #include <YarrboardDebug.h>
 
 // the main star of the event

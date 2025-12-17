@@ -10,7 +10,7 @@
 
 #ifdef YB_HAS_PWM_CHANNELS
 
-  #include "pwm_channel.h"
+  #include "channels/PWMChannel.h"
   #include "rgb.h"
   #include "soc/gpio_struct.h" // Defines the GPIO struct and the global 'GPIO' variable
   #include <YarrboardDebug.h>

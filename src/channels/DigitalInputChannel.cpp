@@ -10,7 +10,7 @@
 
 #ifdef YB_HAS_DIGITAL_INPUT_CHANNELS
 
-  #include "digital_input_channel.h"
+  #include "channels/DigitalInputChannel.h"
 
 // the main star of the event
 etl::array<DigitalInputChannel, YB_DIGITAL_INPUT_CHANNEL_COUNT> digital_input_channels;
