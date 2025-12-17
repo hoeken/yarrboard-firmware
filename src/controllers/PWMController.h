@@ -10,7 +10,10 @@
 #define YARR_PWM_CONTROLLER_H
 
 #include "channels/PWMChannel.h"
-#include "controllers/ChannelController.h"
+
+#ifdef YB_HAS_PWM_CHANNELS
+
+  #include "controllers/ChannelController.h"
 
 class YarrboardApp;
 class ConfigManager;
@@ -33,18 +36,19 @@ class PWMController : public ChannelController<PWMChannel, YB_PWM_CHANNEL_COUNT>
     static void handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
 
   private:
-#ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
     MCP3564* _adcCurrentMCP3564;
     MCP3564Helper* adcCurrentHelper;
-#endif
+  #endif
 
-#ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
+  #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
     MCP3564* _adcVoltageMCP3564;
     MCP3564Helper* adcVoltageHelper;
-#endif
+  #endif
 
     static PWMController* _instance;
     void handleHACommandCallback(const char* topic, const char* payload, int retain, int qos, bool dup);
 };
 
+#endif
 #endif /* !YARR_PWM_CONTROLLER_H */

@@ -6,10 +6,15 @@
   License: GPLv3
 */
 
-#include "PWMController.h"
+
 #include "config.h"
-#include <ConfigManager.h>
-#include <YarrboardDebug.h>
+
+#ifdef YB_HAS_PWM_CHANNELS
+
+  #include "PWMController.h"
+  #include <ConfigManager.h>
+  #include <YarrboardDebug.h>
+
 
 PWMController* PWMController::_instance = nullptr;
 
@@ -19,7 +24,7 @@ PWMController::PWMController(YarrboardApp& app) : ChannelController(app, "pwm")
 
 bool PWMController::setup()
 {
-#ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
   _adcCurrentMCP3564 = new MCP3564(YB_PWM_CHANNEL_CURRENT_ADC_CS, &SPI, YB_PWM_CHANNEL_CURRENT_ADC_MOSI, YB_PWM_CHANNEL_CURRENT_ADC_MISO, YB_PWM_CHANNEL_CURRENT_ADC_SCK);
 
   // turn on our pullup on the IRQ pin.
@@ -39,9 +44,9 @@ bool PWMController::setup()
 
   adcCurrentHelper = new MCP3564Helper(3.3, _adcCurrentMCP3564, 50, 500);
   adcCurrentHelper->attachReadyPinInterrupt(YB_PWM_CHANNEL_CURRENT_ADC_IRQ, FALLING);
-#endif
+  #endif
 
-#ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
+  #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
   _adcVoltageMCP3564 = new MCP3564(YB_PWM_CHANNEL_VOLTAGE_ADC_CS, &SPI, YB_PWM_CHANNEL_VOLTAGE_ADC_MOSI, YB_PWM_CHANNEL_VOLTAGE_ADC_MISO, YB_PWM_CHANNEL_VOLTAGE_ADC_SCK);
 
   // turn on our pullup on the IRQ pin.
@@ -61,20 +66,20 @@ bool PWMController::setup()
 
   adcVoltageHelper = new MCP3564Helper(3.3, _adcVoltageMCP3564);
   adcVoltageHelper->attachReadyPinInterrupt(YB_PWM_CHANNEL_VOLTAGE_ADC_IRQ, FALLING);
-#endif
+  #endif
 
   // intitialize our channel
   for (auto& ch : _channels) {
 
-#ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
     ch.amperageHelper = adcCurrentHelper;
     ch._adcAmperageChannel = ch.id - 1;
-#endif
+  #endif
 
-#ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
+  #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
     ch.voltageHelper = adcVoltageHelper;
     ch._adcVoltageChannel = ch.id - 1;
-#endif
+  #endif
 
     // pass on our pointers
     ch._cfg = &_cfg;
@@ -93,10 +98,10 @@ bool PWMController::setup()
     ch.setupDefaultState();
   }
 
-#ifdef YB_PWM_CHANNEL_ENABLE_PIN
+  #ifdef YB_PWM_CHANNEL_ENABLE_PIN
   pinMode(YB_PWM_CHANNEL_ENABLE_PIN, OUTPUT);
   digitalWrite(YB_PWM_CHANNEL_ENABLE_PIN, LOW);
-#endif
+  #endif
 
   return true;
 }
@@ -106,23 +111,23 @@ void PWMController::loop()
   // do we need to send an update?
   bool doSendFastUpdate = false;
 
-#ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
+  #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
   adcVoltageHelper->onLoop();
-#endif
+  #endif
 
-#ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
   adcCurrentHelper->onLoop();
-#endif
+  #endif
 
   // maintenance on our channels.
   for (auto& ch : _channels) {
-#ifdef YB_PWM_CHANNEL_HAS_INA226
+  #ifdef YB_PWM_CHANNEL_HAS_INA226
     ch.readINA226();
-#endif
+  #endif
 
-#ifdef YB_PWM_CHANNEL_HAS_LM75
+  #ifdef YB_PWM_CHANNEL_HAS_LM75
     ch.readLM75();
-#endif
+  #endif
 
     ch.checkStatus();
     ch.saveThrottledDutyCycle();
@@ -183,3 +188,5 @@ float PWMController::getMaxCurrent()
 
   return amps;
 }
+
+#endif
