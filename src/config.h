@@ -10,7 +10,6 @@
 #define YARR_CONFIG_H
 
 #define YB_FIRMWARE_VERSION "2.2.0"
-#define YB_IS_DEVELOPMENT   false
 
 #if defined YB_CONFIG_FROTHFET_REV_D
   #include "./configs/config.frothfet-rev-d.h"
@@ -34,6 +33,10 @@
   #include "./configs/config.waveshare-s3-eth-8di-8ro.h"
 #else
   #error "No board config has been defined"
+#endif
+
+#ifndef YB_IS_DEVELOPMENT
+  #define YB_IS_DEVELOPMENT false
 #endif
 
 // basic board defines.
