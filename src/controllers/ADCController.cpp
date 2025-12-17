@@ -12,6 +12,8 @@
 #include <YarrboardDebug.h>
 #include <controllers/ProtocolController.h>
 
+#ifdef YB_HAS_ADC_CHANNELS
+
 ADCController::ADCController(YarrboardApp& app) : ChannelController(app, "adc"),
                                                   _adcVoltageADS1115_1(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_1),
                                                   _adcVoltageADS1115_2(YB_CHANNEL_VOLTAGE_I2C_ADDRESS_2)
@@ -22,11 +24,11 @@ bool ADCController::setup()
 {
   _app.protocol.registerCommand(ADMIN, "config_adc", this, &ADCController::handleConfigADC);
 
-#if defined(YB_I2C_SDA_PIN) && defined(YB_I2C_SCL_PIN)
+  #if defined(YB_I2C_SDA_PIN) && defined(YB_I2C_SCL_PIN)
   Wire.begin(YB_I2C_SDA_PIN, YB_I2C_SCL_PIN);
-#else
+  #else
   Wire.begin(); // fallback to defaults
-#endif
+  #endif
   Wire.setClock(YB_I2C_SPEED);
 
   _adcVoltageADS1115_1.begin();
@@ -193,3 +195,5 @@ void ADCController::handleConfigADC(JsonVariantConst input, JsonVariant output)
   if (!_cfg.saveConfig(error, sizeof(error)))
     return ProtocolController::generateErrorJSON(output, error);
 }
+
+#endif

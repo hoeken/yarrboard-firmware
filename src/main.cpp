@@ -31,6 +31,11 @@ BuzzerController buzzer(yba);
 RGBController<WS2812B, YB_STATUS_RGB_PIN, YB_STATUS_RGB_ORDER> rgb(yba, YB_STATUS_RGB_COUNT);
 #endif
 
+#ifdef YB_HAS_BUS_VOLTAGE
+  #include "controllers/BusVoltageController.h"
+BusVoltageController bus_voltage(yba);
+#endif
+
 #include "index.html.gz.h"
 #include "logo.png.gz.h"
 
@@ -54,6 +59,13 @@ void setup()
 
 #ifdef YB_HAS_STATUS_RGB
   yba.registerController(rgb);
+#endif
+
+#ifdef YB_HAS_BUS_VOLTAGE
+  bus_voltage.address = YB_BUS_VOLTAGE_ADDRESS;
+  bus_voltage.r1 = YB_BUS_VOLTAGE_R1;
+  bus_voltage.r2 = YB_BUS_VOLTAGE_R2;
+  yba.registerController(bus_voltage);
 #endif
 
   yba.board_name = YB_BOARD_NAME;

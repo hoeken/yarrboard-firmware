@@ -17,6 +17,8 @@
 #include <LittleFS.h>
 #include <channels/BaseChannel.h>
 
+#ifdef YB_HAS_ADC_CHANNELS
+
 struct CalibrationPoint {
     float voltage;
     float calibrated;
@@ -76,4 +78,5 @@ X map_generic(X x, M in_min, N in_max, O out_min, Q out_max)
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+#endif
 #endif /* !YARR_ADC_CHANNEL_H */

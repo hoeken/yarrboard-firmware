@@ -14,6 +14,8 @@
 
 class YarrboardApp;
 
+#ifdef YB_HAS_ADC_CHANNELS
+
 class ADCController : public ChannelController<ADCChannel, YB_ADC_CHANNEL_COUNT>
 {
   public:
@@ -33,4 +35,5 @@ class ADCController : public ChannelController<ADCChannel, YB_ADC_CHANNEL_COUNT>
     unsigned long previousHAUpdateMillis = 0;
 };
 
+#endif
 #endif /* !YARR_OTA_H */
