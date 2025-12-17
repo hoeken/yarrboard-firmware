@@ -24,8 +24,8 @@ void PWMChannel::setup()
   // lookup our duty cycle
   if (this->isDimmable) {
     sprintf(prefIndex, "pwmDuty%d", this->id);
-    if (preferences.isKey(prefIndex))
-      this->dutyCycle = preferences.getFloat(prefIndex);
+    if (_cfg->preferences.isKey(prefIndex))
+      this->dutyCycle = _cfg->preferences.getFloat(prefIndex);
     else
       this->dutyCycle = 1.0;
   } else
@@ -34,15 +34,15 @@ void PWMChannel::setup()
 
   // soft fuse trip count
   sprintf(prefIndex, "pwmTripCount%d", this->id);
-  if (preferences.isKey(prefIndex))
-    this->softFuseTripCount = preferences.getUInt(prefIndex);
+  if (_cfg->preferences.isKey(prefIndex))
+    this->softFuseTripCount = _cfg->preferences.getUInt(prefIndex);
   else
     this->softFuseTripCount = 0;
 
   // overheat trip count
   sprintf(prefIndex, "pwmOhtCount%d", this->id);
-  if (preferences.isKey(prefIndex))
-    this->overheatCount = preferences.getUInt(prefIndex);
+  if (_cfg->preferences.isKey(prefIndex))
+    this->overheatCount = _cfg->preferences.getUInt(prefIndex);
   else
     this->overheatCount = 0;
 
@@ -501,7 +501,7 @@ void PWMChannel::checkSoftFuse()
       // save to our storage
       char prefIndex[YB_PREF_KEY_LENGTH];
       sprintf(prefIndex, "pwmTripCount%d", this->id);
-      preferences.putUInt(prefIndex, this->softFuseTripCount);
+      _cfg->preferences.putUInt(prefIndex, this->softFuseTripCount);
     }
   }
 }
@@ -532,7 +532,7 @@ void PWMChannel::checkOverheat()
       // save to our storage
       char prefIndex[YB_PREF_KEY_LENGTH];
       sprintf(prefIndex, "pwmOhtCount%d", this->id);
-      preferences.putUInt(prefIndex, this->overheatCount);
+      _cfg->preferences.putUInt(prefIndex, this->overheatCount);
     }
   }
 }
@@ -690,7 +690,7 @@ void PWMChannel::setDuty(float duty)
       if (millis() - this->lastDutyCycleUpdate > YB_DUTY_SAVE_TIMEOUT) {
         char prefIndex[YB_PREF_KEY_LENGTH];
         sprintf(prefIndex, "pwmDuty%d", this->id);
-        preferences.putFloat(prefIndex, duty);
+        _cfg->preferences.putFloat(prefIndex, duty);
         this->dutyCycleIsThrottled = false;
         // YBP.printf("saving %s: %f\n", prefIndex, this->dutyCycle);
 
