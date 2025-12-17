@@ -153,3 +153,33 @@ void PWMController::handleHACommandCallback(const char* topic, const char* paylo
     ch.haHandleCommand(topic, payload);
   }
 }
+
+float PWMController::getAverageCurrent()
+{
+  float amps = 0;
+  byte enabled_count = 0;
+
+  for (auto& ch : _channels) {
+    // only count enabled channels
+    if (ch.isEnabled) {
+      amps += ch.getAmperage();
+      enabled_count++;
+    }
+  }
+
+  return amps / enabled_count;
+}
+
+float PWMController::getMaxCurrent()
+{
+  float amps = 0;
+
+  for (auto& ch : _channels) {
+    // only count enabled channels
+    if (ch.isEnabled) {
+      amps = max(amps, ch.getAmperage());
+    }
+  }
+
+  return amps;
+}

@@ -27,6 +27,9 @@ class PWMController : public ChannelController<PWMChannel, YB_PWM_CHANNEL_COUNT>
     bool setup() override;
     void loop() override;
 
+    float getAverageCurrent();
+    float getMaxCurrent();
+
     static void handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
 
   private:

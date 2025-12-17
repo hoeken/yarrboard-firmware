@@ -41,6 +41,11 @@ BusVoltageController bus_voltage(yba);
 PWMController pwm(yba);
 #endif
 
+#ifdef YB_HAS_FANS
+  #include "controllers/FanController.h"
+FanController fans(yba);
+#endif
+
 #include "index.html.gz.h"
 #include "logo.png.gz.h"
 
@@ -78,6 +83,11 @@ void setup()
   pwm.mqtt = (MQTTController*)yba.getController("mqtt");
   pwm.rgb = (RGBControllerInterface*)yba.getController("rgb");
   yba.registerController(pwm);
+#endif
+
+#ifdef YB_HAS_FANS
+  fans.pwm = &pwm;
+  yba.registerController(fans);
 #endif
 
   yba.board_name = YB_BOARD_NAME;
