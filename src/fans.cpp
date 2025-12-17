@@ -11,7 +11,6 @@
 #ifdef YB_HAS_FANS
 
   #include "fans.h"
-  #include "pwm_channel.h"
   #include <Arduino.h>
   #include <YarrboardDebug.h>
 
@@ -64,15 +63,15 @@ void fans_loop()
     float amps_max = 0;
     byte enabled_count = 0;
 
-    for (auto& ch : pwm_channels) {
-      // only count enabled channels
-      if (ch.isEnabled) {
-        amps_avg += ch.getAmperage();
-        amps_max = max(amps_max, ch.getAmperage());
-        enabled_count++;
-      }
-    }
-    amps_avg = amps_avg / enabled_count;
+    // for (auto& ch : pwm_channels) {
+    //   // only count enabled channels
+    //   if (ch.isEnabled) {
+    //     amps_avg += ch.getAmperage();
+    //     amps_max = max(amps_max, ch.getAmperage());
+    //     enabled_count++;
+    //   }
+    // }
+    // amps_avg = amps_avg / enabled_count;
 
     // one channel on high?
     if (amps_max > YB_FAN_SINGLE_CHANNEL_THRESHOLD) {
@@ -88,7 +87,7 @@ void fans_loop()
   }
 }
 
-void measure_fan_rpm(byte i)
+void measure_fan_rpm(uint8_t i)
 {
   if (millis() - last_tacho_measurement[i] >= 1000) {
     // detach interrupt while calculating rpm

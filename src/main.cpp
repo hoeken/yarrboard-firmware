@@ -36,6 +36,11 @@ RGBController<WS2812B, YB_STATUS_RGB_PIN, YB_STATUS_RGB_ORDER> rgb(yba, YB_STATU
 BusVoltageController bus_voltage(yba);
 #endif
 
+#ifdef YB_HAS_PWM_CHANNELS
+  #include "controllers/PWMController.h"
+PWMController pwm(yba);
+#endif
+
 #include "index.html.gz.h"
 #include "logo.png.gz.h"
 
@@ -66,6 +71,13 @@ void setup()
   bus_voltage.r1 = YB_BUS_VOLTAGE_R1;
   bus_voltage.r2 = YB_BUS_VOLTAGE_R2;
   yba.registerController(bus_voltage);
+#endif
+
+#ifdef YB_HAS_PWM_CHANNELS
+  pwm.busVoltage = &bus_voltage;
+  pwm.mqtt = (MQTTController*)yba.getController("mqtt");
+  pwm.rgb = (RGBControllerInterface*)yba.getController("rgb");
+  yba.registerController(pwm);
 #endif
 
   yba.board_name = YB_BOARD_NAME;

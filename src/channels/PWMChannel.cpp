@@ -11,212 +11,11 @@
 #ifdef YB_HAS_PWM_CHANNELS
 
   #include "channels/PWMChannel.h"
-  #include "rgb.h"
+  #include "controllers/PWMController.h"
   #include "soc/gpio_struct.h" // Defines the GPIO struct and the global 'GPIO' variable
+  #include <Arduino.h>
+  #include <ConfigManager.h>
   #include <YarrboardDebug.h>
-
-// the main star of the event
-etl::array<PWMChannel, YB_PWM_CHANNEL_COUNT> pwm_channels;
-
-// our channel pins
-byte _pwm_pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_PINS;
-
-  #ifdef YB_PWM_CHANNEL_INA226_ADDRESS
-byte _ina226_addresses[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_INA226_ADDRESS;
-  #endif
-
-  #ifdef YB_PWM_CHANNEL_INA226_ALERT
-byte _ina226_alert_pins[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_INA226_ALERT;
-  #endif
-
-  #ifdef YB_PWM_CHANNEL_HAS_LM75
-byte _lm75_addresses[YB_PWM_CHANNEL_COUNT] = YB_PWM_CHANNEL_LM75_ADDRESS;
-  #endif
-
-/* Setting PWM Properties */
-const unsigned int MAX_DUTY_CYCLE = (int)(pow(2, YB_PWM_CHANNEL_RESOLUTION)) - 1;
-
-  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
-MCP3564 _adcCurrentMCP3564(YB_PWM_CHANNEL_CURRENT_ADC_CS, &SPI, YB_PWM_CHANNEL_CURRENT_ADC_MOSI, YB_PWM_CHANNEL_CURRENT_ADC_MISO, YB_PWM_CHANNEL_CURRENT_ADC_SCK);
-MCP3564Helper* adcCurrentHelper;
-  #endif
-
-  #ifdef YB_HAS_CHANNEL_VOLTAGE
-    #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
-ADS1115 _adcVoltageADS1115_1(YB_PWM_CHANNEL_VOLTAGE_I2C_ADDRESS_1);
-ADS1115 _adcVoltageADS1115_2(YB_PWM_CHANNEL_VOLTAGE_I2C_ADDRESS_2);
-ADS1115Helper* adcVoltageHelper1;
-ADS1115Helper* adcVoltageHelper2;
-    #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
-MCP3564 _adcVoltageMCP3564(YB_PWM_CHANNEL_VOLTAGE_ADC_CS, &SPI, YB_PWM_CHANNEL_VOLTAGE_ADC_MOSI, YB_PWM_CHANNEL_VOLTAGE_ADC_MISO, YB_PWM_CHANNEL_VOLTAGE_ADC_SCK);
-MCP3564Helper* adcVoltageHelper;
-    #endif
-  #endif
-
-void pwm_channels_setup()
-{
-  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
-
-  // turn on our pullup on the IRQ pin.
-  pinMode(YB_PWM_CHANNEL_CURRENT_ADC_IRQ, INPUT_PULLUP);
-
-  // start up our SPI and ADC objects
-  SPI.begin(YB_PWM_CHANNEL_CURRENT_ADC_SCK, YB_PWM_CHANNEL_CURRENT_ADC_MISO, YB_PWM_CHANNEL_CURRENT_ADC_MOSI, YB_PWM_CHANNEL_CURRENT_ADC_CS);
-  if (!_adcCurrentMCP3564.begin(0, 3.3)) {
-    YBP.println("failed to initialize current MCP3564");
-  } else {
-    YBP.println("MCP3564 ok.");
-  }
-
-  _adcCurrentMCP3564.singleEndedMode();
-  _adcCurrentMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
-  _adcCurrentMCP3564.setAveraging(MCP3x6x::osr::OSR_1024);
-
-  // _adcCurrentMCP3564.printConfig();
-
-  // YBP.print("VDD: ");
-  // YBP.println(_adcCurrentMCP3564.analogRead(MCP_AVDD));
-
-  // YBP.print("TEMP: ");
-  // YBP.println(_adcCurrentMCP3564.analogRead(MCP_TEMP));
-
-  adcCurrentHelper = new MCP3564Helper(3.3, &_adcCurrentMCP3564, 50, 500);
-  adcCurrentHelper->attachReadyPinInterrupt(YB_PWM_CHANNEL_CURRENT_ADC_IRQ, FALLING);
-
-  #endif
-
-  #ifdef YB_HAS_CHANNEL_VOLTAGE
-    #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
-
-  Wire.begin();
-  Wire.setClock(YB_I2C_SPEED);
-
-  _adcVoltageADS1115_1.begin();
-  if (_adcVoltageADS1115_1.isConnected())
-    YBP.println("Voltage ADS115 #1 OK");
-  else
-    YBP.println("Voltage ADS115 #1 Not Found");
-
-  _adcVoltageADS1115_1.setMode(ADS1X15_MODE_SINGLE); //  SINGLE SHOT MODE
-  _adcVoltageADS1115_1.setGain(1);
-  _adcVoltageADS1115_1.setDataRate(4);
-
-  adcVoltageHelper1 = new ADS1115Helper(4.096, &_adcVoltageADS1115_1, 50, 500);
-
-  _adcVoltageADS1115_2.begin();
-  if (_adcVoltageADS1115_2.isConnected())
-    YBP.println("Voltage ADS115 #2 OK");
-  else
-    YBP.println("Voltage ADS115 #2 Not Found");
-
-  _adcVoltageADS1115_2.setMode(ADS1X15_MODE_SINGLE); //  SINGLE SHOT MODE
-  _adcVoltageADS1115_2.setGain(1);
-  _adcVoltageADS1115_2.setDataRate(4);
-
-  adcVoltageHelper2 = new ADS1115Helper(4.096, &_adcVoltageADS1115_2, 50, 500);
-
-    #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
-
-  // turn on our pullup on the IRQ pin.
-  pinMode(YB_PWM_CHANNEL_VOLTAGE_ADC_IRQ, INPUT_PULLUP);
-
-  // start up our SPI and ADC objects
-  SPI.begin(YB_PWM_CHANNEL_VOLTAGE_ADC_SCK, YB_PWM_CHANNEL_VOLTAGE_ADC_MISO, YB_PWM_CHANNEL_VOLTAGE_ADC_MOSI, YB_PWM_CHANNEL_VOLTAGE_ADC_CS);
-  if (!_adcVoltageMCP3564.begin(0, 3.3)) {
-    YBP.println("failed to initialize voltage MCP3564");
-  } else {
-    YBP.println("MCP3564 ok.");
-  }
-
-  _adcVoltageMCP3564.singleEndedMode();
-  _adcVoltageMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
-  _adcVoltageMCP3564.setAveraging(MCP3x6x::osr::OSR_1024);
-
-  // _adcVoltageMCP3564.printConfig();
-
-  // YBP.print("VDD: ");
-  // YBP.println(_adcVoltageMCP3564.analogRead(MCP_AVDD));
-
-  // YBP.print("TEMP: ");
-  // YBP.println(_adcVoltageMCP3564.analogRead(MCP_TEMP));
-
-  adcVoltageHelper = new MCP3564Helper(3.3, &_adcVoltageMCP3564);
-
-    #endif
-
-  #endif
-
-  // the init here needs to be done in a specific way, otherwise it will hang or
-  // get caught in a crash loop if the board finished a fade during the last
-  // crash based on this issue: https://github.com/espressif/esp-idf/issues/5167
-
-  // intitialize our channel
-  for (auto& ch : pwm_channels) {
-    ch.setup();
-    ch.setupLedc();
-
-    strlcpy(ch.source, local_hostname, sizeof(ch.source));
-  }
-
-  for (auto& ch : pwm_channels) {
-    ch.setupOffset();
-    ch.setupDefaultState();
-  }
-
-  #ifdef YB_PWM_CHANNEL_ENABLE_PIN
-  pinMode(YB_PWM_CHANNEL_ENABLE_PIN, OUTPUT);
-  digitalWrite(YB_PWM_CHANNEL_ENABLE_PIN, LOW);
-  #endif
-}
-
-void pwm_channels_loop()
-{
-  // do we need to send an update?
-  bool doSendFastUpdate = false;
-
-  #ifdef YB_HAS_CHANNEL_VOLTAGE
-    #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
-  adcVoltageHelper1->onLoop();
-  adcVoltageHelper2->onLoop();
-    #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
-  adcVoltageHelper->onLoop();
-    #endif
-  #endif
-
-  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
-  adcCurrentHelper->onLoop();
-  #endif
-
-  // maintenance on our channels.
-  for (auto& ch : pwm_channels) {
-  #ifdef YB_PWM_CHANNEL_HAS_INA226
-    ch.readINA226();
-  #endif
-
-  #ifdef YB_PWM_CHANNEL_HAS_LM75
-    ch.readLM75();
-  #endif
-
-    ch.checkStatus();
-    ch.saveThrottledDutyCycle();
-    ch.checkIfFadeOver();
-
-    ch.updateOutputLED();
-
-    // flag for update?
-    if (ch.sendFastUpdate) {
-      doSendFastUpdate = true;
-
-      // publish our home assistant state
-      ch.haPublishState();
-    }
-  }
-
-  // let the client know immediately.
-  if (doSendFastUpdate) {
-    sendFastUpdate();
-  }
-}
 
 void PWMChannel::setup()
 {
@@ -246,27 +45,6 @@ void PWMChannel::setup()
     this->overheatCount = preferences.getUInt(prefIndex);
   else
     this->overheatCount = 0;
-
-  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
-  this->amperageHelper = adcCurrentHelper;
-  _adcAmperageChannel = this->id - 1;
-  #endif
-
-  #ifdef YB_HAS_CHANNEL_VOLTAGE
-    #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_ADS1115
-  if (this->id <= 4) {
-    this->voltageHelper = adcVoltageHelper1;
-    _adcVoltageChannel = this->id - 1;
-  } else {
-    this->voltageHelper = adcVoltageHelper2;
-    _adcVoltageChannel = this->id - 5;
-  }
-
-    #elif defined(YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564)
-  this->voltageHelper = adcVoltageHelper;
-  _adcVoltageChannel = this->id - 1;
-    #endif
-  #endif
 
   #ifdef YB_PWM_CHANNEL_HAS_INA226
   this->setupINA226();
@@ -488,7 +266,7 @@ void PWMChannel::updateOutput(bool check_status)
     float duty = this->dutyCycle;
 
     // follow our global brightness command
-    duty = min(duty, globalBrightness);
+    duty = min(duty, _cfg->globalBrightness);
 
     // duty constraints 0....1
     duty = max(0.0f, duty);
@@ -554,7 +332,7 @@ float PWMChannel::getWattage()
   if (this->dutyCycle == 1.0)
     return this->getVoltage() * this->getAmperage();
   else
-    return getBusVoltage() * this->getAmperage();
+    return busVoltage->getBusVoltage() * this->getAmperage();
 }
 
 float PWMChannel::toVoltage(float adcVoltage)
@@ -593,19 +371,19 @@ void PWMChannel::updateOutputLED()
 {
   #if (YB_STATUS_RGB_COUNT > 1)
   if (this->status == Status::ON)
-    rgb_set_pixel_color(this->id, CRGB::Green);
+    rgb->setPixelColor(this->id, CRGB::Green);
   else if (this->status == Status::OFF)
-    rgb_set_pixel_color(this->id, CRGB::Black);
+    rgb->setPixelColor(this->id, CRGB::Black);
   else if (this->status == Status::TRIPPED)
-    rgb_set_pixel_color(this->id, CRGB::Yellow);
+    rgb->setPixelColor(this->id, CRGB::Yellow);
   else if (this->status == Status::BLOWN)
-    rgb_set_pixel_color(this->id, CRGB::Red);
+    rgb->setPixelColor(this->id, CRGB::Red);
   else if (this->status == Status::BYPASSED)
-    rgb_set_pixel_color(this->id, CRGB::Blue);
+    rgb->setPixelColor(this->id, CRGB::Blue);
   else if (this->status == Status::OVERHEAT)
-    rgb_set_pixel_color(this->id, CRGB::Orange);
+    rgb->setPixelColor(this->id, CRGB::Orange);
   else
-    rgb_set_pixel_color(this->id, CRGB::Black);
+    rgb->setPixelColor(this->id, CRGB::Black);
   #endif
 }
 
@@ -634,8 +412,8 @@ void PWMChannel::checkFuseBlown()
     return;
 
   // determine what our floor for a tripped fuse should be.
-  float busVoltage = getBusVoltage();
-  float minVoltage = busVoltage * duty * 0.1;
+  float bv = busVoltage->getBusVoltage();
+  float minVoltage = bv * duty * 0.1;
 
   // so hard to measure that low accurately over time and not false
   if (minVoltage <= 0.05)
@@ -652,7 +430,7 @@ void PWMChannel::checkFuseBlown()
 
   // we need bus voltage for our calculations.
   // it takes a little bit to populate on boot.
-  if (getBusVoltage() > 0) {
+  if (busVoltage->getBusVoltage() > 0) {
     if (this->status == Status::ON) {
       // grace period when changing state
       if (millis() - lastStateChange > firstCheckTime) {
@@ -683,7 +461,7 @@ void PWMChannel::checkFuseBypassed()
     // grace period when changing state
     if (millis() - lastStateChange > firstCheckTime) {
 
-      if (this->getVoltage() < getBusVoltage() * 0.90)
+      if (this->getVoltage() < busVoltage->getBusVoltage() * 0.90)
         return;
 
       // dont change our outputState here... bypass can be temporary
@@ -712,13 +490,13 @@ void PWMChannel::checkSoftFuse()
       this->updateOutput(false);
 
       // our counter
-      this->softFuseTripCount++;
+      this->softFuseTripCount = this->softFuseTripCount + 1;
 
       // we will want to notify
       this->sendFastUpdate = true;
 
       // this is an internally originating change
-      strlcpy(this->source, local_hostname, sizeof(this->source));
+      strlcpy(this->source, _cfg->local_hostname, sizeof(this->source));
 
       // save to our storage
       char prefIndex[YB_PREF_KEY_LENGTH];
@@ -749,7 +527,7 @@ void PWMChannel::checkOverheat()
       this->sendFastUpdate = true;
 
       // this is an internally originating change
-      strlcpy(this->source, local_hostname, sizeof(this->source));
+      strlcpy(this->source, _cfg->local_hostname, sizeof(this->source));
 
       // save to our storage
       char prefIndex[YB_PREF_KEY_LENGTH];
@@ -1032,8 +810,8 @@ void PWMChannel::haGenerateDiscovery(JsonVariant doc)
   sprintf(ha_topic_current, "yarrboard/%s/pwm/%s/current", ha_key, this->key);
 
   // our callbacks to the command topics
-  mqtt_on_topic(ha_topic_cmd_state, 0, pwm_handle_ha_command);
-  mqtt_on_topic(ha_topic_cmd_brightness, 0, pwm_handle_ha_command);
+  mqtt->onTopic(ha_topic_cmd_state, 0, &PWMController::handleHACommandCallbackStatic);
+  mqtt->onTopic(ha_topic_cmd_brightness, 0, &PWMController::handleHACommandCallbackStatic);
 
   this->haGenerateLightDiscovery(doc);
   this->haGenerateVoltageDiscovery(doc);
@@ -1067,8 +845,8 @@ void PWMChannel::haGenerateVoltageDiscovery(JsonVariant doc)
 {
   // configuration object for the channel voltage
   char ha_uuid_voltage[128];
-  if (app_use_hostname_as_mqtt_uuid)
-    sprintf(ha_uuid_voltage, "%s_voltage", local_hostname);
+  if (_cfg->app_use_hostname_as_mqtt_uuid)
+    sprintf(ha_uuid_voltage, "%s_voltage", _cfg->local_hostname);
   else
     sprintf(ha_uuid_voltage, "%s_voltage", ha_uuid);
   char ha_voltage_name[128];
@@ -1094,8 +872,8 @@ void PWMChannel::haGenerateAmperageDiscovery(JsonVariant doc)
 {
   // configuration object for the channel voltage
   char ha_uuid_amperage[128];
-  if (app_use_hostname_as_mqtt_uuid)
-    sprintf(ha_uuid_amperage, "%s_amperage", local_hostname);
+  if (_cfg->app_use_hostname_as_mqtt_uuid)
+    sprintf(ha_uuid_amperage, "%s_amperage", _cfg->local_hostname);
   else
     sprintf(ha_uuid_amperage, "%s_amperage", ha_uuid);
   char ha_amperage_name[128];
@@ -1120,9 +898,9 @@ void PWMChannel::haGenerateAmperageDiscovery(JsonVariant doc)
 void PWMChannel::haPublishState()
 {
   if (this->status == Status::ON || this->status == Status::BYPASSED)
-    mqtt_publish(ha_topic_state_state, "ON", false);
+    mqtt->publish(ha_topic_state_state, "ON", false);
   else
-    mqtt_publish(ha_topic_state_state, "OFF", false);
+    mqtt->publish(ha_topic_state_state, "OFF", false);
 
   if (this->isDimmable) {
     char b[8];
@@ -1133,14 +911,7 @@ void PWMChannel::haPublishState()
       brightness = 255;
     snprintf(b, sizeof(b), "%u", brightness);
 
-    mqtt_publish(ha_topic_state_state, b, false);
-  }
-}
-
-void pwm_handle_ha_command(const char* topic, const char* payload, int retain, int qos, bool dup)
-{
-  for (auto& ch : pwm_channels) {
-    ch.haHandleCommand(topic, payload);
+    mqtt->publish(ha_topic_state_state, b, false);
   }
 }
 
