@@ -21,6 +21,9 @@ NavicoController navico(yba);
 ADCController adc(yba);
 #endif
 
+#include "index.html.gz.h"
+#include "logo.png.gz.h"
+
 void setup()
 {
   yba.registerController(navico);
@@ -34,6 +37,14 @@ void setup()
   yba.firmware_version = YB_FIRMWARE_VERSION;
   yba.hardware_version = YB_HARDWARE_VERSION;
   yba.manufacturer = YB_MANUFACTURER;
+
+  yba.http.index_length = index_html_gz_len;
+  yba.http.index_sha = index_html_gz_sha;
+  yba.http.index_data = index_html_gz;
+
+  yba.http.logo_length = logo_gz_len;
+  yba.http.logo_sha = logo_gz_sha;
+  yba.http.logo_data = logo_gz;
 
   yba.setup();
 }
