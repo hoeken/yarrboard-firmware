@@ -26,6 +26,11 @@ ADCController adc(yba);
 BuzzerController buzzer(yba);
 #endif
 
+#ifdef YB_HAS_STATUS_RGB
+  #include "controllers/RGBController.h"
+RGBController<WS2812B, YB_STATUS_RGB_PIN, YB_STATUS_RGB_ORDER> rgb(yba, YB_STATUS_RGB_COUNT);
+#endif
+
 #include "index.html.gz.h"
 #include "logo.png.gz.h"
 
@@ -45,6 +50,10 @@ void setup()
   buzzer.isActive = true;
   #endif
   yba.registerController(buzzer);
+#endif
+
+#ifdef YB_HAS_STATUS_RGB
+  yba.registerController(rgb);
 #endif
 
   yba.board_name = YB_BOARD_NAME;

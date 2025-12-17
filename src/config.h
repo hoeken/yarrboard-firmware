@@ -168,6 +168,19 @@
   #define YB_INPUT_DEBOUNCE_RATE_MS 20
 #endif
 
+// if we have a status led, default it to one.
+#ifdef YB_HAS_STATUS_RGB
+  #ifndef YB_STATUS_RGB_COUNT
+    #define YB_STATUS_RGB_COUNT 1
+  #endif
+  #ifndef YB_STATUS_RGB_TYPE
+    #define YB_STATUS_RGB_TYPE WS2812B
+  #endif
+  #ifndef YB_STATUS_RGB_ORDER
+    #define YB_STATUS_RGB_ORDER GRB
+  #endif
+#endif
+
 // Detect whether this build environment provides UsbSerial
 #if defined(ARDUINO_USB_MODE) && ARDUINO_USB_MODE == 1
   #define YB_USB_SERIAL 1
