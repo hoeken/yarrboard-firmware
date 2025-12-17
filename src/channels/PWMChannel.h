@@ -85,7 +85,6 @@ class PWMChannel : public BaseChannel
     volatile bool outputState = false;
     char type[30] = "other";
     char defaultState[10] = "OFF";
-    volatile bool sendFastUpdate = false;
     char source[YB_HOSTNAME_LENGTH];
 
     unsigned int stateChangeCount = 0;
