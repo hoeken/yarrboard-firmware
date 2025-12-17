@@ -13,17 +13,22 @@
 #include <YarrboardFramework.h>
 #include <controllers/NavicoController.h>
 
-#include "controllers/ADCController.h"
-
 YarrboardApp yba;
 NavicoController navico(yba);
 
+#ifdef YB_HAS_ADC_CHANNELS
+  #include "controllers/ADCController.h"
 ADCController adc(yba);
+#endif
 
 void setup()
 {
   yba.registerController(navico);
+
+#ifdef YB_HAS_ADC_CHANNELS
   yba.registerController(adc);
+#endif
+
   yba.setup();
 }
 
