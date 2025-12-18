@@ -75,7 +75,7 @@ class ServoChannel : public BaseChannel
     void generateConfig(JsonVariant config) override;
     void generateUpdate(JsonVariant config) override;
 
-    void setup();
+    void setup(byte pin);
     void write(float angle);
     float getAngle();
     void disable();
@@ -87,10 +87,5 @@ class ServoChannel : public BaseChannel
     byte _pin;
     bool _enabled = false;
 };
-
-extern etl::array<ServoChannel, YB_SERVO_CHANNEL_COUNT> servo_channels;
-
-void servo_channels_setup();
-void servo_channels_loop();
 
 #endif /* !YARR_SERVO_CHANNEL_H */

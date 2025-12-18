@@ -13,50 +13,11 @@
   #include "channels/RelayChannel.h"
   #include <YarrboardDebug.h>
 
-// the main star of the event
-etl::array<RelayChannel, YB_RELAY_CHANNEL_COUNT> relay_channels;
-byte _relay_pins[YB_RELAY_CHANNEL_COUNT] = YB_RELAY_CHANNEL_PINS;
-
-  #ifdef YB_RELAY_DRIVER_TCA9554
-TCA9554 TCA(YB_RELAY_DRIVER_TCA9554_ADDRESS);
-  #endif
-
-void relay_channels_setup()
+void RelayChannel::setup(byte pin)
 {
-  #ifdef YB_RELAY_DRIVER_TCA9554
-  Wire.begin();
-  Wire.setPins(YB_I2C_SDA_PIN, YB_I2C_SCL_PIN);
-  Wire.setClock(YB_I2C_SPEED);
-  TCA.begin(INPUT);
-
-  YBP.printf("Is Connected: %d\n", TCA.isConnected());
-  YBP.printf("Type: 0x%02x\n", TCA.getType());
-  YBP.printf("Address: 0x%02x\n", TCA.getAddress());
-  #endif
-
-  // intitialize our channel
-  for (auto& ch : relay_channels) {
-    ch.setup();
-    ch.setupDefaultState();
-  }
-}
-
-void relay_channels_loop()
-{
-}
-
-void RelayChannel::setup()
-{
-  // init!
-  _pin = _relay_pins[id - 1];
-
-  #ifdef YB_RELAY_DRIVER_TCA9554
-  TCA.pinMode1(_pin, OUTPUT);
-  TCA.write1(_pin, LOW);
-  #else
+  _pin = pin;
   pinMode(_pin, OUTPUT);
   digitalWrite(_pin, LOW);
-  #endif
 }
 
 void RelayChannel::setupDefaultState()
@@ -68,11 +29,7 @@ void RelayChannel::setupDefaultState()
 
 void RelayChannel::updateOutput()
 {
-  #ifdef YB_RELAY_DRIVER_TCA9554
-  TCA.write1(_pin, outputState);
-  #else
   digitalWrite(_pin, outputState);
-  #endif
 }
 
 void RelayChannel::setState(const char* state)
@@ -148,41 +105,34 @@ void RelayChannel::generateUpdate(JsonVariant config)
 
 void RelayChannel::haGenerateDiscovery(JsonVariant doc)
 {
-  BaseChannel::haGenerateDiscovery(doc);
+  // BaseChannel::haGenerateDiscovery(doc);
 
-  // generate our topics
-  sprintf(ha_topic_cmd_state, "yarrboard/%s/relay/%s/ha_set", ha_key, this->key);
-  sprintf(ha_topic_state_state, "yarrboard/%s/relay/%s/ha_state", ha_key, this->key);
+  // // generate our topics
+  // sprintf(ha_topic_cmd_state, "yarrboard/%s/relay/%s/ha_set", ha_key, this->key);
+  // sprintf(ha_topic_state_state, "yarrboard/%s/relay/%s/ha_state", ha_key, this->key);
 
-  // our callbacks to the command topics
-  mqtt_on_topic(ha_topic_cmd_state, 0, relay_handle_ha_command);
+  // // our callbacks to the command topics
+  // mqtt_on_topic(ha_topic_cmd_state, 0, relay_handle_ha_command);
 
-  // configuration object for the individual channel
-  JsonObject obj = doc[ha_uuid].to<JsonObject>();
-  obj["platform"] = "light";
-  obj["name"] = this->name;
-  obj["unique_id"] = ha_uuid;
-  obj["command_topic"] = ha_topic_cmd_state;
-  obj["state_topic"] = ha_topic_state_state;
-  obj["payload_on"] = "ON";
-  obj["payload_off"] = "OFF";
+  // // configuration object for the individual channel
+  // JsonObject obj = doc[ha_uuid].to<JsonObject>();
+  // obj["platform"] = "light";
+  // obj["name"] = this->name;
+  // obj["unique_id"] = ha_uuid;
+  // obj["command_topic"] = ha_topic_cmd_state;
+  // obj["state_topic"] = ha_topic_state_state;
+  // obj["payload_on"] = "ON";
+  // obj["payload_off"] = "OFF";
 
-  // availability is an array of objects
-  JsonArray availability = obj["availability"].to<JsonArray>();
-  JsonObject avail = availability.add<JsonObject>();
-  avail["topic"] = ha_topic_avail;
+  // // availability is an array of objects
+  // JsonArray availability = obj["availability"].to<JsonArray>();
+  // JsonObject avail = availability.add<JsonObject>();
+  // avail["topic"] = ha_topic_avail;
 }
 
 void RelayChannel::haPublishState()
 {
-  mqtt_publish(ha_topic_state_state, this->getStatus(), false);
-}
-
-void relay_handle_ha_command(const char* topic, const char* payload, int retain, int qos, bool dup)
-{
-  for (auto& ch : relay_channels) {
-    ch.haHandleCommand(topic, payload);
-  }
+  // mqtt_publish(ha_topic_state_state, this->getStatus(), false);
 }
 
 void RelayChannel::haHandleCommand(const char* topic, const char* payload)

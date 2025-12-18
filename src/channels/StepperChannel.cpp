@@ -13,37 +13,6 @@
   #include "channels/StepperChannel.h"
   #include <YarrboardDebug.h>
 
-byte _step_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_STEP_PINS;
-byte _dir_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_DIR_PINS;
-byte _enable_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_ENABLE_PINS;
-
-  #ifdef YB_STEPPER_DIAG_PINS
-byte _diag_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_DIAG_PINS;
-  #endif
-
-// the main star of the event
-etl::array<StepperChannel, YB_STEPPER_CHANNEL_COUNT> stepper_channels;
-
-FastAccelStepperEngine engine = FastAccelStepperEngine();
-
-void stepper_channels_setup()
-{
-  engine.init();
-
-  // intitialize our channel
-  for (auto& ch : stepper_channels) {
-    ch.setup();
-  }
-}
-
-void stepper_channels_loop()
-{
-  // for (auto& ch : stepper_channels) {
-  //   if (INTERVAL(2500))
-  //     ch.printDebug();
-  // }
-}
-
 void StepperChannel::init(uint8_t id)
 {
   BaseChannel::init(id);
@@ -75,19 +44,20 @@ void StepperChannel::generateUpdate(JsonVariant config)
   config["speed"] = this->getSpeed();
 }
 
-void StepperChannel::setup()
+void StepperChannel::setup(FastAccelStepperEngine* engine, byte step_pin, byte dir_pin, byte enable_pin, byte diag_pin)
 {
-  this->_step_pin = _step_pins[id - 1];
+  _engine = engine;
+  this->_step_pin = step_pin;
   pinMode(_step_pin, OUTPUT);
 
-  this->_dir_pin = _dir_pins[id - 1];
+  this->_dir_pin = dir_pin;
   pinMode(_dir_pin, OUTPUT);
 
-  this->_enable_pin = _enable_pins[id - 1];
+  this->_enable_pin = enable_pin;
   pinMode(_enable_pin, OUTPUT);
 
   #ifdef YB_STEPPER_DIAG_PINS
-  this->_diag_pin = _diag_pins[id - 1];
+  this->_diag_pin = diag_pin;
   pinMode(_diag_pin, INPUT);
   attachInterruptArg(_diag_pin, &StepperChannel::stallGuardISR, this, RISING);
   #endif
@@ -112,7 +82,7 @@ void StepperChannel::setup()
   #endif
 
   // setup our actual stepper controller
-  _stepper = engine.stepperConnectToPin(_step_pin);
+  _stepper = engine->stepperConnectToPin(_step_pin);
   if (_stepper) {
     _stepper->setDirectionPin(_dir_pin);
 

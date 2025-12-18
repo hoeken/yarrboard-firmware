@@ -21,14 +21,10 @@
 #include <OneWire.h>
 #include <QuickPID.h>
 
+class YarrboardApp;
 class RelayChannel;
 class ServoChannel;
 class StepperChannel;
-
-void brineomatic_setup();
-void brineomatic_loop();
-
-void brineomatic_state_machine(void* pvParameters);
 
 class Brineomatic
 {
@@ -136,7 +132,7 @@ class Brineomatic
     float totalVolume;
     uint32_t totalRuntime; // seconds
 
-    Brineomatic();
+    Brineomatic(YarrboardApp& app);
     void init();
     void initChannels();
     void initModbus();
@@ -260,6 +256,8 @@ class Brineomatic
     void updateMQTT();
 
   private:
+    YarrboardApp& _app;
+
     Status currentStatus;
     Result runResult;
     Result flushResult;
@@ -477,8 +475,6 @@ class Brineomatic
       Result errorResult,
       Result& result);
 };
-
-extern Brineomatic wm;
 
 template <class X, class M, class N, class O, class Q>
 X map_generic(X x, M in_min, N in_max, O out_min, Q out_max)

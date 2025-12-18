@@ -10,90 +10,55 @@
 
 #ifdef YB_IS_BRINEOMATIC
 
-  #include "brineomatic.h"
+  #include "Brineomatic.h"
+  #include "channels/RelayChannel.h"
+  #include "channels/ServoChannel.h"
+  #include "channels/StepperChannel.h"
   #include "etl/deque.h"
-  #include "ntp.h"
-  #include "piezo.h"
-  #include "relay_channel.h"
-  #include "servo_channel.h"
-  #include "stepper_channel.h"
   #include "validate.h"
   #include <Arduino.h>
+  #include <ConfigManager.h>
+  #include <YarrboardApp.h>
   #include <YarrboardDebug.h>
 
-Brineomatic wm;
-
-void brineomatic_setup()
-{
-  wm.init();
-
-  // Create a FreeRTOS task for the state machine
-  xTaskCreatePinnedToCore(
-    brineomatic_state_machine, // Task function
-    "brineomatic_sm",          // Name of the task
-    4096,                      // Stack size
-    NULL,                      // Task input parameters
-    2,                         // Priority of the task
-    NULL,                      // Task handle
-    1                          // Core where the task should run
-  );
-}
-
-uint32_t lastOutput;
-
-void brineomatic_loop()
-{
-  wm.loop();
-}
-
-// State machine task function
-void brineomatic_state_machine(void* pvParameters)
-{
-  while (true) {
-    wm.runStateMachine();
-
-    // Add a delay to prevent task starvation
-    vTaskDelay(pdMS_TO_TICKS(100));
-  }
-}
-
-Brineomatic::Brineomatic() : oneWire(YB_DS18B20_PIN), // constructor arg for OneWire
-                             ds18b20(&oneWire),       // DallasTemperature needs pointer to OneWire
-                             _adc(YB_ADS1115_ADDRESS)
+Brineomatic::Brineomatic(YarrboardApp& app) : _app(app),
+                                              oneWire(YB_DS18B20_PIN), // constructor arg for OneWire
+                                              ds18b20(&oneWire),       // DallasTemperature needs pointer to OneWire
+                                              _adc(YB_ADS1115_ADDRESS)
 {
 }
 
 void Brineomatic::init()
 {
   // enabled or no
-  if (preferences.isKey("bomPickled"))
-    isPickled = preferences.getBool("bomPickled");
+  if (_app.config.preferences.isKey("bomPickled"))
+    isPickled = _app.config.preferences.getBool("bomPickled");
   else
     isPickled = false;
 
-  if (preferences.isKey("bomPickledOn"))
-    pickledOnTimestamp = preferences.getLong64("bomPickledOn");
+  if (_app.config.preferences.isKey("bomPickledOn"))
+    pickledOnTimestamp = _app.config.preferences.getLong64("bomPickledOn");
   else
     pickledOnTimestamp = 0;
 
-  if (preferences.isKey("bomTotVolume"))
-    totalVolume = preferences.getFloat("bomTotVolume");
+  if (_app.config.preferences.isKey("bomTotVolume"))
+    totalVolume = _app.config.preferences.getFloat("bomTotVolume");
   else
     totalVolume = 0.0;
 
-  if (preferences.isKey("bomTotRuntime"))
-    totalRuntime = preferences.getULong("bomTotRuntime");
+  if (_app.config.preferences.isKey("bomTotRuntime"))
+    totalRuntime = _app.config.preferences.getULong("bomTotRuntime");
   else
     totalRuntime = 0;
 
-  if (preferences.isKey("bomTotCycles"))
-    totalCycles = preferences.getUInt("bomTotCycles");
+  if (_app.config.preferences.isKey("bomTotCycles"))
+    totalCycles = _app.config.preferences.getUInt("bomTotCycles");
   else
     totalCycles = 0;
 
   if (autoflushEnabled()) {
     lastAutoflushTimeMillis = millis();
-    lastAutoflushTimeNTP = preferences.getLong64("lastautoflush");
+    lastAutoflushTimeNTP = _app.config.preferences.getLong64("lastautoflush");
   }
 
   boostPumpOnState = false;
@@ -203,9 +168,9 @@ void Brineomatic::initModbus()
 void Brineomatic::loop()
 {
   // get NTP time when ready.
-  if (ntp_is_ready && lastAutoflushTimeNTP == 0) {
-    lastAutoflushTimeNTP = ntp_get_time();
-    preferences.putLong64("lastautoflush", lastAutoflushTimeNTP);
+  if (_app.ntp.isReady() && lastAutoflushTimeNTP == 0) {
+    lastAutoflushTimeNTP = _app.ntp.getTime();
+    _app.config.preferences.putLong64("lastautoflush", lastAutoflushTimeNTP);
   }
 
   adcHelper->onLoop();
@@ -231,7 +196,7 @@ void Brineomatic::measureProductFlowmeter()
     float flowrate = productFlowmeter.getFlowrate();
     float volume = productFlowmeter.getVolume();
 
-    if ((wm.hasDiverterValve() && !wm.isDiverterValveOpen()) || !wm.hasDiverterValve()) {
+    if ((hasDiverterValve() && !isDiverterValveOpen()) || !hasDiverterValve()) {
       currentVolume += volume;
       totalVolume += volume;
     }
@@ -958,8 +923,8 @@ uint32_t Brineomatic::getNextFlushCountdown()
 {
   if (currentStatus == Status::IDLE && autoflushEnabled()) {
     uint32_t elapsed;
-    if (ntp_is_ready && lastAutoflushTimeNTP > 1700000000)
-      elapsed = (ntp_get_time() - lastAutoflushTimeNTP) * 1000;
+    if (_app.ntp.isReady() && lastAutoflushTimeNTP > 1700000000)
+      elapsed = (_app.ntp.getTime() - lastAutoflushTimeNTP) * 1000;
     else
       elapsed = millis() - lastAutoflushTimeMillis;
 
@@ -1151,8 +1116,8 @@ void Brineomatic::runStateMachine()
     case Status::IDLE:
       if (autoflushEnabled()) {
         uint32_t elapsed;
-        if (ntp_is_ready && lastAutoflushTimeNTP > 1700000000)
-          elapsed = (ntp_get_time() - lastAutoflushTimeNTP) * 1000;
+        if (_app.ntp.isReady() && lastAutoflushTimeNTP > 1700000000)
+          elapsed = (_app.ntp.getTime() - lastAutoflushTimeNTP) * 1000;
         else
           elapsed = millis() - lastAutoflushTimeMillis;
 
@@ -1285,7 +1250,7 @@ void Brineomatic::runStateMachine()
         // save our total runtime occasionally
         if (millis() - lastRuntimeUpdate > 15 * 60 * 1000) {
           totalRuntime += (millis() - lastRuntimeUpdate) / 1000; // store as seconds
-          preferences.putULong("bomTotRuntime", totalRuntime);
+          _app.config.preferences.putULong("bomTotRuntime", totalRuntime);
           lastRuntimeUpdate = millis();
         }
 
@@ -1293,15 +1258,15 @@ void Brineomatic::runStateMachine()
       }
 
       // save our total volume produced
-      preferences.putFloat("bomTotVolume", totalVolume);
+      _app.config.preferences.putFloat("bomTotVolume", totalVolume);
 
       // save our runtime too.
       totalRuntime += (millis() - lastRuntimeUpdate) / 1000; // store as seconds
-      preferences.putULong("bomTotRuntime", totalRuntime);
+      _app.config.preferences.putULong("bomTotRuntime", totalRuntime);
 
       // save our total number of cycles
       totalCycles++;
-      preferences.putUInt("bomTotCycles", totalCycles);
+      _app.config.preferences.putUInt("bomTotCycles", totalCycles);
 
       // next step... turn it off!
       currentStatus = Status::STOPPING;
@@ -1417,16 +1382,16 @@ void Brineomatic::runStateMachine()
 
       if (autoflushEnabled()) {
         lastAutoflushTimeMillis = millis();
-        if (ntp_is_ready) {
-          lastAutoflushTimeNTP = ntp_get_time();
-          preferences.putLong64("lastautoflush", lastAutoflushTimeNTP);
+        if (_app.ntp.isReady()) {
+          lastAutoflushTimeNTP = _app.ntp.getTime();
+          _app.config.preferences.putLong64("lastautoflush", lastAutoflushTimeNTP);
         }
       }
 
       // keep track over restarts.
-      preferences.putBool("bomPickled", false);
+      _app.config.preferences.putBool("bomPickled", false);
       pickledOnTimestamp = 0;
-      preferences.putLong64("bomPickledOn", pickledOnTimestamp);
+      _app.config.preferences.putLong64("bomPickledOn", pickledOnTimestamp);
 
       initializeHardware();
       waitForFlushValveOff();
@@ -1477,11 +1442,11 @@ void Brineomatic::runStateMachine()
         pickleResult = Result::SUCCESS;
 
       // keep track over restarts.
-      preferences.putBool("bomPickled", true);
+      _app.config.preferences.putBool("bomPickled", true);
 
-      if (ntp_is_ready) {
-        pickledOnTimestamp = ntp_get_time();
-        preferences.putLong64("bomPickledOn", pickledOnTimestamp);
+      if (_app.ntp.isReady()) {
+        pickledOnTimestamp = _app.ntp.getTime();
+        _app.config.preferences.putLong64("bomPickledOn", pickledOnTimestamp);
       }
 
       break;
@@ -1526,9 +1491,9 @@ void Brineomatic::runStateMachine()
         depickleResult = Result::SUCCESS;
 
       // keep track over restarts.
-      preferences.putBool("bomPickled", false);
+      _app.config.preferences.putBool("bomPickled", false);
       pickledOnTimestamp = 0;
-      preferences.putLong64("bomPickledOn", pickledOnTimestamp);
+      _app.config.preferences.putLong64("bomPickledOn", pickledOnTimestamp);
 
       break;
   }
@@ -3153,7 +3118,7 @@ void Brineomatic::updateMQTT()
   this->generateUpdateJSON(output);
   output.remove("brineomatic");
 
-  mqtt_traverse_json(output, "watermaker");
+  _app.mqtt.traverseJSON(output, "watermaker");
 }
 
 #endif
