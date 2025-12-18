@@ -33,6 +33,13 @@ import favicon from 'gulp-base64-favicon';
 import fs from 'fs';
 import crypto from 'crypto';
 
+
+const logos = [
+    'logo-yarrboard.png',
+    'logo-brineomatic.png',
+    'logo-frothfet.png'
+];
+
 function clean(cb) {
     deleteAsync(["dist/*"]);
     cb();
@@ -67,24 +74,35 @@ function buildfs_inline(cb) {
 
 function buildfs_embeded(cb) {
     var source = 'dist/index.html.gz';
-    var destination = 'src/index.html.gz.h';
+    var destination = 'src/gulp/index.html.gz.h';
     write_header_file(source, destination, "index_html_gz");
 
     cb();
 }
 
-function buildfs_logo_gz(cb) {
-    return src('html/logo.png')
+function buildfs_logo_gz(filename) {
+    return src(`html/${filename}`)
         .pipe(gzip())
         .pipe(dest("dist"));
 }
 
-function buildfs_logo_embedded(cb) {
-    var source = 'dist/logo.png.gz';
-    var destination = 'src/logo.png.gz.h';
-    write_header_file(source, destination, "logo_gz");
+function buildfs_logo_embedded(filename, cb) {
+    const source = `dist/${filename}.gz`;
+    const destination = `src/gulp/${filename}.gz.h`;
 
+    // Create a valid C variable name (e.g., logo_png_gz)
+    const safeName = filename.replace(/[^a-z0-9]/gi, '_') + "_gz";
+
+    write_header_file(source, destination, safeName);
     cb();
+}
+
+function createLogoTask(filename) {
+    const gz = (cb) => buildfs_logo_gz(filename).on('end', cb);
+    const embed = (cb) => buildfs_logo_embedded(filename, cb);
+
+    // Return a series for this specific image
+    return series(gz, embed);
 }
 
 function write_header_file(source, destination, name) {
@@ -115,7 +133,8 @@ function write_header_file(source, destination, name) {
     deleteAsync([source]);
 }
 
-const all = series(clean, buildfs_inline, buildfs_embeded, buildfs_logo_gz, buildfs_logo_embedded);
+const logoTasks = logos.map(logo => createLogoTask(logo));
+
+const all = series(clean, buildfs_inline, buildfs_embeded, logoTasks);
 
 export default all;
-//export build;
