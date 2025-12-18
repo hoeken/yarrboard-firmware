@@ -9,12 +9,12 @@
 #ifndef YARR_PWM_CONTROLLER_H
 #define YARR_PWM_CONTROLLER_H
 
-  #include "config.h"
-  #ifdef YB_HAS_PWM_CHANNELS
+#include "config.h"
+#ifdef YB_HAS_PWM_CHANNELS
 
-    #include "channels/PWMChannel.h"
+  #include "channels/PWMChannel.h"
 
-      #include "controllers/ChannelController.h"
+  #include "controllers/ChannelController.h"
 
 class YarrboardApp;
 class ConfigManager;
@@ -24,7 +24,6 @@ class PWMController : public ChannelController<PWMChannel, YB_PWM_CHANNEL_COUNT>
   public:
     BusVoltageController* busVoltage = nullptr;
     RGBControllerInterface* rgb = nullptr;
-    MQTTController* mqtt = nullptr;
 
     PWMController(YarrboardApp& app);
 

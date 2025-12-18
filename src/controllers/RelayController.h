@@ -28,10 +28,13 @@ class RelayController : public ChannelController<RelayChannel, YB_RELAY_CHANNEL_
     void handleSetCommand(JsonVariantConst input, JsonVariant output);
     void handleToggleCommand(JsonVariantConst input, JsonVariant output);
 
-    void handleHACommand(const char* topic, const char* payload, int retain, int qos, bool dup);
+    static void handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
 
   private:
     const byte _pins[YB_RELAY_CHANNEL_COUNT] = YB_RELAY_CHANNEL_PINS;
+
+    static RelayController* _instance;
+    void handleHACommandCallback(const char* topic, const char* payload, int retain, int qos, bool dup);
 };
 
 #endif

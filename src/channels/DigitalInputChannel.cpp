@@ -172,12 +172,12 @@ DigitalInputChannel::SwitchMode DigitalInputChannel::getMode(const char* mode)
     return DIRECT;
 }
 
-void DigitalInputChannel::haGenerateDiscovery(JsonVariant doc)
+void DigitalInputChannel::haGenerateDiscovery(JsonVariant doc, const char* uuid)
 {
-  BaseChannel::haGenerateDiscovery(doc);
+  BaseChannel::haGenerateDiscovery(doc, uuid);
 
   // generate our topics
-  sprintf(ha_topic_state, "yarrboard/%s/%s/%s/ha_state", ha_key, channel_type, this->key);
+  sprintf(ha_topic_state, "yarrboard/%s/%s/%s/ha_state", uuid, channel_type, this->key);
 
   // configuration object for the individual channel
   JsonObject obj = doc[ha_uuid].to<JsonObject>();

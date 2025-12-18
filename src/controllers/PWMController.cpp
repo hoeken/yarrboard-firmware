@@ -89,7 +89,6 @@ bool PWMController::setup()
     ch._cfg = &_cfg;
     ch.busVoltage = busVoltage;
     ch.rgb = rgb;
-    ch.mqtt = mqtt;
 
     ch.setup();
     ch.setupLedc();
@@ -140,12 +139,8 @@ void PWMController::loop()
     ch.updateOutputLED();
 
     // flag for update?
-    if (ch.sendFastUpdate) {
+    if (ch.sendFastUpdate)
       doSendFastUpdate = true;
-
-      // publish our home assistant state
-      ch.haPublishState();
-    }
   }
 }
 

@@ -24,6 +24,8 @@ struct CalibrationPoint {
     float calibrated;
 };
 
+class MQTTController;
+
 class ADCChannel : public BaseChannel
 {
   public:
@@ -63,7 +65,7 @@ class ADCChannel : public BaseChannel
     float interpolateValue(float xv);
     bool addCalibrationValue(CalibrationPoint cp);
 
-    void haGenerateDiscovery(JsonVariant doc);
+    void haGenerateDiscovery(JsonVariant doc, const char* uuid, MQTTController* mqtt);
     void haGenerateSensorDiscovery(JsonVariant doc);
 
   private:

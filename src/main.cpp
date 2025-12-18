@@ -88,7 +88,6 @@ void setup()
   yba.registerController(bus_voltage);
 
   pwm.busVoltage = &bus_voltage;
-  pwm.mqtt = (MQTTController*)yba.getController("mqtt");
   pwm.rgb = (RGBControllerInterface*)yba.getController("rgb");
   yba.registerController(pwm);
 

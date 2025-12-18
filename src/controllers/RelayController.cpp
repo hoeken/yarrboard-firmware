@@ -15,6 +15,8 @@
   #include <YarrboardDebug.h>
   #include <controllers/ProtocolController.h>
 
+RelayController* RelayController::_instance = nullptr;
+
 RelayController::RelayController(YarrboardApp& app) : ChannelController(app, "relay")
 {
 }
@@ -132,7 +134,14 @@ void RelayController::handleToggleCommand(JsonVariantConst input, JsonVariant ou
     ch->setState("ON");
 }
 
-void RelayController::handleHACommand(const char* topic, const char* payload, int retain, int qos, bool dup)
+void RelayController::handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup)
+{
+  if (_instance) {
+    _instance->handleHACommandCallback(topic, payload, retain, qos, dup);
+  }
+}
+
+void RelayController::handleHACommandCallback(const char* topic, const char* payload, int retain, int qos, bool dup)
 {
   for (auto& ch : _channels) {
     ch.haHandleCommand(topic, payload);
