@@ -11,7 +11,7 @@
 #include "BusVoltageController.h"
 #include <YarrboardDebug.h>
 
-BusVoltageController::BusVoltageController(YarrboardApp& app) : BaseController(app, "bus_voltage")
+BusVoltageController::BusVoltageController(YarrboardApp& app) : BaseController(app, "brineomatic")
 {
 }
 

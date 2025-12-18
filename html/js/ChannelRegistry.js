@@ -123,13 +123,9 @@
         for (var channel_config of cfg[ctype]) {
           let ch = this.channelFromConfig(channel_config, ctype);
 
-          console.log(ch);
-
           let ui_card = ch.generateControlUI();
           $(`#${ctype}Cards`).append(ui_card);
           ch.setupControlUI();
-
-          console.log(ui_card);
 
           ch.generateStatsUI();
           ch.setupStatsUI();
