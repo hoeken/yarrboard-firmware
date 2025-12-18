@@ -99,10 +99,9 @@ void RelayController::handleSetCommand(JsonVariantConst input, JsonVariant outpu
     // update our relay channel
     ch->setState(state);
 
-    // TODO: trigger fast update
     //  get that update out ASAP... if its our own update
-    //  if (!strcmp(ch->source, _cfg.local_hostname))
-    //    sendFastUpdate();
+    if (!strcmp(ch->source, _cfg.local_hostname))
+      ch->sendFastUpdate = true;
   }
 }
 

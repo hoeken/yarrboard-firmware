@@ -27,21 +27,12 @@ void input_channels_setup()
 
 void input_channels_loop()
 {
-  bool doSendFastUpdate = false;
-
   if (millis() - lastInputCheckMillis >= YB_INPUT_DEBOUNCE_RATE_MS) {
 
     // maintenance on our channels.
     for (auto& ch : digital_input_channels) {
       ch.update();
-
-      if (ch.sendFastUpdate)
-        doSendFastUpdate = true;
     }
-
-    // let the client know immediately.
-    if (doSendFastUpdate)
-      sendFastUpdate();
 
     lastInputCheckMillis = millis();
   }

@@ -26,8 +26,6 @@ class DigitalInputChannel : public BaseChannel
       TOGGLE_FADE
     } SwitchMode;
 
-    bool sendFastUpdate = false;
-
     void setup();
     void update();
 
