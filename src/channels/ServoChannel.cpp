@@ -12,33 +12,10 @@
 
   #include "channels/ServoChannel.h"
 
-byte _servo_pins[YB_SERVO_CHANNEL_COUNT] = YB_SERVO_CHANNEL_PINS;
-
-// the main star of the event
-etl::array<ServoChannel, YB_SERVO_CHANNEL_COUNT> servo_channels;
-
-void servo_channels_setup()
-{
-  // intitialize our channel
-  for (auto& ch : servo_channels) {
-    ch.setup();
-  }
-}
-
-void servo_channels_loop()
-{
-  // check if any servos need turning off
-  for (auto& ch : servo_channels) {
-    ch.autoDisable();
-  }
-}
-
 void ServoChannel::init(uint8_t id)
 {
   BaseChannel::init(id);
   this->channel_type = "servo";
-
-  this->_pin = _servo_pins[id - 1];
 
   snprintf(this->name, sizeof(this->name), "Servo Channel %d", id);
 }
@@ -64,8 +41,9 @@ void ServoChannel::generateUpdate(JsonVariant config)
   config["angle"] = this->getAngle();
 }
 
-void ServoChannel::setup()
+void ServoChannel::setup(byte pin)
 {
+  _pin = pin;
   _servo.attach(this->_pin);
   _enabled = false;
 }

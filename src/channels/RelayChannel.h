@@ -11,15 +11,8 @@
 
 #include "config.h"
 #include "etl/array.h"
-#include "mqtt.h"
-#include "prefs.h"
-#include "protocol.h"
 #include <Arduino.h>
 #include <channels/BaseChannel.h>
-
-#ifdef YB_RELAY_DRIVER_TCA9554
-  #include "TCA9554.h"
-#endif
 
 class RelayChannel : public BaseChannel
 {
@@ -46,7 +39,7 @@ class RelayChannel : public BaseChannel
     void haPublishState();
     void haHandleCommand(const char* topic, const char* payload);
 
-    void setup();
+    void setup(byte pin);
     void setupDefaultState();
     void updateOutput();
 
@@ -56,11 +49,5 @@ class RelayChannel : public BaseChannel
 
     const char* getStatus();
 };
-
-extern etl::array<RelayChannel, YB_RELAY_CHANNEL_COUNT> relay_channels;
-
-void relay_channels_setup();
-void relay_channels_loop();
-void relay_handle_ha_command(const char* topic, const char* payload, int retain, int qos, bool dup);
 
 #endif /* !YARR_RELAY_CHANNEL_H */

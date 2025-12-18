@@ -17,8 +17,6 @@
   #ifdef YB_STEPPER_DRIVER_TMC2209
     #include "TMC2209.h"
   #endif
-  #include "prefs.h"
-  #include "protocol.h"
   #include <Arduino.h>
   #include <channels/BaseChannel.h>
 
@@ -36,7 +34,7 @@ class StepperChannel : public BaseChannel
     void generateConfig(JsonVariant config) override;
     void generateUpdate(JsonVariant config) override;
 
-    void setup();
+    void setup(FastAccelStepperEngine* engine, byte step_pin, byte dir_pin, byte enable_pin, byte diag_pin);
     void setSpeed(float rpm);
     void setStepsPerDegree(float steps);
     float getSpeed();
@@ -57,6 +55,7 @@ class StepperChannel : public BaseChannel
   private:
     unsigned long lastUpdateMillis = 0;
 
+    FastAccelStepperEngine* _engine;
     TMC2209 _tmc2209;
     byte _diag_pin;
     uint8_t _run_current = 67;
@@ -83,11 +82,6 @@ class StepperChannel : public BaseChannel
       self->_endstopTriggered = true;
     }
 };
-
-extern etl::array<StepperChannel, YB_STEPPER_CHANNEL_COUNT> stepper_channels;
-
-void stepper_channels_setup();
-void stepper_channels_loop();
 
 #endif
 #endif /* !YARR_STEPPER_CHANNEL_H */
