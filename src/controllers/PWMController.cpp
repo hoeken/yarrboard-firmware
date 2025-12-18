@@ -144,6 +144,12 @@ void PWMController::loop()
   }
 }
 
+void PWMController::updateBrightnessHook(float brightness)
+{
+  for (auto& ch : _channels)
+    ch.updateOutput();
+}
+
 void PWMController::handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup)
 {
   if (_instance) {

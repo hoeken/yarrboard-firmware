@@ -29,6 +29,7 @@ class PWMController : public ChannelController<PWMChannel, YB_PWM_CHANNEL_COUNT>
 
     bool setup() override;
     void loop() override;
+    void updateBrightnessHook(float brightness) override;
 
     float getAverageCurrent();
     float getMaxCurrent();
