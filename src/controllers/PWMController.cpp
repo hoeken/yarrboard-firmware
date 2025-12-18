@@ -16,6 +16,14 @@
   #include <YarrboardDebug.h>
   #include <controllers/ProtocolController.h>
 
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
+MCP3564 _adcCurrentMCP3564(YB_PWM_CHANNEL_CURRENT_ADC_CS, &SPI, YB_PWM_CHANNEL_CURRENT_ADC_MOSI, YB_PWM_CHANNEL_CURRENT_ADC_MISO, YB_PWM_CHANNEL_CURRENT_ADC_SCK);
+  #endif
+
+  #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
+MCP3564 _adcVoltageMCP3564(YB_PWM_CHANNEL_VOLTAGE_ADC_CS, &SPI, YB_PWM_CHANNEL_VOLTAGE_ADC_MOSI, YB_PWM_CHANNEL_VOLTAGE_ADC_MISO, YB_PWM_CHANNEL_VOLTAGE_ADC_SCK);
+  #endif
+
 PWMController* PWMController::_instance = nullptr;
 
 PWMController::PWMController(YarrboardApp& app) : ChannelController(app, "pwm")
@@ -29,46 +37,44 @@ bool PWMController::setup()
   _app.protocol.registerCommand(ADMIN, "config_pwm_channel", this, &PWMController::handleConfigPWMChannel);
 
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
-  _adcCurrentMCP3564 = new MCP3564(YB_PWM_CHANNEL_CURRENT_ADC_CS, &SPI, YB_PWM_CHANNEL_CURRENT_ADC_MOSI, YB_PWM_CHANNEL_CURRENT_ADC_MISO, YB_PWM_CHANNEL_CURRENT_ADC_SCK);
 
   // turn on our pullup on the IRQ pin.
   pinMode(YB_PWM_CHANNEL_CURRENT_ADC_IRQ, INPUT_PULLUP);
 
   // start up our SPI and ADC objects
   SPI.begin(YB_PWM_CHANNEL_CURRENT_ADC_SCK, YB_PWM_CHANNEL_CURRENT_ADC_MISO, YB_PWM_CHANNEL_CURRENT_ADC_MOSI, YB_PWM_CHANNEL_CURRENT_ADC_CS);
-  if (!_adcCurrentMCP3564->begin(0, 3.3)) {
+  if (!_adcCurrentMCP3564.begin(0, 3.3)) {
     YBP.println("failed to initialize current MCP3564");
   } else {
     YBP.println("MCP3564 ok.");
   }
 
-  _adcCurrentMCP3564->singleEndedMode();
-  _adcCurrentMCP3564->setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
-  _adcCurrentMCP3564->setAveraging(MCP3x6x::osr::OSR_1024);
+  _adcCurrentMCP3564.singleEndedMode();
+  _adcCurrentMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
+  _adcCurrentMCP3564.setAveraging(MCP3x6x::osr::OSR_1024);
 
-  adcCurrentHelper = new MCP3564Helper(3.3, _adcCurrentMCP3564, 50, 500);
+  adcCurrentHelper = new MCP3564Helper(3.3, &_adcCurrentMCP3564, 50, 500);
   adcCurrentHelper->attachReadyPinInterrupt(YB_PWM_CHANNEL_CURRENT_ADC_IRQ, FALLING);
   #endif
 
   #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
-  _adcVoltageMCP3564 = new MCP3564(YB_PWM_CHANNEL_VOLTAGE_ADC_CS, &SPI, YB_PWM_CHANNEL_VOLTAGE_ADC_MOSI, YB_PWM_CHANNEL_VOLTAGE_ADC_MISO, YB_PWM_CHANNEL_VOLTAGE_ADC_SCK);
 
   // turn on our pullup on the IRQ pin.
   pinMode(YB_PWM_CHANNEL_VOLTAGE_ADC_IRQ, INPUT_PULLUP);
 
   // start up our SPI and ADC objects
   SPI.begin(YB_PWM_CHANNEL_VOLTAGE_ADC_SCK, YB_PWM_CHANNEL_VOLTAGE_ADC_MISO, YB_PWM_CHANNEL_VOLTAGE_ADC_MOSI, YB_PWM_CHANNEL_VOLTAGE_ADC_CS);
-  if (!_adcVoltageMCP3564->begin(0, 3.3)) {
+  if (!_adcVoltageMCP3564.begin(0, 3.3)) {
     YBP.println("failed to initialize voltage MCP3564");
   } else {
     YBP.println("MCP3564 ok.");
   }
 
-  _adcVoltageMCP3564->singleEndedMode();
-  _adcVoltageMCP3564->setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
-  _adcVoltageMCP3564->setAveraging(MCP3x6x::osr::OSR_1024);
+  _adcVoltageMCP3564.singleEndedMode();
+  _adcVoltageMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
+  _adcVoltageMCP3564.setAveraging(MCP3x6x::osr::OSR_1024);
 
-  adcVoltageHelper = new MCP3564Helper(3.3, _adcVoltageMCP3564);
+  adcVoltageHelper = new MCP3564Helper(3.3, &_adcVoltageMCP3564, 25, 250);
   adcVoltageHelper->attachReadyPinInterrupt(YB_PWM_CHANNEL_VOLTAGE_ADC_IRQ, FALLING);
   #endif
 
@@ -97,7 +103,7 @@ bool PWMController::setup()
   }
 
   for (auto& ch : _channels) {
-    // ch.setupOffset();
+    ch.setupOffset();
     ch.setupDefaultState();
   }
 

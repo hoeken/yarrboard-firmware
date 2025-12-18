@@ -42,12 +42,10 @@ class PWMController : public ChannelController<PWMChannel, YB_PWM_CHANNEL_COUNT>
 
   private:
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
-    MCP3564* _adcCurrentMCP3564;
     MCP3564Helper* adcCurrentHelper;
   #endif
 
   #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
-    MCP3564* _adcVoltageMCP3564;
     MCP3564Helper* adcVoltageHelper;
   #endif
 
