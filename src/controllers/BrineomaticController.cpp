@@ -8,9 +8,11 @@
 
 #include "config.h"
 
-#include "BrineomaticController.h"
-#include <YarrboardApp.h>
-#include <YarrboardDebug.h>
+#ifdef YB_IS_BRINEOMATIC
+
+  #include "BrineomaticController.h"
+  #include <YarrboardApp.h>
+  #include <YarrboardDebug.h>
 
 BrineomaticController::BrineomaticController(YarrboardApp& app, RelayController& relays, ServoController& servos, StepperController& steppers) : BaseController(app, "bus_voltage"),
                                                                                                                                                  wm(app, relays, servos, steppers)
@@ -358,3 +360,5 @@ void BrineomaticController::handleSaveSafeguardsConfig(JsonVariantConst input, J
   if (!_cfg.saveConfig(error, sizeof(error)))
     return _app.protocol.generateErrorJSON(output, error);
 }
+
+#endif

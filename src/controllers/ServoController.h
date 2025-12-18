@@ -9,10 +9,11 @@
 #ifndef YARR_SERVO_CONTROLLER_H
 #define YARR_SERVO_CONTROLLER_H
 
+#include "config.h"
+#ifdef YB_HAS_SERVO_CHANNELS
+
 #include "channels/ServoChannel.h"
 #include "controllers/ChannelController.h"
-
-#ifdef YB_HAS_SERVO_CHANNELS
 
 class YarrboardApp;
 class ServoController : public ChannelController<ServoChannel, YB_SERVO_CHANNEL_COUNT>

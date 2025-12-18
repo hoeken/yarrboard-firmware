@@ -6,13 +6,14 @@
   License: GPLv3
 */
 
-#include "controllers/RelayController.h"
-#include <ConfigManager.h>
-#include <YarrboardApp.h>
-#include <YarrboardDebug.h>
-#include <controllers/ProtocolController.h>
-
+#include "config.h"
 #ifdef YB_HAS_RELAY_CHANNELS
+
+  #include "controllers/RelayController.h"
+  #include <ConfigManager.h>
+  #include <YarrboardApp.h>
+  #include <YarrboardDebug.h>
+  #include <controllers/ProtocolController.h>
 
 RelayController::RelayController(YarrboardApp& app) : ChannelController(app, "relay")
 {

@@ -9,14 +9,17 @@
 #ifndef YARR_BRINEOMATIC_CONTROLLER_H
 #define YARR_BRINEOMATIC_CONTROLLER_H
 
-#include "adchelper.h"
 #include "config.h"
-#include <Arduino.h>
 
-#include "Brineomatic.h"
-#include "controllers/BaseController.h"
-#include <ArduinoJson.h>
-#include <PsychicMqttClient.h>
+#ifdef YB_IS_BRINEOMATIC
+  #include "adchelper.h"
+
+  #include <Arduino.h>
+
+  #include "Brineomatic.h"
+  #include "controllers/BaseController.h"
+  #include <ArduinoJson.h>
+  #include <PsychicMqttClient.h>
 
 class YarrboardApp;
 class ConfigManager;
@@ -61,4 +64,5 @@ class BrineomaticController : public BaseController
     static void stateMachineTask(void* pvParameters);
 };
 
+#endif
 #endif /* !YARR_BRINEOMATIC_CONTROLLER_H */

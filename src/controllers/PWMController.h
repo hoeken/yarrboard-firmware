@@ -9,11 +9,12 @@
 #ifndef YARR_PWM_CONTROLLER_H
 #define YARR_PWM_CONTROLLER_H
 
-#include "channels/PWMChannel.h"
+  #include "config.h"
+  #ifdef YB_HAS_PWM_CHANNELS
 
-#ifdef YB_HAS_PWM_CHANNELS
+    #include "channels/PWMChannel.h"
 
-  #include "controllers/ChannelController.h"
+      #include "controllers/ChannelController.h"
 
 class YarrboardApp;
 class ConfigManager;

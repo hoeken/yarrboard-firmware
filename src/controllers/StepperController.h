@@ -9,10 +9,12 @@
 #ifndef YARR_STEPPER_CONTROLLER_H
 #define YARR_STEPPER_CONTROLLER_H
 
-#include "channels/StepperChannel.h"
-#include "controllers/ChannelController.h"
+#include "config.h"
 
 #ifdef YB_HAS_STEPPER_CHANNELS
+
+  #include "channels/StepperChannel.h"
+  #include "controllers/ChannelController.h"
 
 class YarrboardApp;
 class StepperController : public ChannelController<StepperChannel, YB_STEPPER_CHANNEL_COUNT>
