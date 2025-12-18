@@ -137,6 +137,16 @@ void PWMController::loop()
   }
 }
 
+void PWMController::generateStatsHook(JsonVariant output)
+{
+  // info about each of our channels
+  JsonArray channels = output[_name].to<JsonArray>();
+  for (auto& ch : _channels) {
+    JsonObject jo = channels.add<JsonObject>();
+    ch.generateStats(jo);
+  }
+}
+
 void PWMController::updateBrightnessHook(float brightness)
 {
   for (auto& ch : _channels)
