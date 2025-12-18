@@ -47,6 +47,7 @@ void StepperChannel::generateUpdate(JsonVariant config)
 void StepperChannel::setup(FastAccelStepperEngine* engine, byte step_pin, byte dir_pin, byte enable_pin, byte diag_pin)
 {
   _engine = engine;
+
   this->_step_pin = step_pin;
   pinMode(_step_pin, OUTPUT);
 

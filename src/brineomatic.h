@@ -98,10 +98,6 @@ class Brineomatic
     bool isPickled;
     int64_t pickledOnTimestamp = 0;
 
-    RelayController* relays = nullptr;
-    ServoController* servos = nullptr;
-    StepperController* steppers = nullptr;
-
     RelayChannel* flushValve = NULL;
     RelayChannel* boostPump = NULL;
     RelayChannel* highPressurePump = NULL;
@@ -139,7 +135,7 @@ class Brineomatic
     float totalVolume;
     uint32_t totalRuntime; // seconds
 
-    Brineomatic(YarrboardApp& app);
+    Brineomatic(YarrboardApp& app, RelayController& relays, ServoController& servos, StepperController& steppers);
     void init();
     void initChannels();
     void initModbus();
@@ -264,6 +260,9 @@ class Brineomatic
 
   private:
     YarrboardApp& _app;
+    RelayController& _relays;
+    ServoController& _servos;
+    StepperController& _steppers;
 
     Status currentStatus;
     Result runResult;

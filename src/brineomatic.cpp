@@ -24,10 +24,13 @@
   #include <YarrboardApp.h>
   #include <YarrboardDebug.h>
 
-Brineomatic::Brineomatic(YarrboardApp& app) : _app(app),
-                                              oneWire(YB_DS18B20_PIN), // constructor arg for OneWire
-                                              ds18b20(&oneWire),       // DallasTemperature needs pointer to OneWire
-                                              _adc(YB_ADS1115_ADDRESS)
+Brineomatic::Brineomatic(YarrboardApp& app, RelayController& relays, ServoController& servos, StepperController& steppers) : _app(app),
+                                                                                                                             _relays(relays),
+                                                                                                                             _servos(servos),
+                                                                                                                             _steppers(steppers),
+                                                                                                                             oneWire(YB_DS18B20_PIN), // constructor arg for OneWire
+                                                                                                                             ds18b20(&oneWire),       // DallasTemperature needs pointer to OneWire
+                                                                                                                             _adc(YB_ADS1115_ADDRESS)
 {
 }
 
@@ -289,32 +292,35 @@ void Brineomatic::measureMembranePressure()
 
 void Brineomatic::initChannels()
 {
-  for (auto& ch : relays->getChannels()) {
+  for (auto& ch : _relays.getChannels()) {
     ch.init(ch.id);
     ch.isEnabled = false;
     ch.defaultState = false;
   }
 
-  for (auto& ch : servos->getChannels()) {
+  for (auto& ch : _servos.getChannels()) {
     ch.init(ch.id);
     ch.isEnabled = false;
   }
 
-  for (auto& ch : steppers->getChannels()) {
+  for (auto& ch : _steppers.getChannels()) {
     ch.init(ch.id);
     ch.isEnabled = false;
   }
 
   if (boostPumpControl.equals("RELAY")) {
-    boostPump = relays->getChannelById(boostPumpRelayId);
-    boostPump->isEnabled = true;
-    boostPump->setName("Boost Pump");
-    boostPump->setKey("boost_pump");
-    strncpy(boostPump->type, "water_pump", sizeof(boostPump->type));
+    boostPump = _relays.getChannelById(boostPumpRelayId);
+    if (boostPump) {
+      boostPump->isEnabled = true;
+      boostPump->setName("Boost Pump");
+      boostPump->setKey("boost_pump");
+      strncpy(boostPump->type, "water_pump", sizeof(boostPump->type));
+    } else
+      YBP.printf("Couldnt load bp relay %d\n", boostPumpRelayId);
   }
 
   if (flushValveControl.equals("RELAY")) {
-    flushValve = relays->getChannelById(flushValveRelayId);
+    flushValve = _relays.getChannelById(flushValveRelayId);
     flushValve->isEnabled = true;
     flushValve->setName("Flush Valve");
     flushValve->setKey("flush_valve");
@@ -322,7 +328,7 @@ void Brineomatic::initChannels()
   }
 
   if (coolingFanControl.equals("RELAY")) {
-    coolingFan = relays->getChannelById(coolingFanRelayId);
+    coolingFan = _relays.getChannelById(coolingFanRelayId);
     coolingFan->isEnabled = true;
     coolingFan->setName("Cooling Fan");
     coolingFan->setKey("cooling_fan");
@@ -330,7 +336,7 @@ void Brineomatic::initChannels()
   }
 
   if (highPressurePumpControl.equals("RELAY")) {
-    highPressurePump = relays->getChannelById(highPressureRelayId);
+    highPressurePump = _relays.getChannelById(highPressureRelayId);
     highPressurePump->isEnabled = true;
     highPressurePump->setName("High Pressure Pump");
     highPressurePump->setKey("hp_pump");
@@ -338,22 +344,27 @@ void Brineomatic::initChannels()
   }
 
   if (diverterValveControl.equals("SERVO")) {
-    diverterValve = servos->getChannelById(diverterValveServoId);
+    diverterValve = _servos.getChannelById(diverterValveServoId);
     diverterValve->isEnabled = true;
     diverterValve->setName("Diverter Valve");
     diverterValve->setKey("diverter_valve");
   }
 
   if (highPressureValveControl.equals("STEPPER")) {
-    highPressureValveStepper = steppers->getChannelById(highPressureValveStepperId);
-    highPressureValveStepper->isEnabled = true;
-    highPressureValveStepper->setName("High Pressure Valve");
-    highPressureValveStepper->setKey("hp_valve");
+    highPressureValveStepper = _steppers.getChannelById(highPressureValveStepperId);
+    if (highPressureValveStepper) {
+      highPressureValveStepper->isEnabled = true;
+      highPressureValveStepper->setName("High Pressure Valve");
+      highPressureValveStepper->setKey("hp_valve");
 
-    float stepsPerDegree =
-      (YB_STEPPER_MICROSTEPS * highPressureValveStepperGearRatio) /
-      highPressureValveStepperStepAngle;
-    highPressureValveStepper->setStepsPerDegree(stepsPerDegree);
+      float stepsPerDegree =
+        (YB_STEPPER_MICROSTEPS * highPressureValveStepperGearRatio) /
+        highPressureValveStepperStepAngle;
+      highPressureValveStepper->setStepsPerDegree(stepsPerDegree);
+    } else {
+      YBP.printf("Error: high pressure valve stepper %d not found\n", highPressureValveStepperId);
+      highPressureValveControl = "NONE";
+    }
   }
 }
 
@@ -2249,7 +2260,7 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
   if (config["boost_pump_control"]) {
     control = config["boost_pump_control"].as<String>();
     if (control.equals("RELAY")) {
-      auto* ch = relays->getChannelById(config["boost_pump_relay_id"]);
+      auto* ch = _relays.getChannelById(config["boost_pump_relay_id"]);
       if (!ch) {
         YBP.printf("Boost pump relay id %d not found\n", config["boost_pump_relay_id"]);
         config.remove("boost_pump_relay_id");
@@ -2280,7 +2291,7 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
   if (config["high_pressure_pump_control"]) {
     control = config["high_pressure_pump_control"].as<String>();
     if (control.equals("RELAY")) {
-      auto* ch = relays->getChannelById(config["high_pressure_relay_id"]);
+      auto* ch = _relays.getChannelById(config["high_pressure_relay_id"]);
       if (!ch) {
         YBP.printf("High Pressure pump relay id %d not found\n", config["boost_pump_relay_id"]);
         config.remove("high_pressure_relay_id");
@@ -2327,7 +2338,7 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
   if (config["high_pressure_valve_control"]) {
     control = config["high_pressure_valve_control"].as<String>();
     if (control.equals("STEPPER")) {
-      auto* ch = steppers->getChannelById(config["high_pressure_valve_stepper_id"]);
+      auto* ch = _steppers.getChannelById(config["high_pressure_valve_stepper_id"]);
       if (!ch) {
         YBP.printf("High Pressure Valve stepper id %d not found\n", config["high_pressure_valve_stepper_id"]);
         config.remove("high_pressure_valve_stepper_id");
@@ -2406,7 +2417,7 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
   if (config["diverter_valve_control"]) {
     control = config["diverter_valve_control"].as<String>();
     if (control.equals("SERVO")) {
-      auto* ch = servos->getChannelById(config["diverter_valve_servo_id"]);
+      auto* ch = _servos.getChannelById(config["diverter_valve_servo_id"]);
       if (!ch) {
         YBP.printf("Diverter Valve servo id %d not found\n", config["diverter_valve_servo_id"]);
         config.remove("diverter_valve_servo_id");
@@ -2453,7 +2464,7 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
   if (config["flush_valve_control"]) {
     control = config["flush_valve_control"].as<String>();
     if (control.equals("RELAY")) {
-      auto* ch = relays->getChannelById(config["flush_valve_relay_id"]);
+      auto* ch = _relays.getChannelById(config["flush_valve_relay_id"]);
       if (!ch) {
         YBP.printf("Flush Valve relay id %d not found\n", config["flush_valve_relay_id"]);
         config.remove("flush_valve_relay_id");
@@ -2484,7 +2495,7 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
   if (config["cooling_fan_control"]) {
     control = config["cooling_fan_control"].as<String>();
     if (control.equals("RELAY")) {
-      auto* ch = relays->getChannelById(config["cooling_fan_relay_id"]);
+      auto* ch = _relays.getChannelById(config["cooling_fan_relay_id"]);
       if (!ch) {
         YBP.printf("Cooling Fan relay id %d not found\n", config["cooling_fan_relay_id"]);
         config.remove("cooling_fan_relay_id");
@@ -3107,8 +3118,6 @@ void Brineomatic::loadSafeguardsConfigJSON(JsonVariant config)
   this->enableFlushValveOffCheck = config["enable_flush_valve_off_check"] | YB_ENABLE_FLUSH_VALVE_OFF_CHECK;
   this->flushValveOffThreshold = config["flush_valve_off_threshold"] | YB_FLUSH_VALVE_OFF_THRESHOLD;
   this->flushValveOffDelay = config["flush_valve_off_delay"] | YB_FLUSH_VALVE_OFF_DELAY;
-
-  TRACE();
 }
 
 void Brineomatic::updateMQTT()
