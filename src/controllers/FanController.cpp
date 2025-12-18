@@ -21,12 +21,12 @@ volatile int FanController::counter_rpm[YB_FAN_COUNT] = {0};
 
 void IRAM_ATTR FanController::rpm_fan_0_low()
 {
-  counter_rpm[0]++;
+  counter_rpm[0] = counter_rpm[0] + 1;
 }
 
 void IRAM_ATTR FanController::rpm_fan_1_low()
 {
-  counter_rpm[1]++;
+  counter_rpm[1] = counter_rpm[1] + 1;
 }
 
 FanController::FanController(YarrboardApp& app) : BaseController(app, "fans")

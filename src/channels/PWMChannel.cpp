@@ -122,7 +122,7 @@ void IRAM_ATTR PWMChannel::ina226AlertHandler(void* arg)
   PWMChannel* ch = static_cast<PWMChannel*>(arg);
   ch->status == Status::TRIPPED;
   ch->updateOutput();
-  ch->softFuseTripCount++;
+  ch->softFuseTripCount = ch->softFuseTripCount + 1;
   ch->sendFastUpdate = true;
 }
 
@@ -998,6 +998,16 @@ void PWMChannel::generateUpdate(JsonVariant config)
   config["temperature"] = round2(this->getTemperature());
   config["aH"] = round3(this->ampHours);
   config["wH"] = round3(this->wattHours);
+}
+
+void PWMChannel::generateStats(JsonVariant output)
+{
+  output["id"] = id;
+  output["name"] = name;
+  output["aH"] = ampHours;
+  output["wH"] = wattHours;
+  output["state_change_count"] = stateChangeCount;
+  output["soft_fuse_trip_count"] = softFuseTripCount;
 }
 
 #endif
