@@ -35,6 +35,8 @@ RGBController<WS2812B, YB_STATUS_RGB_PIN, YB_STATUS_RGB_ORDER> rgb(yba, YB_STATU
   #include "controllers/BusVoltageController.h"
   #include "controllers/FanController.h"
   #include "controllers/PWMController.h"
+  #include "gulp/logo-frothfet.png.gz.h"
+
 FanController fans(yba);
 BusVoltageController bus_voltage(yba);
 PWMController pwm(yba);

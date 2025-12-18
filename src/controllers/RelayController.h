@@ -9,10 +9,11 @@
 #ifndef YARR_RELAY_CONTROLLER_H
 #define YARR_RELAY_CONTROLLER_H
 
-#include "channels/RelayChannel.h"
-#include "controllers/ChannelController.h"
-
+#include "config.h"
 #ifdef YB_HAS_RELAY_CHANNELS
+
+  #include "channels/RelayChannel.h"
+  #include "controllers/ChannelController.h"
 
 class YarrboardApp;
 class RelayController : public ChannelController<RelayChannel, YB_RELAY_CHANNEL_COUNT>

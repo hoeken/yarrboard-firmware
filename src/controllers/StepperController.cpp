@@ -6,13 +6,14 @@
   License: GPLv3
 */
 
-#include "controllers/StepperController.h"
-#include <ConfigManager.h>
-#include <YarrboardApp.h>
-#include <YarrboardDebug.h>
-#include <controllers/ProtocolController.h>
+#include "config.h"
+#ifdef YB_HAS_STEPPER_CHANNELS
 
-#ifdef YB_HAS_SERVO_CHANNELS
+  #include "controllers/StepperController.h"
+  #include <ConfigManager.h>
+  #include <YarrboardApp.h>
+  #include <YarrboardDebug.h>
+  #include <controllers/ProtocolController.h>
 
 StepperController::StepperController(YarrboardApp& app) : ChannelController(app, "stepper")
 {

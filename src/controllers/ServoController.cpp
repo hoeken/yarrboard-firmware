@@ -6,13 +6,14 @@
   License: GPLv3
 */
 
-#include "controllers/ServoController.h"
-#include <ConfigManager.h>
-#include <YarrboardApp.h>
-#include <YarrboardDebug.h>
-#include <controllers/ProtocolController.h>
-
+#include "config.h"
 #ifdef YB_HAS_SERVO_CHANNELS
+
+  #include "controllers/ServoController.h"
+  #include <ConfigManager.h>
+  #include <YarrboardApp.h>
+  #include <YarrboardDebug.h>
+  #include <controllers/ProtocolController.h>
 
 ServoController::ServoController(YarrboardApp& app) : ChannelController(app, "servo")
 {
