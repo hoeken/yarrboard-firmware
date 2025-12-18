@@ -140,6 +140,7 @@ class PWMChannel : public BaseChannel
     bool loadConfig(JsonVariantConst config, char* error, size_t len) override;
     void generateConfig(JsonVariant config) override;
     void generateUpdate(JsonVariant config) override;
+    void generateStats(JsonVariant output) override;
 
     void setup();
     void setupLedc();

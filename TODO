@@ -16,6 +16,8 @@
 * go through and re-adjust the various page sizes for our different viewports
 * protocol documentation
 * add buzzer support - enable alarms for tripped or bypassed on a per-channel basis
+* how to handle global set_brightness command
+* make sure fast updates are working
 
 ## BRINEOMATIC
 
