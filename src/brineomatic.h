@@ -9,17 +9,19 @@
 #ifndef YARR_BRINEOMATIC_H
 #define YARR_BRINEOMATIC_H
 
-#include "Flowmeter.h"
-#include "GD20Modbus.h"
-#include "adchelper.h"
-#include "brineomatic_config.h"
-#include "etl/deque.h"
-#include <ADS1X15.h>
-#include <ArduinoJson.h>
-#include <DallasTemperature.h>
-#include <GravityTDS.h>
-#include <OneWire.h>
-#include <QuickPID.h>
+#ifdef YB_IS_BRINEOMATIC
+
+  #include "Flowmeter.h"
+  #include "GD20Modbus.h"
+  #include "adchelper.h"
+  #include "brineomatic_config.h"
+  #include "etl/deque.h"
+  #include <ADS1X15.h>
+  #include <ArduinoJson.h>
+  #include <DallasTemperature.h>
+  #include <GravityTDS.h>
+  #include <OneWire.h>
+  #include <QuickPID.h>
 
 class YarrboardApp;
 class RelayChannel;
@@ -44,40 +46,40 @@ class Brineomatic
       DEPICKLING
     };
 
-// Master list of all Result enum entries (single source of truth)
-#define BOM_RESULT_LIST            \
-  X(STARTUP)                       \
-  X(SUCCESS)                       \
-  X(SUCCESS_TIME)                  \
-  X(SUCCESS_VOLUME)                \
-  X(SUCCESS_TANK_LEVEL)            \
-  X(SUCCESS_SALINITY)              \
-  X(USER_STOP)                     \
-  X(ERR_FILTER_PRESSURE_TIMEOUT)   \
-  X(ERR_FILTER_PRESSURE_LOW)       \
-  X(ERR_FILTER_PRESSURE_HIGH)      \
-  X(ERR_MEMBRANE_PRESSURE_TIMEOUT) \
-  X(ERR_MEMBRANE_PRESSURE_LOW)     \
-  X(ERR_MEMBRANE_PRESSURE_HIGH)    \
-  X(ERR_PRODUCT_FLOWRATE_TIMEOUT)  \
-  X(ERR_PRODUCT_FLOWRATE_LOW)      \
-  X(ERR_PRODUCT_FLOWRATE_HIGH)     \
-  X(ERR_FLUSH_FLOWRATE_LOW)        \
-  X(ERR_FLUSH_FILTER_PRESSURE_LOW) \
-  X(ERR_FLUSH_VALVE_ON)            \
-  X(ERR_FLUSH_TIMEOUT)             \
-  X(ERR_BRINE_FLOWRATE_LOW)        \
-  X(ERR_TOTAL_FLOWRATE_LOW)        \
-  X(ERR_DIVERTER_VALVE_OPEN)       \
-  X(ERR_PRODUCT_SALINITY_TIMEOUT)  \
-  X(ERR_PRODUCT_SALINITY_HIGH)     \
-  X(ERR_PRODUCTION_TIMEOUT)        \
-  X(ERR_MOTOR_TEMPERATURE_HIGH)
+  // Master list of all Result enum entries (single source of truth)
+  #define BOM_RESULT_LIST            \
+    X(STARTUP)                       \
+    X(SUCCESS)                       \
+    X(SUCCESS_TIME)                  \
+    X(SUCCESS_VOLUME)                \
+    X(SUCCESS_TANK_LEVEL)            \
+    X(SUCCESS_SALINITY)              \
+    X(USER_STOP)                     \
+    X(ERR_FILTER_PRESSURE_TIMEOUT)   \
+    X(ERR_FILTER_PRESSURE_LOW)       \
+    X(ERR_FILTER_PRESSURE_HIGH)      \
+    X(ERR_MEMBRANE_PRESSURE_TIMEOUT) \
+    X(ERR_MEMBRANE_PRESSURE_LOW)     \
+    X(ERR_MEMBRANE_PRESSURE_HIGH)    \
+    X(ERR_PRODUCT_FLOWRATE_TIMEOUT)  \
+    X(ERR_PRODUCT_FLOWRATE_LOW)      \
+    X(ERR_PRODUCT_FLOWRATE_HIGH)     \
+    X(ERR_FLUSH_FLOWRATE_LOW)        \
+    X(ERR_FLUSH_FILTER_PRESSURE_LOW) \
+    X(ERR_FLUSH_VALVE_ON)            \
+    X(ERR_FLUSH_TIMEOUT)             \
+    X(ERR_BRINE_FLOWRATE_LOW)        \
+    X(ERR_TOTAL_FLOWRATE_LOW)        \
+    X(ERR_DIVERTER_VALVE_OPEN)       \
+    X(ERR_PRODUCT_SALINITY_TIMEOUT)  \
+    X(ERR_PRODUCT_SALINITY_HIGH)     \
+    X(ERR_PRODUCTION_TIMEOUT)        \
+    X(ERR_MOTOR_TEMPERATURE_HIGH)
 
     enum class Result {
-#define X(name) name,
+  #define X(name) name,
       BOM_RESULT_LIST
-#undef X
+  #undef X
     };
 
     // Static lookup tables
@@ -488,4 +490,5 @@ X map_generic(X x, M in_min, N in_max, O out_min, Q out_max)
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+#endif
 #endif /* !YARR_BRINEOMATIC_H */

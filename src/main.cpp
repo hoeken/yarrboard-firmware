@@ -31,19 +31,13 @@ BuzzerController buzzer(yba);
 RGBController<WS2812B, YB_STATUS_RGB_PIN, YB_STATUS_RGB_ORDER> rgb(yba, YB_STATUS_RGB_COUNT);
 #endif
 
-#ifdef YB_HAS_BUS_VOLTAGE
+#ifdef YB_IS_FROTHFET
   #include "controllers/BusVoltageController.h"
-BusVoltageController bus_voltage(yba);
-#endif
-
-#ifdef YB_HAS_PWM_CHANNELS
-  #include "controllers/PWMController.h"
-PWMController pwm(yba);
-#endif
-
-#ifdef YB_HAS_FANS
   #include "controllers/FanController.h"
+  #include "controllers/PWMController.h"
 FanController fans(yba);
+BusVoltageController bus_voltage(yba);
+PWMController pwm(yba);
 #endif
 
 #ifdef YB_IS_BRINEOMATIC
@@ -52,6 +46,7 @@ FanController fans(yba);
   #include "controllers/RelayController.h"
   #include "controllers/ServoController.h"
   #include "controllers/StepperController.h"
+  #include "gulp/logo-brineomatic.png.gz.h"
 
 RelayController relays(yba);
 ServoController servos(yba);
@@ -59,8 +54,8 @@ StepperController steppers(yba);
 BrineomaticController bom(yba, relays, servos, steppers);
 #endif
 
-#include "index.html.gz.h"
-#include "logo.png.gz.h"
+#include "gulp/index.html.gz.h"
+#include "gulp/logo-yarrboard.png.gz.h"
 
 void setup()
 {
@@ -84,30 +79,38 @@ void setup()
   yba.registerController(rgb);
 #endif
 
-#ifdef YB_HAS_BUS_VOLTAGE
+#ifdef YB_IS_FROTHFET
   bus_voltage.address = YB_BUS_VOLTAGE_ADDRESS;
   bus_voltage.r1 = YB_BUS_VOLTAGE_R1;
   bus_voltage.r2 = YB_BUS_VOLTAGE_R2;
   yba.registerController(bus_voltage);
-#endif
 
-#ifdef YB_HAS_PWM_CHANNELS
   pwm.busVoltage = &bus_voltage;
   pwm.mqtt = (MQTTController*)yba.getController("mqtt");
   pwm.rgb = (RGBControllerInterface*)yba.getController("rgb");
   yba.registerController(pwm);
-#endif
 
-#ifdef YB_HAS_FANS
   fans.pwm = &pwm;
   yba.registerController(fans);
-#endif
 
-#ifdef YB_IS_BRINEOMATIC
+  yba.http.logo_length = logo_frothfet_png_gz_len;
+  yba.http.logo_sha = logo_frothfet_png_gz_sha;
+  yba.http.logo_data = logo_frothfet_png_gz;
+
+#elifdef YB_IS_BRINEOMATIC
   yba.registerController(relays);
   yba.registerController(servos);
   yba.registerController(steppers);
   yba.registerController(bom);
+
+  yba.http.logo_length = logo_brineomatic_png_gz_len;
+  yba.http.logo_sha = logo_brineomatic_png_gz_sha;
+  yba.http.logo_data = logo_brineomatic_png_gz;
+
+#else
+  yba.http.logo_length = logo_yarrboard_png_gz_len;
+  yba.http.logo_sha = logo_yarrboard_png_gz_sha;
+  yba.http.logo_data = logo_yarrboard_png_gz;
 #endif
 
   yba.board_name = YB_BOARD_NAME;
@@ -119,10 +122,6 @@ void setup()
   yba.http.index_length = index_html_gz_len;
   yba.http.index_sha = index_html_gz_sha;
   yba.http.index_data = index_html_gz;
-
-  yba.http.logo_length = logo_gz_len;
-  yba.http.logo_sha = logo_gz_sha;
-  yba.http.logo_data = logo_gz;
 
   yba.setup();
 }

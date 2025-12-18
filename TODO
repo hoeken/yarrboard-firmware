@@ -1,5 +1,9 @@
 # v2.2 TODO
 
+## SENDIT
+
+* Test new board
+
 ## FROTHFET
 
 * Rev F: add support for INA226 to each channel
@@ -21,6 +25,7 @@
 
 ## BRINEOMATIC
 
+* set smart defaults (manual, no sensors, etc.)
 * Rev C: add support for motor + water temperature sensors.
 * Rev C: variable adc gain per-channel
 * move everything to SI units, add configurable units
@@ -28,10 +33,6 @@
     * on/off switch to start/stop the watermaker
     * sensors for each output type
     * YAML dashboard
-
-## SENDIT
-
-* Test new board
 
 # LONG TERM:
 
