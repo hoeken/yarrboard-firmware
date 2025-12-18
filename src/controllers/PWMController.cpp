@@ -111,9 +111,6 @@ bool PWMController::setup()
 
 void PWMController::loop()
 {
-  // do we need to send an update?
-  bool doSendFastUpdate = false;
-
   #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
   adcVoltageHelper->onLoop();
   #endif
@@ -137,10 +134,6 @@ void PWMController::loop()
     ch.checkIfFadeOver();
 
     ch.updateOutputLED();
-
-    // flag for update?
-    if (ch.sendFastUpdate)
-      doSendFastUpdate = true;
   }
 }
 
@@ -249,10 +242,9 @@ void PWMController::handleSetPWMChannel(JsonVariantConst input, JsonVariant outp
     // update our pwm channel
     ch->setState(state);
 
-    // TODO: trigger a fast update
     //  get that update out ASAP... if its our own update
-    //  if (!strcmp(ch->source, local_hostname))
-    //    sendFastUpdate();
+    if (!strcmp(ch->source, _cfg.local_hostname))
+      ch->sendFastUpdate = true;
   }
 }
 
