@@ -29,10 +29,22 @@ class BrineomaticController : public BaseController
     bool setup() override;
     void loop() override;
 
+    bool loadConfigHook(JsonVariant config, char* error, size_t len) override;
     void generateConfigHook(JsonVariant config) override;
     void generateUpdateHook(JsonVariant output) override;
-    void generateFastUpdateHook(JsonVariant output) override;
     void generateStatsHook(JsonVariant output) override;
+
+    void handleStartWatermaker(JsonVariantConst input, JsonVariant output);
+    void handleFlushWatermaker(JsonVariantConst input, JsonVariant output);
+    void handlePickleWatermaker(JsonVariantConst input, JsonVariant output);
+    void handleDepickleWatermaker(JsonVariantConst input, JsonVariant output);
+    void handleStopWatermaker(JsonVariantConst input, JsonVariant output);
+    void handleIdleWatermaker(JsonVariantConst input, JsonVariant output);
+    void handleManualWatermaker(JsonVariantConst input, JsonVariant output);
+    void handleSetWatermaker(JsonVariantConst input, JsonVariant output);
+    void handleSaveGeneralConfig(JsonVariantConst input, JsonVariant output);
+    void handleSaveHardwareConfig(JsonVariantConst input, JsonVariant output);
+    void handleSaveSafeguardsConfig(JsonVariantConst input, JsonVariant output);
 
   private:
     Brineomatic wm;
