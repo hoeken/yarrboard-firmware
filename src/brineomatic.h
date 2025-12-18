@@ -25,6 +25,9 @@ class YarrboardApp;
 class RelayChannel;
 class ServoChannel;
 class StepperChannel;
+class RelayController;
+class ServoController;
+class StepperController;
 
 class Brineomatic
 {
@@ -94,6 +97,10 @@ class Brineomatic
 
     bool isPickled;
     int64_t pickledOnTimestamp = 0;
+
+    RelayController* relays = nullptr;
+    ServoController* servos = nullptr;
+    StepperController* steppers = nullptr;
 
     RelayChannel* flushValve = NULL;
     RelayChannel* boostPump = NULL;

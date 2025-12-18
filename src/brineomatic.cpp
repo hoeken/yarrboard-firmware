@@ -14,6 +14,9 @@
   #include "channels/RelayChannel.h"
   #include "channels/ServoChannel.h"
   #include "channels/StepperChannel.h"
+  #include "controllers/RelayController.h"
+  #include "controllers/ServoController.h"
+  #include "controllers/StepperController.h"
   #include "etl/deque.h"
   #include "validate.h"
   #include <Arduino.h>
@@ -286,24 +289,24 @@ void Brineomatic::measureMembranePressure()
 
 void Brineomatic::initChannels()
 {
-  for (auto& ch : relay_channels) {
+  for (auto& ch : relays->getChannels()) {
     ch.init(ch.id);
     ch.isEnabled = false;
     ch.defaultState = false;
   }
 
-  for (auto& ch : servo_channels) {
+  for (auto& ch : servos->getChannels()) {
     ch.init(ch.id);
     ch.isEnabled = false;
   }
 
-  for (auto& ch : stepper_channels) {
+  for (auto& ch : steppers->getChannels()) {
     ch.init(ch.id);
     ch.isEnabled = false;
   }
 
   if (boostPumpControl.equals("RELAY")) {
-    boostPump = getChannelById(boostPumpRelayId, relay_channels);
+    boostPump = relays->getChannelById(boostPumpRelayId);
     boostPump->isEnabled = true;
     boostPump->setName("Boost Pump");
     boostPump->setKey("boost_pump");
@@ -311,7 +314,7 @@ void Brineomatic::initChannels()
   }
 
   if (flushValveControl.equals("RELAY")) {
-    flushValve = getChannelById(flushValveRelayId, relay_channels);
+    flushValve = relays->getChannelById(flushValveRelayId);
     flushValve->isEnabled = true;
     flushValve->setName("Flush Valve");
     flushValve->setKey("flush_valve");
@@ -319,7 +322,7 @@ void Brineomatic::initChannels()
   }
 
   if (coolingFanControl.equals("RELAY")) {
-    coolingFan = getChannelById(coolingFanRelayId, relay_channels);
+    coolingFan = relays->getChannelById(coolingFanRelayId);
     coolingFan->isEnabled = true;
     coolingFan->setName("Cooling Fan");
     coolingFan->setKey("cooling_fan");
@@ -327,7 +330,7 @@ void Brineomatic::initChannels()
   }
 
   if (highPressurePumpControl.equals("RELAY")) {
-    highPressurePump = getChannelById(highPressureRelayId, relay_channels);
+    highPressurePump = relays->getChannelById(highPressureRelayId);
     highPressurePump->isEnabled = true;
     highPressurePump->setName("High Pressure Pump");
     highPressurePump->setKey("hp_pump");
@@ -335,14 +338,14 @@ void Brineomatic::initChannels()
   }
 
   if (diverterValveControl.equals("SERVO")) {
-    diverterValve = getChannelById(diverterValveServoId, servo_channels);
+    diverterValve = servos->getChannelById(diverterValveServoId);
     diverterValve->isEnabled = true;
     diverterValve->setName("Diverter Valve");
     diverterValve->setKey("diverter_valve");
   }
 
   if (highPressureValveControl.equals("STEPPER")) {
-    highPressureValveStepper = getChannelById(highPressureValveStepperId, stepper_channels);
+    highPressureValveStepper = steppers->getChannelById(highPressureValveStepperId);
     highPressureValveStepper->isEnabled = true;
     highPressureValveStepper->setName("High Pressure Valve");
     highPressureValveStepper->setKey("hp_valve");
@@ -1288,9 +1291,9 @@ void Brineomatic::runStateMachine()
         return;
       } else {
         if (runResult == Result::SUCCESS_TIME || runResult == Result::SUCCESS_VOLUME || runResult == Result::SUCCESS_VOLUME)
-          playMelodyByName(successMelody.c_str());
+          _app.playMelody(successMelody.c_str());
         else
-          playMelodyByName(errorMelody.c_str());
+          _app.playMelody(errorMelody.c_str());
 
         if (autoflushMode.equals("TIME"))
           flushDuration(autoflushDuration);
@@ -2246,7 +2249,7 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
   if (config["boost_pump_control"]) {
     control = config["boost_pump_control"].as<String>();
     if (control.equals("RELAY")) {
-      auto* ch = getChannelById(config["boost_pump_relay_id"], relay_channels);
+      auto* ch = relays->getChannelById(config["boost_pump_relay_id"]);
       if (!ch) {
         YBP.printf("Boost pump relay id %d not found\n", config["boost_pump_relay_id"]);
         config.remove("boost_pump_relay_id");
@@ -2277,7 +2280,7 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
   if (config["high_pressure_pump_control"]) {
     control = config["high_pressure_pump_control"].as<String>();
     if (control.equals("RELAY")) {
-      auto* ch = getChannelById(config["high_pressure_relay_id"], relay_channels);
+      auto* ch = relays->getChannelById(config["high_pressure_relay_id"]);
       if (!ch) {
         YBP.printf("High Pressure pump relay id %d not found\n", config["boost_pump_relay_id"]);
         config.remove("high_pressure_relay_id");
@@ -2324,8 +2327,7 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
   if (config["high_pressure_valve_control"]) {
     control = config["high_pressure_valve_control"].as<String>();
     if (control.equals("STEPPER")) {
-      auto* ch = getChannelById(config["high_pressure_valve_stepper_id"],
-        stepper_channels);
+      auto* ch = steppers->getChannelById(config["high_pressure_valve_stepper_id"]);
       if (!ch) {
         YBP.printf("High Pressure Valve stepper id %d not found\n", config["high_pressure_valve_stepper_id"]);
         config.remove("high_pressure_valve_stepper_id");
@@ -2404,8 +2406,7 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
   if (config["diverter_valve_control"]) {
     control = config["diverter_valve_control"].as<String>();
     if (control.equals("SERVO")) {
-      auto* ch = getChannelById(config["diverter_valve_servo_id"],
-        relay_channels);
+      auto* ch = servos->getChannelById(config["diverter_valve_servo_id"]);
       if (!ch) {
         YBP.printf("Diverter Valve servo id %d not found\n", config["diverter_valve_servo_id"]);
         config.remove("diverter_valve_servo_id");
@@ -2452,8 +2453,7 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
   if (config["flush_valve_control"]) {
     control = config["flush_valve_control"].as<String>();
     if (control.equals("RELAY")) {
-      auto* ch = getChannelById(config["flush_valve_relay_id"],
-        relay_channels);
+      auto* ch = relays->getChannelById(config["flush_valve_relay_id"]);
       if (!ch) {
         YBP.printf("Flush Valve relay id %d not found\n", config["flush_valve_relay_id"]);
         config.remove("flush_valve_relay_id");
@@ -2484,8 +2484,7 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
   if (config["cooling_fan_control"]) {
     control = config["cooling_fan_control"].as<String>();
     if (control.equals("RELAY")) {
-      auto* ch = getChannelById(config["cooling_fan_relay_id"],
-        relay_channels);
+      auto* ch = relays->getChannelById(config["cooling_fan_relay_id"]);
       if (!ch) {
         YBP.printf("Cooling Fan relay id %d not found\n", config["cooling_fan_relay_id"]);
         config.remove("cooling_fan_relay_id");
