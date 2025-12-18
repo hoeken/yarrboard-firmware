@@ -1134,6 +1134,7 @@
       $("#hardware_version").html(msg.hardware_version);
       $("#esp_idf_version").html(`${msg.esp_idf_version}`);
       $("#arduino_version").html(`v${msg.arduino_version}`);
+      $("#yarrboard_framework_version").html(`v${msg.yarrboard_framework_version}`);
       $("#psychic_http_version").html(`v${msg.psychic_http_version}`);
       $("#yarrboard_client_version").html(`v${YarrboardClient.version}`);
 
