@@ -98,7 +98,7 @@ bool PWMController::setup()
   }
 
   for (auto& ch : _channels) {
-    ch.setupOffset();
+    // ch.setupOffset();
     ch.setupDefaultState();
   }
 
