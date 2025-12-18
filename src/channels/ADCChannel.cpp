@@ -297,14 +297,13 @@ bool ADCChannel::addCalibrationValue(CalibrationPoint cp)
   return true;
 }
 
-void ADCChannel::haGenerateDiscovery(JsonVariant doc)
+void ADCChannel::haGenerateDiscovery(JsonVariant doc, const char* uuid, MQTTController* mqtt)
 {
-  // BaseChannel::haGenerateDiscovery(doc);
+  BaseChannel::haGenerateDiscovery(doc, uuid, mqtt);
 
-  // // generate our id / topics
-  // sprintf(ha_topic_value, "yarrboard/%s/adc/%s/value", local_hostname, this->key);
+  sprintf(ha_topic_value, "yarrboard/%s/adc/%s/value", uuid, this->key);
 
-  // this->haGenerateSensorDiscovery(doc);
+  this->haGenerateSensorDiscovery(doc);
 }
 
 void ADCChannel::haGenerateSensorDiscovery(JsonVariant doc)

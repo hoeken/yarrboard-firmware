@@ -134,7 +134,6 @@ class PWMChannel : public BaseChannel
     ConfigManager* _cfg = nullptr;
     BusVoltageController* busVoltage = nullptr;
     RGBControllerInterface* rgb = nullptr;
-    MQTTController* mqtt = nullptr;
 
     void init(uint8_t id) override;
     bool loadConfig(JsonVariantConst config, char* error, size_t len) override;
@@ -196,11 +195,11 @@ class PWMChannel : public BaseChannel
 
     void updateOutputLED();
 
-    void haGenerateDiscovery(JsonVariant doc);
+    void haGenerateDiscovery(JsonVariant doc, const char* uuid, MQTTController* mqtt);
     void haGenerateLightDiscovery(JsonVariant doc);
     void haGenerateVoltageDiscovery(JsonVariant doc);
     void haGenerateAmperageDiscovery(JsonVariant doc);
-    void haPublishState();
+    void haPublishState(MQTTController* mqtt);
     void haHandleCommand(const char* topic, const char* payload);
 
     static void ARDUINO_ISR_ATTR onFadeISR(void* arg)

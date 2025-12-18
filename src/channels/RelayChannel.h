@@ -14,6 +14,8 @@
 #include <Arduino.h>
 #include <channels/BaseChannel.h>
 
+class MQTTController;
+
 class RelayChannel : public BaseChannel
 {
   protected:
@@ -35,8 +37,8 @@ class RelayChannel : public BaseChannel
     void generateConfig(JsonVariant config) override;
     void generateUpdate(JsonVariant config) override;
 
-    void haGenerateDiscovery(JsonVariant doc);
-    void haPublishState();
+    void haGenerateDiscovery(JsonVariant doc, const char* uuid, MQTTController* mqtt) override;
+    void haPublishState(MQTTController* mqtt) override;
     void haHandleCommand(const char* topic, const char* payload);
 
     void setup(byte pin);

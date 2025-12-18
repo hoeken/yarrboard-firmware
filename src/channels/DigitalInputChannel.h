@@ -36,7 +36,7 @@ class DigitalInputChannel : public BaseChannel
     void generateConfig(JsonVariant config) override;
     void generateUpdate(JsonVariant update) override;
 
-    void haGenerateDiscovery(JsonVariant doc);
+    void haGenerateDiscovery(JsonVariant doc, const char* uuid);
     void haPublishState();
 
     void setState(bool state);
