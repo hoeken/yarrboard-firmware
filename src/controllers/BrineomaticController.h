@@ -20,11 +20,14 @@
 
 class YarrboardApp;
 class ConfigManager;
+class RelayController;
+class ServoController;
+class StepperController;
 
 class BrineomaticController : public BaseController
 {
   public:
-    BrineomaticController(YarrboardApp& app);
+    BrineomaticController(YarrboardApp& app, RelayController& relays, ServoController& servos, StepperController& steppers);
 
     bool setup() override;
     void loop() override;
@@ -48,6 +51,7 @@ class BrineomaticController : public BaseController
 
   private:
     Brineomatic wm;
+
     uint32_t lastOutput;
 
     // The actual state machine logic

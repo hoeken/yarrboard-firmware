@@ -12,8 +12,8 @@
 #include <YarrboardApp.h>
 #include <YarrboardDebug.h>
 
-BrineomaticController::BrineomaticController(YarrboardApp& app) : BaseController(app, "bus_voltage"),
-                                                                  wm(app)
+BrineomaticController::BrineomaticController(YarrboardApp& app, RelayController& relays, ServoController& servos, StepperController& steppers) : BaseController(app, "bus_voltage"),
+                                                                                                                                                 wm(app, relays, servos, steppers)
 {
 }
 

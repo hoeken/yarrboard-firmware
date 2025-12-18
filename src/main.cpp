@@ -46,6 +46,19 @@ PWMController pwm(yba);
 FanController fans(yba);
 #endif
 
+#ifdef YB_IS_BRINEOMATIC
+  #include "Brineomatic.h"
+  #include "controllers/BrineomaticController.h"
+  #include "controllers/RelayController.h"
+  #include "controllers/ServoController.h"
+  #include "controllers/StepperController.h"
+
+RelayController relays(yba);
+ServoController servos(yba);
+StepperController steppers(yba);
+BrineomaticController bom(yba, relays, servos, steppers);
+#endif
+
 #include "index.html.gz.h"
 #include "logo.png.gz.h"
 
@@ -88,6 +101,13 @@ void setup()
 #ifdef YB_HAS_FANS
   fans.pwm = &pwm;
   yba.registerController(fans);
+#endif
+
+#ifdef YB_IS_BRINEOMATIC
+  yba.registerController(relays);
+  yba.registerController(servos);
+  yba.registerController(steppers);
+  yba.registerController(bom);
 #endif
 
   yba.board_name = YB_BOARD_NAME;
