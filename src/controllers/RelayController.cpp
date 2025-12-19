@@ -40,29 +40,6 @@ void RelayController::loop()
 {
 }
 
-void RelayController::handleConfigCommand(JsonVariantConst input, JsonVariant output)
-{
-  char error[128];
-
-  // load our channel
-  auto* ch = lookupChannel(input, output);
-  if (!ch)
-    return;
-
-  if (!input["config"].is<JsonObjectConst>()) {
-    snprintf(error, sizeof(error), "'config' is required parameter");
-    return _app.protocol.generateErrorJSON(output, error);
-  }
-
-  if (!ch->loadConfig(input["config"], error, sizeof(error))) {
-    return _app.protocol.generateErrorJSON(output, error);
-  }
-
-  // write it to file
-  if (!_app.config.saveConfig(error, sizeof(error)))
-    return _app.protocol.generateErrorJSON(output, error);
-}
-
 void RelayController::handleSetCommand(JsonVariantConst input, JsonVariant output)
 {
   char prefIndex[YB_PREF_KEY_LENGTH];

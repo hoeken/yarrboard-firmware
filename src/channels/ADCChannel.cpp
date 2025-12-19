@@ -149,16 +149,16 @@ bool ADCChannel::loadConfig(JsonVariantConst config, char* error, size_t len)
   if (config["displayDecimals"].is<unsigned int>()) {
     this->displayDecimals = config["displayDecimals"];
     this->displayDecimals = max(0, (int)this->displayDecimals);
+    this->displayDecimals = min(4, (int)this->displayDecimals);
   }
 
-  this->useCalibrationTable = config["useCalibrationTable"];
+  this->useCalibrationTable = config["useCalibrationTable"] | false;
 
   value = config["calibratedUnits"].as<const char*>();
   snprintf(this->calibratedUnits, sizeof(this->calibratedUnits), "%s", (value && *value) ? value : "");
 
-  // todo: we need a return here.
-  if (config["calibrationTable"])
-    this->parseCalibrationTableJson(config["calibrationTable"]);
+  if (this->useCalibrationTable)
+    return this->parseCalibrationTableJson(config["calibrationTable"], error, len);
 
   return true;
 }
@@ -205,7 +205,7 @@ void ADCChannel::generateUpdate(JsonVariant config)
 }
 
 // ---- The loader you can call with a JSON string ----
-bool ADCChannel::parseCalibrationTableJson(JsonVariantConst tv)
+bool ADCChannel::parseCalibrationTableJson(JsonVariantConst tv, char* error, size_t len)
 {
   // Clear any existing table
   this->calibrationTable.clear();
@@ -216,7 +216,7 @@ bool ADCChannel::parseCalibrationTableJson(JsonVariantConst tv)
   if (tv.is<JsonVariantConst>()) {
     // Key exists: validate it's an array
     if (!tv.is<JsonArrayConst>()) {
-      YBP.println(F("\"table\" must be an array"));
+      strlcpy(error, "\"table\" must be an array", len);
       return false;
     }
 
@@ -224,13 +224,13 @@ bool ADCChannel::parseCalibrationTableJson(JsonVariantConst tv)
 
     for (JsonVariantConst row : arr) {
       if (!row.is<JsonArrayConst>()) {
-        YBP.println(F("Each table entry must be an array [v, y]"));
+        strlcpy(error, "Each table entry must be an array [v, y]", len);
         return false;
       }
 
       JsonArrayConst pair = row.as<JsonArrayConst>();
       if (pair.size() != 2) {
-        YBP.println(F("Each table entry must have exactly 2 elements [v, y]"));
+        strlcpy(error, "Each table entry must have exactly 2 elements [v, y]", len);
         return false;
       }
 
@@ -245,12 +245,7 @@ bool ADCChannel::parseCalibrationTableJson(JsonVariantConst tv)
   }
 
   if (!foundAny) {
-    YBP.println("No calibration array found (expected \"table\" or \"points\")");
-    return false;
-  }
-
-  if (this->calibrationTable.empty()) {
-    YBP.println("Calibration array is empty");
+    strlcpy(error, "No calibration array found (expected \"table\" or \"points\")", len);
     return false;
   }
 

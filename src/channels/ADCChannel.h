@@ -61,7 +61,7 @@ class ADCChannel : public BaseChannel
     void generateConfig(JsonVariant config) override;
     void generateUpdate(JsonVariant config) override;
 
-    bool parseCalibrationTableJson(JsonVariantConst root);
+    bool parseCalibrationTableJson(JsonVariantConst root, char* error, size_t len);
     float interpolateValue(float xv);
     bool addCalibrationValue(CalibrationPoint cp);
 
