@@ -68,7 +68,7 @@
   ADCChannel.prototype.generateControlUI = function () {
     // Adapted from table row to Card format to match RelayChannel
     return `
-      <div id="adcControlCard${this.id}" class="col-xs-12 col-sm-6">
+      <div id="adcControlCard${this.id}" class="col-xs-12 col-sm-6 col-lg-3">
         <table class="w-100 h-100 p-2">
           <tr>
             <td>

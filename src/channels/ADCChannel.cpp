@@ -99,7 +99,7 @@ float ADCChannel::interpolateValue(float xv)
 {
   // Precondition: this->calibrationTable.size() >= 1 and sorted by x
   if (this->calibrationTable.empty())
-    return 0.0f;
+    return xv;
   if (xv <= this->calibrationTable.front().voltage)
     return this->calibrationTable.front().calibrated;
   if (xv >= this->calibrationTable.back().voltage)
