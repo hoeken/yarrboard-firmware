@@ -19,7 +19,7 @@
 
     // Bind UI handlers
     this.onAddCalibrationRow = this.onAddCalibrationRow.bind(this);
-    // this.onRemoveCalibrationRow = this.onRemoveCalibrationRow.bind(this);
+    this.onRemoveCalibrationRow = this.onRemoveCalibrationRow.bind(this);
     this.onCopyAverage = this.onCopyAverage.bind(this);
     this.onResetAverage = this.onResetAverage.bind(this);
   }
@@ -358,10 +358,10 @@
     $(`#adc-cal-table-body-${this.id}`).append(html);
 
     // Bind removal directly to the new button
-    $(`#${rowId} .remove-cal-row`).click(() => $(`#${rowId}`).remove());
+    $(`#${rowId} .remove-cal-row`).click(this.onRemoveCalibrationRow);
   };
 
-  ADCChannel.prototype.onAddCalibrationRow = function () {
+  ADCChannel.prototype.onAddCalibrationRow = function (e) {
     const rawInput = $(`#f-adc-new-in-${this.id}`);
     const targetInput = $(`#f-adc-new-out-${this.id}`);
 
@@ -372,7 +372,13 @@
       this.renderCalibrationRow(raw, target);
       rawInput.val('');
       targetInput.val('');
+      this.onEditForm(e);
     }
+  };
+
+  ADCChannel.prototype.onRemoveCalibrationRow = function (e) {
+    $(e.currentTarget).closest('tr').remove();
+    this.onEditForm(e);
   };
 
   ADCChannel.prototype.onCopyAverage = function () {
