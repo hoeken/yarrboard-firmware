@@ -110,6 +110,11 @@ void RelayController::handleToggleCommand(JsonVariantConst input, JsonVariant ou
     ch->setState("ON");
 }
 
+void RelayController::handleConfigCommand(JsonVariantConst input, JsonVariant output)
+{
+  ChannelController::handleConfigCommand(input, output);
+}
+
 void RelayController::handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup)
 {
   if (_instance) {
