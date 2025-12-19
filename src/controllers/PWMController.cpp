@@ -32,9 +32,9 @@ PWMController::PWMController(YarrboardApp& app) : ChannelController(app, "pwm")
 
 bool PWMController::setup()
 {
-  _app.protocol.registerCommand(GUEST, "set_pwm_channel", this, &PWMController::handleSetPWMChannel);
-  _app.protocol.registerCommand(GUEST, "toggle_pwm_channel", this, &PWMController::handleTogglePWMChannel);
-  _app.protocol.registerCommand(ADMIN, "config_pwm_channel", this, &PWMController::handleConfigPWMChannel);
+  _app.protocol.registerCommand(GUEST, "set_pwm_channel", this, &PWMController::handleSetCommand);
+  _app.protocol.registerCommand(GUEST, "toggle_pwm_channel", this, &PWMController::handleToggleCommand);
+  _app.protocol.registerCommand(ADMIN, "config_pwm_channel", this, &PWMController::handleConfigCommand);
 
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
 
@@ -203,7 +203,7 @@ float PWMController::getMaxCurrent()
   return amps;
 }
 
-void PWMController::handleSetPWMChannel(JsonVariantConst input, JsonVariant output)
+void PWMController::handleSetCommand(JsonVariantConst input, JsonVariant output)
 {
   // load our channel
   auto* ch = lookupChannel(input, output);
@@ -264,30 +264,12 @@ void PWMController::handleSetPWMChannel(JsonVariantConst input, JsonVariant outp
   }
 }
 
-void PWMController::handleConfigPWMChannel(JsonVariantConst input, JsonVariant output)
+void PWMController::handleConfigCommand(JsonVariantConst input, JsonVariant output)
 {
-  char error[128];
-
-  // load our channel
-  auto* ch = lookupChannel(input, output);
-  if (!ch)
-    return;
-
-  if (!input["config"].is<JsonObjectConst>()) {
-    snprintf(error, sizeof(error), "'config' is required parameter");
-    return _app.protocol.generateErrorJSON(output, error);
-  }
-
-  if (!ch->loadConfig(input["config"], error, sizeof(error))) {
-    return _app.protocol.generateErrorJSON(output, error);
-  }
-
-  // write it to file
-  if (!_cfg.saveConfig(error, sizeof(error)))
-    return _app.protocol.generateErrorJSON(output, error);
+  ChannelController::handleConfigCommand(input, output);
 }
 
-void PWMController::handleTogglePWMChannel(JsonVariantConst input, JsonVariant output)
+void PWMController::handleToggleCommand(JsonVariantConst input, JsonVariant output)
 {
   // load our channel
   auto* ch = lookupChannel(input, output);

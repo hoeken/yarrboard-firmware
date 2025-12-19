@@ -40,24 +40,7 @@ void StepperController::loop()
 
 void StepperController::handleConfigCommand(JsonVariantConst input, JsonVariant output)
 {
-  char error[128];
-
-  // load our channel
-  auto* ch = lookupChannel(input, output);
-  if (!ch)
-    return;
-
-  if (!input["config"].is<JsonObjectConst>()) {
-    snprintf(error, sizeof(error), "'config' is required parameter");
-    return _app.protocol.generateErrorJSON(output, error);
-  }
-
-  if (!ch->loadConfig(input["config"], error, sizeof(error)))
-    return _app.protocol.generateErrorJSON(output, error);
-
-  // write it to file
-  if (!_cfg.saveConfig(error, sizeof(error)))
-    return _app.protocol.generateErrorJSON(output, error);
+  ChannelController::handleConfigCommand(input, output);
 }
 
 void StepperController::handleSetCommand(JsonVariantConst input, JsonVariant output)
