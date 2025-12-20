@@ -35,7 +35,7 @@ import crypto from 'crypto';
 
 
 const logos = [
-    'logo-yarrboard.png',
+    'logo-sendit.png',
     'logo-brineomatic.png',
     'logo-frothfet.png'
 ];

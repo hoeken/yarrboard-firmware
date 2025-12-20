@@ -49,7 +49,7 @@ StepperController steppers(yba);
 BrineomaticController bom(yba, relays, servos, steppers);
 #elifdef YB_IS_SENDIT
   #include "controllers/ADCController.h"
-  #include "gulp/logo-yarrboard.png.gz.h"
+  #include "gulp/logo-sendit.png.gz.h"
 ADCController adc(yba);
 #endif
 
@@ -105,9 +105,9 @@ void setup()
 #elifdef YB_IS_SENDIT
   yba.registerController(adc);
 
-  yba.http.logo_length = logo_yarrboard_png_gz_len;
-  yba.http.logo_sha = logo_yarrboard_png_gz_sha;
-  yba.http.logo_data = logo_yarrboard_png_gz;
+  yba.http.logo_length = logo_sendit_png_gz_len;
+  yba.http.logo_sha = logo_sendit_png_gz_sha;
+  yba.http.logo_data = logo_sendit_png_gz;
 #endif
 
   yba.board_name = YB_BOARD_NAME;
