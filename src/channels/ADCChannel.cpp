@@ -29,9 +29,9 @@ float ADCChannel::getTypeValue()
   if (!strcmp(this->type, "raw"))
     value = this->getVoltage();
   else if (!strcmp(this->type, "digital_switch")) {
-    if (this->getVoltage() >= YB_ADC_VCC * 0.7)
+    if (this->getVoltage() >= YB_ADC_VREF * 0.7)
       value = 1.0;
-    else if (this->getVoltage() <= YB_ADC_VCC * 0.3)
+    else if (this->getVoltage() <= YB_ADC_VREF * 0.3)
       value = 0.0;
     else
       value = this->lastValue;

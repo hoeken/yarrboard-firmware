@@ -16,11 +16,6 @@
 YarrboardApp yba;
 NavicoController navico(yba);
 
-#ifdef YB_HAS_ADC_CHANNELS
-  #include "controllers/ADCController.h"
-ADCController adc(yba);
-#endif
-
 #ifdef YB_HAS_PIEZO
   #include "controllers/BuzzerController.h"
 BuzzerController buzzer(yba);
@@ -40,9 +35,7 @@ RGBController<WS2812B, YB_STATUS_RGB_PIN, YB_STATUS_RGB_ORDER> rgb(yba, YB_STATU
 FanController fans(yba);
 BusVoltageController bus_voltage(yba);
 PWMController pwm(yba);
-#endif
-
-#ifdef YB_IS_BRINEOMATIC
+#elifdef YB_IS_BRINEOMATIC
   #include "Brineomatic.h"
   #include "controllers/BrineomaticController.h"
   #include "controllers/RelayController.h"
@@ -54,17 +47,19 @@ RelayController relays(yba);
 ServoController servos(yba);
 StepperController steppers(yba);
 BrineomaticController bom(yba, relays, servos, steppers);
+#elifdef YB_IS_SENDIT
+  #include "controllers/ADCController.h"
+  #include "gulp/logo-yarrboard.png.gz.h"
+ADCController adc(yba);
 #endif
 
 #include "gulp/index.html.gz.h"
-#include "gulp/logo-yarrboard.png.gz.h"
 
 void setup()
 {
   yba.registerController(navico);
 
 #ifdef YB_HAS_ADC_CHANNELS
-  yba.registerController(adc);
 #endif
 
 #ifdef YB_HAS_PIEZO
@@ -108,10 +103,8 @@ void setup()
   yba.http.logo_sha = logo_brineomatic_png_gz_sha;
   yba.http.logo_data = logo_brineomatic_png_gz;
 #elifdef YB_IS_SENDIT
-  yba.http.logo_length = logo_yarrboard_png_gz_len;
-  yba.http.logo_sha = logo_yarrboard_png_gz_sha;
-  yba.http.logo_data = logo_yarrboard_png_gz;
-#else
+  yba.registerController(adc);
+
   yba.http.logo_length = logo_yarrboard_png_gz_len;
   yba.http.logo_sha = logo_yarrboard_png_gz_sha;
   yba.http.logo_data = logo_yarrboard_png_gz;
