@@ -2,7 +2,12 @@
 
 ## SENDIT
 
-* Test new board
+* add code to display loop speed in stats.
+
+* Test Board:
+    * check each type
+    * test with 8x 4-20ma loads -> check regulators
+    * test overvoltage on pins -> maybe change filter r/c?
 
 ## FROTHFET
 

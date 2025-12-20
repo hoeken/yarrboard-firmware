@@ -253,40 +253,54 @@
                                     </tr>
                                     <tr id="message_stats" style="display: none">
                                         <td colspan="2" align="right">
-                                            <table class="table ministats">
-                                                <tbody>
-                                                    <tr>
-                                                        <th>Message RX Rate</th>
-                                                        <td id="received_message_mps" class="text-end"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th>Message TX Rate</th>
-                                                        <td id="sent_message_mps" class="text-end"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th>Message RX Total</th>
-                                                        <td id="received_message_total" class="text-end">
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th>Message TX Total</th>
-                                                        <td id="sent_message_total" class="text-end"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th>Websocket Clients</th>
-                                                        <td id="websocket_client_count" class="text-end">
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th>HTTP Clients</th>
-                                                        <td id="http_client_count" class="text-end"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th>Total Clients</th>
-                                                        <td id="total_client_count" class="text-end"></td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
+                                            <div class="row">
+                                                <div class="col">
+                                                    <table class="table ministats">
+                                                        <thead>
+                                                            <th>Controller</th>
+                                                            <th>Avg Time</th>
+                                                        </thead>
+                                                        <tbody id="loop_stats">
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <div class="col">
+                                                    <table class="table">
+                                                        <tbody>
+                                                            <tr>
+                                                                <th>Message RX Rate</th>
+                                                                <td id="received_message_mps" class="text-end"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Message TX Rate</th>
+                                                                <td id="sent_message_mps" class="text-end"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Message RX Total</th>
+                                                                <td id="received_message_total" class="text-end">
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Message TX Total</th>
+                                                                <td id="sent_message_total" class="text-end"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Websocket Clients</th>
+                                                                <td id="websocket_client_count" class="text-end">
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>HTTP Clients</th>
+                                                                <td id="http_client_count" class="text-end"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Total Clients</th>
+                                                                <td id="total_client_count" class="text-end"></td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr onclick="$('#memory_stats').toggle()">
@@ -301,7 +315,7 @@
                                     </tr>
                                     <tr id="memory_stats" style="display: none">
                                         <td colspan="2" align="right">
-                                            <table class="table ministats">
+                                            <table class="table">
                                                 <tr>
                                                     <th scope="row">Heap Size</th>
                                                     <td id="heap_size" class="text-end"></td>
