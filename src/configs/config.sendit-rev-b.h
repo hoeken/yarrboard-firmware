@@ -7,6 +7,9 @@
 #define YB_IS_SENDIT        1
 #define YB_BOARD_NAME       "Sendit"
 #define YB_DEFAULT_HOSTNAME "sendit"
+#define YB_HARDWARE_URL     "https://github.com/hoeken/sendit/releases/tag/Rev-B"
+#define YB_PROJECT_NAME     "Sendit"
+#define YB_PROJECT_URL      "https://github.com/hoeken/sendit"
 
 #define YB_HAS_STATUS_RGB
 #define YB_STATUS_RGB_PIN 38
