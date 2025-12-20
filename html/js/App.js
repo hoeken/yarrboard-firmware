@@ -880,41 +880,46 @@
           return;
         }
 
-        $.ajax({
-          url: YB.App.config.firmware_manifest_url,
-          cache: false,
-          dataType: "json",
-          success: function (jdata) {
-            //did we get anything?
-            let data;
-            for (firmware of jdata)
-              if (firmware.type == YB.App.config.hardware_version)
-                data = firmware;
+        //check them if we got em.
+        if (YB.App.config.firmware_manifest_url && YB.App.config.firmware_manifest_url.length) {
+          $.ajax({
+            url: YB.App.config.firmware_manifest_url,
+            cache: false,
+            dataType: "json",
+            success: function (jdata) {
+              //did we get anything?
+              let data;
+              for (firmware of jdata)
+                if (firmware.type == YB.App.config.hardware_version)
+                  data = firmware;
 
-            if (!data) {
-              YB.App.showAlert(`Could not find a firmware for this hardware.`, "danger");
-              return;
-            }
-
-            $("#firmware_checking").hide();
-
-            //do we have a new version?
-            if (YB.Util.compareVersions(data.version, YB.App.config.firmware_version)) {
-              if (data.changelog) {
-                $("#firmware_changelog").append(marked.parse(data.changelog));
-                $("#firmware_changelog").show();
+              if (!data) {
+                YB.App.showAlert(`Could not find a firmware for this hardware.`, "danger");
+                return;
               }
 
-              $("#new_firmware_version").html(data.version);
-              $("#firmware_bin").attr("href", `${data.url}`);
-              $("#firmware_update_available").show();
+              $("#firmware_checking").hide();
 
-              YB.App.showAlert(`There is a <a onclick="YB.App.openPage('system')" href="/#system">firmware update</a> available (${data.version}).`, "primary");
+              //do we have a new version?
+              if (YB.Util.compareVersions(data.version, YB.App.config.firmware_version)) {
+                if (data.changelog) {
+                  $("#firmware_changelog").append(marked.parse(data.changelog));
+                  $("#firmware_changelog").show();
+                }
+
+                $("#new_firmware_version").html(data.version);
+                $("#firmware_bin").attr("href", `${data.url}`);
+                $("#firmware_update_available").show();
+
+                YB.App.showAlert(`There is a <a onclick="YB.App.openPage('system')" href="/#system">firmware update</a> available (${data.version}).`, "primary");
+              }
+              else
+                $("#firmware_up_to_date").show();
             }
-            else
-              $("#firmware_up_to_date").show();
-          }
-        });
+          });
+        } else {
+          $("#firmware_checking").html("No firmware manifest url configured, automatic firmware updating disabled.");
+        }
       }
     },
 
@@ -1094,7 +1099,7 @@
       if (msg.has_coredump)
         YB.App.showAdminAlert(/*html*/ `
           <p>Oops, looks like Yarrboard crashed.</p>
-          <p>Please download the <a href="/coredump.bin" target="_blank">coredump</a> and report it to our <a href="https://github.com/hoeken/yarrboard/issues">Github Issue Tracker</a> along with the following information:</p>
+          <p>Please download the <a href="/coredump.bin" target="_blank">coredump</a> and report it to our <a href="{msg.github_url}/issues">Github Issue Tracker</a> along with the following information:</p>
           <ul><li>Firmware: ${msg.firmware_version}</li><li>Hardware: ${msg.hardware_version}</li></ul>
         `, "danger");
 
@@ -1111,23 +1116,26 @@
       //let the people choose their own names!
       YB.App.updateBoardName(msg.name);
 
-      //update our footer automatically.
-      $('#projectName').html("Yarrboard v" + msg.firmware_version);
-
       //all our versions
       $("#firmware_version").html(`v${msg.firmware_version}`);
 
-      //deal with our hash
-      let clean_hash = msg.git_hash;
-      let is_dirty = false;
-      if (clean_hash.endsWith("-dirty")) {
-        is_dirty = true;
-        clean_hash = clean_hash.slice(0, -6); // remove the "-dirty" suffix
+      //do we have git configured?
+      if (msg.git_hash) {
+        let clean_hash = msg.git_hash;
+        let is_dirty = false;
+        if (clean_hash.endsWith("-dirty")) {
+          is_dirty = true;
+          clean_hash = clean_hash.slice(0, -6); // remove the "-dirty" suffix
+        }
+        let short_hash = clean_hash.substring(0, 7); // for display
+        if (is_dirty)
+          short_hash += "-dirty";
+
+        if (msg.github_url)
+          $("#git_hash").html(`<a href="${msg.github_url}/commit/${clean_hash}">${short_hash}</a>`);
+        else
+          $("#git_hash").html(`${short_hash}`);
       }
-      let short_hash = clean_hash.substring(0, 7); // for display
-      if (is_dirty)
-        short_hash += "-dirty";
-      $("#git_hash").html(`<a href="https://github.com/hoeken/yarrboard-firmware/commit/${clean_hash}">${short_hash}</a>`);
 
       //various other component versions
       $("#build_time").html(msg.build_time);
@@ -1141,9 +1149,11 @@
       $("#psychic_http_version").html(`v${msg.psychic_http_version}`);
       $("#yarrboard_client_version").html(`v${YarrboardClient.version}`);
 
+      //update our footer
       $('#projectName')
         .attr('href', msg.project_url)
         .text(msg.project_name);
+      $('#year').text(new Date().getFullYear());
 
       //show some info about restarts
       if (msg.last_restart_reason)

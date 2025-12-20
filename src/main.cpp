@@ -125,6 +125,7 @@ void setup()
   yba.hardware_url = YB_HARDWARE_URL;
   yba.project_name = YB_PROJECT_NAME;
   yba.project_url = YB_PROJECT_URL;
+  yba.ota.firmware_manifest_url = "https://raw.githubusercontent.com/hoeken/yarrboard-firmware/main/firmware.json";
 
   yba.http.index_length = index_html_gz_len;
   yba.http.index_sha = index_html_gz_sha;
