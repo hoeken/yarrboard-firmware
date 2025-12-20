@@ -1233,17 +1233,17 @@
           totalTime += item.usec;
           return `<tr>
                     <td>${item.name}</td>
-                    <td>${item.usec} μs</td>
+                    <td class="text-end">${item.usec} μs</td>
                 </tr>`;
         });
 
         const totalRow =
           `<tr>
             <th>Total</th>
-            <th>${totalTime} μs</th>
+            <th class="text-end">${totalTime} μs</th>
           </tr>`;
 
-        $('#loop_stats').html(rows.join('') + totalRow);
+        $('#loop_stats_container').html(rows.join('') + totalRow);
       }
 
       //message info
@@ -1251,6 +1251,7 @@
       $("#received_message_total").html(msg.received_message_total.toLocaleString("en-US"));
       $("#sent_message_mps").html(msg.sent_message_mps.toLocaleString("en-US") + " mps");
       $("#sent_message_total").html(msg.sent_message_total.toLocaleString("en-US"));
+      $("#sent_message_total_main").html(msg.sent_message_total.toLocaleString("en-US"));
 
       //client info
       $("#total_client_count").html(msg.http_client_count + msg.websocket_client_count);

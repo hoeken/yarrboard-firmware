@@ -247,24 +247,34 @@
                                         <th scope="row">Fan RPMs</th>
                                         <td id="fan_rpm" class="text-end"></td>
                                     </tr>
-                                    <tr onclick="$('#message_stats').toggle()">
+                                    <tr onclick="$('#loop_speed').toggle()">
                                         <th scope="row">Loop Speed</th>
                                         <td id="fps" class="text-end"></td>
                                     </tr>
-                                    <tr id="message_stats" style="display: none">
-                                        <td colspan="2" align="right">
-                                            <div class="row">
-                                                <div class="col">
-                                                    <table class="table ministats">
+                                    <tr id="loop_speed" style="display: none">
+                                        <td colspan="2">
+                                            <div class="row justify-content-end">
+                                                <div class="col col-lg-6">
+                                                    <table class="table">
                                                         <thead>
                                                             <th>Controller</th>
-                                                            <th>Avg Time</th>
+                                                            <th class="text-end">Average Time</th>
                                                         </thead>
-                                                        <tbody id="loop_stats">
+                                                        <tbody id="loop_stats_container">
                                                         </tbody>
                                                     </table>
                                                 </div>
-                                                <div class="col">
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr onclick="$('#message_stats').toggle()">
+                                        <th scope="row">Messages</th>
+                                        <td id="sent_message_total_main" class="text-end"></td>
+                                    </tr>
+                                    <tr id="message_stats" style="display: none">
+                                        <td colspan="2">
+                                            <div class="row justify-content-end">
+                                                <div class="col col-lg-6">
                                                     <table class="table">
                                                         <tbody>
                                                             <tr>
