@@ -1226,6 +1226,26 @@
       if (msg.fps)
         $("#fps").html(msg.fps.toLocaleString("en-US") + " hz");
 
+      if (msg.loop_timer) {
+        let totalTime = 0;
+
+        const rows = $.map(msg.loop_timer, function (item) {
+          totalTime += item.usec;
+          return `<tr>
+                    <td>${item.name}</td>
+                    <td>${item.usec} μs</td>
+                </tr>`;
+        });
+
+        const totalRow =
+          `<tr>
+            <th>Total</th>
+            <th>${totalTime} μs</th>
+          </tr>`;
+
+        $('#loop_stats').html(rows.join('') + totalRow);
+      }
+
       //message info
       $("#received_message_mps").html(msg.received_message_mps.toLocaleString("en-US") + " mps");
       $("#received_message_total").html(msg.received_message_total.toLocaleString("en-US"));
