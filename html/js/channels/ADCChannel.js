@@ -85,14 +85,10 @@
   };
 
   ADCChannel.prototype.updateControlUI = function () {
-    // 1. Get Data
-    // We assume the incoming data packet (this.data) contains 'value' and 'calibrated_value'
-    // per your snippet's logic.
-    let value = parseFloat(this.data.value);
-
-    // Safety check if data hasn't arrived yet
-    if (isNaN(value)) return;
-
+    // 1. do some value parsing.
+    let value = this.data.value;
+    if (this.cfg.type != "digital_switch")
+      value = parseFloat(value);
     let calibrated_value = value;
 
     // 2. Load Defaults from Config
@@ -163,10 +159,8 @@
         break;
 
       case "4-20ma":
-        if (value == 0)
-          $display.html(`<span class="text-danger">ERROR: No Signal</span>`);
-        else if (value < 4.0)
-          $display.html(`<span class="text-danger">ERROR: ???</span>`);
+        if (value < 3.75)
+          $display.html(`<span class="text-danger">ERROR: No Sensor<span>`);
         else
           $display.html(`${calibrated_value} ${units}`);
         break;
