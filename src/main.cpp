@@ -107,7 +107,10 @@ void setup()
   yba.http.logo_length = logo_brineomatic_png_gz_len;
   yba.http.logo_sha = logo_brineomatic_png_gz_sha;
   yba.http.logo_data = logo_brineomatic_png_gz;
-
+#elifdef YB_IS_SENDIT
+  yba.http.logo_length = logo_yarrboard_png_gz_len;
+  yba.http.logo_sha = logo_yarrboard_png_gz_sha;
+  yba.http.logo_data = logo_yarrboard_png_gz;
 #else
   yba.http.logo_length = logo_yarrboard_png_gz_len;
   yba.http.logo_sha = logo_yarrboard_png_gz_sha;
@@ -119,6 +122,9 @@ void setup()
   yba.firmware_version = YB_FIRMWARE_VERSION;
   yba.hardware_version = YB_HARDWARE_VERSION;
   yba.manufacturer = YB_MANUFACTURER;
+  yba.hardware_url = YB_HARDWARE_URL;
+  yba.project_name = YB_PROJECT_NAME;
+  yba.project_url = YB_PROJECT_URL;
 
   yba.http.index_length = index_html_gz_len;
   yba.http.index_sha = index_html_gz_sha;

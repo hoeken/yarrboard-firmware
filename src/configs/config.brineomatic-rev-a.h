@@ -7,6 +7,9 @@
 #define YB_IS_BRINEOMATIC   1
 #define YB_BOARD_NAME       "Brineomatic"
 #define YB_DEFAULT_HOSTNAME "brineomatic"
+#define YB_HARDWARE_URL     "https://github.com/hoeken/brineomatic/releases/tag/Rev-A"
+#define YB_PROJECT_NAME     "Brineomatic"
+#define YB_PROJECT_URL      "https://github.com/hoeken/brineomatic"
 
 #define YB_BOM_DATA_SIZE     300
 #define YB_BOM_DATA_INTERVAL 5000000
