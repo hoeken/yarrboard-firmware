@@ -28,7 +28,6 @@
 
 ## BRINEOMATIC
 
-* set smart defaults (manual, no sensors, etc.)
 * Rev C: add support for motor + water temperature sensors.
 * Rev C: variable adc gain per-channel
 * move everything to SI units, add configurable units
