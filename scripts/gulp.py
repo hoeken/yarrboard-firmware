@@ -25,4 +25,4 @@ if not os.path.exists(gulp_folder):
     os.makedirs(gulp_folder)
 
 print("Compressing web app into header")
-env.Execute("gulp")
+env.Execute("GULP_BASE_PATH=.. gulp --gulpfile scripts/gulpfile.mjs")

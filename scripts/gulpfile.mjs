@@ -32,7 +32,15 @@ import inlineImages from 'gulp-css-base64';
 import favicon from 'gulp-base64-favicon';
 import fs from 'fs';
 import crypto from 'crypto';
+import path from 'path';
 
+// Allow configuring the base path via environment variable or default to current directory
+const BASE_PATH = process.env.GULP_BASE_PATH || '.';
+
+// Helper function to resolve paths relative to BASE_PATH
+function resolvePath(...segments) {
+    return path.join(BASE_PATH, ...segments);
+}
 
 const logos = [
     'logo-sendit.png',
@@ -41,7 +49,7 @@ const logos = [
 ];
 
 function clean(cb) {
-    deleteAsync(["dist/*"]);
+    deleteAsync([resolvePath("dist/*")], { force: true });
     cb();
 }
 
@@ -50,10 +58,10 @@ function build(cb) {
 }
 
 function buildfs_inline(cb) {
-    return src('html/*.html')
-        .pipe(favicon({ src: "html" }))
+    return src(resolvePath('html/*.html'))
+        .pipe(favicon({ src: resolvePath("html") }))
         .pipe(inline({
-            base: 'html/',
+            base: resolvePath('html/'),
             //            js: uglify,
             css: [cleancss, inlineImages],
             ignore: [
@@ -69,26 +77,26 @@ function buildfs_inline(cb) {
             minifyJS: true
         }))
         .pipe(gzip())
-        .pipe(dest("dist"));
+        .pipe(dest(resolvePath("dist")));
 }
 
 function buildfs_embeded(cb) {
-    var source = 'dist/index.html.gz';
-    var destination = 'src/gulp/index.html.gz.h';
+    var source = resolvePath('dist/index.html.gz');
+    var destination = resolvePath('src/gulp/index.html.gz.h');
     write_header_file(source, destination, "index_html_gz");
 
     cb();
 }
 
 function buildfs_logo_gz(filename) {
-    return src(`html/${filename}`)
+    return src(resolvePath(`html/${filename}`))
         .pipe(gzip())
-        .pipe(dest("dist"));
+        .pipe(dest(resolvePath("dist")));
 }
 
 function buildfs_logo_embedded(filename, cb) {
-    const source = `dist/${filename}.gz`;
-    const destination = `src/gulp/${filename}.gz.h`;
+    const source = resolvePath(`dist/${filename}.gz`);
+    const destination = resolvePath(`src/gulp/${filename}.gz.h`);
 
     // Create a valid C variable name (e.g., logo_png_gz)
     const safeName = filename.replace(/[^a-z0-9]/gi, '_') + "_gz";
@@ -130,7 +138,7 @@ function write_header_file(source, destination, name) {
     wstream.write('\n};')
     wstream.end();
 
-    deleteAsync([source]);
+    deleteAsync([source], { force: true });
 }
 
 const logoTasks = logos.map(logo => createLogoTask(logo));
