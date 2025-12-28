@@ -18,4 +18,5 @@
     * update editUIData()
     * update UI visibility (if needed)
     * update getConfigFormData()
+    * update getConfigSchema()
 * add custom code and logic for use of new variable

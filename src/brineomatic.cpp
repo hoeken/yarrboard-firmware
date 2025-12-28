@@ -312,6 +312,7 @@ void Brineomatic::initChannels()
     boostPump = _relays.getChannelById(boostPumpRelayId);
     if (boostPump) {
       boostPump->isEnabled = true;
+      boostPump->inverted = boostPumpRelayInverted;
       boostPump->setName("Boost Pump");
       boostPump->setKey("boost_pump");
       strncpy(boostPump->type, "water_pump", sizeof(boostPump->type));
@@ -322,6 +323,7 @@ void Brineomatic::initChannels()
   if (flushValveControl.equals("RELAY")) {
     flushValve = _relays.getChannelById(flushValveRelayId);
     flushValve->isEnabled = true;
+    flushValve->inverted = flushValveRelayInverted;
     flushValve->setName("Flush Valve");
     flushValve->setKey("flush_valve");
     strncpy(flushValve->type, "solenoid", sizeof(flushValve->type));
@@ -330,6 +332,7 @@ void Brineomatic::initChannels()
   if (coolingFanControl.equals("RELAY")) {
     coolingFan = _relays.getChannelById(coolingFanRelayId);
     coolingFan->isEnabled = true;
+    coolingFan->inverted = coolingFanRelayInverted;
     coolingFan->setName("Cooling Fan");
     coolingFan->setKey("cooling_fan");
     strncpy(coolingFan->type, "fan", sizeof(coolingFan->type));
@@ -338,6 +341,7 @@ void Brineomatic::initChannels()
   if (highPressurePumpControl.equals("RELAY")) {
     highPressurePump = _relays.getChannelById(highPressureRelayId);
     highPressurePump->isEnabled = true;
+    highPressurePump->inverted = highPressureRelayInverted;
     highPressurePump->setName("High Pressure Pump");
     highPressurePump->setKey("hp_pump");
     strncpy(highPressurePump->type, "water_pump", sizeof(highPressurePump->type));
@@ -2023,9 +2027,11 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
 
   bom["boost_pump_control"] = this->boostPumpControl;
   bom["boost_pump_relay_id"] = this->boostPumpRelayId;
+  bom["boost_pump_relay_inverted"] = this->boostPumpRelayInverted;
 
   bom["high_pressure_pump_control"] = this->highPressurePumpControl;
   bom["high_pressure_relay_id"] = this->highPressureRelayId;
+  bom["high_pressure_relay_inverted"] = this->highPressureRelayInverted;
   bom["high_pressure_modbus_device"] = this->highPressurePumpModbusDevice;
   bom["high_pressure_modbus_slave_id"] = this->highPressurePumpModbusSlaveId;
   bom["high_pressure_modbus_frequency"] = this->highPressurePumpModbusFrequency;
@@ -2049,9 +2055,11 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
 
   bom["flush_valve_control"] = this->flushValveControl;
   bom["flush_valve_relay_id"] = this->flushValveRelayId;
+  bom["flush_valve_relay_inverted"] = this->flushValveRelayInverted;
 
   bom["cooling_fan_control"] = this->coolingFanControl;
   bom["cooling_fan_relay_id"] = this->coolingFanRelayId;
+  bom["cooling_fan_relay_inverted"] = this->coolingFanRelayInverted;
   bom["cooling_fan_on_temperature"] = this->coolingFanOnTemperature;
   bom["cooling_fan_off_temperature"] = this->coolingFanOffTemperature;
 
@@ -3033,9 +3041,11 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
 {
   this->boostPumpControl = config["boost_pump_control"] | YB_BOOST_PUMP_CONTROL;
   this->boostPumpRelayId = config["boost_pump_relay_id"] | YB_BOOST_PUMP_RELAY_ID;
+  this->boostPumpRelayInverted = config["boost_pump_relay_inverted"] | YB_BOOST_PUMP_RELAY_INVERTED;
 
   this->highPressurePumpControl = config["high_pressure_pump_control"] | YB_HIGH_PRESSURE_PUMP_CONTROL;
   this->highPressureRelayId = config["high_pressure_relay_id"] | YB_HIGH_PRESSURE_RELAY_ID;
+  this->highPressureRelayInverted = config["high_pressure_relay_inverted"] | YB_HIGH_PRESSURE_RELAY_INVERTED;
   this->highPressurePumpModbusDevice = config["high_pressure_modbus_device"] | YB_HIGH_PRESSURE_PUMP_MODBUS_DEVICE;
   this->highPressurePumpModbusSlaveId = config["high_pressure_modbus_slave_id"] | YB_HIGH_PRESSURE_PUMP_MODBUS_SLAVE_ID;
   this->highPressurePumpModbusFrequency = config["high_pressure_modbus_frequency"] | YB_HIGH_PRESSURE_PUMP_MODBUS_FREQUENCY;
@@ -3059,9 +3069,11 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
 
   this->flushValveControl = config["flush_valve_control"] | YB_FLUSH_VALVE_CONTROL;
   this->flushValveRelayId = config["flush_valve_relay_id"] | YB_FLUSH_VALVE_RELAY_ID;
+  this->flushValveRelayInverted = config["flush_valve_relay_inverted"] | YB_FLUSH_VALVE_RELAY_INVERTED;
 
   this->coolingFanControl = config["cooling_fan_control"] | YB_COOLING_FAN_CONTROL;
   this->coolingFanRelayId = config["cooling_fan_relay_id"] | YB_COOLING_FAN_RELAY_ID;
+  this->coolingFanRelayInverted = config["cooling_fan_relay_inverted"] | YB_COOLING_FAN_RELAY_INVERTED;
   this->coolingFanOnTemperature = config["cooling_fan_on_temperature"] | YB_COOLING_FAN_ON_TEMPERATURE;
   this->coolingFanOffTemperature = config["cooling_fan_off_temperature"] | YB_COOLING_FAN_OFF_TEMPERATURE;
 

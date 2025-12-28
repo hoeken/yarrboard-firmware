@@ -2162,6 +2162,14 @@
                              <div class="invalid-feedback"></div>
                        </div>
 
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="boost_pump_relay_inverted">
+                            <label class="form-check-label" for="boost_pump_relay_inverted">
+                                Is Boost Pump Relay Inverted?
+                            </label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
                         <hr class="bold">
 
                         <div class="form-floating mb-3">
@@ -2180,6 +2188,14 @@
                               ${relayOptions}
                             </select>
                             <label for="high_pressure_relay_id">High Pressure Pump Relay Channel</label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="high_pressure_relay_inverted">
+                            <label class="form-check-label" for="high_pressure_relay_inverted">
+                                Is High Pressure Pump Relay Inverted?
+                            </label>
                             <div class="invalid-feedback"></div>
                         </div>
 
@@ -2385,6 +2401,14 @@
                             <div class="invalid-feedback"></div>
                         </div>
 
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="flush_valve_relay_inverted">
+                            <label class="form-check-label" for="flush_valve_relay_inverted">
+                                Is Flush Valve Relay Inverted?
+                            </label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
                         <hr class="bold">
 
                         <div class="form-floating mb-3">
@@ -2402,6 +2426,14 @@
                               ${relayOptions}
                             </select>
                             <label for="cooling_fan_relay_id">Cooling Fan Relay Channel</label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="cooling_fan_relay_inverted">
+                            <label class="form-check-label" for="cooling_fan_relay_inverted">
+                                Is Cooling Fan Relay Inverted?
+                            </label>
                             <div class="invalid-feedback"></div>
                         </div>
 
@@ -2979,9 +3011,11 @@
 
     $("#boost_pump_control").val(data.boost_pump_control);
     $("#boost_pump_relay_id").val(data.boost_pump_relay_id);
+    $("#boost_pump_relay_inverted").prop('checked', data.boost_pump_relay_inverted);
 
     $("#high_pressure_pump_control").val(data.high_pressure_pump_control);
     $("#high_pressure_relay_id").val(data.high_pressure_relay_id);
+    $("#high_pressure_relay_inverted").prop('checked', data.high_pressure_relay_inverted);
     $("#high_pressure_modbus_device").val(data.high_pressure_modbus_device);
     $("#high_pressure_modbus_slave_id").val(data.high_pressure_modbus_slave_id);
     $("#high_pressure_modbus_frequency").val(data.high_pressure_modbus_frequency);
@@ -3006,9 +3040,12 @@
 
     $("#flush_valve_control").val(data.flush_valve_control);
     $("#flush_valve_relay_id").val(data.flush_valve_relay_id);
+    $("#flush_valve_relay_inverted").prop('checked', data.flush_valve_relay_inverted);
 
     $("#cooling_fan_control").val(data.cooling_fan_control);
     $("#cooling_fan_relay_id").val(data.cooling_fan_relay_id);
+    $("#cooling_fan_relay_inverted").prop('checked', data.cooling_fan_relay_inverted);
+
     $("#cooling_fan_on_temperature").val(data.cooling_fan_on_temperature);
     $("#cooling_fan_off_temperature").val(data.cooling_fan_off_temperature);
 
@@ -3263,28 +3300,33 @@
 
   Brineomatic.prototype.updateBoostPumpVisibility = function (mode) {
     const relayDiv = $("#boost_pump_relay_id").closest(".form-floating");
+    const invertedDiv = $("#boost_pump_relay_inverted").closest(".form-check");
+
+    relayDiv.hide();
+    invertedDiv.hide();
 
     if (mode === "RELAY") {
       relayDiv.show();
-    } else {
-      relayDiv.hide();
+      invertedDiv.show();
     }
+
     $("#boostPumpControlUI").toggle(mode !== "NONE");
   }
 
   Brineomatic.prototype.updateHighPressurePumpVisibility = function (mode) {
     const relayDiv = $("#high_pressure_relay_id").closest(".form-floating");
+    const invertedDiv = $("#high_pressure_relay_inverted").closest(".form-check");
     const modbusOptions = $(".high_pressure_modbus_options");
+
+    relayDiv.hide();
+    invertedDiv.hide();
+    modbusOptions.hide();
 
     if (mode === "RELAY") {
       relayDiv.show();
-      modbusOptions.hide();
+      invertedDiv.show();
     } else if (mode === "MODBUS") {
-      relayDiv.hide();
       modbusOptions.show();
-    } else {
-      relayDiv.hide();
-      modbusOptions.hide();
     }
 
     $("#runBrineomatic").toggleClass("bomIDLE", mode !== "NONE");
@@ -3382,7 +3424,17 @@
   }
 
   Brineomatic.prototype.updateFlushValveVisibility = function (mode) {
-    $("#flush_valve_relay_id").closest(".form-floating").toggle(mode === "RELAY");
+    const relayDiv = $("#flush_valve_relay_id").closest(".form-floating");
+    const invertedDiv = $("#flush_valve_relay_inverted").closest(".form-check");
+
+    relayDiv.hide();
+    invertedDiv.hide();
+
+    if (mode === "RELAY") {
+      relayDiv.show();
+      invertedDiv.show();
+    }
+
     $("#flushBrineomatic").toggleClass("bomIDLE bomPICKLED", mode !== "NONE");
     $("#flushBrineomatic").toggle(mode !== "NONE")
     $("#flushValveControlUI").toggle(mode !== "NONE");
@@ -3391,15 +3443,18 @@
   Brineomatic.prototype.updateCoolingFanVisibility = function (mode) {
     const relayDiv = $("#cooling_fan_relay_id").closest(".form-floating");
     const tempDiv = $("#cooling_fan_on_temperature").closest(".row");
+    const invertedDiv = $("#cooling_fan_relay_inverted").closest(".form-check");
 
     // Hide everything first
     relayDiv.hide();
     tempDiv.hide();
+    invertedDiv.hide();
 
     switch (mode) {
       case "RELAY":
         relayDiv.show();
         tempDiv.show();
+        invertedDiv.show();
         break;
 
       case "MANUAL":
@@ -3483,10 +3538,12 @@
     const data = {};
 
     data.boost_pump_control = $("#boost_pump_control").val();
-    data.boost_pump_relay_id = parseInt($("#boost_pump_relay_id").val())
+    data.boost_pump_relay_id = parseInt($("#boost_pump_relay_id").val());
+    data.boost_pump_relay_inverted = $("#boost_pump_relay_inverted").prop("checked");
 
     data.high_pressure_pump_control = $("#high_pressure_pump_control").val();
     data.high_pressure_relay_id = parseInt($("#high_pressure_relay_id").val());
+    data.high_pressure_relay_inverted = $("#high_pressure_relay_inverted").prop("checked");
     data.high_pressure_modbus_device = $("#high_pressure_modbus_device").val();
     data.high_pressure_modbus_slave_id = parseInt($("#high_pressure_modbus_slave_id").val());
     data.high_pressure_modbus_frequency = parseFloat($("#high_pressure_modbus_frequency").val());
@@ -3510,9 +3567,11 @@
 
     data.flush_valve_control = $("#flush_valve_control").val();
     data.flush_valve_relay_id = parseInt($("#flush_valve_relay_id").val());
+    data.flush_valve_relay_inverted = $("#flush_valve_relay_inverted").prop("checked");
 
     data.cooling_fan_control = $("#cooling_fan_control").val();
     data.cooling_fan_relay_id = parseInt($("#cooling_fan_relay_id").val());
+    data.cooling_fan_relay_inverted = $("#cooling_fan_relay_inverted").prop("checked");
     data.cooling_fan_on_temperature = parseFloat($("#cooling_fan_on_temperature").val());
     data.cooling_fan_off_temperature = parseFloat($("#cooling_fan_off_temperature").val());
 
@@ -3693,6 +3752,10 @@
         relayUnique: {}
       },
 
+      boost_pump_relay_inverted: {
+        inclusion: [true, false]
+      },
+
       high_pressure_pump_control: {
         presence: true,
         inclusion: ["NONE", "MANUAL", "RELAY", "MODBUS"]
@@ -3704,6 +3767,10 @@
           greaterThanOrEqualTo: 0
         },
         relayUnique: {}
+      },
+
+      high_pressure_relay_inverted: {
+        inclusion: [true, false]
       },
 
       high_pressure_modbus_device: {
@@ -3834,6 +3901,10 @@
         relayUnique: {}
       },
 
+      flush_valve_relay_inverted: {
+        inclusion: [true, false]
+      },
+
       cooling_fan_control: {
         presence: true,
         inclusion: ["NONE", "MANUAL", "RELAY"]
@@ -3845,6 +3916,10 @@
           greaterThanOrEqualTo: 0
         },
         relayUnique: {}
+      },
+
+      cooling_fan_relay_inverted: {
+        inclusion: [true, false]
       },
 
       cooling_fan_on_temperature: {
@@ -4085,6 +4160,7 @@
       flush_valve_relay_id: "flush_valve_control",
       cooling_fan_relay_id: "cooling_fan_control",
       high_pressure_relay_id: "high_pressure_pump_control",
+      diverter_valve_relay_id: "diverter_valve_control",
     };
 
     const controlField = map[key];

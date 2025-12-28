@@ -346,9 +346,11 @@ class Brineomatic
 
     String boostPumpControl = YB_BOOST_PUMP_CONTROL;
     uint8_t boostPumpRelayId = YB_BOOST_PUMP_RELAY_ID;
+    bool boostPumpRelayInverted = YB_BOOST_PUMP_RELAY_INVERTED;
 
     String highPressurePumpControl = YB_HIGH_PRESSURE_PUMP_CONTROL;
     uint8_t highPressureRelayId = YB_HIGH_PRESSURE_RELAY_ID;
+    bool highPressureRelayInverted = YB_HIGH_PRESSURE_RELAY_INVERTED;
     String highPressurePumpModbusDevice = YB_HIGH_PRESSURE_PUMP_MODBUS_DEVICE;
     uint8_t highPressurePumpModbusSlaveId = YB_HIGH_PRESSURE_PUMP_MODBUS_SLAVE_ID;
     float highPressurePumpModbusFrequency = YB_HIGH_PRESSURE_PUMP_MODBUS_FREQUENCY;
@@ -372,9 +374,11 @@ class Brineomatic
 
     String flushValveControl = YB_FLUSH_VALVE_CONTROL;
     uint8_t flushValveRelayId = YB_FLUSH_VALVE_RELAY_ID;
+    bool flushValveRelayInverted = YB_FLUSH_VALVE_RELAY_INVERTED;
 
     String coolingFanControl = YB_COOLING_FAN_CONTROL;
-    uint8_t coolingFanRelayId = YB_COOLING_FAN_RELAY_ID;
+    uint8_t coolingFanRelayId = YB_COOLING_FAN_RELAY_INVERTED;
+    bool coolingFanRelayInverted = YB_FLUSH_VALVE_RELAY_INVERTED;
     float coolingFanOnTemperature = YB_COOLING_FAN_ON_TEMPERATURE;   // Celcius
     float coolingFanOffTemperature = YB_COOLING_FAN_OFF_TEMPERATURE; // Celcius
 

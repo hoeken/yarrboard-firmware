@@ -36,11 +36,6 @@
     * on/off switch to start/stop the watermaker
     * sensors for each output type
     * YAML dashboard
-* add inverted config option to the rest of the relays:
-    * boost pump
-    * hp pump
-    * flush valve
-    * cooling fan
 
 # LONG TERM:
 
