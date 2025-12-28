@@ -28,6 +28,7 @@
 
 ## BRINEOMATIC
 
+* add inverted configuration to relaychannel
 * set smart defaults (manual, no sensors, etc.)
 * Rev C: add support for motor + water temperature sensors.
 * Rev C: variable adc gain per-channel

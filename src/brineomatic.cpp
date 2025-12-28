@@ -344,10 +344,15 @@ void Brineomatic::initChannels()
   }
 
   if (diverterValveControl.equals("SERVO")) {
-    diverterValve = _servos.getChannelById(diverterValveServoId);
-    diverterValve->isEnabled = true;
-    diverterValve->setName("Diverter Valve");
-    diverterValve->setKey("diverter_valve");
+    diverterValveServo = _servos.getChannelById(diverterValveServoId);
+    diverterValveServo->isEnabled = true;
+    diverterValveServo->setName("Diverter Valve");
+    diverterValveServo->setKey("diverter_valve");
+  } else if (diverterValveControl.equals("RELAY")) {
+    diverterValveRelay = _relays.getChannelById(diverterValveRelayId);
+    diverterValveRelay->isEnabled = true;
+    diverterValveRelay->setName("Diverter Valve");
+    diverterValveRelay->setKey("diverter_valve");
   }
 
   if (highPressureValveControl.equals("STEPPER")) {
@@ -659,7 +664,9 @@ void Brineomatic::openDiverterValve()
   if (hasDiverterValve()) {
     YBP.println("Diverter Valve Open");
     if (diverterValveControl.equals("SERVO"))
-      diverterValve->write(diverterValveOpenAngle);
+      diverterValveServo->write(diverterValveOpenAngle);
+    else if (diverterValveControl.equals("RELAY"))
+      diverterValveRelay->setState(true);
   }
   diverterValveOpenState = true;
 }
@@ -669,7 +676,9 @@ void Brineomatic::closeDiverterValve()
   if (hasDiverterValve()) {
     YBP.println("Diverter Valve Closed");
     if (diverterValveControl.equals("SERVO"))
-      diverterValve->write(diverterValveCloseAngle);
+      diverterValveServo->write(diverterValveCloseAngle);
+    else if (diverterValveControl.equals("RELAY"))
+      diverterValveRelay->setState(false);
   }
   diverterValveOpenState = false;
 }
@@ -2032,6 +2041,8 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
 
   bom["diverter_valve_control"] = this->diverterValveControl;
   bom["diverter_valve_servo_id"] = this->diverterValveServoId;
+  bom["diverter_valve_relay_id"] = this->diverterValveRelayId;
+  bom["diverter_valve_relay_inverted"] = this->diverterValveRelayInverted;
   bom["diverter_valve_open_angle"] = this->diverterValveOpenAngle;
   bom["diverter_valve_close_angle"] = this->diverterValveCloseAngle;
 
@@ -2414,6 +2425,14 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
     }
   }
 
+  if (config["diverter_valve_relay_id"]) {
+    if (!checkIsInteger(config, "diverter_valve_relay_id", error, err_size) ||
+        !checkIntGE(config, "diverter_valve_relay_id", 0, error, err_size)) {
+      config.remove("diverter_valve_relay_id");
+      ok = false;
+    }
+  }
+
   if (config["diverter_valve_control"]) {
     control = config["diverter_valve_control"].as<String>();
     if (control.equals("SERVO")) {
@@ -2421,6 +2440,13 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
       if (!ch) {
         YBP.printf("Diverter Valve servo id %d not found\n", config["diverter_valve_servo_id"]);
         config.remove("diverter_valve_servo_id");
+        ok = false;
+      }
+    } else if (control.equals("RELAY")) {
+      auto* ch = _relays.getChannelById(config["diverter_valve_relay_id"]);
+      if (!ch) {
+        YBP.printf("Diverter Valve relay id %d not found\n", config["diverter_valve_relay_id"]);
+        config.remove("diverter_valve_relay_id");
         ok = false;
       }
     }
@@ -3024,6 +3050,8 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
   this->highPressureValveStepperOpenSpeed = config["high_pressure_stepper_open_speed"] | YB_HIGH_PRESSURE_VALVE_STEPPER_OPEN_SPEED;
 
   this->diverterValveControl = config["diverter_valve_control"] | YB_DIVERTER_VALVE_CONTROL;
+  this->diverterValveRelayId = config["diverter_valve_relay_id"] | YB_DIVERTER_VALVE_RELAY_ID;
+  this->diverterValveRelayInverted = config["diverter_valve_relay_inverted"] | YB_DIVERTER_VALVE_RELAY_INVERTED;
   this->diverterValveServoId = config["diverter_valve_servo_id"] | YB_DIVERTER_VALVE_SERVO_ID;
   this->diverterValveOpenAngle = config["diverter_valve_open_angle"] | YB_DIVERTER_VALVE_OPEN_ANGLE;
   this->diverterValveCloseAngle = config["diverter_valve_close_angle"] | YB_DIVERTER_VALVE_CLOSE_ANGLE;

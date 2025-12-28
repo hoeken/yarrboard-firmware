@@ -2312,9 +2312,26 @@
                             <select id="diverter_valve_control" class="form-select" aria-label="Diverter Valve Control">
                                 <option value="NONE">None</option>
                                 <option value="MANUAL">Manual</option>
+                                <option value="RELAY">Relay</option>
                                 <option value="SERVO">Servo</option>
                             </select>
                             <label for="diverter_valve_control">Diverter Valve Control</label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <select id="diverter_valve_relay_id" class="form-select" aria-label="Diverter Valve Relay Channel">
+                              ${relayOptions}
+                            </select>
+                            <label for="diverter_valve_relay_id">Diverter Valve Relay Channel</label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="diverter_valve_relay_inverted">
+                            <label class="form-check-label" for="diverter_valve_relay_inverted">
+                                Is Diverter Valve Relay Inverted?
+                            </label>
                             <div class="invalid-feedback"></div>
                         </div>
 
@@ -2980,6 +2997,8 @@
     $("#high_pressure_stepper_open_speed").val(data.high_pressure_stepper_open_speed);
 
     $("#diverter_valve_control").val(data.diverter_valve_control);
+    $("#diverter_valve_relay_id").val(data.diverter_valve_relay_id);
+    $("#diverter_valve_relay_inverted").val(data.diverter_valve_relay_inverted);
     $("#diverter_valve_servo_id").val(data.diverter_valve_servo_id);
     $("#diverter_valve_open_angle").val(data.diverter_valve_open_angle);
     $("#diverter_valve_close_angle").val(data.diverter_valve_close_angle);
@@ -3301,14 +3320,21 @@
   };
 
   Brineomatic.prototype.updateDiverterValveVisibility = function (mode) {
+    const relayDiv = $("#diverter_valve_relay_id").closest(".form-floating");
+    const relayInvertedDiv = $("#diverter_valve_relay_inverted").closest(".form-check");
     const servoDiv = $("#diverter_valve_servo_id").closest(".form-floating");
     const angleDiv = $("#diverter_valve_open_angle").closest(".row");
 
     // Hide everything first
+    relayDiv.hide();
+    relayInvertedDiv.hide();
     servoDiv.hide();
     angleDiv.hide();
 
     switch (mode) {
+      case "RELAY":
+        relayDiv.show();
+        relayInvertedDiv.show();
       case "SERVO":
         servoDiv.show();
         angleDiv.show();
@@ -3475,6 +3501,8 @@
     data.high_pressure_stepper_open_speed = parseFloat($("#high_pressure_stepper_open_speed").val());
 
     data.diverter_valve_control = $("#diverter_valve_control").val();
+    data.diverter_valve_relay_id = parseInt($("#diverter_valve_relay_id").val());
+    data.diverter_valve_relay_inverted = $("#diverter_valve_relay_inverted").prop("checked");
     data.diverter_valve_servo_id = parseInt($("#diverter_valve_servo_id").val());
     data.diverter_valve_open_angle = parseFloat($("#diverter_valve_open_angle").val());
     data.diverter_valve_close_angle = parseFloat($("#diverter_valve_close_angle").val());
@@ -3757,7 +3785,18 @@
 
       diverter_valve_control: {
         presence: true,
-        inclusion: ["NONE", "MANUAL", "SERVO"]
+        inclusion: ["NONE", "MANUAL", "RELAY", "SERVO"]
+      },
+
+      diverter_valve_relay_id: {
+        numericality: {
+          onlyInteger: true,
+          greaterThanOrEqualTo: 0
+        }
+      },
+
+      diverter_valve_relay_inverted: {
+        inclusion: [true, false]
       },
 
       diverter_valve_servo_id: {
