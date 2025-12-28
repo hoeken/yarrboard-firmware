@@ -50,10 +50,6 @@
 * global cleanup of strcpy, sprintf, etc.
 * espwebtools?  https://esphome.github.io/esp-web-tools/
 * yarrboard c++ framework
-    * more yarrboard.js functions:
-        * app.addPage("page", "content", openCallback);
-        * app.onOpenPage(page, callback);
-        * many other app.* callbacks to register various things.
     * refactor yarrboard-firmware into:
         * frothfet-firmware
         * brineomatic-firmware
