@@ -365,7 +365,7 @@ class Brineomatic
 
     String diverterValveControl = YB_DIVERTER_VALVE_CONTROL;
     uint8_t diverterValveRelayId = YB_DIVERTER_VALVE_RELAY_ID;
-    uint8_t diverterValveRelayInverted = YB_DIVERTER_VALVE_RELAY_INVERTED;
+    bool diverterValveRelayInverted = YB_DIVERTER_VALVE_RELAY_INVERTED;
     uint8_t diverterValveServoId = YB_DIVERTER_VALVE_SERVO_ID;
     float diverterValveOpenAngle = YB_DIVERTER_VALVE_OPEN_ANGLE;
     float diverterValveCloseAngle = YB_DIVERTER_VALVE_CLOSE_ANGLE;

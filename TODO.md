@@ -28,7 +28,6 @@
 
 ## BRINEOMATIC
 
-* add inverted configuration to relaychannel
 * set smart defaults (manual, no sensors, etc.)
 * Rev C: add support for motor + water temperature sensors.
 * Rev C: variable adc gain per-channel
@@ -37,6 +36,11 @@
     * on/off switch to start/stop the watermaker
     * sensors for each output type
     * YAML dashboard
+* add inverted config option to the rest of the relays:
+    * boost pump
+    * hp pump
+    * flush valve
+    * cooling fan
 
 # LONG TERM:
 

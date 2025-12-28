@@ -351,6 +351,7 @@ void Brineomatic::initChannels()
   } else if (diverterValveControl.equals("RELAY")) {
     diverterValveRelay = _relays.getChannelById(diverterValveRelayId);
     diverterValveRelay->isEnabled = true;
+    diverterValveRelay->inverted = diverterValveRelayInverted;
     diverterValveRelay->setName("Diverter Valve");
     diverterValveRelay->setKey("diverter_valve");
   }

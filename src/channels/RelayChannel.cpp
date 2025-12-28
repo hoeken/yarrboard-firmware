@@ -19,7 +19,6 @@ void RelayChannel::setup(byte pin)
 {
   _pin = pin;
   pinMode(_pin, OUTPUT);
-  digitalWrite(_pin, LOW);
 }
 
 void RelayChannel::setupDefaultState()
@@ -31,7 +30,10 @@ void RelayChannel::setupDefaultState()
 
 void RelayChannel::updateOutput()
 {
-  digitalWrite(_pin, outputState);
+  if (inverted)
+    digitalWrite(_pin, !outputState);
+  else
+    digitalWrite(_pin, outputState);
 }
 
 void RelayChannel::setState(const char* state)
@@ -85,6 +87,7 @@ bool RelayChannel::loadConfig(JsonVariantConst config, char* error, size_t len)
 
   strlcpy(this->type, config["type"] | "other", sizeof(this->type));
   this->defaultState = config["defaultState"];
+  this->inverted = config["inverted"];
 
   return true;
 }
@@ -95,6 +98,7 @@ void RelayChannel::generateConfig(JsonVariant config)
 
   config["type"] = this->type;
   config["defaultState"] = this->defaultState;
+  config["inverted"] = this->inverted;
 }
 
 void RelayChannel::generateUpdate(JsonVariant config)

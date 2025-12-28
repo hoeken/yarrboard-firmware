@@ -29,6 +29,7 @@ class RelayChannel : public BaseChannel
     bool defaultState = false;
     char type[30] = "other";
     char source[YB_HOSTNAME_LENGTH];
+    bool inverted = false;
 
     unsigned int stateChangeCount = 0;
 

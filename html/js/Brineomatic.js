@@ -2998,7 +2998,8 @@
 
     $("#diverter_valve_control").val(data.diverter_valve_control);
     $("#diverter_valve_relay_id").val(data.diverter_valve_relay_id);
-    $("#diverter_valve_relay_inverted").val(data.diverter_valve_relay_inverted);
+    $("#diverter_valve_relay_inverted").prop('checked', data.diverter_valve_relay_inverted);
+
     $("#diverter_valve_servo_id").val(data.diverter_valve_servo_id);
     $("#diverter_valve_open_angle").val(data.diverter_valve_open_angle);
     $("#diverter_valve_close_angle").val(data.diverter_valve_close_angle);
