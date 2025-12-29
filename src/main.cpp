@@ -89,9 +89,7 @@ void setup()
   fans.pwm = &pwm;
   yba.registerController(fans);
 
-  yba.http.logo_length = logo_frothfet_png_gz_len;
-  yba.http.logo_sha = logo_frothfet_png_gz_sha;
-  yba.http.logo_data = logo_frothfet_png_gz;
+  yba.http.registerGulpedFile(&logo_frothfet_png_gz, "/logo.png");
 
 #elifdef YB_IS_BRINEOMATIC
   yba.registerController(relays);
@@ -99,15 +97,12 @@ void setup()
   yba.registerController(steppers);
   yba.registerController(bom);
 
-  yba.http.logo_length = logo_brineomatic_png_gz_len;
-  yba.http.logo_sha = logo_brineomatic_png_gz_sha;
-  yba.http.logo_data = logo_brineomatic_png_gz;
+  yba.http.registerGulpedFile(&logo_brineomatic_png_gz, "/logo.png");
+
 #elifdef YB_IS_SENDIT
   yba.registerController(adc);
 
-  yba.http.logo_length = logo_sendit_png_gz_len;
-  yba.http.logo_sha = logo_sendit_png_gz_sha;
-  yba.http.logo_data = logo_sendit_png_gz;
+  yba.http.registerGulpedFile(&logo_sendit_png_gz, "/logo.png");
 #endif
 
   yba.board_name = YB_BOARD_NAME;
@@ -120,9 +115,7 @@ void setup()
   yba.project_url = YB_PROJECT_URL;
   yba.ota.firmware_manifest_url = "https://raw.githubusercontent.com/hoeken/yarrboard-firmware/main/firmware.json";
 
-  yba.http.index_length = index_html_gz_len;
-  yba.http.index_sha = index_html_gz_sha;
-  yba.http.index_data = index_html_gz;
+  yba.http.registerGulpedFile(&index_html_gz);
 
   yba.setup();
 }
