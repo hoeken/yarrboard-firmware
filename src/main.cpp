@@ -30,7 +30,7 @@ RGBController<WS2812B, YB_STATUS_RGB_PIN, YB_STATUS_RGB_ORDER> rgb(yba, YB_STATU
   #include "controllers/BusVoltageController.h"
   #include "controllers/FanController.h"
   #include "controllers/PWMController.h"
-  #include "gulp/logo-frothfet.png.gz.h"
+  #include "gulp/logo-frothfet.png.h"
 
 FanController fans(yba);
 BusVoltageController bus_voltage(yba);
@@ -41,7 +41,7 @@ PWMController pwm(yba);
   #include "controllers/RelayController.h"
   #include "controllers/ServoController.h"
   #include "controllers/StepperController.h"
-  #include "gulp/logo-brineomatic.png.gz.h"
+  #include "gulp/logo-brineomatic.png.h"
 
 RelayController relays(yba);
 ServoController servos(yba);
@@ -49,11 +49,11 @@ StepperController steppers(yba);
 BrineomaticController bom(yba, relays, servos, steppers);
 #elifdef YB_IS_SENDIT
   #include "controllers/ADCController.h"
-  #include "gulp/logo-sendit.png.gz.h"
+  #include "gulp/logo-sendit.png.h"
 ADCController adc(yba);
 #endif
 
-#include "gulp/index.html.gz.h"
+#include "gulp/index.html.h"
 
 void setup()
 {
@@ -89,7 +89,7 @@ void setup()
   fans.pwm = &pwm;
   yba.registerController(fans);
 
-  yba.http.registerGulpedFile(&logo_frothfet_png_gz, "/logo.png");
+  yba.http.registerGulpedFile(&logo_frothfet_png, "/logo.png");
 
 #elifdef YB_IS_BRINEOMATIC
   yba.registerController(relays);
@@ -97,12 +97,12 @@ void setup()
   yba.registerController(steppers);
   yba.registerController(bom);
 
-  yba.http.registerGulpedFile(&logo_brineomatic_png_gz, "/logo.png");
+  yba.http.registerGulpedFile(&logo_brineomatic_png, "/logo.png");
 
 #elifdef YB_IS_SENDIT
   yba.registerController(adc);
 
-  yba.http.registerGulpedFile(&logo_sendit_png_gz, "/logo.png");
+  yba.http.registerGulpedFile(&logo_sendit_png, "/logo.png");
 #endif
 
   yba.board_name = YB_BOARD_NAME;
@@ -115,7 +115,7 @@ void setup()
   yba.project_url = YB_PROJECT_URL;
   yba.ota.firmware_manifest_url = "https://raw.githubusercontent.com/hoeken/yarrboard-firmware/main/firmware.json";
 
-  yba.http.registerGulpedFile(&index_html_gz);
+  yba.http.registerGulpedFile(&index_html);
 
   yba.setup();
 }
