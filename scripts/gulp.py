@@ -6,12 +6,6 @@ Import("env")
 #print("Packaging yarrboard-client from NPM")
 #env.Execute("browserify html/stub.js > html/yarrboard-client.js")
 
-# Ensure the output directory exists
-gulp_folder = "src/gulp"
-if not os.path.exists(gulp_folder):
-    print(f"Creating missing directory: {gulp_folder}")
-    os.makedirs(gulp_folder)
-
 # Find the YarrboardFramework library path
 # PlatformIO installs dependencies in .pio/libdeps/[environment_name]/
 framework_path = None
@@ -46,10 +40,23 @@ try:
                 print(f"ERROR: Unexpected URI format in .pio-link file: {uri}")
                 env.Exit(1)
     else:
-        print("ERROR: Could not find YarrboardFramework library!")
-        print(f"Searched for: {framework_dir} and {framework_link}")
-        print("Make sure the library is installed via platformio.ini")
-        env.Exit(1)
+        # Final fallback: Check if we're running inside the YarrboardFramework repository itself
+        # This happens when building examples within the framework repo
+        project_dir = os.getcwd()
+        gulpfile_in_current = os.path.join(project_dir, "scripts", "gulpfile.mjs")
+
+        if os.path.isfile(gulpfile_in_current):
+            framework_path = project_dir
+            print(f"Detected YarrboardFramework repository - using framework at: {framework_path}")
+        else:
+            print("ERROR: Could not find YarrboardFramework library!")
+            print(f"Searched for: {framework_dir} and {framework_link}")
+            print(f"DEBUG: project_dir = {project_dir}")
+            print(f"DEBUG: parent_dir = {os.path.dirname(project_dir)}")
+            print(f"DEBUG: grandparent_dir = {os.path.dirname(os.path.dirname(project_dir))}")
+            print(f"DEBUG: Looking for gulpfile at: {gulpfile_in_current}")
+            print("Make sure the library is installed via platformio.ini")
+            env.Exit(1)
 except KeyError:
     print("Warning: Could not determine current environment, falling back to search")
     # Fallback: search all environments
@@ -71,5 +78,23 @@ if not framework_path:
 # Set the environment variable for the gulpfile
 os.environ["YARRBOARD_FRAMEWORK_PATH"] = framework_path
 
+# Set the project path - this is where project-specific assets live (html/, src/, etc.)
+# Use PROJECT_SRC_DIR from PlatformIO to get the actual source directory
+# This correctly handles when src_dir is set to examples/platformio or other custom paths
+try:
+    project_src_dir = env["PROJECT_SRC_DIR"]
+    project_path = project_src_dir
+    print(f"Using PROJECT_SRC_DIR from PlatformIO: {project_path}")
+except KeyError:
+    # Fallback to current working directory if PROJECT_SRC_DIR is not available
+    project_path = os.getcwd()
+    print(f"PROJECT_SRC_DIR not available, using current directory: {project_path}")
+
+os.environ["YARRBOARD_PROJECT_PATH"] = project_path
+
+print(f"Project path: {project_path}")
 print("Compressing web app into header")
-env.Execute(f"gulp --gulpfile {framework_path}/scripts/gulpfile.mjs --cwd .")
+result = env.Execute(f"gulp --gulpfile {framework_path}/scripts/gulpfile.mjs --cwd .")
+if result != 0:
+    print(f"ERROR: Gulp command failed with exit code {result}")
+    env.Exit(1)
