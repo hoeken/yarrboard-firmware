@@ -4,7 +4,6 @@
 
 * Test Board:
     * switching to 10k pullup not defaulting to ohms
-    * test with 8x 4-20ma loads -> check regulators
     * test overvoltage on pins -> maybe change filter r/c?
 
 ## FROTHFET

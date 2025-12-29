@@ -30,119 +30,145 @@ import { deleteAsync } from 'del';
 import inline from 'gulp-inline';
 import inlineImages from 'gulp-css-base64';
 import favicon from 'gulp-base64-favicon';
-import fs from 'fs';
-import crypto from 'crypto';
-import path from 'path';
+import { readFileSync, createWriteStream } from 'fs';
+import { createHash } from 'crypto';
+import { join } from 'path';
 
-// Allow configuring the base path via environment variable or default to current directory
+// ============================================================================
+// Configuration
+// ============================================================================
+
 const BASE_PATH = process.env.GULP_BASE_PATH || '.';
 
-// Helper function to resolve paths relative to BASE_PATH
-function resolvePath(...segments) {
-    return path.join(BASE_PATH, ...segments);
-}
+const PATHS = {
+    html: join(BASE_PATH, 'html'),
+    dist: join(BASE_PATH, 'dist'),
+    src: join(BASE_PATH, 'src/gulp')
+};
 
-const logos = [
+const LOGOS = [
     'logo-sendit.png',
     'logo-brineomatic.png',
     'logo-frothfet.png'
 ];
 
-function clean(cb) {
-    deleteAsync([resolvePath("dist/*")], { force: true });
-    cb();
+const HTML_MIN_OPTIONS = {
+    removeComments: true,
+    minifyCSS: true,
+    minifyJS: true
+};
+
+const INLINE_OPTIONS = {
+    base: PATHS.html,
+    css: [cleancss, inlineImages],
+    ignore: [
+        'logo.png',        // ignore the apple-touch-icon line
+        'site.webmanifest' // ignore the manifest line
+    ]
+};
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+async function writeHeaderFile(source, destination, name) {
+    return new Promise((resolve, reject) => {
+        try {
+            const wstream = createWriteStream(destination);
+            const data = readFileSync(source);
+
+            const hashSum = createHash('sha256');
+            hashSum.update(data);
+            const hex = hashSum.digest('hex');
+
+            wstream.write(`#define ${name}_len ${data.length}\n`);
+            wstream.write(`const char ${name}_sha[] = "${hex}";\n`);
+            wstream.write(`const uint8_t ${name}[] = {`);
+
+            for (let i = 0; i < data.length; i++) {
+                if (i % 1000 === 0) wstream.write("\n");
+                wstream.write('0x' + ('00' + data[i].toString(16)).slice(-2));
+                if (i < data.length - 1) wstream.write(',');
+            }
+
+            wstream.write('\n};');
+            wstream.end();
+
+            wstream.on('finish', async () => {
+                await deleteAsync([source], { force: true });
+                resolve();
+            });
+
+            wstream.on('error', reject);
+        } catch (err) {
+            reject(err);
+        }
+    });
 }
 
-function build(cb) {
-    cb();
+// ============================================================================
+// Gulp Tasks
+// ============================================================================
+
+async function clean() {
+    return deleteAsync([join(PATHS.dist, '*')], { force: true });
 }
 
-function buildfs_inline(cb) {
-    return src(resolvePath('html/*.html'))
-        .pipe(favicon({ src: resolvePath("html") }))
-        .pipe(inline({
-            base: resolvePath('html/'),
-            //            js: uglify,
-            css: [cleancss, inlineImages],
-            ignore: [
-                'logo.png',        // ignore the apple-touch-icon line
-                'site.webmanifest' // ignore the manifest line
-            ]
-            //            disabledTypes: ['svg', 'img']
-        }))
-        .pipe(htmlmin({
-            //            collapseWhitespace: true,
-            removecomments: true,
-            minifyCSS: true,
-            minifyJS: true
-        }))
+function buildInlineHtml() {
+    return src(join(PATHS.html, '*.html'))
+        .pipe(favicon({ src: PATHS.html }))
+        .pipe(inline(INLINE_OPTIONS))
+        .pipe(htmlmin(HTML_MIN_OPTIONS))
         .pipe(gzip())
-        .pipe(dest(resolvePath("dist")));
+        .pipe(dest(PATHS.dist));
 }
 
-function buildfs_embeded(cb) {
-    var source = resolvePath('dist/index.html.gz');
-    var destination = resolvePath('src/gulp/index.html.gz.h');
-    write_header_file(source, destination, "index_html_gz");
-
-    cb();
+async function embedHtml() {
+    const source = join(PATHS.dist, 'index.html.gz');
+    const destination = join(PATHS.src, 'index.html.gz.h');
+    await writeHeaderFile(source, destination, 'index_html_gz');
 }
 
-function buildfs_logo_gz(filename) {
-    return src(resolvePath(`html/${filename}`))
+function compressLogo(filename) {
+    return src(join(PATHS.html, filename))
         .pipe(gzip())
-        .pipe(dest(resolvePath("dist")));
+        .pipe(dest(PATHS.dist));
 }
 
-function buildfs_logo_embedded(filename, cb) {
-    const source = resolvePath(`dist/${filename}.gz`);
-    const destination = resolvePath(`src/gulp/${filename}.gz.h`);
+async function embedLogo(filename) {
+    const source = join(PATHS.dist, `${filename}.gz`);
+    const destination = join(PATHS.src, `${filename}.gz.h`);
+    const safeName = filename.replace(/[^a-z0-9]/gi, '_') + '_gz';
 
-    // Create a valid C variable name (e.g., logo_png_gz)
-    const safeName = filename.replace(/[^a-z0-9]/gi, '_') + "_gz";
-
-    write_header_file(source, destination, safeName);
-    cb();
+    await writeHeaderFile(source, destination, safeName);
 }
 
 function createLogoTask(filename) {
-    const gz = (cb) => buildfs_logo_gz(filename).on('end', cb);
-    const embed = (cb) => buildfs_logo_embedded(filename, cb);
+    const compress = () => compressLogo(filename);
+    const embed = () => embedLogo(filename);
 
-    // Return a series for this specific image
-    return series(gz, embed);
+    return series(compress, embed);
 }
 
-function write_header_file(source, destination, name) {
-    const wstream = fs.createWriteStream(destination);
-    wstream.on('error', function (err) {
-        console.log(err);
-    });
+// ============================================================================
+// Task Composition
+// ============================================================================
 
-    const data = fs.readFileSync(source);
+const logoTasks = LOGOS.map(logo => createLogoTask(logo));
+const buildAll = series(
+    clean,
+    buildInlineHtml,
+    embedHtml,
+    ...logoTasks
+);
 
-    const hashSum = crypto.createHash('sha256');
-    hashSum.update(data);
-    const hex = hashSum.digest('hex');
+// ============================================================================
+// Exports
+// ============================================================================
 
-    wstream.write(`#define ${name}_len ${data.length}\n`);
-    wstream.write(`const char ${name}_sha[] = "${hex}";\n`);
-    wstream.write(`const uint8_t ${name}[] = {`);
-
-    for (var i = 0; i < data.length; i++) {
-        if (i % 1000 == 0) wstream.write("\n");
-        wstream.write('0x' + ('00' + data[i].toString(16)).slice(-2));
-        if (i < data.length - 1) wstream.write(',');
-    }
-
-    wstream.write('\n};')
-    wstream.end();
-
-    deleteAsync([source], { force: true });
-}
-
-const logoTasks = logos.map(logo => createLogoTask(logo));
-
-const all = series(clean, buildfs_inline, buildfs_embeded, logoTasks);
-
-export default all;
+export {
+    clean,
+    buildInlineHtml,
+    embedHtml,
+    buildAll as default
+};
