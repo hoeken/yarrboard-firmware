@@ -1,4 +1,11 @@
 {"cmd":"ping"}
+
+{"cmd":"set_brightness","brightness":0.1}
+{"cmd":"set_brightness","brightness":0.25}
+{"cmd":"set_brightness","brightness":0.5}
+{"cmd":"set_brightness","brightness":0.75}
+{"cmd":"set_brightness","brightness":1.0}
+
 {"cmd":"get_config","value":true,"user":"admin","pass":"admin"}
 {"cmd":"set_pwm_channel","id":0,"state":true,"user":"admin","pass":"admin"}
 
