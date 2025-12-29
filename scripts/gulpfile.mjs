@@ -24,7 +24,7 @@ import gulp from 'gulp';
 const { series, src, dest } = gulp;
 import htmlmin from 'gulp-htmlmin';
 import cleancss from 'gulp-clean-css';
-import uglify from 'gulp-uglify-es';
+// import uglify from 'gulp-uglify-es';
 import gzip from 'gulp-gzip';
 import { deleteAsync } from 'del';
 import inline from 'gulp-inline';
@@ -38,12 +38,23 @@ import { join } from 'path';
 // Configuration
 // ============================================================================
 
-const BASE_PATH = process.env.GULP_BASE_PATH || '.';
+// Get the YarrboardFramework path from environment variable
+// This is set by the gulp.py script when run via PlatformIO
+const FRAMEWORK_PATH = process.env.YARRBOARD_FRAMEWORK_PATH;
+
+if (!FRAMEWORK_PATH) {
+    console.error('ERROR: YARRBOARD_FRAMEWORK_PATH environment variable not set!');
+    console.error('This should be set by scripts/gulp.py when running via PlatformIO.');
+    process.exit(1);
+}
+
+console.log(`Using YarrboardFramework from: ${FRAMEWORK_PATH}`);
 
 const PATHS = {
-    html: join(BASE_PATH, 'html'),
-    dist: join(BASE_PATH, 'dist'),
-    src: join(BASE_PATH, 'src/gulp')
+    frameworkHtml: join(FRAMEWORK_PATH, 'html'),  // Framework HTML/CSS/JS
+    projectHtml: 'html',                           // Project-specific assets (logos)
+    dist: 'dist',
+    src: 'src/gulp'
 };
 
 const LOGOS = [
@@ -59,7 +70,7 @@ const HTML_MIN_OPTIONS = {
 };
 
 const INLINE_OPTIONS = {
-    base: PATHS.html,
+    base: PATHS.frameworkHtml,
     css: [cleancss, inlineImages],
     ignore: [
         'logo.png',        // ignore the apple-touch-icon line
@@ -115,8 +126,8 @@ async function clean() {
 }
 
 function buildInlineHtml() {
-    return src(join(PATHS.html, '*.html'))
-        .pipe(favicon({ src: PATHS.html }))
+    return src(join(PATHS.frameworkHtml, '*.html'))
+        .pipe(favicon({ src: PATHS.frameworkHtml }))
         .pipe(inline(INLINE_OPTIONS))
         .pipe(htmlmin(HTML_MIN_OPTIONS))
         .pipe(gzip())
@@ -130,7 +141,7 @@ async function embedHtml() {
 }
 
 function compressLogo(filename) {
-    return src(join(PATHS.html, filename))
+    return src(join(PATHS.projectHtml, filename))
         .pipe(gzip())
         .pipe(dest(PATHS.dist));
 }
