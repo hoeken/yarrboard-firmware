@@ -1,20 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse, os, json, re, sys, subprocess
-from pathlib import Path
-
-# Change to repository root directory
-# This allows the script to work from scripts/ folder while operating on repo root
-script_dir = Path(__file__).resolve().parent
-repo_root = script_dir.parent if script_dir.name == 'scripts' else script_dir
-os.chdir(repo_root)
 
 #what boards / build targets to include in the release
 boards = [
 	"FROTHFET_REV_E",
-	"BRINEOMATIC_REV_B",
-	"BRINEOMATIC_REV_C",
-	"SENDIT_REV_C"
+	"BRINEOMATIC_REV_B"
 ]
 
 if __name__ == '__main__':

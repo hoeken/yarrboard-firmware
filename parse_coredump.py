@@ -4,12 +4,6 @@ import argparse, os, sys
 from pathlib import Path
 from shutil import which
 
-# Change to repository root directory
-# This allows the script to work from scripts/ folder while operating on repo root
-script_dir = Path(__file__).resolve().parent
-repo_root = script_dir.parent if script_dir.name == 'scripts' else script_dir
-os.chdir(repo_root)
-
 if __name__ == '__main__':
 
 	description = """\
