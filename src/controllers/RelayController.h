@@ -13,7 +13,8 @@
 #ifdef YB_HAS_RELAY_CHANNELS
 
   #include "channels/RelayChannel.h"
-  #include "controllers/ChannelController.h"
+  #include <controllers/ChannelController.h>
+  #include <controllers/ProtocolController.h>
 
 class YarrboardApp;
 class RelayController : public ChannelController<RelayChannel, YB_RELAY_CHANNEL_COUNT>
@@ -24,9 +25,9 @@ class RelayController : public ChannelController<RelayChannel, YB_RELAY_CHANNEL_
     bool setup() override;
     void loop() override;
 
-    void handleConfigCommand(JsonVariantConst input, JsonVariant output);
-    void handleSetCommand(JsonVariantConst input, JsonVariant output);
-    void handleToggleCommand(JsonVariantConst input, JsonVariant output);
+    void handleConfigCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleSetCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleToggleCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
 
     static void handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
 

@@ -38,12 +38,12 @@ void StepperController::loop()
 {
 }
 
-void StepperController::handleConfigCommand(JsonVariantConst input, JsonVariant output)
+void StepperController::handleConfigCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   ChannelController::handleConfigCommand(input, output);
 }
 
-void StepperController::handleSetCommand(JsonVariantConst input, JsonVariant output)
+void StepperController::handleSetCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   // load our channel
   auto* ch = lookupChannel(input, output);

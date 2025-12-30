@@ -38,12 +38,12 @@ void ServoController::loop()
   }
 }
 
-void ServoController::handleConfigCommand(JsonVariantConst input, JsonVariant output)
+void ServoController::handleConfigCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   ChannelController::handleConfigCommand(input, output);
 }
 
-void ServoController::handleSetCommand(JsonVariantConst input, JsonVariant output)
+void ServoController::handleSetCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   // load our channel
   auto* ch = lookupChannel(input, output);

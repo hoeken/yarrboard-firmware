@@ -12,8 +12,9 @@
 #include "config.h"
 #ifdef YB_HAS_SERVO_CHANNELS
 
-#include "channels/ServoChannel.h"
-#include "controllers/ChannelController.h"
+  #include "channels/ServoChannel.h"
+  #include <controllers/ChannelController.h>
+  #include <controllers/ProtocolController.h>
 
 class YarrboardApp;
 class ServoController : public ChannelController<ServoChannel, YB_SERVO_CHANNEL_COUNT>
@@ -24,8 +25,8 @@ class ServoController : public ChannelController<ServoChannel, YB_SERVO_CHANNEL_
     bool setup() override;
     void loop() override;
 
-    void handleConfigCommand(JsonVariantConst input, JsonVariant output);
-    void handleSetCommand(JsonVariantConst input, JsonVariant output);
+    void handleConfigCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleSetCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
 
   private:
     const byte _pins[YB_SERVO_CHANNEL_COUNT] = YB_SERVO_CHANNEL_PINS;

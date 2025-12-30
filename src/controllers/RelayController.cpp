@@ -40,7 +40,7 @@ void RelayController::loop()
 {
 }
 
-void RelayController::handleSetCommand(JsonVariantConst input, JsonVariant output)
+void RelayController::handleSetCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   char prefIndex[YB_PREF_KEY_LENGTH];
 
@@ -82,7 +82,7 @@ void RelayController::handleSetCommand(JsonVariantConst input, JsonVariant outpu
   }
 }
 
-void RelayController::handleToggleCommand(JsonVariantConst input, JsonVariant output)
+void RelayController::handleToggleCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   // load our channel
   auto* ch = lookupChannel(input, output);
@@ -110,7 +110,7 @@ void RelayController::handleToggleCommand(JsonVariantConst input, JsonVariant ou
     ch->setState("ON");
 }
 
-void RelayController::handleConfigCommand(JsonVariantConst input, JsonVariant output)
+void RelayController::handleConfigCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   ChannelController::handleConfigCommand(input, output);
 }

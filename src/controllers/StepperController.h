@@ -14,7 +14,8 @@
 #ifdef YB_HAS_STEPPER_CHANNELS
 
   #include "channels/StepperChannel.h"
-  #include "controllers/ChannelController.h"
+  #include <controllers/ChannelController.h>
+  #include <controllers/ProtocolController.h>
 
 class YarrboardApp;
 class StepperController : public ChannelController<StepperChannel, YB_STEPPER_CHANNEL_COUNT>
@@ -25,8 +26,8 @@ class StepperController : public ChannelController<StepperChannel, YB_STEPPER_CH
     bool setup() override;
     void loop() override;
 
-    void handleConfigCommand(JsonVariantConst input, JsonVariant output);
-    void handleSetCommand(JsonVariantConst input, JsonVariant output);
+    void handleConfigCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleSetCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
 
   private:
     const byte _step_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_STEP_PINS;

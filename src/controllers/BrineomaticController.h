@@ -17,9 +17,10 @@
   #include <Arduino.h>
 
   #include "Brineomatic.h"
-  #include "controllers/BaseController.h"
   #include <ArduinoJson.h>
   #include <PsychicMqttClient.h>
+  #include <controllers/BaseController.h>
+  #include <controllers/ProtocolController.h>
 
 class YarrboardApp;
 class ConfigManager;
@@ -40,17 +41,17 @@ class BrineomaticController : public BaseController
     void generateUpdateHook(JsonVariant output) override;
     void generateStatsHook(JsonVariant output) override;
 
-    void handleStartWatermaker(JsonVariantConst input, JsonVariant output);
-    void handleFlushWatermaker(JsonVariantConst input, JsonVariant output);
-    void handlePickleWatermaker(JsonVariantConst input, JsonVariant output);
-    void handleDepickleWatermaker(JsonVariantConst input, JsonVariant output);
-    void handleStopWatermaker(JsonVariantConst input, JsonVariant output);
-    void handleIdleWatermaker(JsonVariantConst input, JsonVariant output);
-    void handleManualWatermaker(JsonVariantConst input, JsonVariant output);
-    void handleSetWatermaker(JsonVariantConst input, JsonVariant output);
-    void handleSaveGeneralConfig(JsonVariantConst input, JsonVariant output);
-    void handleSaveHardwareConfig(JsonVariantConst input, JsonVariant output);
-    void handleSaveSafeguardsConfig(JsonVariantConst input, JsonVariant output);
+    void handleStartWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleFlushWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handlePickleWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleDepickleWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleStopWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleIdleWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleManualWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleSetWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleSaveGeneralConfig(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleSaveHardwareConfig(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleSaveSafeguardsConfig(JsonVariantConst input, JsonVariant output, ProtocolContext context);
 
   private:
     Brineomatic wm;

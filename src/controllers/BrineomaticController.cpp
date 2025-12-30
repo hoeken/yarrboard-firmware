@@ -113,7 +113,7 @@ void BrineomaticController::generateStatsHook(JsonVariant output)
   output["total_runtime"] = wm.getTotalRuntime();
 };
 
-void BrineomaticController::handleStartWatermaker(JsonVariantConst input, JsonVariant output)
+void BrineomaticController::handleStartWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   if (strcmp(wm.getStatus(), "IDLE"))
     return _app.protocol.generateErrorJSON(output, "Watermaker is not in IDLE mode.");
@@ -129,7 +129,7 @@ void BrineomaticController::handleStartWatermaker(JsonVariantConst input, JsonVa
     wm.start();
 }
 
-void BrineomaticController::handleFlushWatermaker(JsonVariantConst input, JsonVariant output)
+void BrineomaticController::handleFlushWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   uint64_t duration = input["duration"];
   float volume = input["volume"];
@@ -145,7 +145,7 @@ void BrineomaticController::handleFlushWatermaker(JsonVariantConst input, JsonVa
     return _app.protocol.generateErrorJSON(output, "Watermaker is not in IDLE or PICKLED modes.");
 }
 
-void BrineomaticController::handlePickleWatermaker(JsonVariantConst input, JsonVariant output)
+void BrineomaticController::handlePickleWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   if (!input["duration"].is<JsonVariantConst>())
     return _app.protocol.generateErrorJSON(output, "'duration' is a required parameter");
@@ -161,7 +161,7 @@ void BrineomaticController::handlePickleWatermaker(JsonVariantConst input, JsonV
     return _app.protocol.generateErrorJSON(output, "Watermaker is not in IDLE mode.");
 }
 
-void BrineomaticController::handleDepickleWatermaker(JsonVariantConst input, JsonVariant output)
+void BrineomaticController::handleDepickleWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   if (!input["duration"].is<JsonVariantConst>())
     return _app.protocol.generateErrorJSON(output, "'duration' is a required parameter");
@@ -177,7 +177,7 @@ void BrineomaticController::handleDepickleWatermaker(JsonVariantConst input, Jso
     return _app.protocol.generateErrorJSON(output, "Watermaker is not in PICKLED mode.");
 }
 
-void BrineomaticController::handleStopWatermaker(JsonVariantConst input, JsonVariant output)
+void BrineomaticController::handleStopWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   if (!strcmp(wm.getStatus(), "RUNNING") || !strcmp(wm.getStatus(), "FLUSHING") || !strcmp(wm.getStatus(), "PICKLING") || !strcmp(wm.getStatus(), "DEPICKLING"))
     wm.stop();
@@ -185,7 +185,7 @@ void BrineomaticController::handleStopWatermaker(JsonVariantConst input, JsonVar
     return _app.protocol.generateErrorJSON(output, "Watermaker must be in RUNNING, FLUSHING, or PICKLING mode to stop.");
 }
 
-void BrineomaticController::handleIdleWatermaker(JsonVariantConst input, JsonVariant output)
+void BrineomaticController::handleIdleWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   if (!strcmp(wm.getStatus(), "MANUAL"))
     wm.idle();
@@ -193,7 +193,7 @@ void BrineomaticController::handleIdleWatermaker(JsonVariantConst input, JsonVar
     return _app.protocol.generateErrorJSON(output, "Watermaker must be in MANUAL mode to IDLE.");
 }
 
-void BrineomaticController::handleManualWatermaker(JsonVariantConst input, JsonVariant output)
+void BrineomaticController::handleManualWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   if (!strcmp(wm.getStatus(), "IDLE"))
     wm.manual();
@@ -201,7 +201,7 @@ void BrineomaticController::handleManualWatermaker(JsonVariantConst input, JsonV
     return _app.protocol.generateErrorJSON(output, "Watermaker must be in IDLE mode to switch to MANUAL.");
 }
 
-void BrineomaticController::handleSetWatermaker(JsonVariantConst input, JsonVariant output)
+void BrineomaticController::handleSetWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   if (input["water_temperature"]) {
     float temp = input["water_temperature"];
@@ -306,7 +306,7 @@ void BrineomaticController::handleSetWatermaker(JsonVariantConst input, JsonVari
   }
 }
 
-void BrineomaticController::handleSaveGeneralConfig(JsonVariantConst input, JsonVariant output)
+void BrineomaticController::handleSaveGeneralConfig(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   // we need a mutable format for the validation
   JsonDocument doc;
@@ -322,7 +322,7 @@ void BrineomaticController::handleSaveGeneralConfig(JsonVariantConst input, Json
     return _app.protocol.generateErrorJSON(output, error);
 }
 
-void BrineomaticController::handleSaveHardwareConfig(JsonVariantConst input, JsonVariant output)
+void BrineomaticController::handleSaveHardwareConfig(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   // we need a mutable format for the validation
   JsonDocument doc;
@@ -344,7 +344,7 @@ void BrineomaticController::handleSaveHardwareConfig(JsonVariantConst input, Jso
   ESP.restart();
 }
 
-void BrineomaticController::handleSaveSafeguardsConfig(JsonVariantConst input, JsonVariant output)
+void BrineomaticController::handleSaveSafeguardsConfig(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   // we need a mutable format for the validation
   JsonDocument doc;
