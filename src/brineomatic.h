@@ -377,7 +377,7 @@ class Brineomatic
     bool flushValveRelayInverted = YB_FLUSH_VALVE_RELAY_INVERTED;
 
     String coolingFanControl = YB_COOLING_FAN_CONTROL;
-    uint8_t coolingFanRelayId = YB_COOLING_FAN_RELAY_INVERTED;
+    uint8_t coolingFanRelayId = YB_COOLING_FAN_RELAY_ID;
     bool coolingFanRelayInverted = YB_FLUSH_VALVE_RELAY_INVERTED;
     float coolingFanOnTemperature = YB_COOLING_FAN_ON_TEMPERATURE;   // Celcius
     float coolingFanOffTemperature = YB_COOLING_FAN_OFF_TEMPERATURE; // Celcius
