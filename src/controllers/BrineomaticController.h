@@ -40,6 +40,8 @@ class BrineomaticController : public BaseController
     void generateConfigHook(JsonVariant config) override;
     void generateUpdateHook(JsonVariant output) override;
     void generateStatsHook(JsonVariant output) override;
+    void mqttUpdateHook(MQTTController* mqtt) override;
+    void haUpdateHook(MQTTController* mqtt) override;
 
     void handleStartWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
     void handleFlushWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);

@@ -105,6 +105,20 @@ void BrineomaticController::generateUpdateHook(JsonVariant output)
   wm.generateUpdateJSON(output);
 };
 
+void BrineomaticController::mqttUpdateHook(MQTTController* mqtt)
+{
+  JsonDocument output;
+  wm.generateUpdateJSON(output);
+
+  // char topic[128];
+  // snprintf(topic, sizeof(topic), "%s/%s", this->channel_type, this->key);
+  mqtt->traverseJSON(output, "");
+}
+
+void BrineomaticController::haUpdateHook(MQTTController* mqtt)
+{
+}
+
 void BrineomaticController::generateStatsHook(JsonVariant output)
 {
   output["brineomatic"] = true;
