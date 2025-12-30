@@ -203,7 +203,7 @@ float PWMController::getMaxCurrent()
   return amps;
 }
 
-void PWMController::handleSetCommand(JsonVariantConst input, JsonVariant output)
+void PWMController::handleSetCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   // load our channel
   auto* ch = lookupChannel(input, output);
@@ -264,12 +264,12 @@ void PWMController::handleSetCommand(JsonVariantConst input, JsonVariant output)
   }
 }
 
-void PWMController::handleConfigCommand(JsonVariantConst input, JsonVariant output)
+void PWMController::handleConfigCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   ChannelController::handleConfigCommand(input, output);
 }
 
-void PWMController::handleToggleCommand(JsonVariantConst input, JsonVariant output)
+void PWMController::handleToggleCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   // load our channel
   auto* ch = lookupChannel(input, output);

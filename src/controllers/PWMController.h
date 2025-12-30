@@ -14,7 +14,8 @@
 
   #include "channels/PWMChannel.h"
 
-  #include "controllers/ChannelController.h"
+  #include <controllers/ChannelController.h>
+  #include <controllers/ProtocolController.h>
 
 class YarrboardApp;
 class ConfigManager;
@@ -36,9 +37,9 @@ class PWMController : public ChannelController<PWMChannel, YB_PWM_CHANNEL_COUNT>
     float getMaxCurrent();
 
     static void handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
-    void handleSetCommand(JsonVariantConst input, JsonVariant output);
-    void handleToggleCommand(JsonVariantConst input, JsonVariant output);
-    void handleConfigCommand(JsonVariantConst input, JsonVariant output);
+    void handleSetCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleToggleCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleConfigCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
 
   private:
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
