@@ -608,12 +608,9 @@
     if (msg.brineomatic) {
 
       //build our UI
-      $("#bomInterface").remove();
-      $("#controlPage").prepend(this.generateControlUI());
-      $("#bomConfig").remove();
-      $("#ConfigForm").prepend(this.generateEditUI());
-      $("#bomStatsDiv").remove();
-      $("#statsContainer").prepend(this.generateStatsUI());
+      $("#controlPage").html(this.generateControlUI());
+      $("#ConfigForm").html(this.generateEditUI());
+      $("#statsContainer").html(this.generateStatsUI());
 
       $("#relayConfig").hide();
       $("#servoConfig").hide();
@@ -625,6 +622,14 @@
 
       //edit UI handlers
       $("#bomConfig").show();
+
+      //enable the form - it was disabled when the old one was submitted
+      //this prevents multiple submission race conditons that look like settings not getting saved
+      $("#hardwareSettingsForm")
+        .find("input, select, textarea, button")
+        .prop("disabled", false);
+
+      console.log('here');
 
       //our UI handlers
       $("#brineomaticIdle").on("click", this.idle);
@@ -4116,6 +4121,12 @@
       return;
     }
 
+    //disable the form - it will be re-enabled when our new config comes in.
+    //this prevents multiple submission race conditons that look like settings not getting saved
+    $("#hardwareSettingsForm")
+      .find("input, select, textarea, button")
+      .prop("disabled", true);
+
     //flash whole form green.
     YB.Util.flashClass($("#hardwareSettingsForm"), "border-success");
     YB.Util.flashClass($("#saveHardwareSettings"), "btn-success");
@@ -4126,6 +4137,11 @@
     //okay, send it off.
     data["cmd"] = "brineomatic_save_hardware_config";
     YB.client.send(data, true);
+
+    // reload because of the restart
+    // temporary hack - real fix is to handle reconnections properly
+    // eg treat it like a fresh page reload: new config, etc.
+    setTimeout(YB.App.loadConfigs, 5000);
   };
 
   Brineomatic.prototype.handleSafeguardsConfigSave = function (e) {
