@@ -109,9 +109,6 @@ void BrineomaticController::mqttUpdateHook(MQTTController* mqtt)
 {
   JsonDocument output;
   wm.generateUpdateJSON(output);
-
-  // char topic[128];
-  // snprintf(topic, sizeof(topic), "%s/%s", this->channel_type, this->key);
   mqtt->traverseJSON(output, "");
 }
 
