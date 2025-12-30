@@ -10,7 +10,8 @@
 #define YARR_ADC_CONTROLLER_H
 
 #include "channels/ADCChannel.h"
-#include "controllers/ChannelController.h"
+#include <controllers/ChannelController.h>
+#include <controllers/ProtocolController.h>
 
 class YarrboardApp;
 
@@ -24,7 +25,7 @@ class ADCController : public ChannelController<ADCChannel, YB_ADC_CHANNEL_COUNT>
     bool setup() override;
     void loop() override;
 
-    void handleConfigCommand(JsonVariantConst input, JsonVariant output);
+    void handleConfigCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
 
   private:
     ADS1115 _adcVoltageADS1115_1;

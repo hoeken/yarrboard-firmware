@@ -80,7 +80,7 @@ void ADCController::loop()
   adcHelper2->onLoop();
 }
 
-void ADCController::handleConfigCommand(JsonVariantConst input, JsonVariant output)
+void ADCController::handleConfigCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
   ChannelController::handleConfigCommand(input, output);
 }
