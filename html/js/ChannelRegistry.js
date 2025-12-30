@@ -104,6 +104,10 @@
     },
 
     loadAllChannels: function (cfg) {
+
+      //start with a fresh slate
+      this.channels = {};
+
       //loop through all of our register channel types and see if we got config data
       for (var ctype of Object.keys(this.channelConstructors)) {
         if (!cfg.hasOwnProperty(ctype))
