@@ -3369,20 +3369,22 @@
 
   Brineomatic.prototype.updateDiverterValveVisibility = function (mode) {
     const relayDiv = $("#diverter_valve_relay_id").closest(".form-floating");
-    const relayInvertedDiv = $("#diverter_valve_relay_inverted").closest(".form-check");
+    const invertedDiv = $("#diverter_valve_relay_inverted").closest(".form-check");
     const servoDiv = $("#diverter_valve_servo_id").closest(".form-floating");
     const angleDiv = $("#diverter_valve_open_angle").closest(".row");
 
     // Hide everything first
     relayDiv.hide();
-    relayInvertedDiv.hide();
+    invertedDiv.hide();
     servoDiv.hide();
     angleDiv.hide();
 
     switch (mode) {
       case "RELAY":
         relayDiv.show();
-        relayInvertedDiv.show();
+        invertedDiv.show();
+        break;
+
       case "SERVO":
         servoDiv.show();
         angleDiv.show();
