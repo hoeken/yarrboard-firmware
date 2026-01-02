@@ -2,6 +2,11 @@
 
 ## SENDIT
 
+* move SendIt/adc stuff to sendit
+  * config page.startUpdatePoller / stop
+
+* addMessageHandler -> onMessage
+
 * Test Board:
     * switching to 10k pullup not defaulting to ohms
     * test with 8x 4-20ma loads -> check regulators

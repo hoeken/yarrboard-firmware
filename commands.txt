@@ -1,5 +1,8 @@
 {"cmd":"ping"}
 
+{"cmd":"hello"}
+{"cmd":"hello", "user":"guest","pass":"guest"}
+
 {"cmd":"set_brightness","brightness":0.1}
 {"cmd":"set_brightness","brightness":0.25}
 {"cmd":"set_brightness","brightness":0.5}
