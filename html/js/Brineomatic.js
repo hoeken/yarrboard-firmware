@@ -53,9 +53,9 @@
     this.handleHardwareConfigSave = this.handleHardwareConfigSave.bind(this);
     this.handleSafeguardsConfigSave = this.handleSafeguardsConfigSave.bind(this);
 
-    YB.App.addMessageHandler("config", this.handleConfigMessage);
-    YB.App.addMessageHandler("update", this.handleUpdateMessage);
-    YB.App.addMessageHandler("stats", this.handleStatsMessage);
+    YB.App.onMessage("config", this.handleConfigMessage);
+    YB.App.onMessage("update", this.handleUpdateMessage);
+    YB.App.onMessage("stats", this.handleStatsMessage);
 
     this.idle = this.idle.bind(this);
     this.startAutomatic = this.startAutomatic.bind(this);
