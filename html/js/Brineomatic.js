@@ -608,7 +608,7 @@
     if (msg.brineomatic) {
 
       //build our UI
-      $("#controlPage").html(this.generateControlUI());
+      YB.App.getPage("home").setContent(this.generateControlUI());
       $("#ConfigForm").html(this.generateEditUI());
       $("#statsContainer").html(this.generateStatsUI());
 
