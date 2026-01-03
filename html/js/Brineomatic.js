@@ -629,8 +629,6 @@
         .find("input, select, textarea, button")
         .prop("disabled", false);
 
-      console.log('here');
-
       //our UI handlers
       $("#brineomaticIdle").on("click", this.idle);
       $("#brineomaticStartAutomatic").on("click", this.startAutomatic);
