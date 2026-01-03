@@ -391,4 +391,11 @@
 
   global.YB = YB;
 
+  //we need updates for our calibration table averaging.
+  configPage = YB.App.getPage("config");
+  if (configPage) {
+    configPage.onOpen(YB.App.startUpdatePoller);
+    configPage.onClose(YB.App.stopUpdatePoller);
+  }
+
 })(this);

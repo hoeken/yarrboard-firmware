@@ -3,7 +3,7 @@
 ## SENDIT
 
 * move SendIt/adc stuff to sendit
-  * config page.startUpdatePoller / stop
+  * 
 
 * addMessageHandler -> onMessage
 
