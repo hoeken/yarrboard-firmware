@@ -100,7 +100,8 @@ os.environ["YARRBOARD_PROJECT_PATH"] = project_path
 
 print(f"Project path: {project_path}")
 print("Compressing web app into header")
-result = env.Execute(f"gulp --gulpfile {framework_path}/scripts/gulpfile.mjs --cwd .")
+gulpfile_path = os.path.join(framework_path, "scripts", "gulpfile.mjs")
+result = env.Execute(f"gulp --gulpfile {gulpfile_path} --cwd .")
 if result != 0:
     print(f"ERROR: Gulp command failed with exit code {result}")
     env.Exit(1)
