@@ -1,11 +1,19 @@
 # v2.2 TODO
 
-## SENDIT
+## BRINEOMATIC
 
-* Test Board:
-    * switching to 10k pullup not defaulting to ohms
-    * test with 8x 4-20ma loads -> check regulators
-    * test overvoltage on pins -> maybe change filter r/c?
+* variable adc gain per-channel
+* add support for motor + water temperature sensors.
+    * only using 1 pin now
+    * get a list of 1-wire addresses for config
+    * config drop down with address, shown when enabled
+    * might be nice to dynamically update temp?
+* move everything to SI units, add configurable units
+* add simple HA support to brineomatic?
+    * on/off switch to start/stop the watermaker
+    * sensors for each output type
+    * YAML dashboard
+* javascript should handle tds hiding when idle
 
 ## FROTHFET
 
@@ -26,19 +34,13 @@
 * how to handle global set_brightness command
 * make sure fast updates are working
 
-## BRINEOMATIC
+## SENDIT
 
-* Rev C: variable adc gain per-channel
-* Rev C: add support for motor + water temperature sensors.
-* flowmeters not working
-* tds sensors not working
-* advanced mode not working
-* move everything to SI units, add configurable units
-* add simple HA support to brineomatic?
-    * on/off switch to start/stop the watermaker
-    * sensors for each output type
-    * YAML dashboard
-* javascript should handle tds hiding when idle
+* Test Board:
+    * switching to 10k pullup not defaulting to ohms
+    * test with 8x 4-20ma loads -> check regulators
+    * test overvoltage on pins -> maybe change filter r/c?
+
 
 # LONG TERM:
 

@@ -7,7 +7,7 @@
 #define YB_IS_BRINEOMATIC   1
 #define YB_BOARD_NAME       "Brineomatic"
 #define YB_DEFAULT_HOSTNAME "brineomatic"
-#define YB_HARDWARE_URL     "https://github.com/hoeken/brineomatic/releases/tag/Rev-B"
+#define YB_HARDWARE_URL     "https://github.com/hoeken/brineomatic/releases/tag/Rev-C"
 #define YB_PROJECT_NAME     "Brineomatic"
 #define YB_PROJECT_URL      "https://github.com/hoeken/brineomatic"
 
@@ -31,7 +31,7 @@
 #define YB_HAS_MOTOR_TEMPERATURE_SENSOR true
 #define YB_DS18B20_MOTOR_PIN            4
 
-#define YB_HAS_WATER_TEMPERATURE_SENSOR true
+#define YB_HAS_WATER_TEMPERATURE_SENSOR false
 #define YB_DS18B20_WATER_PIN            39
 
 #define YB_HAS_PIEZO
@@ -81,4 +81,4 @@
 #define YB_MODBUS_DERE_PIN 5
 #define YB_MODBUS_SPEED    9600
 
-#endif // _CONFIG_BRINEOMATIC_REV_B
+#endif // _CONFIG_BRINEOMATIC_REV_C
