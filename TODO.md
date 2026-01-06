@@ -28,8 +28,11 @@
 
 ## BRINEOMATIC
 
-* Rev C: add support for motor + water temperature sensors.
 * Rev C: variable adc gain per-channel
+* Rev C: add support for motor + water temperature sensors.
+* flowmeters not working
+* tds sensors not working
+* advanced mode not working
 * move everything to SI units, add configurable units
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker
