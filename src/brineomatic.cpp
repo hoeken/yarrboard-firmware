@@ -28,10 +28,10 @@ Brineomatic::Brineomatic(YarrboardApp& app, RelayController& relays, ServoContro
                                                                                                                              _relays(relays),
                                                                                                                              _servos(servos),
                                                                                                                              _steppers(steppers),
-                                                                                                                             motorTemperatureOneWire(YB_DS18B20_MOTOR_PIN),    // constructor arg for OneWire
-                                                                                                                             motorTemperatureSensor(&motorTemperatureOneWire), // DallasTemperature needs pointer to OneWire
-                                                                                                                             waterTemperatureOneWire(YB_DS18B20_WATER_PIN),    // constructor arg for OneWire
-                                                                                                                             waterTemperatureSensor(&waterTemperatureOneWire),
+                                                                                                                             motorTemperatureOneWire(),
+                                                                                                                             motorTemperatureSensor(),
+                                                                                                                             waterTemperatureOneWire(),
+                                                                                                                             waterTemperatureSensor(),
                                                                                                                              _adc(YB_ADS1115_ADDRESS)
 {
 }
@@ -115,11 +115,14 @@ void Brineomatic::init()
   this->initChannels();
 
   // DS18B20 Sensor
-  #ifdef YB_DS18B20_MOTOR_PIN
+  #if YB_HAS_MOTOR_TEMPERATURE_SENSOR
+  motorTemperatureOneWire.begin(YB_DS18B20_MOTOR_PIN);
+  motorTemperatureSensor.setOneWire(&motorTemperatureOneWire);
   motorTemperatureSensor.begin();
+
   YBP.print("Found ");
   YBP.print(motorTemperatureSensor.getDeviceCount(), DEC);
-  YBP.println(" DS18B20 devices.");
+  YBP.println(" motor temperature devices.");
 
   // lookup our address
   if (!motorTemperatureSensor.getAddress(motorTemperatureAddress, 0))
@@ -130,11 +133,15 @@ void Brineomatic::init()
   motorTemperatureSensor.requestTemperatures();
   #endif
 
-  #ifdef YB_DS18B20_WATER_PIN
+  #if YB_HAS_WATER_TEMPERATURE_SENSOR
+  gpio_reset_pin(GPIO_NUM_39);
+  waterTemperatureOneWire.begin(YB_DS18B20_WATER_PIN);
+  waterTemperatureSensor.setOneWire(&waterTemperatureOneWire);
   waterTemperatureSensor.begin();
+
   YBP.print("Found ");
   YBP.print(waterTemperatureSensor.getDeviceCount(), DEC);
-  YBP.println(" DS18B20 devices.");
+  YBP.println(" water temperature devices.");
 
   // lookup our address
   if (!waterTemperatureSensor.getAddress(waterTemperatureAddress, 0))
@@ -207,6 +214,7 @@ void Brineomatic::loop()
   measureProductFlowmeter();
   measureBrineFlowmeter();
   measureMotorTemperature();
+  measureWaterTemperature();
   manageHighPressureValve();
   manageCoolingFan();
 }
@@ -252,6 +260,7 @@ void Brineomatic::measureBrineFlowmeter()
 
 void Brineomatic::measureMotorTemperature()
 {
+  #if YB_HAS_MOTOR_TEMPERATURE_SENSOR
   if (!hasMotorTemperatureSensor)
     return;
 
@@ -259,10 +268,12 @@ void Brineomatic::measureMotorTemperature()
     currentMotorTemperature = motorTemperatureSensor.getTempC(motorTemperatureAddress);
     motorTemperatureSensor.requestTemperatures();
   }
+  #endif
 }
 
 void Brineomatic::measureWaterTemperature()
 {
+  #if YB_HAS_WATER_TEMPERATURE_SENSOR
   if (!hasWaterTemperatureSensor)
     return;
 
@@ -270,6 +281,7 @@ void Brineomatic::measureWaterTemperature()
     currentWaterTemperature = waterTemperatureSensor.getTempC(waterTemperatureAddress);
     waterTemperatureSensor.requestTemperatures();
   }
+  #endif
 }
 
 void Brineomatic::measureProductSalinity()
