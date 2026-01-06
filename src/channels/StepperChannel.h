@@ -58,7 +58,7 @@ class StepperChannel : public BaseChannel
     FastAccelStepperEngine* _engine;
     TMC2209 _tmc2209;
     byte _diag_pin;
-    uint8_t _run_current = 67;
+    uint8_t _run_current = 50;
     uint8_t _hold_current = 20;
     uint8_t _stall_guard = 90;
 
