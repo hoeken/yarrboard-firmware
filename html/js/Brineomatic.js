@@ -663,367 +663,368 @@
       this.buildGaugeSetup();
       if (!YB.App.isMFD())
         this.createGauges();
-    };
 
-    //finally, show our interface.
-    $('#bomInterface').css('visibility', 'visible');
+      //finally, show our interface.
+      $('#bomInterface').css('visibility', 'visible');
+    };
   }
 
   Brineomatic.prototype.handleUpdateMessage = function (msg) {
-    if (msg.brineomatic) {
-      let motor_temperature = Math.round(msg.motor_temperature);
-      let water_temperature = Math.round(msg.water_temperature);
-      let product_flowrate = Math.round(msg.product_flowrate);
-      let brine_flowrate = Math.round(msg.brine_flowrate);
-      let total_flowrate = Math.round(msg.total_flowrate);
-      let volume = msg.volume.toFixed(1);
-      if (volume >= 100)
-        volume = Math.round(volume);
-      let flush_volume = msg.flush_volume.toFixed(1);
-      if (flush_volume >= 100)
-        flush_volume = Math.round(flush_volume);
-      let product_salinity = Math.round(msg.product_salinity);
-      let brine_salinity = Math.round(msg.brine_salinity);
-      let filter_pressure = Math.round(msg.filter_pressure);
-      if (filter_pressure < 0 && filter_pressure > -10)
-        filter_pressure = 0;
-      let membrane_pressure = Math.round(msg.membrane_pressure);
-      if (membrane_pressure < 0 && membrane_pressure > -10)
-        membrane_pressure = 0;
-      let tank_level = Math.round(msg.tank_level * 100);
+    if (!YB.App.config.brineomatic)
+      return;
 
-      //errors or no?
-      let err = filter_pressure < 0;
-      $(".filterPressureContent").toggle(!err);
-      $(".filterPressureError").toggle(err);
+    let motor_temperature = Math.round(msg.motor_temperature);
+    let water_temperature = Math.round(msg.water_temperature);
+    let product_flowrate = Math.round(msg.product_flowrate);
+    let brine_flowrate = Math.round(msg.brine_flowrate);
+    let total_flowrate = Math.round(msg.total_flowrate);
+    let volume = msg.volume.toFixed(1);
+    if (volume >= 100)
+      volume = Math.round(volume);
+    let flush_volume = msg.flush_volume.toFixed(1);
+    if (flush_volume >= 100)
+      flush_volume = Math.round(flush_volume);
+    let product_salinity = Math.round(msg.product_salinity);
+    let brine_salinity = Math.round(msg.brine_salinity);
+    let filter_pressure = Math.round(msg.filter_pressure);
+    if (filter_pressure < 0 && filter_pressure > -10)
+      filter_pressure = 0;
+    let membrane_pressure = Math.round(msg.membrane_pressure);
+    if (membrane_pressure < 0 && membrane_pressure > -10)
+      membrane_pressure = 0;
+    let tank_level = Math.round(msg.tank_level * 100);
 
-      err = membrane_pressure < 0;
-      $(".membranePressureContent").toggle(!err);
-      $(".membranePressureError").toggle(err);
+    //errors or no?
+    let err = filter_pressure < 0;
+    $(".filterPressureContent").toggle(!err);
+    $(".filterPressureError").toggle(err);
 
-      err = motor_temperature < 0;
-      $(".motorTemperatureContent").toggle(!err);
-      $(".motorTemperatureError").toggle(err);
+    err = membrane_pressure < 0;
+    $(".membranePressureContent").toggle(!err);
+    $(".membranePressureError").toggle(err);
 
-      err = tank_level < 0;
-      $(".tankLevelContent").toggle(!err);
-      $(".tankLevelError").toggle(err);
+    err = motor_temperature < 0;
+    $(".motorTemperatureContent").toggle(!err);
+    $(".motorTemperatureError").toggle(err);
 
-      //update our gauges.
-      if (!YB.App.isMFD()) {
-        if (YB.App.currentPage == "control") {
-          this.motorTemperatureGauge.load({ columns: [['Motor Temperature', motor_temperature]] });
-          this.waterTemperatureGauge.load({ columns: [['Water Temperature', water_temperature]] });
-          this.filterPressureGauge.load({ columns: [['Filter Pressure', filter_pressure]] });
-          this.membranePressureGauge.load({ columns: [['Membrane Pressure', membrane_pressure]] });
-          this.productSalinityGauge.load({ columns: [['Product Salinity', product_salinity]] });
-          this.brineSalinityGauge.load({ columns: [['Brine Salinity', brine_salinity]] });
-          this.productFlowrateGauge.load({ columns: [['Product Flowrate', product_flowrate]] });
-          this.brineFlowrateGauge.load({ columns: [['Brine Flowrate', brine_flowrate]] });
-          this.totalFlowrateGauge.load({ columns: [['Total Flowrate', total_flowrate]] });
-          this.tankLevelGauge.load({ columns: [['Tank Level', tank_level]] });
-        }
-      } else {
-        $("#filterPressureData").html(filter_pressure);
-        this.setDataColor("filter_pressure", filter_pressure, $("#filterPressureData"));
+    err = tank_level < 0;
+    $(".tankLevelContent").toggle(!err);
+    $(".tankLevelError").toggle(err);
 
-        $("#membranePressureData").html(membrane_pressure);
-        this.setDataColor("membrane_pressure", membrane_pressure, $("#membranePressureData"));
-
-        $("#productSalinityData").html(product_salinity);
-        this.setDataColor("product_salinity", product_salinity, $("#productSalinityData"));
-
-        $("#brineSalinityData").html(brine_salinity);
-        this.setDataColor("brine_salinity", brine_salinity, $("#brineSalinityData"));
-
-        $("#productFlowrateData").html(product_flowrate);
-        this.setDataColor("product_flowrate", product_flowrate, $("#productFlowrateData"));
-
-        $("#brineFlowrateData").html(brine_flowrate);
-        this.setDataColor("brine_flowrate", brine_flowrate, $("#brineFlowrateData"));
-
-        $("#totalFlowrateData").html(total_flowrate);
-        this.setDataColor("total_flowrate", total_flowrate, $("#totalFlowrateData"));
-
-        $("#motorTemperatureData").html(motor_temperature);
-        this.setDataColor("motor_temperature", motor_temperature, $("#motorTemperatureData"));
-
-        $("#waterTemperatureData").html(water_temperature);
-        this.setDataColor("water_temperature", water_temperature, $("#waterTemperatureData"));
-
-        $("#tankLevelData").html(tank_level);
-        this.setDataColor("tank_level", tank_level, $("#tankLevelData"));
-
+    //update our gauges.
+    if (!YB.App.isMFD()) {
+      if (YB.App.currentPage == "home") {
+        this.motorTemperatureGauge.load({ columns: [['Motor Temperature', motor_temperature]] });
+        this.waterTemperatureGauge.load({ columns: [['Water Temperature', water_temperature]] });
+        this.filterPressureGauge.load({ columns: [['Filter Pressure', filter_pressure]] });
+        this.membranePressureGauge.load({ columns: [['Membrane Pressure', membrane_pressure]] });
+        this.productSalinityGauge.load({ columns: [['Product Salinity', product_salinity]] });
+        this.brineSalinityGauge.load({ columns: [['Brine Salinity', brine_salinity]] });
+        this.productFlowrateGauge.load({ columns: [['Product Flowrate', product_flowrate]] });
+        this.brineFlowrateGauge.load({ columns: [['Brine Flowrate', brine_flowrate]] });
+        this.totalFlowrateGauge.load({ columns: [['Total Flowrate', total_flowrate]] });
+        this.tankLevelGauge.load({ columns: [['Tank Level', tank_level]] });
       }
+    } else {
+      $("#filterPressureData").html(filter_pressure);
+      this.setDataColor("filter_pressure", filter_pressure, $("#filterPressureData"));
 
-      $(".bomVolumeData").html(volume);
-      this.setDataColor("volume", volume, $(".bomVolumeData"));
-      $(".bomFlushVolumeData").html(flush_volume);
-      this.setDataColor("volume", flush_volume, $(".bomFlushVolumeData"));
+      $("#membranePressureData").html(membrane_pressure);
+      this.setDataColor("membrane_pressure", membrane_pressure, $("#membranePressureData"));
 
-      $("#bomStatus").html(msg.status);
-      $("#bomStatus").removeClass();
-      $("#bomStatus").addClass("badge");
+      $("#productSalinityData").html(product_salinity);
+      this.setDataColor("product_salinity", product_salinity, $("#productSalinityData"));
 
-      if (msg.status == "STARTUP")
-        $("#bomStatus").addClass("text-bg-info");
-      else if (msg.status == "IDLE")
-        $("#bomStatus").addClass("text-bg-secondary");
-      else if (msg.status == "MANUAL")
-        $("#bomStatus").addClass("text-bg-secondary");
-      else if (msg.status == "RUNNING")
-        $("#bomStatus").addClass("text-bg-success");
-      else if (msg.status == "FLUSHING")
-        $("#bomStatus").addClass("text-bg-primary");
-      else if (msg.status == "PICKLING")
-        $("#bomStatus").addClass("text-bg-warning");
-      else if (msg.status == "DEPICKLING")
-        $("#bomStatus").addClass("text-bg-warning");
-      else if (msg.status == "PICKLED")
-        $("#bomStatus").addClass("text-bg-warning");
-      else if (msg.status == "STOPPING")
-        $("#bomStatus").addClass("text-bg-info");
-      else
-        $("#bomStatus").addClass("text-bg-danger");
+      $("#brineSalinityData").html(brine_salinity);
+      this.setDataColor("brine_salinity", brine_salinity, $("#brineSalinityData"));
 
-      // hide all BOM states except the one we want
-      $(`.bomSTARTUP, .bomIDLE, .bomMANUAL, .bomRUNNING, .bomFLUSHING, .bomPICKLING, .bomPICKLED, .bomDEPICKLING, .bomSTOPPING`)
-        .not(`.bom${msg.status}`)
-        .hide();
+      $("#productFlowrateData").html(product_flowrate);
+      this.setDataColor("product_flowrate", product_flowrate, $("#productFlowrateData"));
 
-      $(`.bom${msg.status}`).show();
+      $("#brineFlowrateData").html(brine_flowrate);
+      this.setDataColor("brine_flowrate", brine_flowrate, $("#brineFlowrateData"));
 
-      if (msg.run_result)
-        this.showResult("#bomRunResult", msg.run_result);
+      $("#totalFlowrateData").html(total_flowrate);
+      this.setDataColor("total_flowrate", total_flowrate, $("#totalFlowrateData"));
 
-      if (msg.flush_result)
-        this.showResult("#bomFlushResult", msg.flush_result);
+      $("#motorTemperatureData").html(motor_temperature);
+      this.setDataColor("motor_temperature", motor_temperature, $("#motorTemperatureData"));
 
-      if (msg.pickle_result)
-        this.showResult("#bomPickleResult", msg.pickle_result);
+      $("#waterTemperatureData").html(water_temperature);
+      this.setDataColor("water_temperature", water_temperature, $("#waterTemperatureData"));
 
-      if (msg.pickled_on > 0) {
-        let current_time = Math.floor(Date.now() / 1000);
-        let duration = current_time - msg.pickled_on;
-        let time_ago = YB.Util.secondsToDhms(duration, 1);
-        let date_obj = new Date(msg.pickled_on * 1000);
-        let pickle_date = date_obj.toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "short",
-          day: "numeric"
-        });
+      $("#tankLevelData").html(tank_level);
+      this.setDataColor("tank_level", tank_level, $("#tankLevelData"));
 
-        $('#bomPickledSince').html(`${pickle_date}<br/>(${time_ago} ago)`);
-        $('#bomPickledSinceRow').show();
-      } else
-        $('#bomPickledSinceRow').hide();
+    }
 
-      if (msg.depickle_result)
-        this.showResult("#bomDePickleResult", msg.depickle_result);
+    $(".bomVolumeData").html(volume);
+    this.setDataColor("volume", volume, $(".bomVolumeData"));
+    $(".bomFlushVolumeData").html(flush_volume);
+    this.setDataColor("volume", flush_volume, $(".bomFlushVolumeData"));
 
-      if (msg.next_flush_countdown > 0)
-        $("#bomNextFlushCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.next_flush_countdown / 1000)));
-      else
-        $("#bomNextFlushCountdown").hide();
+    $("#bomStatus").html(msg.status);
+    $("#bomStatus").removeClass();
+    $("#bomStatus").addClass("badge");
 
-      if (msg.runtime_elapsed > 0)
-        $("#bomRuntimeElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.runtime_elapsed / 1000)));
-      else
-        $("#bomRuntimeElapsed").hide();
+    if (msg.status == "STARTUP")
+      $("#bomStatus").addClass("text-bg-info");
+    else if (msg.status == "IDLE")
+      $("#bomStatus").addClass("text-bg-secondary");
+    else if (msg.status == "MANUAL")
+      $("#bomStatus").addClass("text-bg-secondary");
+    else if (msg.status == "RUNNING")
+      $("#bomStatus").addClass("text-bg-success");
+    else if (msg.status == "FLUSHING")
+      $("#bomStatus").addClass("text-bg-primary");
+    else if (msg.status == "PICKLING")
+      $("#bomStatus").addClass("text-bg-warning");
+    else if (msg.status == "DEPICKLING")
+      $("#bomStatus").addClass("text-bg-warning");
+    else if (msg.status == "PICKLED")
+      $("#bomStatus").addClass("text-bg-warning");
+    else if (msg.status == "STOPPING")
+      $("#bomStatus").addClass("text-bg-info");
+    else
+      $("#bomStatus").addClass("text-bg-danger");
 
-      if (msg.finish_countdown > 0)
-        $("#bomFinishCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.finish_countdown / 1000)));
-      else
-        $("#bomFinishCountdown").hide();
+    // hide all BOM states except the one we want
+    $(`.bomSTARTUP, .bomIDLE, .bomMANUAL, .bomRUNNING, .bomFLUSHING, .bomPICKLING, .bomPICKLED, .bomDEPICKLING, .bomSTOPPING`)
+      .not(`.bom${msg.status}`)
+      .hide();
 
-      if (msg.runtime_elapsed > 0 && msg.finish_countdown > 0) {
-        const runtimeProgress = (msg.runtime_elapsed / (msg.runtime_elapsed + msg.finish_countdown)) * 100;
-        YB.Util.updateProgressBar("bomRunProgressBar", runtimeProgress);
-        $('#bomRunProgressRow').show();
-      } else {
-        $('#bomRunProgressRow').hide();
-      }
+    $(`.bom${msg.status}`).show();
 
-      if (msg.flush_elapsed > 0)
-        $("#bomFlushElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.flush_elapsed / 1000)));
-      else
-        $("#bomFlushElapsed").hide();
+    if (msg.run_result)
+      this.showResult("#bomRunResult", msg.run_result);
 
-      if (msg.flush_countdown > 0)
-        $("#bomFlushCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.flush_countdown / 1000)));
-      else
-        $("#bomFlushCountdown").hide();
+    if (msg.flush_result)
+      this.showResult("#bomFlushResult", msg.flush_result);
 
-      if (msg.flush_elapsed > 0 && msg.flush_countdown > 0) {
-        const flushProgress = (msg.flush_elapsed / (msg.flush_elapsed + msg.flush_countdown)) * 100;
-        YB.Util.updateProgressBar("bomFlushProgressBar", flushProgress);
-        $('#bomFlushProgressRow').show();
-      } else {
-        $('#bomFlushProgressRow').hide();
-      }
+    if (msg.pickle_result)
+      this.showResult("#bomPickleResult", msg.pickle_result);
 
-      if (msg.pickle_elapsed > 0)
-        $("#bomPickleElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.pickle_elapsed / 1000)));
-      else
-        $("#bomPickleElapsed").hide();
+    if (msg.pickled_on > 0) {
+      let current_time = Math.floor(Date.now() / 1000);
+      let duration = current_time - msg.pickled_on;
+      let time_ago = YB.Util.secondsToDhms(duration, 1);
+      let date_obj = new Date(msg.pickled_on * 1000);
+      let pickle_date = date_obj.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+      });
 
-      if (msg.pickle_countdown > 0)
-        $("#bomPickleCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.pickle_countdown / 1000)));
-      else
-        $("#bomPickleCountdown").hide();
+      $('#bomPickledSince').html(`${pickle_date}<br/>(${time_ago} ago)`);
+      $('#bomPickledSinceRow').show();
+    } else
+      $('#bomPickledSinceRow').hide();
 
-      if (msg.pickle_elapsed > 0 && msg.pickle_countdown > 0) {
-        const pickleProgress = (msg.pickle_elapsed / (msg.pickle_elapsed + msg.pickle_countdown)) * 100;
-        YB.Util.updateProgressBar("bomPickleProgressBar", pickleProgress);
-        $('#bomPickleProgressRow').show();
-      } else {
-        $('#bomPickleProgressRow').hide();
-      }
+    if (msg.depickle_result)
+      this.showResult("#bomDePickleResult", msg.depickle_result);
 
-      if (msg.depickle_elapsed > 0)
-        $("#bomDepickleElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.depickle_elapsed / 1000)));
-      else
-        $("#bomDepickleElapsed").hide();
+    if (msg.next_flush_countdown > 0)
+      $("#bomNextFlushCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.next_flush_countdown / 1000)));
+    else
+      $("#bomNextFlushCountdown").hide();
 
-      if (msg.depickle_countdown > 0)
-        $("#bomDepickleCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.depickle_countdown / 1000)));
-      else
-        $("#bomDepickleCountdown").hide();
+    if (msg.runtime_elapsed > 0)
+      $("#bomRuntimeElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.runtime_elapsed / 1000)));
+    else
+      $("#bomRuntimeElapsed").hide();
 
-      if (msg.depickle_elapsed > 0 && msg.depickle_countdown > 0) {
-        const depickleProgress = (msg.depickle_elapsed / (msg.depickle_elapsed + msg.depickle_countdown)) * 100;
-        YB.Util.updateProgressBar("#bomDepickleProgressBar", depickleProgress);
-        $('#bomDepickleProgressRow').show();
-      } else {
-        $('#bomDepickleProgressRow').hide();
-      }
+    if (msg.finish_countdown > 0)
+      $("#bomFinishCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.finish_countdown / 1000)));
+    else
+      $("#bomFinishCountdown").hide();
 
-      if (YB.App.config.brineomatic.has_boost_pump) {
-        $('#bomBoostPumpStatus span').removeClass();
-        $('#bomBoostPumpStatus span').addClass("badge");
-        $('#boostPumpControlUI').show();
-        if (msg.boost_pump_on) {
-          $("#bomBoostPumpStatus span").addClass("text-bg-primary");
-          $('#bomBoostPumpStatus span').html("ON");
-          $('#manualBoostPumpStatus').html("ON");
-          $('#boostPumpControlButton').removeClass("btn-secondary").addClass("btn-success");
-        }
-        else {
-          $("#bomBoostPumpStatus span").addClass("text-bg-secondary");
-          $('#bomBoostPumpStatus span').html("OFF");
-          $('#manualBoostPumpStatus').html("OFF");
-          $('#boostPumpControlButton').removeClass("btn-success").addClass("btn-secondary");
-        }
+    if (msg.runtime_elapsed > 0 && msg.finish_countdown > 0) {
+      const runtimeProgress = (msg.runtime_elapsed / (msg.runtime_elapsed + msg.finish_countdown)) * 100;
+      YB.Util.updateProgressBar("bomRunProgressBar", runtimeProgress);
+      $('#bomRunProgressRow').show();
+    } else {
+      $('#bomRunProgressRow').hide();
+    }
+
+    if (msg.flush_elapsed > 0)
+      $("#bomFlushElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.flush_elapsed / 1000)));
+    else
+      $("#bomFlushElapsed").hide();
+
+    if (msg.flush_countdown > 0)
+      $("#bomFlushCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.flush_countdown / 1000)));
+    else
+      $("#bomFlushCountdown").hide();
+
+    if (msg.flush_elapsed > 0 && msg.flush_countdown > 0) {
+      const flushProgress = (msg.flush_elapsed / (msg.flush_elapsed + msg.flush_countdown)) * 100;
+      YB.Util.updateProgressBar("bomFlushProgressBar", flushProgress);
+      $('#bomFlushProgressRow').show();
+    } else {
+      $('#bomFlushProgressRow').hide();
+    }
+
+    if (msg.pickle_elapsed > 0)
+      $("#bomPickleElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.pickle_elapsed / 1000)));
+    else
+      $("#bomPickleElapsed").hide();
+
+    if (msg.pickle_countdown > 0)
+      $("#bomPickleCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.pickle_countdown / 1000)));
+    else
+      $("#bomPickleCountdown").hide();
+
+    if (msg.pickle_elapsed > 0 && msg.pickle_countdown > 0) {
+      const pickleProgress = (msg.pickle_elapsed / (msg.pickle_elapsed + msg.pickle_countdown)) * 100;
+      YB.Util.updateProgressBar("bomPickleProgressBar", pickleProgress);
+      $('#bomPickleProgressRow').show();
+    } else {
+      $('#bomPickleProgressRow').hide();
+    }
+
+    if (msg.depickle_elapsed > 0)
+      $("#bomDepickleElapsedData").html(YB.Util.secondsToDhms(Math.round(msg.depickle_elapsed / 1000)));
+    else
+      $("#bomDepickleElapsed").hide();
+
+    if (msg.depickle_countdown > 0)
+      $("#bomDepickleCountdownData").html(YB.Util.secondsToDhms(Math.round(msg.depickle_countdown / 1000)));
+    else
+      $("#bomDepickleCountdown").hide();
+
+    if (msg.depickle_elapsed > 0 && msg.depickle_countdown > 0) {
+      const depickleProgress = (msg.depickle_elapsed / (msg.depickle_elapsed + msg.depickle_countdown)) * 100;
+      YB.Util.updateProgressBar("#bomDepickleProgressBar", depickleProgress);
+      $('#bomDepickleProgressRow').show();
+    } else {
+      $('#bomDepickleProgressRow').hide();
+    }
+
+    if (YB.App.config.brineomatic.has_boost_pump) {
+      $('#bomBoostPumpStatus span').removeClass();
+      $('#bomBoostPumpStatus span').addClass("badge");
+      $('#boostPumpControlUI').show();
+      if (msg.boost_pump_on) {
+        $("#bomBoostPumpStatus span").addClass("text-bg-primary");
+        $('#bomBoostPumpStatus span').html("ON");
+        $('#manualBoostPumpStatus').html("ON");
+        $('#boostPumpControlButton').removeClass("btn-secondary").addClass("btn-success");
       }
       else {
-        $('#bomBoostPumpStatus').hide();
-        $('#boostPumpControlUI').hide();
+        $("#bomBoostPumpStatus span").addClass("text-bg-secondary");
+        $('#bomBoostPumpStatus span').html("OFF");
+        $('#manualBoostPumpStatus').html("OFF");
+        $('#boostPumpControlButton').removeClass("btn-success").addClass("btn-secondary");
       }
+    }
+    else {
+      $('#bomBoostPumpStatus').hide();
+      $('#boostPumpControlUI').hide();
+    }
 
-      if (YB.App.config.brineomatic.has_high_pressure_pump) {
-        $('#bomHighPressurePumpStatus span').removeClass();
-        $('#bomHighPressurePumpStatus span').addClass("badge");
-        $('#highPressurePumpControlUI').show();
-        if (msg.high_pressure_pump_on) {
-          $("#bomHighPressurePumpStatus span").addClass("text-bg-primary");
-          $('#bomHighPressurePumpStatus span').html("ON");
-          $('#manualHighPressurePumpStatus').html("ON");
-          $('#highPressurePumpControlButton').removeClass("btn-secondary").addClass("btn-success");
-        }
-        else {
-          $("#bomHighPressurePumpStatus span").addClass("text-bg-secondary");
-          $('#bomHighPressurePumpStatus span').html("OFF");
-          $('#manualHighPressurePumpStatus').html("OFF");
-          $('#highPressurePumpControlButton').removeClass("btn-success").addClass("btn-secondary");
-        }
+    if (YB.App.config.brineomatic.has_high_pressure_pump) {
+      $('#bomHighPressurePumpStatus span').removeClass();
+      $('#bomHighPressurePumpStatus span').addClass("badge");
+      $('#highPressurePumpControlUI').show();
+      if (msg.high_pressure_pump_on) {
+        $("#bomHighPressurePumpStatus span").addClass("text-bg-primary");
+        $('#bomHighPressurePumpStatus span').html("ON");
+        $('#manualHighPressurePumpStatus').html("ON");
+        $('#highPressurePumpControlButton').removeClass("btn-secondary").addClass("btn-success");
       }
       else {
-        $('#highPressurePumpControlUI').hide();
-        $('#bomHighPressurePumpStatus').hide();
+        $("#bomHighPressurePumpStatus span").addClass("text-bg-secondary");
+        $('#bomHighPressurePumpStatus span').html("OFF");
+        $('#manualHighPressurePumpStatus').html("OFF");
+        $('#highPressurePumpControlButton').removeClass("btn-success").addClass("btn-secondary");
       }
+    }
+    else {
+      $('#highPressurePumpControlUI').hide();
+      $('#bomHighPressurePumpStatus').hide();
+    }
 
-      if (YB.App.config.brineomatic.has_diverter_valve) {
-        $('#bomDiverterValveStatus span').removeClass();
-        $('#bomDiverterValveStatus span').addClass("badge");
-        $('#diverterValveControlUI').show();
+    if (YB.App.config.brineomatic.has_diverter_valve) {
+      $('#bomDiverterValveStatus span').removeClass();
+      $('#bomDiverterValveStatus span').addClass("badge");
+      $('#diverterValveControlUI').show();
 
-        if (msg.diverter_valve_open) {
-          $("#bomDiverterValveStatus span").addClass("text-bg-secondary");
-          $('#bomDiverterValveStatus span').html("OVERBOARD");
-          $('#manualDiverterValveStatus').html("OVERBOARD");
-          $('#diverterValveControlButton').removeClass("btn-success").addClass("btn-secondary");
-        }
-        else {
-          $("#bomDiverterValveStatus span").addClass("text-bg-primary");
-          $('#bomDiverterValveStatus span').html("TO TANK");
-          $('#manualDiverterValveStatus').html("TO TANK");
-          $('#diverterValveControlButton').removeClass("btn-secondary").addClass("btn-success");
-        }
-      }
-      else {
-        $('#diverterValveControlUI').hide();
-        $('#bomDiverterValveStatus').hide();
-
-      }
-
-      if (YB.App.config.brineomatic.has_flush_valve) {
-        $('#bomFlushValveStatus span').removeClass();
-        $('#bomFlushValveStatus span').addClass("badge");
-        $('#flushValveControlUI').show();
-
-        if (msg.flush_valve_open) {
-          $("#bomFlushValveStatus span").addClass("text-bg-primary");
-          $('#bomFlushValveStatus span').html("OPEN");
-          $('#manualFlushValveStatus').html("OPEN");
-          $('#flushValveControlButton').removeClass("btn-secondary").addClass("btn-success");
-        }
-        else {
-          $("#bomFlushValveStatus span").addClass("text-bg-secondary");
-          $('#bomFlushValveStatus span').html("CLOSED");
-          $('#manualFlushValveStatus').html("CLOSED");
-          $('#flushValveControlButton').removeClass("btn-success").addClass("btn-secondary");
-        }
+      if (msg.diverter_valve_open) {
+        $("#bomDiverterValveStatus span").addClass("text-bg-secondary");
+        $('#bomDiverterValveStatus span').html("OVERBOARD");
+        $('#manualDiverterValveStatus').html("OVERBOARD");
+        $('#diverterValveControlButton').removeClass("btn-success").addClass("btn-secondary");
       }
       else {
-        $('#flushValveControlUI').hide();
-        $('#bomFlushValveStatus').hide();
+        $("#bomDiverterValveStatus span").addClass("text-bg-primary");
+        $('#bomDiverterValveStatus span').html("TO TANK");
+        $('#manualDiverterValveStatus').html("TO TANK");
+        $('#diverterValveControlButton').removeClass("btn-secondary").addClass("btn-success");
       }
+    }
+    else {
+      $('#diverterValveControlUI').hide();
+      $('#bomDiverterValveStatus').hide();
 
-      if (YB.App.config.brineomatic.has_cooling_fan) {
-        $('#bomFanStatus span').removeClass();
-        $('#bomFanStatus span').addClass("badge");
-        $('#coolingFanControlUI').show();
+    }
 
-        if (msg.cooling_fan_on) {
-          $("#bomFanStatus span").addClass("text-bg-primary");
-          $('#bomFanStatus span').html("ON");
-          $('#manualCoolingFanStatus').html("ON");
-          $('#coolingFanControlButton').removeClass("btn-secondary").addClass("btn-success");
-        }
-        else {
-          $('#bomFanStatus span').html("OFF");
-          $("#bomFanStatus span").addClass("text-bg-secondary");
-          $('#manualCoolingFanStatus').html("OFF");
-          $('#coolingFanControlButton').removeClass("btn-success").addClass("btn-secondary");
-        }
+    if (YB.App.config.brineomatic.has_flush_valve) {
+      $('#bomFlushValveStatus span').removeClass();
+      $('#bomFlushValveStatus span').addClass("badge");
+      $('#flushValveControlUI').show();
+
+      if (msg.flush_valve_open) {
+        $("#bomFlushValveStatus span").addClass("text-bg-primary");
+        $('#bomFlushValveStatus span').html("OPEN");
+        $('#manualFlushValveStatus').html("OPEN");
+        $('#flushValveControlButton').removeClass("btn-secondary").addClass("btn-success");
       }
       else {
-        $('#coolingFanControlUI').show();
-        $('#bomFanStatus').hide();
+        $("#bomFlushValveStatus span").addClass("text-bg-secondary");
+        $('#bomFlushValveStatus span').html("CLOSED");
+        $('#manualFlushValveStatus').html("CLOSED");
+        $('#flushValveControlButton').removeClass("btn-success").addClass("btn-secondary");
       }
+    }
+    else {
+      $('#flushValveControlUI').hide();
+      $('#bomFlushValveStatus').hide();
+    }
 
-      //disable our hardware form when not idle.
-      if (msg.status == "IDLE") {
-        $("#hardwareSettingsForm")
-          .find("input, select, textarea, button")
-          .prop("disabled", false);
-        $("#hardwareSettingsDisabled").hide();
-      } else {
-        $("#hardwareSettingsForm")
-          .find("input, select, textarea, button")
-          .prop("disabled", true);
-        $("#hardwareSettingsDisabled").show();
+    if (YB.App.config.brineomatic.has_cooling_fan) {
+      $('#bomFanStatus span').removeClass();
+      $('#bomFanStatus span').addClass("badge");
+      $('#coolingFanControlUI').show();
+
+      if (msg.cooling_fan_on) {
+        $("#bomFanStatus span").addClass("text-bg-primary");
+        $('#bomFanStatus span').html("ON");
+        $('#manualCoolingFanStatus').html("ON");
+        $('#coolingFanControlButton').removeClass("btn-secondary").addClass("btn-success");
       }
+      else {
+        $('#bomFanStatus span').html("OFF");
+        $("#bomFanStatus span").addClass("text-bg-secondary");
+        $('#manualCoolingFanStatus').html("OFF");
+        $('#coolingFanControlButton').removeClass("btn-success").addClass("btn-secondary");
+      }
+    }
+    else {
+      $('#coolingFanControlUI').show();
+      $('#bomFanStatus').hide();
+    }
+
+    //disable our hardware form when not idle.
+    if (msg.status == "IDLE") {
+      $("#hardwareSettingsForm")
+        .find("input, select, textarea, button")
+        .prop("disabled", false);
+      $("#hardwareSettingsDisabled").hide();
+    } else {
+      $("#hardwareSettingsForm")
+        .find("input, select, textarea, button")
+        .prop("disabled", true);
+      $("#hardwareSettingsDisabled").show();
     }
   }
 

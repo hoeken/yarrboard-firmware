@@ -38,6 +38,7 @@
     * on/off switch to start/stop the watermaker
     * sensors for each output type
     * YAML dashboard
+* javascript should handle tds hiding when idle
 
 # LONG TERM:
 

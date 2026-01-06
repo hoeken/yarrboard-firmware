@@ -10,7 +10,7 @@
 
 #ifdef YB_IS_BRINEOMATIC
 
-  #include "Brineomatic.h"
+  #include "brineomatic.h"
   #include "channels/RelayChannel.h"
   #include "channels/ServoChannel.h"
   #include "channels/StepperChannel.h"
@@ -28,8 +28,10 @@ Brineomatic::Brineomatic(YarrboardApp& app, RelayController& relays, ServoContro
                                                                                                                              _relays(relays),
                                                                                                                              _servos(servos),
                                                                                                                              _steppers(steppers),
-                                                                                                                             oneWire(YB_DS18B20_PIN), // constructor arg for OneWire
-                                                                                                                             ds18b20(&oneWire),       // DallasTemperature needs pointer to OneWire
+                                                                                                                             motorTemperatureOneWire(YB_DS18B20_MOTOR_PIN),    // constructor arg for OneWire
+                                                                                                                             motorTemperatureSensor(&motorTemperatureOneWire), // DallasTemperature needs pointer to OneWire
+                                                                                                                             waterTemperatureOneWire(YB_DS18B20_WATER_PIN),    // constructor arg for OneWire
+                                                                                                                             waterTemperatureSensor(&waterTemperatureOneWire),
                                                                                                                              _adc(YB_ADS1115_ADDRESS)
 {
 }
@@ -113,18 +115,35 @@ void Brineomatic::init()
   this->initChannels();
 
   // DS18B20 Sensor
-  ds18b20.begin();
+  #ifdef YB_DS18B20_MOTOR_PIN
+  motorTemperatureSensor.begin();
   YBP.print("Found ");
-  YBP.print(ds18b20.getDeviceCount(), DEC);
+  YBP.print(motorTemperatureSensor.getDeviceCount(), DEC);
   YBP.println(" DS18B20 devices.");
 
   // lookup our address
-  if (!ds18b20.getAddress(motorThermometer, 0))
+  if (!motorTemperatureSensor.getAddress(motorTemperatureAddress, 0))
     YBP.println("Unable to find address for DS18B20");
 
-  ds18b20.setResolution(motorThermometer, 9);
-  ds18b20.setWaitForConversion(false);
-  ds18b20.requestTemperatures();
+  motorTemperatureSensor.setResolution(motorTemperatureAddress, 9);
+  motorTemperatureSensor.setWaitForConversion(false);
+  motorTemperatureSensor.requestTemperatures();
+  #endif
+
+  #ifdef YB_DS18B20_WATER_PIN
+  waterTemperatureSensor.begin();
+  YBP.print("Found ");
+  YBP.print(waterTemperatureSensor.getDeviceCount(), DEC);
+  YBP.println(" DS18B20 devices.");
+
+  // lookup our address
+  if (!waterTemperatureSensor.getAddress(waterTemperatureAddress, 0))
+    YBP.println("Unable to find address for DS18B20");
+
+  waterTemperatureSensor.setResolution(waterTemperatureAddress, 9);
+  waterTemperatureSensor.setWaitForConversion(false);
+  waterTemperatureSensor.requestTemperatures();
+  #endif
 
   #ifdef YB_PRODUCT_FLOWMETER_PIN
   productFlowmeter.begin(YB_PRODUCT_FLOWMETER_PIN, productFlowmeterPPL);
@@ -236,9 +255,20 @@ void Brineomatic::measureMotorTemperature()
   if (!hasMotorTemperatureSensor)
     return;
 
-  if (ds18b20.isConversionComplete()) {
-    currentMotorTemperature = ds18b20.getTempC(motorThermometer);
-    ds18b20.requestTemperatures();
+  if (motorTemperatureSensor.isConversionComplete()) {
+    currentMotorTemperature = motorTemperatureSensor.getTempC(motorTemperatureAddress);
+    motorTemperatureSensor.requestTemperatures();
+  }
+}
+
+void Brineomatic::measureWaterTemperature()
+{
+  if (!hasWaterTemperatureSensor)
+    return;
+
+  if (waterTemperatureSensor.isConversionComplete()) {
+    currentWaterTemperature = waterTemperatureSensor.getTempC(waterTemperatureAddress);
+    waterTemperatureSensor.requestTemperatures();
   }
 }
 
@@ -861,18 +891,12 @@ float Brineomatic::getMotorTemperatureMaximum()
 
 float Brineomatic::getProductSalinity()
 {
-  if (currentStatus == Status::IDLE)
-    return 0;
-  else
-    return currentProductSalinity;
+  return currentProductSalinity;
 }
 
 float Brineomatic::getBrineSalinity()
 {
-  if (currentStatus == Status::IDLE)
-    return 0;
-  else
-    return currentBrineSalinity;
+  return currentBrineSalinity;
 }
 
 float Brineomatic::getProductSalinityMaximum()
@@ -2081,6 +2105,7 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["brine_flowmeter_ppl"] = this->brineFlowmeterPPL;
 
   bom["has_motor_temperature_sensor"] = this->hasMotorTemperatureSensor;
+  bom["has_water_temperature_sensor"] = this->hasWaterTemperatureSensor;
 
   bom["enable_membrane_pressure_high_check"] = this->enableMembranePressureHighCheck;
   bom["membrane_pressure_high_threshold"] = this->membranePressureHighThreshold;
@@ -2650,6 +2675,13 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
     }
   }
 
+  if (config["has_water_temperature_sensor"]) {
+    if (!checkIsBool(config, "has_water_temperature_sensor", error, err_size)) {
+      config.remove("has_water_temperature_sensor");
+      ok = false;
+    }
+  }
+
   return ok;
 }
 
@@ -3095,6 +3127,7 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
   this->brineFlowmeterPPL = config["brine_flowmeter_ppl"] | YB_BRINE_FLOWMETER_PPL;
 
   this->hasMotorTemperatureSensor = config["has_motor_temperature_sensor"] | YB_HAS_MOTOR_TEMPERATURE_SENSOR;
+  this->hasWaterTemperatureSensor = config["has_water_temperature_sensor"] | YB_HAS_WATER_TEMPERATURE_SENSOR;
 }
 
 void Brineomatic::loadSafeguardsConfigJSON(JsonVariant config)

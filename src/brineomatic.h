@@ -9,6 +9,8 @@
 #ifndef YARR_BRINEOMATIC_H
 #define YARR_BRINEOMATIC_H
 
+#include "config.h"
+
 #ifdef YB_IS_BRINEOMATIC
 
   #include "Flowmeter.h"
@@ -108,9 +110,13 @@ class Brineomatic
     ServoChannel* diverterValveServo = NULL;
     StepperChannel* highPressureValveStepper = NULL;
 
-    OneWire oneWire;
-    DallasTemperature ds18b20;
-    DeviceAddress motorThermometer;
+    OneWire motorTemperatureOneWire;
+    DallasTemperature motorTemperatureSensor;
+    DeviceAddress motorTemperatureAddress;
+
+    OneWire waterTemperatureOneWire;
+    DallasTemperature waterTemperatureSensor;
+    DeviceAddress waterTemperatureAddress;
 
     Flowmeter productFlowmeter;
     Flowmeter brineFlowmeter;
@@ -146,6 +152,7 @@ class Brineomatic
     void loop();
 
     void measureMotorTemperature();
+    void measureWaterTemperature();
     void measureProductFlowmeter();
     void measureBrineFlowmeter();
     void measureProductSalinity();
@@ -400,6 +407,7 @@ class Brineomatic
     float brineFlowmeterPPL = YB_BRINE_FLOWMETER_PPL;
 
     bool hasMotorTemperatureSensor = YB_HAS_MOTOR_TEMPERATURE_SENSOR;
+    bool hasWaterTemperatureSensor = YB_HAS_WATER_TEMPERATURE_SENSOR;
 
     uint32_t flushTimeout = YB_FLUSH_TIMEOUT;                          // timeout for flush cycle in ms
     uint32_t membranePressureTimeout = YB_MEMBRANE_PRESSURE_TIMEOUT;   // timeout for membrane pressure to stabilize in ms
