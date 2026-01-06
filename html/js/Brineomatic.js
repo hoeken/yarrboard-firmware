@@ -609,12 +609,17 @@
 
       //build our UI
       YB.App.getPage("home").setContent(this.generateControlUI());
+      YB.ChannelRegistry.loadAllChannels(msg);
       $("#ConfigForm").html(this.generateEditUI());
       $("#statsContainer").html(this.generateStatsUI());
 
+      //hide our channel specific divs
       $("#relayConfig").hide();
       $("#servoConfig").hide();
       $("#stepperConfig").hide();
+      $('#relayControlDiv').hide();
+      $('#servoControlDiv').hide();
+      $('#stepperControlDiv').hide();
 
       this.addEditUIHandlers();
       this.updateEditUIData(msg.brineomatic);
@@ -650,9 +655,6 @@
       $("#advancedModeButton").on("click", this.advanced);
 
       //visibility
-      $('#relayControlDiv').hide();
-      $('#servoControlDiv').hide();
-      $('#stepperControlDiv').hide();
       $('#bomInformationDiv').show();
       $('#bomControlDiv').show();
       $('#bomStatsDiv').show();
@@ -1261,7 +1263,7 @@
 
   Brineomatic.prototype.generateControlUI = function () {
     return /* html */ `
-      <div id="bomInterface" class="row px-1 mx-0" style="visibility:hidden">
+      <div id="bomInterface" class="row mb-3" style="visibility:hidden">
           <div id="bomInformationDiv" style="display:none" class="col-md-6">
               <h1 class="text-center">Mode: <span class="badge" id="bomStatus"></span></h1>
               <table id="bomTable" class="table table-hover">
