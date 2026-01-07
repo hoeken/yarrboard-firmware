@@ -191,7 +191,7 @@
       .join("\n");
 
     return `
-      <div id="adcEditCard${this.id}" class="col-xs-12 col-sm-6">
+      <div id="adcEditCard${this.id}" class="col-12 mb-3">
         <div class="p-3 border border-secondary rounded">
           <h5>ADC Channel #${this.id}</h5>
           ${standardFields}
