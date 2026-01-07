@@ -3,25 +3,25 @@
 		{
 			"name": "BRINEOMATIC_REV_B",
 			"chip_family": "ESP32-S3",
-			"display_name": "Brineomatic Rev. B",
+			"display_name": "Brineomatic REV B",
 			"image": "img/brineomatic_rev_b.jpg"
 		},
 		{
 			"name": "BRINEOMATIC_REV_C",
 			"chip_family": "ESP32-S3",
-			"display_name": "Brineomatic Rev. C",
+			"display_name": "Brineomatic REV C",
 			"image": "img/brineomatic_rev_c.jpg"
 		},
 		{
 			"name": "FROTHFET_REV_E",
 			"chip_family": "ESP32-S3",
-			"display_name": "FrothFET Rev. E",
+			"display_name": "FrothFET REV E",
 			"image": "img/frothfet_rev_e.jpg"
 		},
 		{
 			"name": "SENDIT_REV_C",
 			"chip_family": "ESP32-S3",
-			"display_name": "SendIT Rev. C",
+			"display_name": "SendIT REV C",
 			"image": "img/sendit_rev_c.jpg"
 		}
 	],
