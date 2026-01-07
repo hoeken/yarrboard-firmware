@@ -201,7 +201,7 @@ if __name__ == '__main__':
 		bdata = {}
 		bdata['type'] = board_name
 		bdata['version'] = version
-		bdata['url'] = f'{firmware_url_base}{board_name}/{board_name}-{version}.bin'
+		bdata['url'] = f'{firmware_url_base}{board_name}/{version}.bin'
 		bdata['changelog'] = changelog
 		config.append(bdata)
 
@@ -234,14 +234,14 @@ if __name__ == '__main__':
 			os.makedirs(board_dir, exist_ok=True)
 
 		#copy our firmware to output directory
-		cmd = f'cp .pio/build/{board_name}/signed.bin {board_dir}/{board_name}-{version}.bin'
+		cmd = f'cp .pio/build/{board_name}/signed.bin {board_dir}/{version}.bin'
 		if test_mode:
 			print (cmd)
 		else:
 			os.system(cmd)
 
 		#keep our ELF file for debugging later on....
-		cmd = f'cp .pio/build/{board_name}/firmware.elf {board_dir}/{board_name}-{version}.elf'
+		cmd = f'cp .pio/build/{board_name}/firmware.elf {board_dir}/{version}.elf'
 		if test_mode:
 			print (cmd)
 		else:
@@ -251,7 +251,7 @@ if __name__ == '__main__':
 		print(f'Generating ESP Web Tools files for {board_name}')
 
 		# Create espwebtools directory
-		espwebtools_dir = f'{output_dir}/{board_name}-{version}-espwebtools'
+		espwebtools_dir = f'{output_dir}/{board_name}/{version}-espwebtools'
 		if test_mode:
 			print(f'mkdir -p {espwebtools_dir}')
 		else:
@@ -366,8 +366,8 @@ if __name__ == '__main__':
 		# Create new release entry
 		new_release = {
 			"version": version,
-			"url": f'{firmware_url_base}{board_name}/{board_name}-{version}.bin',
-			"espwebtools_manifest": f'{firmware_url_base}{board_name}-{version}-espwebtools/manifest.json',
+			"url": f'{firmware_url_base}{board_name}/{version}.bin',
+			"espwebtools_manifest": f'{firmware_url_base}{board_name}/{version}-espwebtools/manifest.json',
 			"changelog": changelog
 		}
 

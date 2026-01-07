@@ -1,0 +1,26 @@
+[
+    {
+        "type": "BRINEOMATIC_REV_B",
+        "version": "2.2.0",
+        "url": "https://hoeken.github.io/yarrboard-firmware/releases/BRINEOMATIC_REV_B/2.2.0.bin",
+        "changelog": "# Version 2.2.0\n\n- Now tracking pickled on timestamp so you can see how long the unit has been pickled for. (Survives reboot)"
+    },
+    {
+        "type": "BRINEOMATIC_REV_C",
+        "version": "2.2.0",
+        "url": "https://hoeken.github.io/yarrboard-firmware/releases/BRINEOMATIC_REV_C/2.2.0.bin",
+        "changelog": "# Version 2.2.0\n\n- Now tracking pickled on timestamp so you can see how long the unit has been pickled for. (Survives reboot)"
+    },
+    {
+        "type": "FROTHFET_REV_E",
+        "version": "2.2.0",
+        "url": "https://hoeken.github.io/yarrboard-firmware/releases/FROTHFET_REV_E/2.2.0.bin",
+        "changelog": "# Version 2.2.0\n\n- Now tracking pickled on timestamp so you can see how long the unit has been pickled for. (Survives reboot)"
+    },
+    {
+        "type": "SENDIT_REV_C",
+        "version": "2.2.0",
+        "url": "https://hoeken.github.io/yarrboard-firmware/releases/SENDIT_REV_C/2.2.0.bin",
+        "changelog": "# Version 2.2.0\n\n- Now tracking pickled on timestamp so you can see how long the unit has been pickled for. (Survives reboot)"
+    }
+]

@@ -1,0 +1,54 @@
+{
+  "BRINEOMATIC_REV_B": {
+    "name": "Brineomatic Rev. B",
+    "image": "img/brineomatic_rev_b.jpg",
+    "description": "",
+    "firmware": [
+      {
+        "version": "2.2.0",
+        "url": "https://hoeken.github.io/yarrboard-firmware/releases/BRINEOMATIC_REV_B/2.2.0.bin",
+        "espwebtools_manifest": "https://hoeken.github.io/yarrboard-firmware/releases/BRINEOMATIC_REV_B/2.2.0-espwebtools/manifest.json",
+        "changelog": "# Version 2.2.0\n\n- Now tracking pickled on timestamp so you can see how long the unit has been pickled for. (Survives reboot)"
+      }
+    ]
+  },
+  "BRINEOMATIC_REV_C": {
+    "name": "Brineomatic Rev. C",
+    "image": "img/brineomatic_rev_c.jpg",
+    "description": "",
+    "firmware": [
+      {
+        "version": "2.2.0",
+        "url": "https://hoeken.github.io/yarrboard-firmware/releases/BRINEOMATIC_REV_C/2.2.0.bin",
+        "espwebtools_manifest": "https://hoeken.github.io/yarrboard-firmware/releases/BRINEOMATIC_REV_C/2.2.0-espwebtools/manifest.json",
+        "changelog": "# Version 2.2.0\n\n- Now tracking pickled on timestamp so you can see how long the unit has been pickled for. (Survives reboot)"
+      }
+    ]
+  },
+  "FROTHFET_REV_E": {
+    "name": "FrothFET Rev. E",
+    "image": "img/frothfet_rev_e.jpg",
+    "description": "",
+    "firmware": [
+      {
+        "version": "2.2.0",
+        "url": "https://hoeken.github.io/yarrboard-firmware/releases/FROTHFET_REV_E/2.2.0.bin",
+        "espwebtools_manifest": "https://hoeken.github.io/yarrboard-firmware/releases/FROTHFET_REV_E/2.2.0-espwebtools/manifest.json",
+        "changelog": "# Version 2.2.0\n\n- Now tracking pickled on timestamp so you can see how long the unit has been pickled for. (Survives reboot)"
+      }
+    ]
+  },
+  "SENDIT_REV_C": {
+    "name": "SendIT Rev. C",
+    "image": "img/sendit_rev_c.jpg",
+    "description": "",
+    "firmware": [
+      {
+        "version": "2.2.0",
+        "url": "https://hoeken.github.io/yarrboard-firmware/releases/SENDIT_REV_C/2.2.0.bin",
+        "espwebtools_manifest": "https://hoeken.github.io/yarrboard-firmware/releases/SENDIT_REV_C/2.2.0-espwebtools/manifest.json",
+        "changelog": "# Version 2.2.0\n\n- Now tracking pickled on timestamp so you can see how long the unit has been pickled for. (Survives reboot)"
+      }
+    ]
+  }
+}
