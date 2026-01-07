@@ -45,8 +45,7 @@ bool PWMController::setup()
   SPI.begin(YB_PWM_CHANNEL_CURRENT_ADC_SCK, YB_PWM_CHANNEL_CURRENT_ADC_MISO, YB_PWM_CHANNEL_CURRENT_ADC_MOSI, YB_PWM_CHANNEL_CURRENT_ADC_CS);
   if (!_adcCurrentMCP3564.begin(0, 3.3)) {
     YBP.println("failed to initialize current MCP3564");
-  } else {
-    YBP.println("MCP3564 ok.");
+    return false;
   }
 
   _adcCurrentMCP3564.singleEndedMode();
@@ -66,8 +65,7 @@ bool PWMController::setup()
   SPI.begin(YB_PWM_CHANNEL_VOLTAGE_ADC_SCK, YB_PWM_CHANNEL_VOLTAGE_ADC_MISO, YB_PWM_CHANNEL_VOLTAGE_ADC_MOSI, YB_PWM_CHANNEL_VOLTAGE_ADC_CS);
   if (!_adcVoltageMCP3564.begin(0, 3.3)) {
     YBP.println("failed to initialize voltage MCP3564");
-  } else {
-    YBP.println("MCP3564 ok.");
+    return false;
   }
 
   _adcVoltageMCP3564.singleEndedMode();
@@ -103,7 +101,7 @@ bool PWMController::setup()
   }
 
   for (auto& ch : _channels) {
-    ch.setupOffset();
+    // ch.setupOffset();
     ch.setupDefaultState();
   }
 

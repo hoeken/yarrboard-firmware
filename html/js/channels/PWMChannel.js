@@ -245,7 +245,7 @@
     let standardFields = this.generateStandardEditFields();
 
     return `
-      <div id="pwmEditCard${this.id}" class="col-xs-12 col-sm-6">
+      <div id="pwmEditCard${this.id}" class="col-12 mb-3">
         <div class="p-3 border border-secondary rounded">
           <h5>PWM Channel #${this.id}</h5>
           ${standardFields}
