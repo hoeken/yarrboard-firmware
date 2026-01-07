@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Yarrboard Firmware Helper</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <script>
+        // Configuration
+        const MANIFEST_URL = 'releases/full_manifest.json';
+    </script>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+
+    <!-- ESP Web Tools -->
+    <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+
+    <!-- Improv WiFi SDK -->
+    <script type="module" src="https://www.improv-wifi.com/sdk-ble-js/launch-button.js"></script>
+    <script type="module" src="https://www.improv-wifi.com/sdk-serial-js/serial-launch-button.js"></script>
+
+    <!-- Marked.js for Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.0.0/marked.min.js"></script>
+
+    <style>
+        /* Dark mode compatible logo */
+        .logo {
+            color-scheme: light;
+            /* Prevents dark-mode auto inversion */
+            forced-color-adjust: none;
+            /* Safari/iOS: don't touch my colors */
+        }
+
+        /* Changelog heading styles */
+        #changelogDisplay h1 {
+            font-size: 1.4rem;
+        }
+
+        #changelogDisplay h2 {
+            font-size: 1.0rem;
+        }
+
+        /* ESP Web Tools button styling */
+        esp-web-install-button {
+            display: block;
+        }
+
+        /* Loading spinner */
+        .spinner-container {
+            min-height: 300px;
+        }
+
+        /* Version warning styling */
+        .version-warning {
+            margin-top: 1rem;
+        }
+
+        /* Footer styling */
+        footer {
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container col-xl-5 col-lg-7 col-md-10 mx-auto">
+        <!-- Header with Logo and Title -->
+        <nav class="navbar bg-body-tertiary rounded-bottom mb-4">
+            <div class="container-fluid justify-content-center">
+                <a class="navbar-brand d-flex align-items-center" href="https://github.com/hoeken/YarrboardFramework">
+                    <img src="logo.png" alt="Yarrboard" width="30" height="30" class="logo me-2 rounded">
+                    <span>Yarrboard Firmware Helper</span>
+                </a>
+            </div>
+        </nav>
+
+        <main class="mx-3">
+            <!-- Loading State -->
+            <div id="loadingState" class="spinner-container d-flex justify-content-center align-items-center">
+                <div class="spinner-border" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+
+            <!-- Main Content (initially hidden) -->
+            <div id="mainContent" class="d-none">
+                <!-- WiFi Provisioning Section -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h4 class="card-title">WiFi Provisioning</h4>
+                        <p class="card-text">
+                            If your board is already flashed with Yarrboard firmware, you can configure WiFi credentials
+                            directly from your browser using Improv WiFi.
+                        </p>
+                        <p class="card-text">
+                            <strong>Requirements:</strong> Chrome, or Edge browser. You can use Bluetooth or USB.
+                        </p>
+
+                        <div class="row">
+                            <!-- Improv via BLE Column -->
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <improv-wifi-launch-button>
+                                    <button slot="activate" class="btn btn-primary btn-lg w-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                            fill="currentColor" class="bi bi-bluetooth me-2" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd"
+                                                d="m8.543 3.948 1.316 1.316L8.543 6.58zm0 8.104 1.316-1.316L8.543 9.42zm-1.41-4.043L4.275 5.133l.827-.827L7.377 6.58V1.128l4.137 4.136L8.787 8.01l2.745 2.745-4.136 4.137V9.42l-2.294 2.274-.827-.827zM7.903 16c3.498 0 5.904-1.655 5.904-8.01 0-6.335-2.406-7.99-5.903-7.99C4.407 0 2 1.655 2 8.01 2 14.344 4.407 16 7.904 16" />
+                                        </svg>
+                                        Configure via BLE
+                                    </button>
+                                    <span slot="unsupported" class="text-danger">
+                                        Your browser is not supported. To try it out, visit this page with Google
+                                        Chrome or Microsoft Edge<span class="not-supported-i hidden">
+                                            (but not on your iOS device)</span>.
+                                    </span>
+                                </improv-wifi-launch-button>
+                            </div>
+
+                            <!-- Improv via Serial Column -->
+                            <div class="col-md-6">
+                                <improv-wifi-serial-launch-button>
+                                    <button slot="activate" class="btn btn-primary btn-lg w-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                            fill="currentColor" class="bi bi-usb-symbol me-2" viewBox="0 0 16 16">
+                                            <path
+                                                d="m7.792.312-1.533 2.3A.25.25 0 0 0 6.467 3H7.5v7.319a2.5 2.5 0 0 0-.515-.298L5.909 9.56A1.5 1.5 0 0 1 5 8.18v-.266a1.5 1.5 0 1 0-1 0v.266a2.5 2.5 0 0 0 1.515 2.298l1.076.461a1.5 1.5 0 0 1 .888 1.129 2.001 2.001 0 1 0 1.021-.006v-.902a1.5 1.5 0 0 1 .756-1.303l1.484-.848A2.5 2.5 0 0 0 11.995 7h.755a.25.25 0 0 0 .25-.25v-2.5a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25v2.5c0 .138.112.25.25.25h.741a1.5 1.5 0 0 1-.747 1.142L8.76 8.99a3 3 0 0 0-.26.17V3h1.033a.25.25 0 0 0 .208-.389L8.208.312a.25.25 0 0 0-.416 0" />
+                                        </svg>
+                                        Configure via USB
+                                    </button>
+                                    <span slot="unsupported" class="text-danger">
+                                        Your browser is not supported. To try it out, visit this page with Google
+                                        Chrome or Microsoft Edge<span class="not-supported-i hidden">
+                                            (but not on your iOS device)</span>.
+                                    </span>
+                                </improv-wifi-serial-launch-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Firmware Upload/Update Section -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h4 class="card-title">Firmware Upload</h4>
+                        <p class="card-text">
+                            Select your board model and firmware version below, then click "Install" to flash firmware
+                            directly from your browser via USB.
+                        </p>
+                        <p class="card-text">
+                            <strong>Requirements:</strong> Chrome, or Edge browser. Connect your board via USB
+                            before clicking Install.
+                        </p>
+
+                        <!-- Board Selection -->
+                        <div class="mb-3">
+                            <label for="boardSelect" class="form-label fw-bold">Board Model</label>
+                            <select id="boardSelect" class="form-select" aria-label="Select board model">
+                                <option selected disabled>Choose your board model...</option>
+                            </select>
+                        </div>
+
+                        <!-- Board Info Display (Image and Description) -->
+                        <div id="boardInfoContainer" class="mb-3 d-none">
+                            <div id="boardImageContainer" class="mb-3 d-none text-center">
+                                <img id="boardImage" src="" alt="Board image" class="img-fluid rounded w-100">
+                            </div>
+                            <div id="boardDescriptionContainer" class="d-none">
+                                <p id="boardDescription" class="mb-0"></p>
+                            </div>
+                        </div>
+
+                        <!-- Version Selection -->
+                        <div class="mb-3">
+                            <label for="versionSelect" class="form-label fw-bold">Firmware Version</label>
+                            <select id="versionSelect" class="form-select" aria-label="Select firmware version"
+                                disabled>
+                                <option selected disabled>Select a board first...</option>
+                            </select>
+                        </div>
+
+                        <!-- ESP Web Tools Install Button Container -->
+                        <div id="installButtonContainer" class="d-none">
+                            <esp-web-install-button id="installButton">
+                                <button slot="activate" class="btn btn-primary btn-lg w-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                        class="bi bi-download me-2" viewBox="0 0 16 16">
+                                        <path
+                                            d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
+                                        <path
+                                            d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
+                                    </svg>
+                                    Install Firmware
+                                </button>
+                                <span slot="unsupported" class="text-danger">Your browser does not support firmware
+                                    installation. Please use Chrome, Edge, or Opera.</span>
+                            </esp-web-install-button>
+                        </div>
+
+                        <!-- Warning for versions without ESP Web Tools support -->
+                        <div id="noEspWebtoolsWarning" class="alert alert-warning version-warning d-none" role="alert">
+                            <strong>Note:</strong> ESP Web Tools flashing is not available for this version.
+                            Please select a newer version with browser-based flashing support.
+                        </div>
+
+                        <!-- Changelog Display -->
+                        <div id="changelogContainer" class="card mt-4 d-none">
+                            <div class="card-body">
+                                <h5 class="card-title">Changelog</h5>
+                                <div id="changelogDisplay"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer with Dark Mode Toggle -->
+        <footer class="p-4 text-body-secondary text-center">
+            <div class="row justify-content-center mb-2">
+                <div class="col-auto d-flex align-items-center">
+                    <label for="darkSwitch" class="me-2 mb-0">Dark Mode</label>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="darkSwitch">
+                    </div>
+                </div>
+            </div>
+            <div>
+                <a href="https://github.com/hoeken/YarrboardFramework">Yarrboard Framework</a> &copy; <span id="copyrightYear"></span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Global state
+        let manifestData = null;
+        let currentBoard = null;
+        let currentVersion = null;
+
+        // ============================================================
+        // Dark Mode Functions
+        // ============================================================
+
+        function getStoredTheme() {
+            return localStorage.getItem('theme');
+        }
+
+        function setStoredTheme(theme) {
+            localStorage.setItem('theme', theme);
+        }
+
+        function getPreferredTheme() {
+            const storedTheme = getStoredTheme();
+            if (storedTheme) {
+                return storedTheme;
+            }
+
+            // Check system preference
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                return 'dark';
+            }
+
+            return 'light';
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+
+            const darkSwitch = document.getElementById('darkSwitch');
+            if (darkSwitch) {
+                darkSwitch.checked = (theme === 'dark');
+            }
+
+            setStoredTheme(theme);
+        }
+
+        function initDarkMode() {
+            const theme = getPreferredTheme();
+            setTheme(theme);
+
+            // Setup toggle listener
+            const darkSwitch = document.getElementById('darkSwitch');
+            darkSwitch.addEventListener('change', (e) => {
+                setTheme(e.target.checked ? 'dark' : 'light');
+            });
+
+            // Watch for system preference changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                const storedTheme = getStoredTheme();
+                if (!storedTheme) {
+                    setTheme(getPreferredTheme());
+                }
+            });
+        }
+
+        // ============================================================
+        // Board and Version Management
+        // ============================================================
+
+        function populateBoardDropdown() {
+            const boardSelect = document.getElementById('boardSelect');
+
+            // Get board names from manifest (keys of the object)
+            const boards = Object.keys(manifestData).sort();
+
+            // Add options for each board
+            boards.forEach(boardName => {
+                const boardData = manifestData[boardName];
+                const option = document.createElement('option');
+                option.value = boardName;
+
+                // Use the display name if available, otherwise use the board key formatted
+                const displayName = (boardData.name && boardData.name.trim() !== '')
+                    ? boardData.name
+                    : boardName.replace(/_/g, ' ');
+
+                option.textContent = displayName;
+                boardSelect.appendChild(option);
+            });
+        }
+
+        function displayBoardInfo(boardName) {
+            const boardData = manifestData[boardName];
+            const boardInfoContainer = document.getElementById('boardInfoContainer');
+            const boardImageContainer = document.getElementById('boardImageContainer');
+            const boardImage = document.getElementById('boardImage');
+            const boardDescriptionContainer = document.getElementById('boardDescriptionContainer');
+            const boardDescription = document.getElementById('boardDescription');
+
+            let hasContent = false;
+
+            // Handle board image
+            if (boardData.image && boardData.image.trim() !== '') {
+                boardImage.src = boardData.image;
+                boardImage.alt = boardData.name || boardName;
+                boardImageContainer.classList.remove('d-none');
+                hasContent = true;
+            } else {
+                boardImageContainer.classList.add('d-none');
+            }
+
+            // Handle board description
+            if (boardData.description && boardData.description.trim() !== '') {
+                boardDescription.textContent = boardData.description;
+                boardDescriptionContainer.classList.remove('d-none');
+                hasContent = true;
+            } else {
+                boardDescriptionContainer.classList.add('d-none');
+            }
+
+            // Show or hide the entire board info container
+            if (hasContent) {
+                boardInfoContainer.classList.remove('d-none');
+            } else {
+                boardInfoContainer.classList.add('d-none');
+            }
+        }
+
+        function populateVersionDropdown(boardName) {
+            const versionSelect = document.getElementById('versionSelect');
+
+            // Clear existing options
+            versionSelect.innerHTML = '<option selected disabled>Choose firmware version...</option>';
+
+            // Get board data and firmware versions
+            const boardData = manifestData[boardName];
+            const versions = boardData?.firmware || [];
+
+            if (!versions || versions.length === 0) {
+                versionSelect.innerHTML = '<option disabled>No versions available</option>';
+                return;
+            }
+
+            // Add options for each version (already sorted newest first in manifest)
+            versions.forEach(versionData => {
+                const option = document.createElement('option');
+                option.value = versionData.version;
+                option.textContent = `v${versionData.version}`;
+                option.dataset.versionData = JSON.stringify(versionData);
+                versionSelect.appendChild(option);
+            });
+
+            // Enable the select
+            versionSelect.disabled = false;
+        }
+
+        function handleVersionChange() {
+            const versionSelect = document.getElementById('versionSelect');
+            const selectedOption = versionSelect.options[versionSelect.selectedIndex];
+
+            if (!selectedOption || !selectedOption.dataset.versionData) {
+                return;
+            }
+
+            const versionData = JSON.parse(selectedOption.dataset.versionData);
+            currentVersion = versionData;
+
+            // Display changelog
+            displayChangelog(versionData.changelog);
+
+            // Check if ESP Web Tools manifest is available
+            if (versionData.espwebtools_manifest) {
+                showInstallButton(versionData.espwebtools_manifest);
+                hideWarning();
+            } else {
+                hideInstallButton();
+                showWarning();
+            }
+        }
+
+        // ============================================================
+        // Changelog Display
+        // ============================================================
+
+        function displayChangelog(markdownText) {
+            const changelogDisplay = document.getElementById('changelogDisplay');
+            const changelogContainer = document.getElementById('changelogContainer');
+
+            if (!markdownText) {
+                changelogContainer.classList.add('d-none');
+                return;
+            }
+
+            // Parse markdown and display
+            changelogDisplay.innerHTML = marked.parse(markdownText);
+            changelogContainer.classList.remove('d-none');
+        }
+
+        // ============================================================
+        // ESP Web Tools Integration
+        // ============================================================
+
+        function showInstallButton(manifestUrl) {
+            const container = document.getElementById('installButtonContainer');
+            const installButton = document.getElementById('installButton');
+
+            // Set the manifest URL for ESP Web Tools
+            installButton.setAttribute('manifest', manifestUrl);
+
+            // Add event listener to handle post-install Improv configuration
+            installButton.addEventListener('state-changed', (event) => {
+                if (event.detail.state === 'INSTALLED') {
+                    // Trigger Improv WiFi provisioning after successful install
+                    console.log('Installation complete, starting Improv WiFi provisioning...');
+                }
+            });
+
+            // Show the button
+            container.classList.remove('d-none');
+        }
+
+        function hideInstallButton() {
+            document.getElementById('installButtonContainer').classList.add('d-none');
+        }
+
+        function showWarning() {
+            document.getElementById('noEspWebtoolsWarning').classList.remove('d-none');
+        }
+
+        function hideWarning() {
+            document.getElementById('noEspWebtoolsWarning').classList.add('d-none');
+        }
+
+        // ============================================================
+        // Event Listeners
+        // ============================================================
+
+        function setupEventListeners() {
+            // Board selection
+            document.getElementById('boardSelect').addEventListener('change', (e) => {
+                const boardName = e.target.value;
+                currentBoard = boardName;
+
+                // Display board info (image and description)
+                displayBoardInfo(boardName);
+
+                // Populate version dropdown
+                populateVersionDropdown(boardName);
+
+                // Reset version-dependent UI
+                hideInstallButton();
+                hideWarning();
+                document.getElementById('changelogContainer').classList.add('d-none');
+            });
+
+            // Version selection
+            document.getElementById('versionSelect').addEventListener('change', handleVersionChange);
+        }
+
+        // ============================================================
+        // Initialization
+        // ============================================================
+
+        async function init() {
+            try {
+                // Set copyright year
+                document.getElementById('copyrightYear').textContent = new Date().getFullYear();
+
+                // Fetch the manifest
+                const response = await fetch(MANIFEST_URL);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch manifest: ${response.statusText}`);
+                }
+                manifestData = await response.json();
+
+                // Populate board dropdown
+                populateBoardDropdown();
+
+                // Hide loading, show content
+                document.getElementById('loadingState').classList.add('d-none');
+                document.getElementById('mainContent').classList.remove('d-none');
+
+                // Setup event listeners
+                setupEventListeners();
+
+                // Initialize dark mode
+                initDarkMode();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                const loadingState = document.getElementById('loadingState');
+                loadingState.classList.remove('spinner-container', 'd-flex', 'justify-content-center', 'align-items-center');
+                loadingState.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Error:</strong> Failed to load firmware manifest. Please submit an issue.
+                        <br><br>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+            }
+        }
+
+        // Run on page load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,30 @@
+{
+	"boards": [
+		{
+			"name": "BRINEOMATIC_REV_B",
+			"chip_family": "ESP32-S3",
+			"display_name": "Brineomatic Rev. B",
+			"image": "img/brineomatic_rev_b.jpg"
+		},
+		{
+			"name": "BRINEOMATIC_REV_C",
+			"chip_family": "ESP32-S3",
+			"display_name": "Brineomatic Rev. C",
+			"image": "img/brineomatic_rev_c.jpg"
+		},
+		{
+			"name": "FROTHFET_REV_E",
+			"chip_family": "ESP32-S3",
+			"display_name": "FrothFET Rev. E",
+			"image": "img/frothfet_rev_e.jpg"
+		},
+		{
+			"name": "SENDIT_REV_C",
+			"chip_family": "ESP32-S3",
+			"display_name": "SendIT Rev. C",
+			"image": "img/sendit_rev_c.jpg"
+		}
+	],
+	"firmware_url_base": "https://hoeken.github.io/yarrboard-firmware/releases/",
+	"signing_key_path": "~/Dropbox/misc/yarrboard/yarrboard-firmware.pem"
+}
