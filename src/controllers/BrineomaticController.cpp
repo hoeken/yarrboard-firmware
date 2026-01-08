@@ -100,6 +100,45 @@ void BrineomaticController::generateConfigHook(JsonVariant output)
   wm.generateConfigJSON(output);
 };
 
+void BrineomaticController::generateCapabilitiesHook(JsonVariant config)
+{
+  #ifdef YB_DS18B20_MOTOR_PIN
+  config["brineomatic"]["motor_temperature"] = true;
+  #endif
+
+  #ifdef YB_DS18B20_WATER_PIN
+  config["brineomatic"]["water_temperature"] = true;
+  #endif
+
+  #ifdef YB_PRODUCT_FLOWMETER_PIN
+  config["brineomatic"]["product_flowmeter"] = true;
+  #endif
+
+  #ifdef YB_BRINE_FLOWMETER_PIN
+  config["brineomatic"]["brine_flowmeter"] = true;
+  #endif
+
+  #ifdef YB_BRINE_TDS_CHANNEL
+  config["brineomatic"]["brine_tds"] = true;
+  #endif
+
+  #ifdef YB_PRODUCT_TDS_CHANNEL
+  config["brineomatic"]["product_tds"] = true;
+  #endif
+
+  #ifdef YB_LP_SENSOR_CHANNEL
+  config["brineomatic"]["lp_sensor"] = true;
+  #endif
+
+  #ifdef YB_HP_SENSOR_CHANNEL
+  config["brineomatic"]["hp_sensor"] = true;
+  #endif
+
+  #ifdef YB_HAS_MODBUS
+  config["brineomatic"]["modbus"] = true;
+  #endif
+}
+
 void BrineomaticController::generateUpdateHook(JsonVariant output)
 {
   wm.generateUpdateJSON(output);

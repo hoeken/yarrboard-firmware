@@ -38,6 +38,7 @@ class BrineomaticController : public BaseController
 
     bool loadConfigHook(JsonVariant config, char* error, size_t len) override;
     void generateConfigHook(JsonVariant config) override;
+    void generateCapabilitiesHook(JsonVariant config) override;
     void generateUpdateHook(JsonVariant output) override;
     void generateStatsHook(JsonVariant output) override;
     void mqttUpdateHook(MQTTController* mqtt) override;
