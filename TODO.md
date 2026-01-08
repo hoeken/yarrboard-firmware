@@ -2,13 +2,19 @@
 
 ## BRINEOMATIC
 
+* add has_water_temperature_sensor
+* only show ds18b20 errors, not success
 * variable adc gain per-channel
+* javascript should handle tds hiding when idle
+* add stepper motor overheating checks
+
+# v2.3 TODO
+
 * move everything to SI units, add configurable units
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker
     * sensors for each output type
     * YAML dashboard
-* javascript should handle tds hiding when idle
 
 ## FROTHFET
 
@@ -28,14 +34,6 @@
 * add buzzer support - enable alarms for tripped or bypassed on a per-channel basis
 * how to handle global set_brightness command
 * make sure fast updates are working
-
-## SENDIT
-
-* Test Board:
-    * switching to 10k pullup not defaulting to ohms
-    * test with 8x 4-20ma loads -> check regulators
-    * test overvoltage on pins -> maybe change filter r/c?
-
 
 # LONG TERM:
 
