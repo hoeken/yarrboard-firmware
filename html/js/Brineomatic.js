@@ -616,10 +616,32 @@
       YB.App.removeSettingsPanel("servo");
       YB.App.removeSettingsPanel("stepper");
 
-      //and our custom edit UI
-      YB.App.getSettingsPanel("brineomatic").setContent(this.generateSettingsUI());
-      YB.App.getSettingsPanel("hardware").setContent(this.generateHardwareSettingsUI());
-      YB.App.getSettingsPanel("safeguards").setContent(this.generateSafeguardsSettingsUI());
+      let brineomaticPanel = new YB.SettingsPanel({
+        name: 'brineomatic',
+        displayName: 'Brineomatic',
+        position: "general",
+        content: this.generateSettingsUI()
+      });
+      YB.App.addSettingsPanel(brineomaticPanel);
+      brineomaticPanel.setup();
+
+      let hardwarePanel = new YB.SettingsPanel({
+        name: 'hardware',
+        displayName: 'Hardware',
+        position: "brineomatic",
+        content: this.generateHardwareSettingsUI()
+      });
+      YB.App.addSettingsPanel(hardwarePanel);
+      hardwarePanel.setup();
+
+      let safeguardsPanel = new YB.SettingsPanel({
+        name: 'safeguards',
+        displayName: 'Safeguards',
+        position: "hardware",
+        content: this.generateSafeguardsSettingsUI()
+      });
+      YB.App.addSettingsPanel(safeguardsPanel);
+      safeguardsPanel.setup();
 
       $("#statsContainer").html(this.generateStatsUI());
 
@@ -4209,24 +4231,6 @@
 
   YB.Brineomatic = Brineomatic;
   YB.bom = new Brineomatic();
-
-  YB.App.addSettingsPanel(new YB.SettingsPanel({
-    name: 'brineomatic',
-    displayName: 'Brineomatic',
-    position: "general"
-  }));
-
-  YB.App.addSettingsPanel(new YB.SettingsPanel({
-    name: 'hardware',
-    displayName: 'Hardware',
-    position: "brineomatic"
-  }));
-
-  YB.App.addSettingsPanel(new YB.SettingsPanel({
-    name: 'safeguards',
-    displayName: 'Safeguards',
-    position: "hardware"
-  }));
 
   validate.validators.relayUnique = function (value, options, key, attributes) {
     const map = {
