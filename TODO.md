@@ -3,12 +3,15 @@
 ## BRINEOMATIC
 
 * variable adc gain per-channel
-* javascript should handle tds hiding when idle
 * add stepper motor overheating checks
-* edit hardware in IDLE or MANUAL
 
 # v2.3 TODO
 
+## BRINEOMATIC
+
+* javascript should handle tds hiding when idle
+* has_motor_temperature -> dropdown (NONE, MANUAL, DS18B20)
+* has_water_temperature -> dropdown (NONE, MANUAL, DS18B20)
 * move everything to SI units, add configurable units
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker

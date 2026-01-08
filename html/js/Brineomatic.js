@@ -1025,7 +1025,7 @@
     }
 
     //disable our hardware form when not idle.
-    if (msg.status == "IDLE") {
+    if (msg.status == "IDLE" || msg.status == "MANUAL") {
       $("#hardwareSettingsPanel")
         .find("input, select, textarea, button")
         .prop("disabled", false);
@@ -2282,7 +2282,7 @@
 
     return /*html*/ `
       <div id="hardwareSettingsDisabled" class="alert alert-warning" role="alert" style="display: none">
-        Hardware configuration disabled. <b>IDLE</b> mode only.
+        Hardware configuration disabled. <b>IDLE</b> or <b>MANUAL</b> mode only.
       </div>
       <div class="form-floating mb-3">
           <select id="boost_pump_control" class="form-select" aria-label="Boost Pump">

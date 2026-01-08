@@ -378,8 +378,8 @@ void BrineomaticController::handleSaveHardwareConfig(JsonVariantConst input, Jso
   JsonDocument doc;
   doc.set(input);
 
-  if (strcmp(wm.getStatus(), "IDLE"))
-    return _app.protocol.generateErrorJSON(output, "Must be in IDLE mode to update hardware config.");
+  if (strcmp(wm.getStatus(), "IDLE") && strcmp(wm.getStatus(), "MANUAL"))
+    return _app.protocol.generateErrorJSON(output, "Must be in IDLE or MANUAL mode to update hardware config.");
 
   char error[128];
   if (!wm.validateHardwareConfigJSON(doc, error, sizeof(error)))
