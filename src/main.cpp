@@ -36,7 +36,7 @@ FanController fans(yba);
 BusVoltageController bus_voltage(yba);
 PWMController pwm(yba);
 #elifdef YB_IS_BRINEOMATIC
-  #include "Brineomatic.h"
+  #include "brineomatic.h"
   #include "controllers/BrineomaticController.h"
   #include "controllers/RelayController.h"
   #include "controllers/ServoController.h"

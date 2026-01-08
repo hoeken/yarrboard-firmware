@@ -2,16 +2,19 @@
 
 ## BRINEOMATIC
 
-* hide pressure / tds / flowrate at idle?
-* add stepper motor overheating checks
-* javascript should handle tds hiding when idle
 * has_motor_temperature -> dropdown (NONE, MANUAL, DS18B20)
 * has_water_temperature -> dropdown (NONE, MANUAL, DS18B20)
-* move everything to SI units, add configurable units
+* add stepper motor overheating checks
+* user selectable units
+    * step 1: move everything to SI units under the hood
+    * step 2: add unit conversion to display
+    * step 3: add unit conversion to config
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker
     * sensors for each output type
     * YAML dashboard
+* hide temp / pressure / tds / flowrate at idle?
+* add tds offset calibration (#5)
 
 ## FROTHFET
 

@@ -16,7 +16,7 @@
 
   #include <Arduino.h>
 
-  #include "Brineomatic.h"
+  #include "brineomatic.h"
   #include <ArduinoJson.h>
   #include <PsychicMqttClient.h>
   #include <controllers/BaseController.h>
