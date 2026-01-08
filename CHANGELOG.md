@@ -1,13 +1,119 @@
 # Version 2.2.0
 
+## 🚀 New Features
+
+- **Hardware Configuration**
+  - Hardware settings can now be edited in MANUAL mode
+  - Added UI config for has_water_temperature
+  - Added brineomatic hardware capabilities hook
+  - Added inverted configuration support for relay channels (diverter valve, boost pump, HP pump, flush valve, cooling fan)
+  - Added configuration support for diverter valve relays
+
+- **Display & UI Improvements**
+  - Show membrane/filter pressure at idle too
+  - Title changes for cleaner settings navigation
+  - Better date/elapsed formatting for "pickled since" display
+  - Now tracking pickled on timestamp (survives reboot) to show how long unit has been pickled
+
+- **Hardware Support**
+  - Added FrothFET Rev F target and configuration
+  - Added Brineomatic Rev C board target and configuration
+  - Added SendIt Rev C configuration and target
+  - Added output enable pin support (FrothFet)
+  - Added basic INA226 support for FrothFET Rev F
+  - Added basic LM75 init to PWM channel
+  - Implemented overcurrent ISR
+  - Added overheat check
+
+- **Release & Development Tools**
+  - Added images for firmware uploader
+  - Prepared new release system with automated scripts
+  - Pulled in release and coredump scripts
+
 ## 🛠️ Improvements & Enhancements
 
+- **YarrboardFramework Updates**
+  - Version bump to YarrboardFramework 2.2.0
+  - Updated ADC channels to new settings style
+  - Refactored code into controllers (ADC, PWM, bus voltage, fans, etc)
+  - Controller hooks working with new framework
+  - Channel controllers now using new handleConfigCommand call
+  - Split CSS between framework and project
+  - New gulped file name format (no gz)
+  - Now building with new framework gulp system
+
 - **Per-Channel ADC Configuration**
-  - Added alternative constructor to `ADS1115Helper` to support per-channel voltage references and gains
+  - Variable ADC gain per-channel
   - Channels can now have different gain settings (e.g., channels 0-1 use ±4.096V, channels 2-3 use ±2.048V)
   - Updated Brineomatic Rev B and Rev C configurations to use new array-based ADC configuration
 
-- Now tracking pickled on timestamp so you can see how long the unit has been pickled for. (Survives reboot)
+- **Temperature Sensor Improvements**
+  - Switched to OneWireNG library and fixed temperature sensor issues
+  - Only show DS18B20 errors, not success messages
+  - Made volt/current/temp async
+  - Sensors working on Rev C
+
+- **Code Refactoring & Architecture**
+  - Lots of refactoring Brineomatic code into controllers
+  - Converted multiple components to controller pattern (fans, bus voltage, PWM, ADC)
+  - Refactored commands from YarrboardFramework
+  - Channel re-arrangement
+  - Cleanup of gulp config file
+  - Added support for pio symlink to gulp
+  - Cleaned up unused files that accumulated
+  - Removed redundant code and duplicate ChannelRegistry
+
+- **Hardware Control**
+  - Turned down stepper motor current slightly
+  - Added global brightness hook to PWM controller
+  - Added PWM stats
+  - Defaulted to manual HP valve control
+  - Set smart defaults (manual, no sensors, etc.)
+
+- **Build & Configuration**
+  - Updated PlatformIO with new config/library setup
+  - Added protocol context param for FrothFet
+  - Updated protocol callbacks for Brineomatic
+  - Added set_brightness command example
+  - Added support for hardware_url, project_name and url
+  - Added firmware manifest URL
+  - Added framework version and URLs
+  - Multiple logos now supported again
+
+- **UI & Display**
+  - Calibration table working again
+  - ADC channel UI and editing works again
+  - Loop and message stats improvements
+  - Added interval timer to stats page
+  - Config page now starts/stops update poller on open/close
+
+- **MQTT**
+  - Added MQTT hook to Brineomatic controller (fixes #12)
+  - addMessageHandler → onMessage refactoring
+
+## 🐛 Bug Fixes
+
+- **Hardware Issues**
+  - Fixed missing Advanced Mode content
+  - Fixed potential Windows path bug
+  - Fixed rename to home error
+  - Fixed an issue where submitting hardware edit form too quickly could lose data due to restart
+  - Cooling fan relay ID default value fixed (fixes #7)
+  - Diverter valve settings now showing correctly (fixes #6)
+  - Duplicate relays in dropdown fixed (fixes #8)
+
+- **URL & Configuration**
+  - Updated OTA firmware URL and public key
+  - Compilation tweaks
+
+## ⚙️ Project Structure
+
+- **Logo Management**
+  - Removed OSHW logo
+
+- **Hardware Targets**
+  - All targets compiling again
+  - Multiple hardware revisions now supported (Brineomatic Rev B/C, FrothFET Rev E/F, SendIt Rev A/C)
 
 # Version 2.1.0
 
