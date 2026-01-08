@@ -1,11 +1,8 @@
-# v2.2 TODO
-
-## BRINEOMATIC
-
 # v2.3 TODO
 
 ## BRINEOMATIC
 
+* hide pressure / tds / flowrate at idle?
 * add stepper motor overheating checks
 * javascript should handle tds hiding when idle
 * has_motor_temperature -> dropdown (NONE, MANUAL, DS18B20)
