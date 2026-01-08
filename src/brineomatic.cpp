@@ -134,7 +134,6 @@ void Brineomatic::init()
   #endif
 
   #if YB_HAS_WATER_TEMPERATURE_SENSOR
-  gpio_reset_pin(GPIO_NUM_39);
   waterTemperatureOneWire.begin(YB_DS18B20_WATER_PIN);
   waterTemperatureSensor.setOneWire(&waterTemperatureOneWire);
   waterTemperatureSensor.begin();

@@ -30,8 +30,7 @@
 
 #define YB_HAS_MOTOR_TEMPERATURE_SENSOR true
 #define YB_DS18B20_MOTOR_PIN            4
-
-#define YB_HAS_WATER_TEMPERATURE_SENSOR false
+#define YB_HAS_WATER_TEMPERATURE_SENSOR true
 #define YB_DS18B20_WATER_PIN            39
 
 #define YB_HAS_PIEZO

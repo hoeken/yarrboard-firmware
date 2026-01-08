@@ -3,11 +3,6 @@
 ## BRINEOMATIC
 
 * variable adc gain per-channel
-* add support for motor + water temperature sensors.
-    * only using 1 pin now
-    * get a list of 1-wire addresses for config
-    * config drop down with address, shown when enabled
-    * might be nice to dynamically update temp?
 * move everything to SI units, add configurable units
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker
