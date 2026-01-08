@@ -341,7 +341,7 @@ bool StepperChannel::homeWithSpeed(float rpm)
   uint32_t t1 = millis();
   while (!isEndstopHit()) {
     if (millis() - t1 > _timeout_ms) {
-      _stepper->forceStop();
+      _stepper->forceStopAndNewPosition(0);
       YBP.println("Stepper homing timeout.");
       return false;
     }
