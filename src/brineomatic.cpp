@@ -115,40 +115,38 @@ void Brineomatic::init()
   this->initChannels();
 
   // DS18B20 Sensor
-  #if YB_HAS_MOTOR_TEMPERATURE_SENSOR
+  #if YB_DS18B20_MOTOR_PIN
   motorTemperatureOneWire.begin(YB_DS18B20_MOTOR_PIN);
   motorTemperatureSensor.setOneWire(&motorTemperatureOneWire);
   motorTemperatureSensor.begin();
 
-  YBP.print("Found ");
-  YBP.print(motorTemperatureSensor.getDeviceCount(), DEC);
-  YBP.println(" motor temperature devices.");
-
   // lookup our address
-  if (!motorTemperatureSensor.getAddress(motorTemperatureAddress, 0))
-    YBP.println("Unable to find address for DS18B20");
-
-  motorTemperatureSensor.setResolution(motorTemperatureAddress, 9);
-  motorTemperatureSensor.setWaitForConversion(false);
-  motorTemperatureSensor.requestTemperatures();
+  if (hasMotorTemperatureSensor) {
+    if (!motorTemperatureSensor.getAddress(motorTemperatureAddress, 0))
+      YBP.println("⚠️ Unable to find motor temperature sensor.");
+    else {
+      motorTemperatureSensor.setResolution(motorTemperatureAddress, 9);
+      motorTemperatureSensor.setWaitForConversion(false);
+      motorTemperatureSensor.requestTemperatures();
+    }
+  }
   #endif
 
-  #if YB_HAS_WATER_TEMPERATURE_SENSOR
-  waterTemperatureOneWire.begin(YB_DS18B20_WATER_PIN);
-  waterTemperatureSensor.setOneWire(&waterTemperatureOneWire);
-  waterTemperatureSensor.begin();
+  #if YB_DS18B20_WATER_PIN
+  if (hasWaterTemperatureSensor) {
+    waterTemperatureOneWire.begin(YB_DS18B20_WATER_PIN);
+    waterTemperatureSensor.setOneWire(&waterTemperatureOneWire);
+    waterTemperatureSensor.begin();
 
-  YBP.print("Found ");
-  YBP.print(waterTemperatureSensor.getDeviceCount(), DEC);
-  YBP.println(" water temperature devices.");
-
-  // lookup our address
-  if (!waterTemperatureSensor.getAddress(waterTemperatureAddress, 0))
-    YBP.println("Unable to find address for DS18B20");
-
-  waterTemperatureSensor.setResolution(waterTemperatureAddress, 9);
-  waterTemperatureSensor.setWaitForConversion(false);
-  waterTemperatureSensor.requestTemperatures();
+    // lookup our address
+    if (!waterTemperatureSensor.getAddress(waterTemperatureAddress, 0))
+      YBP.println("⚠️ Unable to find water temperature sensor.");
+    else {
+      waterTemperatureSensor.setResolution(waterTemperatureAddress, 9);
+      waterTemperatureSensor.setWaitForConversion(false);
+      waterTemperatureSensor.requestTemperatures();
+    }
+  }
   #endif
 
   #ifdef YB_PRODUCT_FLOWMETER_PIN
@@ -166,10 +164,8 @@ void Brineomatic::init()
   Wire.begin(YB_I2C_SDA_PIN, YB_I2C_SCL_PIN);
   Wire.setClock(YB_I2C_SPEED);
   _adc.begin();
-  if (_adc.isConnected())
-    YBP.println("ADS1115 OK");
-  else
-    YBP.println("ADS1115 Not Found");
+  if (!_adc.isConnected())
+    YBP.println("⚠️ ADS1115 Not Found");
 
   _adc.setMode(1);     // SINGLE SHOT MODE
   _adc.setGain(1);     // ±4.096V
