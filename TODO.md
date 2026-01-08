@@ -4,7 +4,6 @@
 
 * has_motor_temperature -> dropdown (NONE, MANUAL, DS18B20)
 * has_water_temperature -> dropdown (NONE, MANUAL, DS18B20)
-* add stepper motor overheating checks
 * user selectable units
     * step 1: move everything to SI units under the hood
     * step 2: add unit conversion to display

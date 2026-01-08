@@ -1,3 +1,15 @@
+# Version 2.3.0
+
+## 🚀 New Features
+
+- **Stepper Motor Diagnostics**
+  - Added TMC2209 error detection (over-temperature, short circuits, open loads)
+  - Automatic motor disable on error with console and web UI notifications
+
+## 🐛 Bug Fixes
+
+- Failed homing now sets position to zero (fixes #16)
+
 # Version 2.2.0
 
 ## 🚀 New Features

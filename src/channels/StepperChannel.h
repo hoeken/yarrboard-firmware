@@ -28,6 +28,7 @@ class StepperChannel : public BaseChannel
     float currentSpeed = 0.0;
     uint32_t currentPosition = 0;
     uint32_t autoDisableMillis = 10000;
+    const char* lastErrorMessage = nullptr;
 
     void init(uint8_t id) override;
     bool loadConfig(JsonVariantConst config, char* error, size_t len) override;
@@ -46,6 +47,13 @@ class StepperChannel : public BaseChannel
     bool home(float rpm);
     bool homeWithSpeed(float rpm);
     void waitUntilStopped();
+
+    TMC2209::Status getStatus();
+    bool isOverheated(TMC2209::Status& status);
+    bool isShorted(TMC2209::Status& status);
+    bool isOpenCircuit(TMC2209::Status& status);
+    bool hasError(TMC2209::Status& status);
+    const char* getError(TMC2209::Status& status);
 
     bool isEndstopHit();
     void disable();

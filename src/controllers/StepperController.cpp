@@ -36,6 +36,31 @@ bool StepperController::setup()
 
 void StepperController::loop()
 {
+  if (INTERVAL(100)) {
+    for (auto& ch : _channels) {
+      TMC2209::Status status = ch.getStatus();
+      if (ch.hasError(status)) {
+        const char* errorMsg = ch.getError(status);
+        if (ch.lastErrorMessage != errorMsg) {
+          ch.disable();
+          ch.lastErrorMessage = errorMsg;
+
+          char error[128];
+          snprintf(error, sizeof(error), "⚠️ Stepper channel #%d error: %s\n", ch.id, errorMsg);
+
+          // log it.
+          YBP.printf(error);
+
+          // send error to client.
+          JsonDocument output;
+          _app.protocol.generateErrorJSON(output, error);
+          _app.protocol.sendToAll(output, NOBODY);
+        }
+      } else {
+        ch.lastErrorMessage = nullptr;
+      }
+    }
+  }
 }
 
 void StepperController::handleConfigCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context)

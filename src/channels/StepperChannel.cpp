@@ -299,6 +299,68 @@ bool StepperChannel::isEndstopHit()
   return false;
 }
 
+TMC2209::Status StepperChannel::getStatus()
+{
+  return _tmc2209.getStatus();
+}
+
+bool StepperChannel::hasError(TMC2209::Status& status)
+{
+  if (isOverheated(status))
+    return true;
+  if (isShorted(status))
+    return true;
+  if (isOpenCircuit(status))
+    return true;
+
+  return false;
+}
+
+bool StepperChannel::isOverheated(TMC2209::Status& status)
+{
+  return (status.over_temperature_warning || status.over_temperature_shutdown || status.over_temperature_120c || status.over_temperature_143c || status.over_temperature_150c || status.over_temperature_157c);
+}
+
+bool StepperChannel::isShorted(TMC2209::Status& status)
+{
+  return (status.short_to_ground_a || status.short_to_ground_b || status.low_side_short_a || status.low_side_short_b);
+}
+
+bool StepperChannel::isOpenCircuit(TMC2209::Status& status)
+{
+  return (status.open_load_a || status.open_load_b);
+}
+
+const char* StepperChannel::getError(TMC2209::Status& status)
+{
+  if (status.over_temperature_warning)
+    return "Over temperature warning";
+  if (status.over_temperature_shutdown)
+    return "Over temperature shutdown";
+  if (status.over_temperature_120c)
+    return "Over temperature 120C";
+  if (status.over_temperature_143c)
+    return "Over temperature 143C";
+  if (status.over_temperature_150c)
+    return "Over temperature 150C";
+  if (status.over_temperature_157c)
+    return "Over temperature 157C";
+  if (status.short_to_ground_a)
+    return "Short to ground (phase A)";
+  if (status.short_to_ground_b)
+    return "Short to ground (phase B)";
+  if (status.low_side_short_a)
+    return "Low side short (phase A)";
+  if (status.low_side_short_b)
+    return "Low side short (phase B)";
+  if (status.open_load_a)
+    return "Open load (phase A)";
+  if (status.open_load_b)
+    return "Open load (phase B)";
+
+  return "No error";
+}
+
 bool StepperChannel::home()
 {
   return home(_home_speed_rpm);
