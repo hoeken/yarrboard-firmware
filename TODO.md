@@ -2,11 +2,10 @@
 
 ## BRINEOMATIC
 
-* add has_water_temperature_sensor
-* only show ds18b20 errors, not success
 * variable adc gain per-channel
 * javascript should handle tds hiding when idle
 * add stepper motor overheating checks
+* edit hardware in IDLE or MANUAL
 
 # v2.3 TODO
 

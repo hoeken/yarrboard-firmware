@@ -2128,9 +2128,161 @@
       stepperOptions += `<option value="${ch.id}">Stepper ${ch.id}</option>`;
     };
 
+    let membranePressure = "";
+    if (YB.App.config.capabilities.brineomatic.hp_sensor)
+      membranePressure = /*html*/ `
+      <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="has_membrane_pressure_sensor">
+          <label class="form-check-label" for="has_membrane_pressure_sensor">
+              Has Membrane Pressure Sensor
+          </label>
+          <div class="invalid-feedback"></div>
+      </div>
+
+      <div id="has_membrane_pressure_sensor_form" class="row g-3 mb-3">
+        <div class="col-12 col-md-6 mt-1">
+          <div class="input-group has-validation">
+            <span class="input-group-text">Min</span>
+            <input type="text" class="form-control text-end" id="membrane_pressure_sensor_min">
+            <span class="input-group-text">PSI</span>
+            <div class="invalid-feedback"></div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 mt-1">
+          <div class="input-group has-validation">
+            <span class="input-group-text">Max</span>
+            <input type="text" class="form-control text-end" id="membrane_pressure_sensor_max">
+            <span class="input-group-text">PSI</span>
+            <div class="invalid-feedback"></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    let filterPressure = "";
+    if (YB.App.config.capabilities.brineomatic.lp_sensor)
+      filterPressure = /*html*/ `
+      <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="has_filter_pressure_sensor">
+          <label class="form-check-label" for="has_filter_pressure_sensor">
+              Has Filter Pressure Sensor
+          </label>
+          <div class="invalid-feedback"></div>
+      </div>
+
+      <div id="has_filter_pressure_sensor_form" class="row g-3 mb-3">
+        <div class="col-12 col-md-6 mt-1">
+          <div class="input-group has-validation">
+            <span class="input-group-text">Min</span>
+            <input type="text" class="form-control text-end" id="filter_pressure_sensor_min">
+            <span class="input-group-text">PSI</span>
+            <div class="invalid-feedback"></div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 mt-1">
+          <div class="input-group has-validation">
+            <span class="input-group-text">Max</span>
+            <input type="text" class="form-control text-end" id="filter_pressure_sensor_max">
+            <span class="input-group-text">PSI</span>
+            <div class="invalid-feedback"></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    let productFlow = "";
+    if (YB.App.config.capabilities.brineomatic.product_flowmeter)
+      productFlow = /*html*/ `
+      <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="has_product_flow_sensor">
+          <label class="form-check-label" for="has_product_flow_sensor">
+              Has Product Flow Sensor
+          </label>
+          <div class="invalid-feedback"></div>
+      </div>
+
+      <div id="has_product_flow_sensor_form" class="mb-3">
+        <div class="input-group has-validation">
+          <input type="text" class="form-control text-end" id="product_flowmeter_ppl">
+          <span class="input-group-text">PPL (Pulses Per Liter)</span>
+          <div class="invalid-feedback"></div>
+        </div>
+      </div>
+    `;
+
+    let brineFlow = "";
+    if (YB.App.config.capabilities.brineomatic.brine_flowmeter)
+      brineFlow = /*html*/ `
+      <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="has_brine_flow_sensor">
+          <label class="form-check-label" for="has_brine_flow_sensor">
+              Has Brine Flow Sensor
+          </label>
+          <div class="invalid-feedback"></div>
+      </div>
+
+      <div id="has_brine_flow_sensor_form" class="mb-3">
+        <div class="input-group has-validation">
+          <input type="text" class="form-control text-end" id="brine_flowmeter_ppl">
+          <span class="input-group-text">PPL (Pulses Per Liter)</span>
+          <div class="invalid-feedback"></div>
+        </div>
+      </div>
+    `;
+
+    let productTDS = "";
+    if (YB.App.config.capabilities.brineomatic.product_tds)
+      productTDS = /*html*/ `
+      <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="has_product_tds_sensor">
+          <label class="form-check-label" for="has_product_tds_sensor">
+              Has Product TDS Sensor
+          </label>
+          <div class="invalid-feedback"></div>
+      </div>
+    `;
+
+    let brineTDS = "";
+    if (YB.App.config.capabilities.brineomatic.brine_tds)
+      brineTDS = /*html*/ `
+      <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="has_brine_tds_sensor">
+          <label class="form-check-label" for="has_brine_tds_sensor">
+              Has Brine TDS Sensor
+          </label>
+          <div class="invalid-feedback"></div>
+      </div>
+    `;
+
+    let motorTemperature = "";
+    if (YB.App.config.capabilities.brineomatic.motor_temperature)
+      motorTemperature = /*html*/ `
+        <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="has_motor_temperature_sensor">
+            <label class="form-check-label" for="has_motor_temperature_sensor">
+                Has Motor Temperature Sensor
+            </label>
+            <div class="invalid-feedback"></div>
+        </div>
+    `;
+
+    let waterTemperature = "";
+    if (YB.App.config.capabilities.brineomatic.water_temperature)
+      waterTemperature = /*html*/ `
+      <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="has_water_temperature_sensor">
+          <label class="form-check-label" for="has_water_temperature_sensor">
+              Has Water Temperature Sensor
+          </label>
+          <div class="invalid-feedback"></div>
+      </div>
+    `;
+
     return /*html*/ `
       <div id="hardwareSettingsDisabled" class="alert alert-warning" role="alert" style="display: none">
-        Hardware configuration disabled.  <b>IDLE</b> mode only.
+        Hardware configuration disabled. <b>IDLE</b> mode only.
       </div>
       <div class="form-floating mb-3">
           <select id="boost_pump_control" class="form-select" aria-label="Boost Pump">
@@ -2447,117 +2599,14 @@
 
       <hr class="bold">
 
-      <div class="form-check form-switch mb-3">
-          <input class="form-check-input" type="checkbox" id="has_membrane_pressure_sensor">
-          <label class="form-check-label" for="has_membrane_pressure_sensor">
-              Has Membrane Pressure Sensor
-          </label>
-          <div class="invalid-feedback"></div>
-      </div>
-
-      <div id="has_membrane_pressure_sensor_form" class="row g-3 mb-3">
-        <div class="col-12 col-md-6 mt-1">
-          <div class="input-group has-validation">
-            <span class="input-group-text">Min</span>
-            <input type="text" class="form-control text-end" id="membrane_pressure_sensor_min">
-            <span class="input-group-text">PSI</span>
-            <div class="invalid-feedback"></div>
-          </div>
-        </div>
-
-        <div class="col-12 col-md-6 mt-1">
-          <div class="input-group has-validation">
-            <span class="input-group-text">Max</span>
-            <input type="text" class="form-control text-end" id="membrane_pressure_sensor_max">
-            <span class="input-group-text">PSI</span>
-            <div class="invalid-feedback"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-check form-switch mb-3">
-          <input class="form-check-input" type="checkbox" id="has_filter_pressure_sensor">
-          <label class="form-check-label" for="has_filter_pressure_sensor">
-              Has Filter Pressure Sensor
-          </label>
-          <div class="invalid-feedback"></div>
-      </div>
-
-      <div id="has_filter_pressure_sensor_form" class="row g-3 mb-3">
-        <div class="col-12 col-md-6 mt-1">
-          <div class="input-group has-validation">
-            <span class="input-group-text">Min</span>
-            <input type="text" class="form-control text-end" id="filter_pressure_sensor_min">
-            <span class="input-group-text">PSI</span>
-            <div class="invalid-feedback"></div>
-          </div>
-        </div>
-
-        <div class="col-12 col-md-6 mt-1">
-          <div class="input-group has-validation">
-            <span class="input-group-text">Max</span>
-            <input type="text" class="form-control text-end" id="filter_pressure_sensor_max">
-            <span class="input-group-text">PSI</span>
-            <div class="invalid-feedback"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-check form-switch mb-3">
-          <input class="form-check-input" type="checkbox" id="has_product_flow_sensor">
-          <label class="form-check-label" for="has_product_flow_sensor">
-              Has Product Flow Sensor
-          </label>
-          <div class="invalid-feedback"></div>
-      </div>
-
-      <div id="has_product_flow_sensor_form" class="mb-3">
-        <div class="input-group has-validation">
-          <input type="text" class="form-control text-end" id="product_flowmeter_ppl">
-          <span class="input-group-text">PPL (Pulses Per Liter)</span>
-          <div class="invalid-feedback"></div>
-        </div>
-      </div>
-
-      <div class="form-check form-switch mb-3">
-          <input class="form-check-input" type="checkbox" id="has_brine_flow_sensor">
-          <label class="form-check-label" for="has_brine_flow_sensor">
-              Has Brine Flow Sensor
-          </label>
-          <div class="invalid-feedback"></div>
-      </div>
-
-      <div id="has_brine_flow_sensor_form" class="mb-3">
-        <div class="input-group has-validation">
-          <input type="text" class="form-control text-end" id="brine_flowmeter_ppl">
-          <span class="input-group-text">PPL (Pulses Per Liter)</span>
-          <div class="invalid-feedback"></div>
-        </div>
-      </div>
-
-      <div class="form-check form-switch mb-3">
-          <input class="form-check-input" type="checkbox" id="has_product_tds_sensor">
-          <label class="form-check-label" for="has_product_tds_sensor">
-              Has Product TDS Sensor
-          </label>
-          <div class="invalid-feedback"></div>
-      </div>
-
-      <div class="form-check form-switch mb-3">
-          <input class="form-check-input" type="checkbox" id="has_brine_tds_sensor">
-          <label class="form-check-label" for="has_brine_tds_sensor">
-              Has Brine TDS Sensor
-          </label>
-          <div class="invalid-feedback"></div>
-      </div>
-
-      <div class="form-check form-switch mb-3">
-          <input class="form-check-input" type="checkbox" id="has_motor_temperature_sensor">
-          <label class="form-check-label" for="has_motor_temperature_sensor">
-              Has Motor Temperature Sensor
-          </label>
-          <div class="invalid-feedback"></div>
-      </div>
+      ${membranePressure}
+      ${filterPressure}
+      ${productFlow}
+      ${brineFlow}
+      ${productTDS}
+      ${brineTDS}
+      ${motorTemperature}
+      ${waterTemperature}
 
       <div class="text-center mb-3">
           <button id="saveHardwareSettings" type="button" class="btn btn-primary">
@@ -3048,6 +3097,7 @@
     $("#brine_flowmeter_ppl").val(data.brine_flowmeter_ppl);
 
     $("#has_motor_temperature_sensor").prop('checked', data.has_motor_temperature_sensor);
+    $("#has_water_temperature_sensor").prop('checked', data.has_water_temperature_sensor);
 
     $("#flush_timeout").val(data.flush_timeout / (1000));
     $("#membrane_pressure_timeout").val(data.membrane_pressure_timeout / (1000));
@@ -3128,6 +3178,7 @@
     this.updateProductTDSVisibility(data.has_product_tds_sensor);
     this.updateBrineTDSVisibility(data.has_brine_tds_sensor);
     this.updateMotorTemperatureVisibility(data.has_motor_temperature_sensor);
+    this.updateWaterTemperatureVisibility(data.has_water_temperature_sensor);
 
     this.updateDiverterValveClosedCheckVisibility(data.has_product_flow_sensor, data.has_brine_flow_sensor);
     this.updateFlushValveClosedCheckVisibility(data.has_filter_pressure_sensor, data.has_brine_flow_sensor);
@@ -3143,6 +3194,7 @@
     $(".brineFlowrateUI").toggle(!!data.has_brine_flow_sensor);
     $(".totalFlowrateUI").toggle(!!data.has_brine_flow_sensor && !!data.has_product_flow_sensor);
     $(".motorTemperatureUI").toggle(!!data.has_motor_temperature_sensor);
+    $(".waterTemperatureUI").toggle(!!data.has_water_temperature_sensor);
     $(".productVolumeUI").toggle(!!data.has_product_flow_sensor);
     $(".flushVolumeUI").toggle(!!data.has_brine_flow_sensor);
   }
@@ -3234,6 +3286,11 @@
 
     $("#has_motor_temperature_sensor").on("change", (e) => {
       YB.bom.updateMotorTemperatureVisibility(e.target.checked);
+      YB.bom.updateSafeguardChecks();
+    });
+
+    $("#has_water_temperature_sensor").on("change", (e) => {
+      YB.bom.updateWaterTemperatureVisibility(e.target.checked);
       YB.bom.updateSafeguardChecks();
     });
 
@@ -3487,6 +3544,9 @@
     $("#enable_motor_temperature_check").prop("disabled", !hasSensor);
   }
 
+  Brineomatic.prototype.updateWaterTemperatureVisibility = function (hasSensor) {
+  }
+
   Brineomatic.prototype.updateDiverterValveClosedCheckVisibility = function (has_product_flow_sensor, has_brine_flow_sensor) {
     $("#enable_diverter_valve_closed_check").prop("disabled", !(has_product_flow_sensor && has_brine_flow_sensor));
   }
@@ -3576,6 +3636,7 @@
     data.brine_flowmeter_ppl = parseInt($("#brine_flowmeter_ppl").val());
 
     data.has_motor_temperature_sensor = $("#has_motor_temperature_sensor").prop("checked");
+    data.has_water_temperature_sensor = $("#has_water_temperature_sensor").prop("checked");
 
     return data;
   };
@@ -3969,7 +4030,8 @@
         }
       },
 
-      has_motor_temperature_sensor: { inclusion: [true, false] }
+      has_motor_temperature_sensor: { inclusion: [true, false] },
+      has_water_temperature_sensor: { inclusion: [true, false] }
     };
   }
 

@@ -255,7 +255,7 @@ void Brineomatic::measureBrineFlowmeter()
 
 void Brineomatic::measureMotorTemperature()
 {
-  #if YB_HAS_MOTOR_TEMPERATURE_SENSOR
+  #if YB_DS18B20_MOTOR_PIN
   if (!hasMotorTemperatureSensor)
     return;
 
@@ -268,7 +268,7 @@ void Brineomatic::measureMotorTemperature()
 
 void Brineomatic::measureWaterTemperature()
 {
-  #if YB_HAS_WATER_TEMPERATURE_SENSOR
+  #if YB_DS18B20_WATER_PIN
   if (!hasWaterTemperatureSensor)
     return;
 
