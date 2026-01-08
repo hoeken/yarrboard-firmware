@@ -48,11 +48,13 @@ class ADCHelper
     bool isReady();
     bool isBusy();
 
+  protected:
+    float _vref = 0.0;
+
   private:
     volatile bool _isReady = false;
     bool _isBusy = false;
     uint8_t _pin = 255;
-    float _vref = 0.0;
     uint8_t _resolution;
     std::vector<RollingAverage> _averages;
     unsigned long lastDebugTime = 0;
@@ -77,13 +79,19 @@ class ADS1115Helper : public ADCHelper
 {
   public:
     ADS1115Helper(float vref, ADS1115* adc, uint16_t samples = RA_DEFAULT_SIZE, uint32_t window_ms = RA_DEFAULT_WINDOW);
+    ADS1115Helper(const float vrefs[4], const uint8_t gains[4], ADS1115* adc, uint16_t samples = RA_DEFAULT_SIZE, uint32_t window_ms = RA_DEFAULT_WINDOW);
     void attachReadyPinInterrupt(uint8_t pin, int mode) override;
     void requestADCReading(uint8_t channel) override;
     bool isADCReady() override;
     uint32_t loadReadingFromADC(uint8_t channel) override;
+    float getLatestVoltage(uint8_t channel);
+    float getAverageVoltage(uint8_t channel);
 
   private:
     ADS1115* _adc;
+    bool _perChannelConfig = false;
+    float _vrefs[4];
+    uint8_t _gains[4];
 };
 
 class MCP3425Helper : public ADCHelper

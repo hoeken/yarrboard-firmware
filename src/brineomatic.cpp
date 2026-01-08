@@ -167,11 +167,10 @@ void Brineomatic::init()
   if (!_adc.isConnected())
     YBP.println("⚠️ ADS1115 Not Found");
 
-  _adc.setMode(1);     // SINGLE SHOT MODE
-  _adc.setGain(1);     // ±4.096V
-  _adc.setDataRate(3); // 64 samples per second.
+  _adc.setMode(1);      // SINGLE SHOT MODE
+  _adc.setDataRate(3);  // 64 samples per second.
 
-  adcHelper = new ADS1115Helper(YB_ADS1115_VREF, &_adc, YB_ADS1115_SAMPLES, YB_ADS1115_WINDOW);
+  adcHelper = new ADS1115Helper(YB_ADC_VREF, YB_ADC_GAIN, &_adc, YB_ADS1115_SAMPLES, YB_ADS1115_WINDOW);
   adcHelper->attachReadyPinInterrupt(YB_ADS1115_READY_PIN, FALLING);
 
   initModbus();

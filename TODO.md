@@ -2,7 +2,6 @@
 
 ## BRINEOMATIC
 
-* variable adc gain per-channel
 * add stepper motor overheating checks
 
 # v2.3 TODO

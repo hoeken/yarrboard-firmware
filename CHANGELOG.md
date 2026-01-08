@@ -1,5 +1,12 @@
 # Version 2.2.0
 
+## 🛠️ Improvements & Enhancements
+
+- **Per-Channel ADC Configuration**
+  - Added alternative constructor to `ADS1115Helper` to support per-channel voltage references and gains
+  - Channels can now have different gain settings (e.g., channels 0-1 use ±4.096V, channels 2-3 use ±2.048V)
+  - Updated Brineomatic Rev B and Rev C configurations to use new array-based ADC configuration
+
 - Now tracking pickled on timestamp so you can see how long the unit has been pickled for. (Survives reboot)
 
 # Version 2.1.0

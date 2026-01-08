@@ -177,11 +177,26 @@ void ADCHelper::onLoop()
 // ADS1115 Helper Class
 //
 ADS1115Helper::ADS1115Helper(float vref, ADS1115* adc, uint16_t samples, uint32_t window_ms)
-    : ADCHelper(4, vref, 15, samples, window_ms), _adc(adc)
+    : ADCHelper(4, vref, 15, samples, window_ms), _adc(adc), _perChannelConfig(false)
 {
 }
 
-void ADS1115Helper::requestADCReading(uint8_t channel) { _adc->requestADC(channel); }
+ADS1115Helper::ADS1115Helper(const float vrefs[4], const uint8_t gains[4], ADS1115* adc, uint16_t samples, uint32_t window_ms)
+    : ADCHelper(4, 0.0, 15, samples, window_ms), _adc(adc), _perChannelConfig(true)
+{
+  for (uint8_t i = 0; i < 4; i++) {
+    _vrefs[i] = vrefs[i];
+    _gains[i] = gains[i];
+  }
+}
+
+void ADS1115Helper::requestADCReading(uint8_t channel)
+{
+  if (_perChannelConfig && channel < 4) {
+    _adc->setGain(_gains[channel]);
+  }
+  _adc->requestADC(channel);
+}
 bool ADS1115Helper::isADCReady() { return _adc->isReady(); }
 
 void ADS1115Helper::attachReadyPinInterrupt(uint8_t pin, int mode)
@@ -213,6 +228,22 @@ uint32_t ADS1115Helper::loadReadingFromADC(uint8_t channel)
     reading = 0;
 
   return reading;
+}
+
+float ADS1115Helper::getLatestVoltage(uint8_t channel)
+{
+  if (_perChannelConfig && channel < 4) {
+    _vref = _vrefs[channel];
+  }
+  return ADCHelper::getLatestVoltage(channel);
+}
+
+float ADS1115Helper::getAverageVoltage(uint8_t channel)
+{
+  if (_perChannelConfig && channel < 4) {
+    _vref = _vrefs[channel];
+  }
+  return ADCHelper::getAverageVoltage(channel);
 }
 
 MCP3425Helper::MCP3425Helper(MCP342x::Config& config, float vref, MCP342x* adc, uint16_t samples, uint32_t window_ms)
