@@ -4156,13 +4156,13 @@
 
   YB.App.addSettingsPanel(new YB.SettingsPanel({
     name: 'hardware',
-    displayName: 'Hardware Setup',
+    displayName: 'Hardware',
     position: "brineomatic"
   }));
 
   YB.App.addSettingsPanel(new YB.SettingsPanel({
     name: 'safeguards',
-    displayName: 'System Safeguards',
+    displayName: 'Safeguards',
     position: "hardware"
   }));
 
