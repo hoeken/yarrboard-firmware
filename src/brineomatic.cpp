@@ -167,8 +167,8 @@ void Brineomatic::init()
   if (!_adc.isConnected())
     YBP.println("⚠️ ADS1115 Not Found");
 
-  _adc.setMode(1);      // SINGLE SHOT MODE
-  _adc.setDataRate(3);  // 64 samples per second.
+  _adc.setMode(1);     // SINGLE SHOT MODE
+  _adc.setDataRate(3); // 64 samples per second.
 
   adcHelper = new ADS1115Helper(YB_ADC_VREF, YB_ADC_GAIN, &_adc, YB_ADS1115_SAMPLES, YB_ADS1115_WINDOW);
   adcHelper->attachReadyPinInterrupt(YB_ADS1115_READY_PIN, FALLING);
@@ -798,10 +798,7 @@ void Brineomatic::manageCoolingFan()
 
 float Brineomatic::getFilterPressure()
 {
-  if (currentStatus == Status::IDLE)
-    return 0;
-  else
-    return currentFilterPressure;
+  return currentFilterPressure;
 }
 
 float Brineomatic::getFilterPressureMinimum()
@@ -811,10 +808,7 @@ float Brineomatic::getFilterPressureMinimum()
 
 float Brineomatic::getMembranePressure()
 {
-  if (currentStatus == Status::IDLE)
-    return 0;
-  else
-    return currentMembranePressure;
+  return currentMembranePressure;
 }
 
 float Brineomatic::getMembranePressureMinimum()

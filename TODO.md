@@ -2,12 +2,11 @@
 
 ## BRINEOMATIC
 
-* add stepper motor overheating checks
-
 # v2.3 TODO
 
 ## BRINEOMATIC
 
+* add stepper motor overheating checks
 * javascript should handle tds hiding when idle
 * has_motor_temperature -> dropdown (NONE, MANUAL, DS18B20)
 * has_water_temperature -> dropdown (NONE, MANUAL, DS18B20)
