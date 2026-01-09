@@ -148,3 +148,4 @@ dist
 #html/yarrboard-client.js
 *.gz.h
 src/gulp
+package-lock.json
