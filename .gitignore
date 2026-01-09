@@ -1,5 +1,4 @@
 .vscode
-*/package-lock.json
 */node_modules
 .~*
 *.bkp
@@ -146,7 +145,6 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-package-lock.json
 #html/yarrboard-client.js
 *.gz.h
 src/gulp
