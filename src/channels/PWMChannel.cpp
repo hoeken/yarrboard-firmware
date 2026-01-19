@@ -408,15 +408,16 @@ void PWMChannel::checkFuseBlown()
     duty = 1.0;
 
   // we cant really detect much at low levels
-  if (duty < 0.1)
+  const float dutyFloor = 0.2;
+  if (duty < dutyFloor)
     return;
 
   // determine what our floor for a tripped fuse should be.
   float bv = busVoltage->getBusVoltage();
-  float minVoltage = bv * duty * 0.1;
+  float minVoltage = bv * duty * dutyFloor;
 
   // so hard to measure that low accurately over time and not false
-  if (minVoltage <= 0.05)
+  if (minVoltage <= 0.1)
     return;
 
   // dimming lights need more time.
@@ -439,7 +440,7 @@ void PWMChannel::checkFuseBlown()
         if (this->getVoltage() >= minVoltage)
           return;
 
-        YBP.printf("CH%d BLOWN: %.3f < %.3f\n", this->id, this->getVoltage(), minVoltage);
+        YBP.printf("CH%d BLOWN: %.3f < %.3f DUTY: %.2f\n", this->id, this->getVoltage(), minVoltage, duty);
 
         this->status = Status::BLOWN;
         this->outputState = false;
