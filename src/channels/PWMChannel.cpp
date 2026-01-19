@@ -408,16 +408,16 @@ void PWMChannel::checkFuseBlown()
     duty = 1.0;
 
   // we cant really detect much at low levels
-  const float dutyFloor = 0.2;
-  if (duty < dutyFloor)
-    return;
+  // const float dutyFloor = 0.10;
+  // if (duty < dutyFloor)
+  //   return;
 
   // determine what our floor for a tripped fuse should be.
   float bv = busVoltage->getBusVoltage();
-  float minVoltage = bv * duty * dutyFloor;
+  float minVoltage = bv * duty * 0.70;
 
   // so hard to measure that low accurately over time and not false
-  if (minVoltage <= 0.1)
+  if (minVoltage <= 0.10)
     return;
 
   // dimming lights need more time.
@@ -433,8 +433,8 @@ void PWMChannel::checkFuseBlown()
   // it takes a little bit to populate on boot.
   if (busVoltage->getBusVoltage() > 0) {
     if (this->status == Status::ON) {
-      // grace period when changing state
-      if (millis() - lastStateChange > firstCheckTime) {
+      // grace period when changing state or duty
+      if (millis() - lastStateChange > firstCheckTime && millis() - lastDutyCycleUpdate > firstCheckTime) {
 
         // if our voltage is at a high enough level, we're fine.
         if (this->getVoltage() >= minVoltage)
@@ -459,8 +459,8 @@ void PWMChannel::checkFuseBypassed()
     if (isDimmable && !strcmp(this->type, "light"))
       firstCheckTime += rampOffMillis;
 
-    // grace period when changing state
-    if (millis() - lastStateChange > firstCheckTime) {
+    // grace period when changing state or duty
+    if (millis() - lastStateChange > firstCheckTime && millis() - lastDutyCycleUpdate > firstCheckTime) {
 
       if (this->getVoltage() < busVoltage->getBusVoltage() * 0.90)
         return;

@@ -72,7 +72,7 @@ bool PWMController::setup()
   _adcVoltageMCP3564.setConversionMode(MCP3x6x::conv_mode::ONESHOT_STANDBY);
   _adcVoltageMCP3564.setAveraging(MCP3x6x::osr::OSR_2048);
 
-  adcVoltageHelper = new MCP3564Helper(3.3, &_adcVoltageMCP3564, 50, 500);
+  adcVoltageHelper = new MCP3564Helper(3.3, &_adcVoltageMCP3564, 50, 750);
   adcVoltageHelper->attachReadyPinInterrupt(YB_PWM_CHANNEL_VOLTAGE_ADC_IRQ, FALLING);
   #endif
 
@@ -117,6 +117,7 @@ void PWMController::loop()
 {
   #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
   adcVoltageHelper->onLoop();
+  adcVoltageHelper->printDebug();
   #endif
 
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
