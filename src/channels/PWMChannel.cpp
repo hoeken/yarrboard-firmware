@@ -436,11 +436,14 @@ void PWMChannel::checkFuseBlown()
       // grace period when changing state or duty
       if (millis() - lastStateChange > firstCheckTime && millis() - lastDutyCycleUpdate > firstCheckTime) {
 
+        float voltage = this->getVoltage();
+
         // if our voltage is at a high enough level, we're fine.
-        if (this->getVoltage() >= minVoltage)
+        if (voltage >= minVoltage)
           return;
 
-        YBP.printf("CH%d BLOWN: %.3f < %.3f DUTY: %.2f\n", this->id, this->getVoltage(), minVoltage, duty);
+        YBP.printf("CH%d BLOWN: %.3f < %.3f | DUTY: %.2f | isDimmable: %d | BUS VOLTAGE: %.3f\n", this->id, voltage, minVoltage, duty, isDimmable, bv);
+        this->voltageHelper->printDebug(this->id);
 
         this->status = Status::BLOWN;
         this->outputState = false;
@@ -462,8 +465,15 @@ void PWMChannel::checkFuseBypassed()
     // grace period when changing state or duty
     if (millis() - lastStateChange > firstCheckTime && millis() - lastDutyCycleUpdate > firstCheckTime) {
 
-      if (this->getVoltage() < busVoltage->getBusVoltage() * 0.90)
+      float voltage = this->getVoltage();
+      float bv = busVoltage->getBusVoltage();
+      float minVoltage = bv * 0.90;
+
+      if (voltage < minVoltage)
         return;
+
+      YBP.printf("CH%d BYPASSED: %.3f >= %.3f | STATUS: %s | BUS VOLTAGE: %.3f\n", this->id, voltage, minVoltage, this->getStatus(), bv);
+      this->voltageHelper->printDebug(this->id);
 
       // dont change our outputState here... bypass can be temporary
       this->status = Status::BYPASSED;
@@ -479,9 +489,13 @@ void PWMChannel::checkSoftFuse()
 {
   // only trip once....
   if (this->status != Status::TRIPPED) {
+    float amperage = abs(this->getAmperage());
+
     // Check our soft fuse, and our max limit for the board.
-    if (abs(this->getAmperage()) >= this->softFuseAmperage ||
-        abs(this->getAmperage()) >= YB_PWM_CHANNEL_MAX_AMPS) {
+    if (amperage >= this->softFuseAmperage || amperage >= YB_PWM_CHANNEL_MAX_AMPS) {
+
+      YBP.printf("CH%d TRIPPED: %.3f >= %.3f (soft) or %.3f (max) | STATUS: %s\n", this->id, amperage, this->softFuseAmperage, YB_PWM_CHANNEL_MAX_AMPS, this->getStatus());
+      this->amperageHelper->printDebug(this->id);
 
       // record some variables
       this->status = Status::TRIPPED;

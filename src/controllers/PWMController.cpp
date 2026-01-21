@@ -117,7 +117,6 @@ void PWMController::loop()
 {
   #ifdef YB_PWM_CHANNEL_VOLTAGE_ADC_DRIVER_MCP3564
   adcVoltageHelper->onLoop();
-  adcVoltageHelper->printDebug();
   #endif
 
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564

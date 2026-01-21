@@ -68,13 +68,12 @@ void ADCHelper::clearReadings(uint8_t channel)
   _averages[channel].clear();
 }
 
-void ADCHelper::printDebug()
+void ADCHelper::printDebug(int8_t channel)
 {
-  // only print every 10s
-  if (millis() - lastDebugTime > 5000) {
-    YBP.printf("%d Channels | Vref: %.3f | Resolution: %d\n", _totalChannels, _vref, _resolution);
+  YBP.printf("%d Channels | Vref: %.3f | Resolution: %d\n", _totalChannels, _vref, _resolution);
 
-    for (byte i = 0; i < _totalChannels; i++) {
+  for (byte i = 0; i < _totalChannels; i++) {
+    if (channel == -1 || channel == i) {
       uint16_t cnt = getReadingCount(i);
       size_t cap = _averages[i].cap();
       uint32_t window = _averages[i].window();
@@ -82,8 +81,6 @@ void ADCHelper::printDebug()
       float avgv = getAverageVoltage(i);
       YBP.printf("CH%d: Window: %dms | Readings: %d/%d | Average: %d | Voltage: %.3f\n", i, window, cnt, cap, avgr, avgv);
     }
-
-    lastDebugTime = millis();
   }
 }
 

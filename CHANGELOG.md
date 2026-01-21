@@ -6,6 +6,10 @@
   - Added TMC2209 error detection (over-temperature, short circuits, open loads)
   - Automatic motor disable on error with console and web UI notifications
 
+## 🛠️ Improvements & Enhancements
+
+- Enhanced PWM channel fault detection logging with detailed voltage and current readings
+
 ## 🐛 Bug Fixes
 
 - Failed homing now sets position to zero (fixes #16)
