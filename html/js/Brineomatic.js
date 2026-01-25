@@ -3122,9 +3122,6 @@
     $("#has_brine_flow_sensor").prop('checked', data.has_brine_flow_sensor);
     $("#brine_flowmeter_ppl").val(data.brine_flowmeter_ppl);
 
-    // $("#has_motor_temperature_sensor").prop('checked', data.has_motor_temperature_sensor);
-    // $("#has_water_temperature_sensor").prop('checked', data.has_water_temperature_sensor);
-
     $("#motor_temperature_sensor_type").val(data.motor_temperature_sensor_type);
     $("#water_temperature_sensor_type").val(data.water_temperature_sensor_type);
 
@@ -3536,29 +3533,33 @@
   };
 
   Brineomatic.prototype.updateMembranePressureVisibility = function (hasSensor) {
+    console.log(`updateMembranePressureVisibility: ${hasSensor}`);
     $("#enable_membrane_pressure_high_check").prop("disabled", !hasSensor);
     $("#enable_membrane_pressure_low_check").prop("disabled", !hasSensor);
+    $("#has_membrane_pressure_sensor_form").toggle(hasSensor);
   }
 
   Brineomatic.prototype.updateFilterPressureVisibility = function (hasSensor) {
+    console.log(`updateFilterPressureVisibility: ${hasSensor}`);
     $("#enable_filter_pressure_high_check").prop("disabled", !hasSensor);
     $("#enable_filter_pressure_low_check").prop("disabled", !hasSensor);
     $("#enable_flush_filter_pressure_low_check").prop("disabled", !hasSensor);
+    $("#has_filter_pressure_sensor_form").toggle(hasSensor);
   }
 
   Brineomatic.prototype.updateProductFlowrateVisibility = function (hasSensor) {
     $("#enable_product_flowrate_high_check").prop("disabled", !hasSensor);
     $("#enable_product_flowrate_low_check").prop("disabled", !hasSensor);
-
     $("#startRunVolumeDialog").toggle(hasSensor);
+    $("#has_product_flow_sensor_form").toggle(hasSensor);
   }
 
   Brineomatic.prototype.updateBrineFlowrateVisibility = function (hasSensor) {
     $("#enable_run_total_flowrate_low_check").prop("disabled", !hasSensor);
     $("#enable_pickle_total_flowrate_low_check").prop("disabled", !hasSensor);
     $("#enable_flush_flowrate_low_check").prop("disabled", !hasSensor);
-
     $("#startFlushVolumeDialog").toggle(hasSensor);
+    $("#has_brine_flow_sensor_form").toggle(hasSensor);
   }
 
   Brineomatic.prototype.updateProductTDSVisibility = function (hasSensor) {
@@ -3663,9 +3664,6 @@
 
     data.has_brine_flow_sensor = $("#has_brine_flow_sensor").prop("checked");
     data.brine_flowmeter_ppl = parseInt($("#brine_flowmeter_ppl").val());
-
-    // data.has_motor_temperature_sensor = $("#has_motor_temperature_sensor").prop("checked");
-    // data.has_water_temperature_sensor = $("#has_water_temperature_sensor").prop("checked");
 
     data.motor_temperature_sensor_type = $("#motor_temperature_sensor_type").val();
     data.water_temperature_sensor_type = $("#water_temperature_sensor_type").val();

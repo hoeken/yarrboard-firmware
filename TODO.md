@@ -3,9 +3,6 @@
 ## BRINEOMATIC
 
 * add tds offset calibration (#5)
-* has_* pressure toggle - not hiding min/max
-* has_* flow toggle - not hidding ppl
-* hide temp / pressure / tds / flowrate at idle?
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker
     * sensors for each output type
