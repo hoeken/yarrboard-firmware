@@ -13,6 +13,7 @@
 ## 🐛 Bug Fixes
 
 - Failed homing now sets position to zero (fixes #16)
+- Added input validation for watermaker settings (fixes #20)
 
 # Version 2.2.0
 
