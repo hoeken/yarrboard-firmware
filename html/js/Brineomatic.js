@@ -2281,23 +2281,27 @@
     let motorTemperature = "";
     if (YB.App.config.capabilities.brineomatic.motor_temperature)
       motorTemperature = /*html*/ `
-        <div class="form-check form-switch mb-3">
-            <input class="form-check-input" type="checkbox" id="has_motor_temperature_sensor">
-            <label class="form-check-label" for="has_motor_temperature_sensor">
-                Has Motor Temperature Sensor
-            </label>
-            <div class="invalid-feedback"></div>
-        </div>
+      <div class="form-floating mb-3">
+          <select id="motor_temperature_sensor_type" class="form-select" aria-label="Motor Temperature Sensor">
+            <option value="NONE">None</option>
+            <option value="EXTERNAL">External (via NodeRED or API)</option>
+            <option value="DS18B20">DS18B20 (directly connected)</option>
+          </select>
+          <label for="motor_temperature_sensor_type">Motor Temperature Sensor</label>
+          <div class="invalid-feedback"></div>
+      </div>
     `;
 
     let waterTemperature = "";
     if (YB.App.config.capabilities.brineomatic.water_temperature)
       waterTemperature = /*html*/ `
-      <div class="form-check form-switch mb-3">
-          <input class="form-check-input" type="checkbox" id="has_water_temperature_sensor">
-          <label class="form-check-label" for="has_water_temperature_sensor">
-              Has Water Temperature Sensor
-          </label>
+      <div class="form-floating mb-3">
+          <select id="water_temperature_sensor_type" class="form-select" aria-label="Water Temperature Sensor">
+            <option value="NONE">None</option>
+            <option value="EXTERNAL">External (via NodeRED or API)</option>
+            <option value="DS18B20">DS18B20 (directly connected)</option>
+          </select>
+          <label for="water_temperature_sensor_type">Water Temperature Sensor</label>
           <div class="invalid-feedback"></div>
       </div>
     `;
@@ -3118,8 +3122,11 @@
     $("#has_brine_flow_sensor").prop('checked', data.has_brine_flow_sensor);
     $("#brine_flowmeter_ppl").val(data.brine_flowmeter_ppl);
 
-    $("#has_motor_temperature_sensor").prop('checked', data.has_motor_temperature_sensor);
-    $("#has_water_temperature_sensor").prop('checked', data.has_water_temperature_sensor);
+    // $("#has_motor_temperature_sensor").prop('checked', data.has_motor_temperature_sensor);
+    // $("#has_water_temperature_sensor").prop('checked', data.has_water_temperature_sensor);
+
+    $("#motor_temperature_sensor_type").val(data.motor_temperature_sensor_type);
+    $("#water_temperature_sensor_type").val(data.water_temperature_sensor_type);
 
     $("#flush_timeout").val(data.flush_timeout / (1000));
     $("#membrane_pressure_timeout").val(data.membrane_pressure_timeout / (1000));
@@ -3199,8 +3206,8 @@
     this.updateBrineFlowrateVisibility(data.has_brine_flow_sensor);
     this.updateProductTDSVisibility(data.has_product_tds_sensor);
     this.updateBrineTDSVisibility(data.has_brine_tds_sensor);
-    this.updateMotorTemperatureVisibility(data.has_motor_temperature_sensor);
-    this.updateWaterTemperatureVisibility(data.has_water_temperature_sensor);
+    this.updateMotorTemperatureVisibility(data.motor_temperature_sensor_type);
+    this.updateWaterTemperatureVisibility(data.water_temperature_sensor_type);
 
     this.updateDiverterValveClosedCheckVisibility(data.has_product_flow_sensor, data.has_brine_flow_sensor);
     this.updateFlushValveClosedCheckVisibility(data.has_filter_pressure_sensor, data.has_brine_flow_sensor);
@@ -3215,8 +3222,8 @@
     $(".productFlowrateUI").toggle(!!data.has_product_flow_sensor);
     $(".brineFlowrateUI").toggle(!!data.has_brine_flow_sensor);
     $(".totalFlowrateUI").toggle(!!data.has_brine_flow_sensor && !!data.has_product_flow_sensor);
-    $(".motorTemperatureUI").toggle(!!data.has_motor_temperature_sensor);
-    $(".waterTemperatureUI").toggle(!!data.has_water_temperature_sensor);
+    $(".motorTemperatureUI").toggle(data.motor_temperature_sensor_type != "NONE");
+    $(".waterTemperatureUI").toggle(data.water_temperature_sensor_type != "NONE");
     $(".productVolumeUI").toggle(!!data.has_product_flow_sensor);
     $(".flushVolumeUI").toggle(!!data.has_brine_flow_sensor);
   }
@@ -3306,13 +3313,13 @@
       YB.bom.updateSafeguardChecks();
     });
 
-    $("#has_motor_temperature_sensor").on("change", (e) => {
-      YB.bom.updateMotorTemperatureVisibility(e.target.checked);
+    $("#motor_temperature_sensor_type").on("change", (e) => {
+      YB.bom.updateMotorTemperatureVisibility(e.target.value);
       YB.bom.updateSafeguardChecks();
     });
 
-    $("#has_water_temperature_sensor").on("change", (e) => {
-      YB.bom.updateWaterTemperatureVisibility(e.target.checked);
+    $("#water_temperature_sensor_type").on("change", (e) => {
+      YB.bom.updateWaterTemperatureVisibility(e.target.value);
       YB.bom.updateSafeguardChecks();
     });
 
@@ -3562,11 +3569,11 @@
     $("#startFlushAutomaticDialog").toggle(hasSensor);
   }
 
-  Brineomatic.prototype.updateMotorTemperatureVisibility = function (hasSensor) {
-    $("#enable_motor_temperature_check").prop("disabled", !hasSensor);
+  Brineomatic.prototype.updateMotorTemperatureVisibility = function (type) {
+    $("#enable_motor_temperature_check").prop("disabled", type == "NONE");
   }
 
-  Brineomatic.prototype.updateWaterTemperatureVisibility = function (hasSensor) {
+  Brineomatic.prototype.updateWaterTemperatureVisibility = function (type) {
   }
 
   Brineomatic.prototype.updateDiverterValveClosedCheckVisibility = function (has_product_flow_sensor, has_brine_flow_sensor) {
@@ -3657,8 +3664,11 @@
     data.has_brine_flow_sensor = $("#has_brine_flow_sensor").prop("checked");
     data.brine_flowmeter_ppl = parseInt($("#brine_flowmeter_ppl").val());
 
-    data.has_motor_temperature_sensor = $("#has_motor_temperature_sensor").prop("checked");
-    data.has_water_temperature_sensor = $("#has_water_temperature_sensor").prop("checked");
+    // data.has_motor_temperature_sensor = $("#has_motor_temperature_sensor").prop("checked");
+    // data.has_water_temperature_sensor = $("#has_water_temperature_sensor").prop("checked");
+
+    data.motor_temperature_sensor_type = $("#motor_temperature_sensor_type").val();
+    data.water_temperature_sensor_type = $("#water_temperature_sensor_type").val();
 
     return data;
   };
@@ -4052,8 +4062,15 @@
         }
       },
 
-      has_motor_temperature_sensor: { inclusion: [true, false] },
-      has_water_temperature_sensor: { inclusion: [true, false] }
+      motor_temperature_sensor_type: {
+        presence: true,
+        inclusion: ["NONE", "EXTERNAL", "DS18B20"]
+      },
+
+      water_temperature_sensor_type: {
+        presence: true,
+        inclusion: ["NONE", "EXTERNAL", "DS18B20"]
+      }
     };
   }
 

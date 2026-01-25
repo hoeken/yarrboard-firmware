@@ -98,6 +98,8 @@ class Brineomatic
     static constexpr const char* DIVERTER_VALVE_CONTROLS[] = {"NONE", "MANUAL", "RELAY", "SERVO"};
     static constexpr const char* FLUSH_VALVE_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
     static constexpr const char* COOLING_FAN_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
+    static constexpr const char* MOTOR_TEMPERATURE_TYPES[] = {"NONE", "EXTERNAL", "DS18B20"};
+    static constexpr const char* WATER_TEMPERATURE_TYPES[] = {"NONE", "EXTERNAL", "DS18B20"};
 
     bool isPickled;
     int64_t pickledOnTimestamp = 0;
@@ -161,6 +163,7 @@ class Brineomatic
     void measureMembranePressure();
 
     void setMembranePressureTarget(float pressure);
+    void setMotorTemperature(float temp);
     void setWaterTemperature(float temp);
     void setTankLevel(float level);
 
@@ -210,6 +213,9 @@ class Brineomatic
 
     bool hasHighPressureValve();
     void manageHighPressureValve();
+
+    bool hasMotorTemperature();
+    bool hasWaterTemperature();
 
     const char* getStatus();
     const char* resultToString(Result result);
@@ -406,8 +412,8 @@ class Brineomatic
     bool hasBrineFlowSensor = YB_HAS_BRINE_FLOW_SENSOR;
     float brineFlowmeterPPL = YB_BRINE_FLOWMETER_PPL;
 
-    bool hasMotorTemperatureSensor = YB_HAS_MOTOR_TEMPERATURE_SENSOR;
-    bool hasWaterTemperatureSensor = YB_HAS_WATER_TEMPERATURE_SENSOR;
+    String motorTemperatureSensorType = YB_MOTOR_TEMPERATURE_SENSOR_TYPE;
+    String waterTemperatureSensorType = YB_WATER_TEMPERATURE_SENSOR_TYPE;
 
     uint32_t flushTimeout = YB_FLUSH_TIMEOUT;                          // timeout for flush cycle in ms
     uint32_t membranePressureTimeout = YB_MEMBRANE_PRESSURE_TIMEOUT;   // timeout for membrane pressure to stabilize in ms

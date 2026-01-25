@@ -116,12 +116,12 @@ void Brineomatic::init()
 
   // DS18B20 Sensor
   #if YB_DS18B20_MOTOR_PIN
-  motorTemperatureOneWire.begin(YB_DS18B20_MOTOR_PIN);
-  motorTemperatureSensor.setOneWire(&motorTemperatureOneWire);
-  motorTemperatureSensor.begin();
+  if (motorTemperatureSensorType == "DS18B20") {
+    motorTemperatureOneWire.begin(YB_DS18B20_MOTOR_PIN);
+    motorTemperatureSensor.setOneWire(&motorTemperatureOneWire);
+    motorTemperatureSensor.begin();
 
-  // lookup our address
-  if (hasMotorTemperatureSensor) {
+    // lookup our address
     if (!motorTemperatureSensor.getAddress(motorTemperatureAddress, 0))
       YBP.println("⚠️ Unable to find motor temperature sensor.");
     else {
@@ -133,7 +133,7 @@ void Brineomatic::init()
   #endif
 
   #if YB_DS18B20_WATER_PIN
-  if (hasWaterTemperatureSensor) {
+  if (waterTemperatureSensorType == "DS18B20") {
     waterTemperatureOneWire.begin(YB_DS18B20_WATER_PIN);
     waterTemperatureSensor.setOneWire(&waterTemperatureOneWire);
     waterTemperatureSensor.begin();
@@ -255,7 +255,7 @@ void Brineomatic::measureBrineFlowmeter()
 void Brineomatic::measureMotorTemperature()
 {
   #if YB_DS18B20_MOTOR_PIN
-  if (!hasMotorTemperatureSensor)
+  if (motorTemperatureSensorType != "DS18B20")
     return;
 
   if (motorTemperatureSensor.isConversionComplete()) {
@@ -268,7 +268,7 @@ void Brineomatic::measureMotorTemperature()
 void Brineomatic::measureWaterTemperature()
 {
   #if YB_DS18B20_WATER_PIN
-  if (!hasWaterTemperatureSensor)
+  if (waterTemperatureSensorType != "DS18B20")
     return;
 
   if (waterTemperatureSensor.isConversionComplete()) {
@@ -787,7 +787,7 @@ void Brineomatic::disableCoolingFan()
 void Brineomatic::manageCoolingFan()
 {
   if (currentStatus != Status::MANUAL) {
-    if (hasCoolingFan() && hasMotorTemperatureSensor) {
+    if (hasCoolingFan() && hasMotorTemperature()) {
       if (getMotorTemperature() >= coolingFanOnTemperature)
         enableCoolingFan();
       else if (getMotorTemperature() <= coolingFanOffTemperature)
@@ -877,6 +877,11 @@ void Brineomatic::setWaterTemperature(float temp)
 void Brineomatic::setTankLevel(float level)
 {
   currentTankLevel = level;
+}
+
+void Brineomatic::setMotorTemperature(float temp)
+{
+  currentMotorTemperature = temp;
 }
 
 float Brineomatic::getMotorTemperature()
@@ -1093,6 +1098,16 @@ uint32_t Brineomatic::getDepickleCountdown()
   }
 
   return 0;
+}
+
+bool Brineomatic::hasMotorTemperature()
+{
+  return motorTemperatureSensorType != "NONE";
+}
+
+bool Brineomatic::hasWaterTemperature()
+{
+  return waterTemperatureSensorType != "NONE";
 }
 
 bool Brineomatic::hasHighPressureValve()
@@ -1777,7 +1792,7 @@ bool Brineomatic::checkProductSalinityHigh()
 
 bool Brineomatic::checkMotorTemperature(Result& result)
 {
-  if (!hasMotorTemperatureSensor)
+  if (!hasMotorTemperature())
     return false;
 
   if (!enableMotorTemperatureCheck)
@@ -2104,8 +2119,8 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["has_brine_flow_sensor"] = this->hasBrineFlowSensor;
   bom["brine_flowmeter_ppl"] = this->brineFlowmeterPPL;
 
-  bom["has_motor_temperature_sensor"] = this->hasMotorTemperatureSensor;
-  bom["has_water_temperature_sensor"] = this->hasWaterTemperatureSensor;
+  bom["motor_temperature_sensor_type"] = this->motorTemperatureSensorType;
+  bom["water_temperature_sensor_type"] = this->waterTemperatureSensorType;
 
   bom["enable_membrane_pressure_high_check"] = this->enableMembranePressureHighCheck;
   bom["membrane_pressure_high_threshold"] = this->membranePressureHighThreshold;
@@ -2668,16 +2683,30 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
     }
   }
 
-  if (config["has_motor_temperature_sensor"]) {
-    if (!checkIsBool(config, "has_motor_temperature_sensor", error, err_size)) {
-      config.remove("has_motor_temperature_sensor");
+  // if (config["has_motor_temperature_sensor"]) {
+  //   if (!checkIsBool(config, "has_motor_temperature_sensor", error, err_size)) {
+  //     config.remove("has_motor_temperature_sensor");
+  //     ok = false;
+  //   }
+  // }
+
+  // if (config["has_water_temperature_sensor"]) {
+  //   if (!checkIsBool(config, "has_water_temperature_sensor", error, err_size)) {
+  //     config.remove("has_water_temperature_sensor");
+  //     ok = false;
+  //   }
+  // }
+
+  if (config["motor_temperature_sensor_type"]) {
+    if (!checkInclusion(config, "motor_temperature_sensor_type", MOTOR_TEMPERATURE_TYPES, error, err_size)) {
+      config.remove("motor_temperature_sensor_type");
       ok = false;
     }
   }
 
-  if (config["has_water_temperature_sensor"]) {
-    if (!checkIsBool(config, "has_water_temperature_sensor", error, err_size)) {
-      config.remove("has_water_temperature_sensor");
+  if (config["water_temperature_sensor_type"]) {
+    if (!checkInclusion(config, "water_temperature_sensor_type", WATER_TEMPERATURE_TYPES, error, err_size)) {
+      config.remove("water_temperature_sensor_type");
       ok = false;
     }
   }
@@ -3126,8 +3155,14 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
   this->hasBrineFlowSensor = config["has_brine_flow_sensor"] | YB_HAS_BRINE_FLOW_SENSOR;
   this->brineFlowmeterPPL = config["brine_flowmeter_ppl"] | YB_BRINE_FLOWMETER_PPL;
 
-  this->hasMotorTemperatureSensor = config["has_motor_temperature_sensor"] | YB_HAS_MOTOR_TEMPERATURE_SENSOR;
-  this->hasWaterTemperatureSensor = config["has_water_temperature_sensor"] | YB_HAS_WATER_TEMPERATURE_SENSOR;
+  this->motorTemperatureSensorType = config["motor_temperature_sensor_type"] | YB_MOTOR_TEMPERATURE_SENSOR_TYPE;
+  this->waterTemperatureSensorType = config["water_temperature_sensor_type"] | YB_WATER_TEMPERATURE_SENSOR_TYPE;
+
+  // smart backup of the old boolean style
+  if (this->motorTemperatureSensorType.equals("NONE") && config["has_motor_temperature_sensor"])
+    this->motorTemperatureSensorType = "DS18B20";
+  if (this->waterTemperatureSensorType.equals("NONE") && config["has_water_temperature_sensor"])
+    this->waterTemperatureSensorType = "DS18B20";
 }
 
 void Brineomatic::loadSafeguardsConfigJSON(JsonVariant config)

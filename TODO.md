@@ -2,12 +2,14 @@
 
 ## BRINEOMATIC
 
-* has_motor_temperature -> dropdown (NONE, EXTERNAL, DS18B20)
-* has_water_temperature -> dropdown (NONE, EXTERNAL, DS18B20)
 * add tds offset calibration (#5)
 * has_* pressure toggle - not hiding min/max
 * has_* flow toggle - not hidding ppl
 * hide temp / pressure / tds / flowrate at idle?
+* add simple HA support to brineomatic?
+    * on/off switch to start/stop the watermaker
+    * sensors for each output type
+    * YAML dashboard
 * user selectable units
     * biggest question: should unit conversion happen on firmware side or client side?
         * leaning towards firmware -> annoying to convert when using API
@@ -28,10 +30,6 @@
     * step 5: update web UI to show/update units where needed.
         * use css classes and update when selection changes.  (.temperatureUnits)
         * update units on config load too
-* add simple HA support to brineomatic?
-    * on/off switch to start/stop the watermaker
-    * sensors for each output type
-    * YAML dashboard
 
 ## FROTHFET
 

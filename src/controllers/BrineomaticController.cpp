@@ -253,11 +253,21 @@ void BrineomaticController::handleManualWatermaker(JsonVariantConst input, JsonV
 
 void BrineomaticController::handleSetWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context)
 {
+  if (input["motor_temperature"].is<float>()) {
+    float temp = input["motor_temperature"];
+
+    if (temp < -50 || temp > 200.0)
+      return _app.protocol.generateErrorJSON(output, "Motor temperature must be between -50C and 200C");
+
+    wm.setMotorTemperature(temp);
+    return;
+  }
+
   if (input["water_temperature"].is<float>()) {
     float temp = input["water_temperature"];
 
     if (temp < 0.0 || temp > 50.0)
-      return _app.protocol.generateErrorJSON(output, "Water temperature must be between 0 and 50");
+      return _app.protocol.generateErrorJSON(output, "Water temperature must be between 0C and 50C");
 
     wm.setWaterTemperature(temp);
     return;

@@ -10,6 +10,7 @@
 
 - Enhanced PWM channel fault detection logging with detailed voltage and current readings
 - Added optional raw data output to ADCHelper::printDebug() for debugging ADC readings
+- Added configuration settings for motor and water temperature sensors (NONE, EXTERNAL, and DS18B20)
 
 ## 🐛 Bug Fixes
 
