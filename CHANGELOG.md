@@ -9,6 +9,7 @@
 ## 🛠️ Improvements & Enhancements
 
 - Enhanced PWM channel fault detection logging with detailed voltage and current readings
+- Added optional raw data output to ADCHelper::printDebug() for debugging ADC readings
 
 ## 🐛 Bug Fixes
 

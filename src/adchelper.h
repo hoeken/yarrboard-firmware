@@ -40,7 +40,7 @@ class ADCHelper
 
     uint16_t getReadingCount(uint8_t channel);
     void clearReadings(uint8_t channel);
-    void printDebug(int8_t channel = -1);
+    void printDebug(int8_t channel = -1, bool rawData = false);
 
     virtual void attachReadyPinInterrupt(uint8_t pin, int mode);
     void requestReading(uint8_t channel);

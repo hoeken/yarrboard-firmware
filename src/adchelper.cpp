@@ -68,9 +68,10 @@ void ADCHelper::clearReadings(uint8_t channel)
   _averages[channel].clear();
 }
 
-void ADCHelper::printDebug(int8_t channel)
+void ADCHelper::printDebug(int8_t channel, bool rawData)
 {
-  YBP.printf("%d Channels | Vref: %.3f | Resolution: %d\n", _totalChannels, _vref, _resolution);
+  if (channel == -1)
+    YBP.printf("ADCHelper %d Channels | Vref: %.3f | Resolution: %d\n", _totalChannels, _vref, _resolution);
 
   for (byte i = 0; i < _totalChannels; i++) {
     if (channel == -1 || channel == i) {
@@ -79,7 +80,17 @@ void ADCHelper::printDebug(int8_t channel)
       uint32_t window = _averages[i].window();
       uint32_t avgr = getAverageReading(i);
       float avgv = getAverageVoltage(i);
-      YBP.printf("CH%d: Window: %dms | Readings: %d/%d | Average: %d | Voltage: %.3f\n", i, window, cnt, cap, avgr, avgv);
+      YBP.printf("ADC CH%d: Window: %dms | Readings: %d/%d | Average: %d | Voltage: %.3f\n", i, window, cnt, cap, avgr, avgv);
+
+      if (rawData && cnt > 0) {
+        YBP.printf("Raw ADC Voltage: ");
+        for (uint16_t j = 0; j < cnt; j++) {
+          if (j > 0)
+            YBP.printf(", ");
+          YBP.printf("%.3f", toVoltage(_averages[i].get(j)));
+        }
+        YBP.printf("\n");
+      }
     }
   }
 }
@@ -166,8 +177,6 @@ void ADCHelper::onLoop()
 
     requestReading(_currentChannel);
   }
-
-  // printDebug();
 }
 
 //

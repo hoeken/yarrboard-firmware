@@ -443,7 +443,7 @@ void PWMChannel::checkFuseBlown()
           return;
 
         YBP.printf("CH%d BLOWN: %.3f < %.3f | DUTY: %.2f | isDimmable: %d | BUS VOLTAGE: %.3f\n", this->id, voltage, minVoltage, duty, isDimmable, bv);
-        this->voltageHelper->printDebug(this->id);
+        this->voltageHelper->printDebug(this->id - 1, true);
 
         this->status = Status::BLOWN;
         this->outputState = false;
@@ -473,7 +473,7 @@ void PWMChannel::checkFuseBypassed()
         return;
 
       YBP.printf("CH%d BYPASSED: %.3f >= %.3f | STATUS: %s | BUS VOLTAGE: %.3f\n", this->id, voltage, minVoltage, this->getStatus(), bv);
-      this->voltageHelper->printDebug(this->id);
+      this->voltageHelper->printDebug(this->id - 1, true);
 
       // dont change our outputState here... bypass can be temporary
       this->status = Status::BYPASSED;
@@ -495,7 +495,7 @@ void PWMChannel::checkSoftFuse()
     if (amperage >= this->softFuseAmperage || amperage >= YB_PWM_CHANNEL_MAX_AMPS) {
 
       YBP.printf("CH%d TRIPPED: %.3f >= %.3f (soft) or %.3f (max) | STATUS: %s\n", this->id, amperage, this->softFuseAmperage, YB_PWM_CHANNEL_MAX_AMPS, this->getStatus());
-      this->amperageHelper->printDebug(this->id);
+      this->amperageHelper->printDebug(this->id - 1, true);
 
       // record some variables
       this->status = Status::TRIPPED;
