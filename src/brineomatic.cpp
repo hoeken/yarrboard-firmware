@@ -283,7 +283,7 @@ void Brineomatic::measureProductSalinity()
   int16_t reading = adcHelper->getAverageReading(YB_PRODUCT_TDS_CHANNEL);
   gravityTds.setTemperature(getWaterTemperature());
   gravityTds.update(reading);
-  currentProductSalinity = gravityTds.getTdsValue();
+  currentProductSalinity = gravityTds.getTdsValue() + productTDSSensorOffset;
 }
 
 void Brineomatic::measureBrineSalinity()
@@ -291,7 +291,7 @@ void Brineomatic::measureBrineSalinity()
   int16_t reading = adcHelper->getAverageReading(YB_BRINE_TDS_CHANNEL);
   gravityTds.setTemperature(getWaterTemperature());
   gravityTds.update(reading);
-  currentBrineSalinity = gravityTds.getTdsValue();
+  currentBrineSalinity = gravityTds.getTdsValue() + brineTDSSensorOffset;
 }
 
 void Brineomatic::measureFilterPressure()
@@ -2111,7 +2111,10 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["filter_pressure_sensor_max"] = this->filterPressureSensorMax;
 
   bom["has_product_tds_sensor"] = this->hasProductTDSSensor;
+  bom["product_tds_sensor_offset"] = this->productTDSSensorOffset;
+
   bom["has_brine_tds_sensor"] = this->hasBrineTDSSensor;
+  bom["brine_tds_sensor_offset"] = this->brineTDSSensorOffset;
 
   bom["has_product_flow_sensor"] = this->hasProductFlowSensor;
   bom["product_flowmeter_ppl"] = this->productFlowmeterPPL;
@@ -2648,9 +2651,25 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
     }
   }
 
+  if (config["product_tds_sensor_offset"]) {
+    if (!checkIsNumber(config, "product_tds_sensor_offset", error, err_size) ||
+        !checkNumRange(config, "product_tds_sensor_offset", -1000.0f, 1000.0f, error, err_size)) {
+      config.remove("product_tds_sensor_offset");
+      ok = false;
+    }
+  }
+
   if (config["has_brine_tds_sensor"]) {
     if (!checkIsBool(config, "has_brine_tds_sensor", error, err_size)) {
       config.remove("has_brine_tds_sensor");
+      ok = false;
+    }
+  }
+
+  if (config["brine_tds_sensor_offset"]) {
+    if (!checkIsNumber(config, "brine_tds_sensor_offset", error, err_size) ||
+        !checkNumRange(config, "brine_tds_sensor_offset", -1000.0f, 1000.0f, error, err_size)) {
+      config.remove("brine_tds_sensor_offset");
       ok = false;
     }
   }
@@ -3147,7 +3166,10 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
   this->filterPressureSensorMax = config["filter_pressure_sensor_max"] | YB_FILTER_PRESSURE_SENSOR_MAX;
 
   this->hasProductTDSSensor = config["has_product_tds_sensor"] | YB_HAS_PRODUCT_TDS_SENSOR;
+  this->productTDSSensorOffset = config["product_tds_sensor_offset"] | YB_PRODUCT_TDS_SENSOR_OFFSET;
+
   this->hasBrineTDSSensor = config["has_brine_tds_sensor"] | YB_HAS_BRINE_TDS_SENSOR;
+  this->brineTDSSensorOffset = config["brine_tds_sensor_offset"] | YB_BRINE_TDS_SENSOR_OFFSET;
 
   this->hasProductFlowSensor = config["has_product_flow_sensor"] | YB_HAS_PRODUCT_FLOW_SENSOR;
   this->productFlowmeterPPL = config["product_flowmeter_ppl"] | YB_PRODUCT_FLOWMETER_PPL;

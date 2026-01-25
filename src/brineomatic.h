@@ -404,7 +404,10 @@ class Brineomatic
     float filterPressureSensorMax = YB_FILTER_PRESSURE_SENSOR_MAX;
 
     bool hasProductTDSSensor = YB_HAS_PRODUCT_TDS_SENSOR;
+    float productTDSSensorOffset = YB_PRODUCT_TDS_SENSOR_OFFSET;
+
     bool hasBrineTDSSensor = YB_HAS_BRINE_TDS_SENSOR;
+    float brineTDSSensorOffset = YB_BRINE_TDS_SENSOR_OFFSET;
 
     bool hasProductFlowSensor = YB_HAS_PRODUCT_FLOW_SENSOR;
     float productFlowmeterPPL = YB_PRODUCT_FLOWMETER_PPL;

@@ -9,7 +9,7 @@
     * YAML dashboard
 * user selectable units
     * biggest question: should unit conversion happen on firmware side or client side?
-        * leaning towards firmware -> annoying to convert when using API
+        * leaning towards client size -> simplify the firmware backend
     * types / units:
         * temperature (C / F)
         * pressure (PSI / Bar / Kpa)
@@ -17,12 +17,9 @@
         * flowrate (gph / lph)
     * make conversion functions
     * step 1: move everything to SI units under the hood
-        * C / Bar / L / lph
-        * how to handle flowmeter: currently PPL
-            * change to Pulse Per Unit
-            * we can probably apply the same unit conversion
-    * step 2: add unit conversion to brineomatic json generation
-    * step 3: add unit conversion to brineomatic handlers / json parsing
+        * C / Bar / L / lph / PPL
+    * step 2: add unit conversion to ui json parsing
+    * step 3: add unit conversion to ui data saving
     * step 4: add unit conversion to web ui: gauges, thresholds, etc.
     * step 5: update web UI to show/update units where needed.
         * use css classes and update when selection changes.  (.temperatureUnits)

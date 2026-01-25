@@ -2264,6 +2264,15 @@
           </label>
           <div class="invalid-feedback"></div>
       </div>
+
+      <div id="has_product_tds_sensor_form" class="mb-3">
+        <div class="input-group has-validation">
+          <span class="input-group-text">Calibration Offset</span>
+          <input type="text" class="form-control text-end" id="product_tds_sensor_offset">
+          <span class="input-group-text">PPM</span>
+          <div class="invalid-feedback"></div>
+        </div>
+      </div>
     `;
 
     let brineTDS = "";
@@ -2275,6 +2284,15 @@
               Has Brine TDS Sensor
           </label>
           <div class="invalid-feedback"></div>
+      </div>
+
+      <div id="has_brine_tds_sensor_form" class="mb-3">
+        <div class="input-group has-validation">
+          <span class="input-group-text">Calibration Offset</span>
+          <input type="text" class="form-control text-end" id="brine_tds_sensor_offset">
+          <span class="input-group-text">PPM</span>
+          <div class="invalid-feedback"></div>
+        </div>
       </div>
     `;
 
@@ -3114,7 +3132,10 @@
     $("#filter_pressure_sensor_max").val(data.filter_pressure_sensor_max);
 
     $("#has_product_tds_sensor").prop('checked', data.has_product_tds_sensor);
+    $("#product_tds_sensor_offset").val(data.product_tds_sensor_offset);
+
     $("#has_brine_tds_sensor").prop('checked', data.has_brine_tds_sensor);
+    $("#brine_tds_sensor_offset").val(data.brine_tds_sensor_offset);
 
     $("#has_product_flow_sensor").prop('checked', data.has_product_flow_sensor);
     $("#product_flowmeter_ppl").val(data.product_flowmeter_ppl);
@@ -3564,10 +3585,12 @@
 
   Brineomatic.prototype.updateProductTDSVisibility = function (hasSensor) {
     $("#enable_product_salinity_high_check").prop("disabled", !hasSensor);
+    $("#has_product_tds_sensor_form").toggle(hasSensor);
   }
 
   Brineomatic.prototype.updateBrineTDSVisibility = function (hasSensor) {
     $("#startFlushAutomaticDialog").toggle(hasSensor);
+    $("#has_brine_tds_sensor_form").toggle(hasSensor);
   }
 
   Brineomatic.prototype.updateMotorTemperatureVisibility = function (type) {
@@ -3657,7 +3680,10 @@
     data.filter_pressure_sensor_max = parseFloat($("#filter_pressure_sensor_max").val());
 
     data.has_product_tds_sensor = $("#has_product_tds_sensor").prop("checked");
+    data.product_tds_sensor_offset = parseFloat($("#product_tds_sensor_offset").val());
+
     data.has_brine_tds_sensor = $("#has_brine_tds_sensor").prop("checked");
+    data.brine_tds_sensor_offset = parseFloat($("#brine_tds_sensor_offset").val());
 
     data.has_product_flow_sensor = $("#has_product_flow_sensor").prop("checked");
     data.product_flowmeter_ppl = parseInt($("#product_flowmeter_ppl").val());
@@ -4043,7 +4069,23 @@
       },
 
       has_product_tds_sensor: { inclusion: [true, false] },
+
+      product_tds_sensor_offset: {
+        numericality: {
+          greaterThanOrEqualTo: -1000,
+          lessThanOrEqualTo: 1000
+        }
+      },
+
       has_brine_tds_sensor: { inclusion: [true, false] },
+
+      brine_tds_sensor_offset: {
+        numericality: {
+          greaterThanOrEqualTo: -1000,
+          lessThanOrEqualTo: 1000
+        }
+      },
+
       has_product_flow_sensor: { inclusion: [true, false] },
 
       product_flowmeter_ppl: {

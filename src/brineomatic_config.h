@@ -213,8 +213,16 @@
   #define YB_HAS_PRODUCT_TDS_SENSOR false
 #endif
 
+#ifndef YB_PRODUCT_TDS_SENSOR_OFFSET
+  #define YB_PRODUCT_TDS_SENSOR_OFFSET 0.0
+#endif
+
 #ifndef YB_HAS_BRINE_TDS_SENSOR
   #define YB_HAS_BRINE_TDS_SENSOR false
+#endif
+
+#ifndef YB_BRINE_TDS_SENSOR_OFFSET
+  #define YB_BRINE_TDS_SENSOR_OFFSET 0.0
 #endif
 
 #ifndef YB_HAS_PRODUCT_FLOW_SENSOR
