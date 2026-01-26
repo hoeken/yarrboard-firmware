@@ -82,11 +82,20 @@
 
     this.gaugeSetup = {
       "motor_temperature": {
-        "thresholds": [60, 70, 100],
+        get thresholds() {
+          console.log(YB.App.config.brineomatic);
+          const celsiusThresholds = [60, 70, 100];
+          return celsiusThresholds.map(temp => Math.round(YB.bom.convertTemperature(temp, "C", YB.App.config.brineomatic.temperature_units)));
+        },
+        // "thresholds": [60, 70, 100],
         "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
       },
       "water_temperature": {
-        "thresholds": [10, 30, 40, 50],
+        get thresholds() {
+          const celsiusThresholds = [10, 30, 40, 50];
+          return celsiusThresholds.map(temp => Math.round(YB.bom.convertTemperature(temp, "C", YB.App.config.brineomatic.temperature_units)));
+        },
+        // "thresholds": [10, 30, 40, 50],
         "colors": [bootstrapColors.primary, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
       },
       "filter_pressure": {
@@ -126,6 +135,8 @@
         "colors": [bootstrapColors.secondary, bootstrapColors.success]
       }
     }
+
+    console.log(this.gaugeSetup);
   }
 
   Brineomatic.prototype.createGauges = function () {
@@ -140,12 +151,13 @@
       gauge: {
         label: {
           format: function (value, ratio) {
-            return `${value}°C`;
+            let short = YB.bom.getShortTemperatureUnits(YB.App.config.brineomatic.temperature_units);
+            return `${value}°${short}`;
           },
           show: true
         },
-        min: 0, // 0 is default, //can handle negative min e.g. vacuum / voltage / current flow / rate of change
-        max: 80, // 80 is default
+        min: Math.round(YB.bom.convertTemperature(0, "C", YB.App.config.brineomatic.temperature_units)),
+        max: Math.round(YB.bom.convertTemperature(80, "C", YB.App.config.brineomatic.temperature_units))
       },
       color: {
         pattern: this.gaugeSetup.motor_temperature.colors,
@@ -171,12 +183,13 @@
       gauge: {
         label: {
           format: function (value, ratio) {
-            return `${value}°C`;
+            let short = YB.bom.getShortTemperatureUnits(YB.App.config.brineomatic.temperature_units);
+            return `${value}°${short}`;
           },
           show: true
         },
-        min: 0, // 0 is default, //can handle negative min e.g. vacuum / voltage / current flow / rate of change
-        max: 50, // 80 is default
+        min: Math.round(YB.bom.convertTemperature(0, "C", YB.App.config.brineomatic.temperature_units)),
+        max: Math.round(YB.bom.convertTemperature(50, "C", YB.App.config.brineomatic.temperature_units))
       },
       color: {
         pattern: this.gaugeSetup.water_temperature.colors,
@@ -705,8 +718,12 @@
     if (!YB.App.config.brineomatic)
       return;
 
-    let motor_temperature = Math.round(msg.motor_temperature);
-    let water_temperature = Math.round(msg.water_temperature);
+    let motor_temperature = YB.bom.convertTemperature(msg.motor_temperature, "C", YB.App.config.brineomatic.temperature_units);
+    motor_temperature = Math.round(motor_temperature);
+
+    let water_temperature = YB.bom.convertTemperature(msg.water_temperature, "C", YB.App.config.brineomatic.temperature_units);
+    water_temperature = Math.round(water_temperature);
+
     let product_flowrate = Math.round(msg.product_flowrate);
     let brine_flowrate = Math.round(msg.brine_flowrate);
     let total_flowrate = Math.round(msg.total_flowrate);
@@ -1577,7 +1594,7 @@
                                                   <input type="text" class="form-control text-center"
                                                       id="bomRunVolumeInput" value="250">
                                                   <span class="input-group-text">liters</span>
-                                                  <div class="invalid-feedback"></div>                            
+                                                  <div class="invalid-feedback"></div>
                                               </div>
                                           </div>
                                           <button id="brineomaticStartVolume" type="button"
@@ -1628,7 +1645,7 @@
                                                   <input type="text" class="form-control text-center"
                                                       id="bomFlushDurationInput" value="5">
                                                   <span class="input-group-text">minutes</span>
-                                                  <div class="invalid-feedback"></div>                            
+                                                  <div class="invalid-feedback"></div>
                                               </div>
                                           </div>
                                           <button id="brineomaticFlushDuration" type="button"
@@ -1645,7 +1662,7 @@
                                                   <input type="text" class="form-control text-center"
                                                       id="bomFlushVolumeInput" value="15">
                                                   <span class="input-group-text">liters</span>
-                                                  <div class="invalid-feedback"></div>                            
+                                                  <div class="invalid-feedback"></div>
                                               </div>
                                           </div>
                                           <button id="brineomaticFlushVolume" type="button"
@@ -1689,7 +1706,7 @@
                                           <input type="text" class="form-control text-center"
                                               id="bomPickleDurationInput" value="5">
                                           <span class="input-group-text">minutes</span>
-                                          <div class="invalid-feedback"></div>                            
+                                          <div class="invalid-feedback"></div>
                                       </div>
                                   </div>
                               </div>
@@ -1729,7 +1746,7 @@
                                           <input type="text" class="form-control text-center"
                                               id="bomDepickleDurationInput" value="15">
                                           <span class="input-group-text">minutes</span>
-                                          <div class="invalid-feedback"></div>                            
+                                          <div class="invalid-feedback"></div>
                                       </div>
                                   </div>
                               </div>
@@ -1936,13 +1953,13 @@
                   </div>
                   <div class="motorTemperatureContent">
                     <h1 id="motorTemperatureData" class="my-0"></h1>
-                    <h5 id="motorTemperatureUnits" class="text-body-tertiary">°C</h5>
+                    <h5 id="motorTemperatureUnits" class="text-body-tertiary">°<span class="temperatureUnits">C</span></h5>
                   </div>
               </div>
               <div class="waterTemperatureUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Water Temperature</h6>
                   <h1 id="waterTemperatureData" class="my-0"></h1>
-                  <h5 id="waterTemperatureUnits" class="text-body-tertiary">°C</h5>
+                  <h5 id="waterTemperatureUnits" class="text-body-tertiary">°<span class="temperatureUnits">C</span></h5>
               </div>
               <div class="tankLevelUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Tank Level</h6>
@@ -2083,6 +2100,7 @@
       <div class="form-floating mb-3">
           <select id="temperature_units" class="form-select" aria-label="Temperature Units">
             <option value="celsius">Celsius</option>
+            <option value="fahrenheit">Fahrenheit</option>
           </select>
           <label for="temperature_units">Temperature Units</label>
           <div class="invalid-feedback"></div>
@@ -2631,7 +2649,7 @@
           <div class="input-group has-validation">
             <span class="input-group-text">On Temp</span>
             <input type="text" class="form-control text-end" id="cooling_fan_on_temperature">
-            <span class="input-group-text">C</span>
+            <span class="input-group-text temperatureUnits">C</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2640,7 +2658,7 @@
           <div class="input-group has-validation">
             <span class="input-group-text">Off Temp</span>
             <input type="text" class="form-control text-end" id="cooling_fan_off_temperature">
-            <span class="input-group-text">C</span>
+            <span class="input-group-text temperatureUnits">C</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2973,7 +2991,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="motor_temperature_high_threshold">
-            <span class="input-group-text">C</span>
+            <span class="input-group-text temperatureUnits">C</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -3083,6 +3101,8 @@
     $("#volume_units").val(data.volume_units);
     $("#flowrate_units").val(data.flowrate_units);
 
+    this.updateTemperatureUnits(data.temperature_units);
+
     YB.Util.populateMelodySelector($("#success_melody"));
     $("#success_melody").val(data.success_melody);
     YB.Util.populateMelodySelector($("#error_melody"));
@@ -3125,8 +3145,13 @@
     $("#cooling_fan_relay_id").val(data.cooling_fan_relay_id);
     $("#cooling_fan_relay_inverted").prop('checked', data.cooling_fan_relay_inverted);
 
-    $("#cooling_fan_on_temperature").val(data.cooling_fan_on_temperature);
-    $("#cooling_fan_off_temperature").val(data.cooling_fan_off_temperature);
+    let cooling_fan_on_temp = YB.bom.convertTemperature(data.cooling_fan_on_temperature, "C", YB.App.config.brineomatic.temperature_units);
+    cooling_fan_on_temp = Math.round(cooling_fan_on_temp);
+    $("#cooling_fan_on_temperature").val(cooling_fan_on_temp);
+
+    let cooling_fan_off_temp = YB.bom.convertTemperature(data.cooling_fan_off_temperature, "C", YB.App.config.brineomatic.temperature_units);
+    cooling_fan_off_temp = Math.round(cooling_fan_off_temp);
+    $("#cooling_fan_off_temperature").val(cooling_fan_off_temp);
 
     $("#has_membrane_pressure_sensor").prop('checked', data.has_membrane_pressure_sensor);
     $("#membrane_pressure_sensor_min").val(data.membrane_pressure_sensor_min);
@@ -3197,8 +3222,11 @@
     $("#product_salinity_high_delay").val(data.product_salinity_high_delay);
 
     $("#enable_motor_temperature_check").prop('checked', data.enable_motor_temperature_check);
-    $("#motor_temperature_high_threshold").val(data.motor_temperature_high_threshold);
     $("#motor_temperature_high_delay").val(data.motor_temperature_high_delay);
+
+    let motor_temp_threshold = YB.bom.convertTemperature(data.motor_temperature_high_threshold, "C", YB.App.config.brineomatic.temperature_units);
+    motor_temp_threshold = Math.round(motor_temp_threshold);
+    $("#motor_temperature_high_threshold").val(motor_temp_threshold);
 
     $("#enable_flush_flowrate_low_check").prop('checked', data.enable_flush_flowrate_low_check);
     $("#flush_flowrate_low_threshold").val(data.flush_flowrate_low_threshold);
@@ -3263,6 +3291,29 @@
   }
 
   Brineomatic.prototype.addEditUIHandlers = function (data) {
+    $("#temperature_units").on("change", (e) => {
+      /*
+      * Update our edit form first before the config is overwritten
+      */
+      let motor_temp_threshold = parseFloat($("#motor_temperature_high_threshold").val());
+      motor_temp_threshold = YB.bom.convertTemperature(motor_temp_threshold, YB.App.config.brineomatic.temperature_units, e.target.value);
+      motor_temp_threshold = Math.round(motor_temp_threshold);
+      $("#motor_temperature_high_threshold").val(motor_temp_threshold);
+
+      let cooling_fan_on_temp = parseFloat($("#cooling_fan_on_temperature").val());
+      cooling_fan_on_temp = YB.bom.convertTemperature(cooling_fan_on_temp, YB.App.config.brineomatic.temperature_units, e.target.value);
+      cooling_fan_on_temp = Math.round(cooling_fan_on_temp);
+      $("#cooling_fan_on_temperature").val(cooling_fan_on_temp);
+
+      let cooling_fan_off_temp = parseFloat($("#cooling_fan_off_temperature").val());
+      cooling_fan_off_temp = YB.bom.convertTemperature(cooling_fan_off_temp, YB.App.config.brineomatic.temperature_units, e.target.value);
+      cooling_fan_off_temp = Math.round(cooling_fan_off_temp);
+      $("#cooling_fan_off_temperature").val(cooling_fan_off_temp);
+
+      //now do everything else.
+      YB.bom.updateTemperatureUnits(e.target.value);
+    });
+
     $("#autoflush_mode").on("change", (e) => {
       YB.bom.updateAutoflushVisibility(e.target.value);
     });
@@ -3351,6 +3402,46 @@
     $("#saveBrineomaticSettings").on('click', this.handleBrineomaticConfigSave);
     $("#saveHardwareSettings").on('click', this.handleHardwareConfigSave);
     $("#saveSafeguardsSettings").on('click', this.handleSafeguardsConfigSave);
+  }
+
+  Brineomatic.prototype.updateTemperatureUnits = function (units) {
+    //we need this as its pulled dynamically in other places
+    YB.App.config.brineomatic.temperature_units = units;
+
+    //update static units
+    let short = YB.bom.getShortTemperatureUnits(units);
+    $(".temperatureUnits").html(short);
+
+    //update temperature gauge thresholds
+    if (this.motorTemperatureGauge) {
+      //update our min/max
+      let tempMin = Math.round(YB.bom.convertTemperature(0, "C", YB.App.config.brineomatic.temperature_units));
+      let tempMax = Math.round(YB.bom.convertTemperature(80, "C", YB.App.config.brineomatic.temperature_units));
+      this.motorTemperatureGauge.internal.config.gauge_min = tempMin;
+      this.motorTemperatureGauge.internal.config.gauge_max = tempMax;
+
+      //thresholds
+      this.motorTemperatureGauge.internal.config.color_threshold_values = this.gaugeSetup.motor_temperature.thresholds;
+      this.motorTemperatureGauge.internal.levelColor = this.motorTemperatureGauge.internal.generateLevelColor.call(this.motorTemperatureGauge.internal);
+
+      //finally flush it to redraw
+      this.motorTemperatureGauge.flush();
+    }
+
+    if (this.waterTemperatureGauge) {
+      //update our min/max
+      let tempMin = Math.round(YB.bom.convertTemperature(0, "C", YB.App.config.brineomatic.temperature_units));
+      let tempMax = Math.round(YB.bom.convertTemperature(50, "C", YB.App.config.brineomatic.temperature_units));
+      this.waterTemperatureGauge.internal.config.gauge_min = tempMin;
+      this.waterTemperatureGauge.internal.config.gauge_max = tempMax;
+
+      //thresholds
+      this.waterTemperatureGauge.internal.config.color_threshold_values = this.gaugeSetup.water_temperature.thresholds;
+      this.waterTemperatureGauge.internal.levelColor = this.waterTemperatureGauge.internal.generateLevelColor.call(this.waterTemperatureGauge.internal);
+
+      //finally flush it to redraw
+      this.waterTemperatureGauge.flush();
+    }
   }
 
   Brineomatic.prototype.updateAutoflushVisibility = function (mode) {
@@ -3559,14 +3650,12 @@
   };
 
   Brineomatic.prototype.updateMembranePressureVisibility = function (hasSensor) {
-    console.log(`updateMembranePressureVisibility: ${hasSensor}`);
     $("#enable_membrane_pressure_high_check").prop("disabled", !hasSensor);
     $("#enable_membrane_pressure_low_check").prop("disabled", !hasSensor);
     $("#has_membrane_pressure_sensor_form").toggle(hasSensor);
   }
 
   Brineomatic.prototype.updateFilterPressureVisibility = function (hasSensor) {
-    console.log(`updateFilterPressureVisibility: ${hasSensor}`);
     $("#enable_filter_pressure_high_check").prop("disabled", !hasSensor);
     $("#enable_filter_pressure_low_check").prop("disabled", !hasSensor);
     $("#enable_flush_filter_pressure_low_check").prop("disabled", !hasSensor);
@@ -3673,8 +3762,12 @@
     data.cooling_fan_control = $("#cooling_fan_control").val();
     data.cooling_fan_relay_id = parseInt($("#cooling_fan_relay_id").val());
     data.cooling_fan_relay_inverted = $("#cooling_fan_relay_inverted").prop("checked");
-    data.cooling_fan_on_temperature = parseFloat($("#cooling_fan_on_temperature").val());
-    data.cooling_fan_off_temperature = parseFloat($("#cooling_fan_off_temperature").val());
+
+    let cooling_fan_on_temp = parseFloat($("#cooling_fan_on_temperature").val());
+    data.cooling_fan_on_temperature = YB.bom.convertTemperature(cooling_fan_on_temp, YB.App.config.brineomatic.temperature_units, "C");
+
+    let cooling_fan_off_temp = parseFloat($("#cooling_fan_off_temperature").val());
+    data.cooling_fan_off_temperature = YB.bom.convertTemperature(cooling_fan_off_temp, YB.App.config.brineomatic.temperature_units, "C");
 
     data.has_membrane_pressure_sensor = $("#has_membrane_pressure_sensor").prop("checked");
     data.membrane_pressure_sensor_min = parseFloat($("#membrane_pressure_sensor_min").val());
@@ -3751,8 +3844,10 @@
     data.product_salinity_high_delay = parseInt($("#product_salinity_high_delay").val());
 
     data.enable_motor_temperature_check = $("#enable_motor_temperature_check").prop("checked");
-    data.motor_temperature_high_threshold = parseFloat($("#motor_temperature_high_threshold").val());
     data.motor_temperature_high_delay = parseInt($("#motor_temperature_high_delay").val());
+
+    let motor_temp_threshold = parseFloat($("#motor_temperature_high_threshold").val());
+    data.motor_temperature_high_threshold = YB.bom.convertTemperature(motor_temp_threshold, YB.App.config.brineomatic.temperature_units, "C");
 
     data.enable_flush_flowrate_low_check = $("#enable_flush_flowrate_low_check").prop("checked");
     data.flush_flowrate_low_threshold = parseFloat($("#flush_flowrate_low_threshold").val());
@@ -4029,15 +4124,31 @@
 
       cooling_fan_on_temperature: {
         numericality: {
-          greaterThanOrEqualTo: 0,
-          lessThanOrEqualTo: 100
+          get greaterThanOrEqualTo() {
+            let temp = YB.bom.convertTemperature(0, "C", YB.App.config.brineomatic.temperature_units);
+            temp = Math.round(temp);
+            return temp;
+          },
+          get lessThanOrEqualTo() {
+            let temp = YB.bom.convertTemperature(100, "C", YB.App.config.brineomatic.temperature_units);
+            temp = Math.round(temp);
+            return temp;
+          }
         }
       },
 
       cooling_fan_off_temperature: {
         numericality: {
-          greaterThanOrEqualTo: 0,
-          lessThanOrEqualTo: 100
+          get greaterThanOrEqualTo() {
+            let temp = YB.bom.convertTemperature(0, "C", YB.App.config.brineomatic.temperature_units);
+            temp = Math.round(temp);
+            return temp;
+          },
+          get lessThanOrEqualTo() {
+            let temp = YB.bom.convertTemperature(100, "C", YB.App.config.brineomatic.temperature_units);
+            temp = Math.round(temp);
+            return temp;
+          }
         }
       },
 
@@ -4191,8 +4302,16 @@
       product_salinity_high_delay: { numericality: { greaterThanOrEqualTo: 0 } },
 
       enable_motor_temperature_check: { inclusion: [true, false] },
-      motor_temperature_high_threshold: { numericality: { greaterThan: 0 } },
       motor_temperature_high_delay: { numericality: { greaterThanOrEqualTo: 0 } },
+      motor_temperature_high_threshold: {
+        numericality: {
+          get greaterThan() {
+            let temp = YB.bom.convertTemperature(0, "C", YB.App.config.brineomatic.temperature_units);
+            temp = Math.round(temp);
+            return temp;
+          }
+        }
+      },
 
       enable_flush_flowrate_low_check: { inclusion: [true, false] },
       flush_flowrate_low_threshold: { numericality: { greaterThan: 0 } },
@@ -4290,6 +4409,13 @@
     data["cmd"] = "brineomatic_save_safeguards_config";
     YB.client.send(data, true);
   };
+
+  Brineomatic.prototype.getShortTemperatureUnits = function (unit) {
+    const lower = unit.toLowerCase();
+    if (lower === 'celsius') return 'C';
+    if (lower === 'fahrenheit') return 'F';
+    return unit;
+  }
 
   // units = C or F (or celsius, fahrenheit)
   Brineomatic.prototype.convertTemperature = function (value, start_units, end_units) {

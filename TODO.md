@@ -8,7 +8,6 @@
     * YAML dashboard
 * user selectable units
     * types / units:
-        * temperature (C / F)
         * pressure (PSI / Bar / Kpa)
         * volume (G / L)
         * flowrate (gph / lph)
@@ -16,8 +15,10 @@
         * use css classes and update when selection changes. eg: .temperatureUnits
         * on config load
         * on unit select change
-        * web ui gauge thresholds
+            * update settings field values when selection changes
+        * web ui gauge units / format
         * validate.js schema
+        * web ui gauge thresholds
     * step 3: add unit conversion to ui
         * update / stats message handlers
             * figure out how to send "no data" for sensors
