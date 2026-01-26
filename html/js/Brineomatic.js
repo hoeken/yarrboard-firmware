@@ -4286,6 +4286,110 @@
     YB.client.send(data, true);
   };
 
+  // units = C or F
+  Brineomatic.prototype.convertTemperature = function (value, start_units, end_units) {
+    // If units are the same, no conversion needed
+    if (start_units === end_units) {
+      return value;
+    }
+
+    // Convert from Celsius to Fahrenheit
+    if (start_units === 'C' && end_units === 'F') {
+      return (value * 9 / 5) + 32;
+    }
+
+    // Convert from Fahrenheit to Celsius
+    if (start_units === 'F' && end_units === 'C') {
+      return (value - 32) * 5 / 9;
+    }
+
+    // Invalid units provided
+    return value;
+  };
+
+  // units = PSI / Bar / Kpa
+  Brineomatic.prototype.convertPressure = function (value, start_units, end_units) {
+    // If units are the same, no conversion needed
+    if (start_units === end_units) {
+      return value;
+    }
+
+    // Convert from PSI
+    if (start_units === 'PSI') {
+      if (end_units === 'Bar') {
+        return value * 0.0689476;
+      }
+      if (end_units === 'Kpa') {
+        return value * 6.89476;
+      }
+    }
+
+    // Convert from Bar
+    if (start_units === 'Bar') {
+      if (end_units === 'PSI') {
+        return value * 14.5038;
+      }
+      if (end_units === 'Kpa') {
+        return value * 100;
+      }
+    }
+
+    // Convert from Kpa
+    if (start_units === 'Kpa') {
+      if (end_units === 'PSI') {
+        return value * 0.145038;
+      }
+      if (end_units === 'Bar') {
+        return value * 0.01;
+      }
+    }
+
+    // Invalid units provided
+    return value;
+  };
+
+  //units: G (gallons) / L (liters)
+  Brineomatic.prototype.convertVolume = function (value, start_units, end_units) {
+    // If units are the same, no conversion needed
+    if (start_units === end_units) {
+      return value;
+    }
+
+    // Convert from Gallons to Liters
+    if (start_units === 'G' && end_units === 'L') {
+      return value * 3.78541;
+    }
+
+    // Convert from Liters to Gallons
+    if (start_units === 'L' && end_units === 'G') {
+      return value * 0.264172;
+    }
+
+    // Invalid units provided
+    return value;
+  }
+
+  //units: gph (gallons per hour) / lph (liters per hour)
+  Brineomatic.prototype.convertFlowrate = function (value, start_units, end_units) {
+    // If units are the same, no conversion needed
+    if (start_units === end_units) {
+      return value;
+    }
+
+    // Convert from Gallons per hour to Liters per hour
+    if (start_units === 'gph' && end_units === 'lph') {
+      return value * 3.78541;
+    }
+
+    // Convert from Liters per hour to Gallons per hour
+    if (start_units === 'lph' && end_units === 'gph') {
+      return value * 0.264172;
+    }
+
+    // Invalid units provided
+    return value;
+  }
+
   YB.Brineomatic = Brineomatic;
   YB.bom = new Brineomatic();
 

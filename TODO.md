@@ -2,28 +2,29 @@
 
 ## BRINEOMATIC
 
-* add tds offset calibration (#5)
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker
     * sensors for each output type
     * YAML dashboard
 * user selectable units
-    * biggest question: should unit conversion happen on firmware side or client side?
-        * leaning towards client size -> simplify the firmware backend
     * types / units:
         * temperature (C / F)
         * pressure (PSI / Bar / Kpa)
         * volume (G / L)
         * flowrate (gph / lph)
-    * make conversion functions
     * step 1: move everything to SI units under the hood
-        * C / Bar / L / lph / PPL
-    * step 2: add unit conversion to ui json parsing
-    * step 3: add unit conversion to ui data saving
-    * step 4: add unit conversion to web ui: gauges, thresholds, etc.
-    * step 5: update web UI to show/update units where needed.
-        * use css classes and update when selection changes.  (.temperatureUnits)
-        * update units on config load too
+        * PSI -> Bar
+    * step 2: update web UI to show/update units where needed
+        * use css classes and update when selection changes. eg: .temperatureUnits
+        * on config load
+        * on unit select change
+        * web ui gauge thresholds
+        * validate.js schema
+    * step 3: add unit conversion to ui
+        * update / stats message handlers
+            * figure out how to send "no data" for sensors
+        * config form data population
+    * step 5: add unit conversion to ui data saving
 
 ## FROTHFET
 
