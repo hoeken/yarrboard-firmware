@@ -376,7 +376,7 @@ class Brineomatic
     float highPressureValveStepperCloseSpeed = YB_HIGH_PRESSURE_VALVE_STEPPER_CLOSE_SPEED;
     float highPressureValveStepperOpenAngle = YB_HIGH_PRESSURE_VALVE_STEPPER_OPEN_ANGLE;
     float highPressureValveStepperOpenSpeed = YB_HIGH_PRESSURE_VALVE_STEPPER_OPEN_SPEED;
-    float membranePressureTarget = YB_MEMBRANE_PRESSURE_TARGET; // PSI
+    float membranePressureTarget = YB_MEMBRANE_PRESSURE_TARGET;
 
     String diverterValveControl = YB_DIVERTER_VALVE_CONTROL;
     uint8_t diverterValveRelayId = YB_DIVERTER_VALVE_RELAY_ID;

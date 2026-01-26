@@ -90,11 +90,11 @@
         "colors": [bootstrapColors.primary, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
       },
       "filter_pressure": {
-        "thresholds": [0, 5, 10, 40, 45, 50],
+        "thresholds": [0, 0.34, 0.69, 2.76, 3.10, 3.45],
         "colors": [bootstrapColors.secondary, bootstrapColors.danger, bootstrapColors.warning, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
       },
       "membrane_pressure": {
-        "thresholds": [0, 600, 700, 900, 1000],
+        "thresholds": [0, 41.4, 48.3, 62.1, 69.0],
         "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.primary, bootstrapColors.success, bootstrapColors.danger]
       },
       "product_salinity": {
@@ -202,12 +202,12 @@
       gauge: {
         label: {
           format: function (value, ratio) {
-            return `${value} PSI`;
+            return `${value} Bar`;
           },
           show: true
         },
         min: 0,
-        max: 50,
+        max: 3.45,
       },
       color: {
         pattern: this.gaugeSetup.filter_pressure.colors,
@@ -233,12 +233,12 @@
       gauge: {
         label: {
           format: function (value, ratio) {
-            return `${value} PSI`;
+            return `${value} Bar`;
           },
           show: true
         },
         min: 0,
-        max: 1000,
+        max: 69.0,
       },
       color: {
         pattern: this.gaugeSetup.membrane_pressure.colors,
@@ -503,9 +503,9 @@
           }
         },
         y: {
-          label: 'Pressure (PSI))',
+          label: 'Pressure (Bar))',
           min: 0,
-          max: 1000
+          max: 69.0
         }
       },
       point: { show: false },
@@ -718,12 +718,17 @@
       flush_volume = Math.round(flush_volume);
     let product_salinity = Math.round(msg.product_salinity);
     let brine_salinity = Math.round(msg.brine_salinity);
-    let filter_pressure = Math.round(msg.filter_pressure);
+
+    let filter_pressure = parseFloat(msg.filter_pressure);
     if (filter_pressure < 0 && filter_pressure > -10)
       filter_pressure = 0;
-    let membrane_pressure = Math.round(msg.membrane_pressure);
+    filter_pressure = Number(filter_pressure.toPrecision(2));
+
+    let membrane_pressure = parseFloat(msg.membrane_pressure);
     if (membrane_pressure < 0 && membrane_pressure > -10)
       membrane_pressure = 0;
+    membrane_pressure = Number(membrane_pressure.toPrecision(2));
+
     let tank_level = Math.round(msg.tank_level * 100);
 
     //errors or no?
@@ -1882,7 +1887,7 @@
                   </div>
                   <div class="filterPressureContent">
                     <h1 id="filterPressureData" class="my-0"></h1>
-                    <h5 id="filterPressureUnits" class="text-body-tertiary">PSI</h5>
+                    <h5 id="filterPressureUnits" class="text-body-tertiary">Bar</h5>
                   </div>
               </div>
               <div class="membranePressureUI col-md-3 col-sm-4 col-6">
@@ -1894,7 +1899,7 @@
                   </div>
                   <div class="membranePressureContent">
                     <h1 id="membranePressureData" class="my-0"></h1>
-                    <h5 id="membranePressureUnits" class="text-body-tertiary">PSI</h5>
+                    <h5 id="membranePressureUnits" class="text-body-tertiary">Bar</h5>
                   </div>
               </div>
               <div class="productSalinityUI col-md-3 col-sm-4 col-6">
@@ -2085,7 +2090,7 @@
 
       <div class="form-floating mb-3">
           <select id="pressure_units" class="form-select" aria-label="Pressure Units">
-            <option value="psi">PSI</option>
+            <option value="bar">Bar</option>
           </select>
           <label for="pressure_units">Pressure Units</label>
           <div class="invalid-feedback"></div>
@@ -2166,7 +2171,7 @@
           <div class="input-group has-validation">
             <span class="input-group-text">Min</span>
             <input type="text" class="form-control text-end" id="membrane_pressure_sensor_min">
-            <span class="input-group-text">PSI</span>
+            <span class="input-group-text">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2175,7 +2180,7 @@
           <div class="input-group has-validation">
             <span class="input-group-text">Max</span>
             <input type="text" class="form-control text-end" id="membrane_pressure_sensor_max">
-            <span class="input-group-text">PSI</span>
+            <span class="input-group-text">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2198,7 +2203,7 @@
           <div class="input-group has-validation">
             <span class="input-group-text">Min</span>
             <input type="text" class="form-control text-end" id="filter_pressure_sensor_min">
-            <span class="input-group-text">PSI</span>
+            <span class="input-group-text">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2207,7 +2212,7 @@
           <div class="input-group has-validation">
             <span class="input-group-text">Max</span>
             <input type="text" class="form-control text-end" id="filter_pressure_sensor_max">
-            <span class="input-group-text">PSI</span>
+            <span class="input-group-text">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2426,7 +2431,7 @@
         <div class="input-group has-validation">
           <span class="input-group-text">Pressure Target</span>
           <input id="membrane_pressure_target" type="text" class="form-control text-end">
-          <span class="input-group-text">PSI</span>
+          <span class="input-group-text">Bar</span>
           <div class="invalid-feedback"></div>
         </div>
       </div>
@@ -2725,7 +2730,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="membrane_pressure_high_threshold">
-            <span class="input-group-text">PSI</span>
+            <span class="input-group-text">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2750,7 +2755,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="membrane_pressure_low_threshold">
-            <span class="input-group-text">PSI</span>
+            <span class="input-group-text">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2775,7 +2780,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="filter_pressure_high_threshold">
-            <span class="input-group-text">PSI</span>
+            <span class="input-group-text">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2800,7 +2805,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="filter_pressure_low_threshold">
-            <span class="input-group-text">PSI</span>
+            <span class="input-group-text">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -3018,7 +3023,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="flush_filter_pressure_low_threshold">
-            <span class="input-group-text">PSI</span>
+            <span class="input-group-text">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -3043,7 +3048,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="flush_valve_off_threshold">
-            <span class="input-group-text">PSI</span>
+            <span class="input-group-text">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>

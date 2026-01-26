@@ -556,7 +556,7 @@ bool Brineomatic::initializeHardware()
     if (hasMembranePressureSensor) {
       uint32_t membranePressureStart = millis();
       YBP.println("Waiting for zero pressure.");
-      while (getMembranePressure() > 65) {
+      while (getMembranePressure() > 4.5) {
         if (INTERVAL(250))
           YBP.print(".");
 
@@ -1959,7 +1959,7 @@ bool Brineomatic::waitForFlushValveOff()
     done = true;
 
     if (hasFilterPressureSensor)
-      if (getFilterPressure() > 2)
+      if (getFilterPressure() > flushValveOffThreshold)
         done = false;
 
     if (hasBrineFlowSensor)

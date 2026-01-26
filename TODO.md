@@ -12,8 +12,6 @@
         * pressure (PSI / Bar / Kpa)
         * volume (G / L)
         * flowrate (gph / lph)
-    * step 1: move everything to SI units under the hood
-        * PSI -> Bar
     * step 2: update web UI to show/update units where needed
         * use css classes and update when selection changes. eg: .temperatureUnits
         * on config load
