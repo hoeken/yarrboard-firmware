@@ -87,7 +87,7 @@ class Brineomatic
     // Static lookup tables
     static constexpr const char* const AUTOFLUSH_MODES[] = {"NONE", "TIME", "SALINITY", "VOLUME"};
     static constexpr const char* const TEMPERATURE_UNITS[] = {"celsius", "fahrenheit"};
-    static constexpr const char* const PRESSURE_UNITS[] = {"pascal", "psi", "bar"};
+    static constexpr const char* const PRESSURE_UNITS[] = {"kilopascal", "psi", "bar"};
     static constexpr const char* const VOLUME_UNITS[] = {"liters", "gallons"};
     static constexpr const char* const FLOWRATE_UNITS[] = {"lph", "gph"};
 

@@ -3814,7 +3814,7 @@
 
       pressure_units: {
         presence: true,
-        inclusion: ["pascal", "psi", "bar"]
+        inclusion: ["kilopascal", "psi", "bar"]
       },
 
       volume_units: {
@@ -4286,8 +4286,19 @@
     YB.client.send(data, true);
   };
 
-  // units = C or F
+  // units = C or F (or celsius, fahrenheit)
   Brineomatic.prototype.convertTemperature = function (value, start_units, end_units) {
+    // Normalize long-form units to short-form
+    const normalizeTemp = (unit) => {
+      const lower = unit.toLowerCase();
+      if (lower === 'celsius') return 'C';
+      if (lower === 'fahrenheit') return 'F';
+      return unit;
+    };
+
+    start_units = normalizeTemp(start_units);
+    end_units = normalizeTemp(end_units);
+
     // If units are the same, no conversion needed
     if (start_units === end_units) {
       return value;
@@ -4307,8 +4318,20 @@
     return value;
   };
 
-  // units = PSI / Bar / Kpa
+  // units = PSI / Bar / Kpa (or psi, bar, kilopascal)
   Brineomatic.prototype.convertPressure = function (value, start_units, end_units) {
+    // Normalize long-form units to short-form
+    const normalizePressure = (unit) => {
+      const lower = unit.toLowerCase();
+      if (lower === 'kilopascal') return 'Kpa';
+      if (lower === 'psi') return 'PSI';
+      if (lower === 'bar') return 'Bar';
+      return unit;
+    };
+
+    start_units = normalizePressure(start_units);
+    end_units = normalizePressure(end_units);
+
     // If units are the same, no conversion needed
     if (start_units === end_units) {
       return value;
@@ -4348,8 +4371,19 @@
     return value;
   };
 
-  //units: G (gallons) / L (liters)
+  //units: G (gallons) / L (liters) (or gallons, liters)
   Brineomatic.prototype.convertVolume = function (value, start_units, end_units) {
+    // Normalize long-form units to short-form
+    const normalizeVolume = (unit) => {
+      const lower = unit.toLowerCase();
+      if (lower === 'liters') return 'L';
+      if (lower === 'gallons') return 'G';
+      return unit;
+    };
+
+    start_units = normalizeVolume(start_units);
+    end_units = normalizeVolume(end_units);
+
     // If units are the same, no conversion needed
     if (start_units === end_units) {
       return value;
@@ -4371,6 +4405,10 @@
 
   //units: gph (gallons per hour) / lph (liters per hour)
   Brineomatic.prototype.convertFlowrate = function (value, start_units, end_units) {
+    // Normalize to lowercase for consistent comparison
+    start_units = start_units.toLowerCase();
+    end_units = end_units.toLowerCase();
+
     // If units are the same, no conversion needed
     if (start_units === end_units) {
       return value;
