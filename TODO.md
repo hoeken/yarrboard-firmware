@@ -2,10 +2,6 @@
 
 ## BRINEOMATIC
 
-* add simple HA support to brineomatic?
-    * on/off switch to start/stop the watermaker
-    * sensors for each output type
-    * YAML dashboard
 * user selectable units
     * types / units:
         * pressure (PSI / Bar / Kpa)
@@ -24,6 +20,13 @@
             * figure out how to send "no data" for sensors
         * config form data population
     * step 5: add unit conversion to ui data saving
+* add simple HA support to brineomatic?
+    * on/off switch to start/stop the watermaker
+    * sensors for each output type
+    * YAML dashboard
+* check if config panel exists before adding to avoid dupes
+
+v2.4 TODO
 
 ## FROTHFET
 

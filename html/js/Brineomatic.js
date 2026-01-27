@@ -83,9 +83,8 @@
     this.gaugeSetup = {
       "motor_temperature": {
         get thresholds() {
-          console.log(YB.App.config.brineomatic);
           const celsiusThresholds = [60, 70, 100];
-          return celsiusThresholds.map(temp => Math.round(YB.bom.convertTemperature(temp, "C", YB.App.config.brineomatic.temperature_units)));
+          return celsiusThresholds.map(temp => YB.bom.convertTemperature(temp, "C", YB.App.config.brineomatic.temperature_units));
         },
         // "thresholds": [60, 70, 100],
         "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
@@ -93,7 +92,7 @@
       "water_temperature": {
         get thresholds() {
           const celsiusThresholds = [10, 30, 40, 50];
-          return celsiusThresholds.map(temp => Math.round(YB.bom.convertTemperature(temp, "C", YB.App.config.brineomatic.temperature_units)));
+          return celsiusThresholds.map(temp => YB.bom.convertTemperature(temp, "C", YB.App.config.brineomatic.temperature_units));
         },
         // "thresholds": [10, 30, 40, 50],
         "colors": [bootstrapColors.primary, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
@@ -135,8 +134,6 @@
         "colors": [bootstrapColors.secondary, bootstrapColors.success]
       }
     }
-
-    console.log(this.gaugeSetup);
   }
 
   Brineomatic.prototype.createGauges = function () {
@@ -3421,11 +3418,8 @@
       this.motorTemperatureGauge.internal.config.gauge_max = tempMax;
 
       //thresholds
-      this.motorTemperatureGauge.internal.config.color_threshold_values = this.gaugeSetup.motor_temperature.thresholds;
+      this.motorTemperatureGauge.internal.config.color_threshold.values = this.gaugeSetup.motor_temperature.thresholds;
       this.motorTemperatureGauge.internal.levelColor = this.motorTemperatureGauge.internal.generateLevelColor.call(this.motorTemperatureGauge.internal);
-
-      //finally flush it to redraw
-      this.motorTemperatureGauge.flush();
     }
 
     if (this.waterTemperatureGauge) {
@@ -3436,11 +3430,8 @@
       this.waterTemperatureGauge.internal.config.gauge_max = tempMax;
 
       //thresholds
-      this.waterTemperatureGauge.internal.config.color_threshold_values = this.gaugeSetup.water_temperature.thresholds;
+      this.waterTemperatureGauge.internal.config.color_threshold.values = this.gaugeSetup.water_temperature.thresholds;
       this.waterTemperatureGauge.internal.levelColor = this.waterTemperatureGauge.internal.generateLevelColor.call(this.waterTemperatureGauge.internal);
-
-      //finally flush it to redraw
-      this.waterTemperatureGauge.flush();
     }
   }
 
