@@ -39,14 +39,14 @@ void StepperController::loop()
   if (INTERVAL(100)) {
     for (auto& ch : _channels) {
       TMC2209::Status status = ch.getStatus();
-      if (ch.hasError(status)) {
+      if (ch.isOverheated(status)) {
         const char* errorMsg = ch.getError(status);
         if (ch.lastErrorMessage != errorMsg) {
           ch.disable();
           ch.lastErrorMessage = errorMsg;
 
           char error[128];
-          snprintf(error, sizeof(error), "⚠️ Stepper channel #%d error: %s\n", ch.id, errorMsg);
+          snprintf(error, sizeof(error), "🔴 Stepper channel #%d error: %s\n", ch.id, errorMsg);
 
           // log it.
           YBP.printf(error);
@@ -55,6 +55,13 @@ void StepperController::loop()
           JsonDocument output;
           _app.protocol.generateErrorJSON(output, error);
           _app.protocol.sendToAll(output, NOBODY);
+        }
+      } else if (ch.isOpenCircuit(status) || ch.isShorted(status)) {
+        const char* errorMsg = ch.getError(status);
+        if (ch.lastErrorMessage != errorMsg) {
+          ch.lastErrorMessage = errorMsg;
+
+          YBP.printf("⚠️ Stepper channel #%d warning: %s\n", ch.id, errorMsg);
         }
       } else {
         ch.lastErrorMessage = nullptr;

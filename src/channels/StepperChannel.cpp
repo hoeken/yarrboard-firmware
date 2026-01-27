@@ -308,10 +308,10 @@ bool StepperChannel::hasError(TMC2209::Status& status)
 {
   if (isOverheated(status))
     return true;
-  if (isShorted(status))
-    return true;
-  if (isOpenCircuit(status))
-    return true;
+  // if (isShorted(status))
+  //   return true;
+  // if (isOpenCircuit(status))
+  //   return true;
 
   return false;
 }
