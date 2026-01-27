@@ -4,13 +4,12 @@
 
 * user selectable units
     * add conversion to PPL settings
-    * convert toPrecision to formatReadable
+* check if config panel exists before adding to avoid dupes
+* remove old chart code
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker
     * sensors for each output type
     * YAML dashboard
-* check if config panel exists before adding to avoid dupes
-* remove old chart code
 
 v2.4 TODO
 
