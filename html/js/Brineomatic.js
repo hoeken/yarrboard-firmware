@@ -2288,7 +2288,7 @@
       <div id="has_product_flow_sensor_form" class="mb-3">
         <div class="input-group has-validation">
           <input type="text" class="form-control text-end" id="product_flowmeter_ppl">
-          <span class="input-group-text">PPL (Pulses Per Liter)</span>
+          <span class="input-group-text"><span class="pulsesUnits">PPL</span>&nbsp;(pulses per&nbsp;<span class="pulseVolumeUnitsLong">liter</span>)</span>
           <div class="invalid-feedback"></div>
         </div>
       </div>
@@ -2308,7 +2308,7 @@
       <div id="has_brine_flow_sensor_form" class="mb-3">
         <div class="input-group has-validation">
           <input type="text" class="form-control text-end" id="brine_flowmeter_ppl">
-          <span class="input-group-text">PPL (Pulses Per Liter)</span>
+          <span class="input-group-text"><span class="pulsesUnits">PPL</span>&nbsp;(pulses per&nbsp;<span class="pulseVolumeUnitsLong">liter</span>)</span>
           <div class="invalid-feedback"></div>
         </div>
       </div>
@@ -3223,10 +3223,10 @@
     $("#brine_tds_sensor_offset").val(data.brine_tds_sensor_offset);
 
     $("#has_product_flow_sensor").prop('checked', data.has_product_flow_sensor);
-    $("#product_flowmeter_ppl").val(data.product_flowmeter_ppl);
+    $("#product_flowmeter_ppl").val(this.formatReadable(YB.bom.convertPulsesPerVolume(data.product_flowmeter_ppl, "lph", YB.App.config.brineomatic.flowrate_units)));
 
     $("#has_brine_flow_sensor").prop('checked', data.has_brine_flow_sensor);
-    $("#brine_flowmeter_ppl").val(data.brine_flowmeter_ppl);
+    $("#brine_flowmeter_ppl").val(this.formatReadable(YB.bom.convertPulsesPerVolume(data.brine_flowmeter_ppl, "lph", YB.App.config.brineomatic.flowrate_units)));
 
     $("#motor_temperature_sensor_type").val(data.motor_temperature_sensor_type);
     $("#water_temperature_sensor_type").val(data.water_temperature_sensor_type);
@@ -3433,6 +3433,18 @@
       convertFlowrateField("#pickle_total_flowrate_low_threshold");
       convertFlowrateField("#flush_flowrate_low_threshold");
 
+      // helper function for pulses per volume
+      const convertPulsesField = (fieldId) => {
+        let value = parseFloat($(fieldId).val());
+        value = YB.bom.convertPulsesPerVolume(value, YB.App.config.brineomatic.flowrate_units, e.target.value);
+        value = this.formatReadable(value);
+        $(fieldId).val(value);
+      };
+
+      // Hardware config pulses per volume fields
+      convertPulsesField("#product_flowmeter_ppl");
+      convertPulsesField("#brine_flowmeter_ppl");
+
       //now do everything else.
       YB.bom.updateFlowrateUnits(e.target.value);
     });
@@ -3612,6 +3624,15 @@
     //update static units
     let short = YB.bom.getShortFlowrateUnits(units);
     $(".flowrateUnits").html(short);
+
+    //update pulses units
+    let pulsesShort = YB.bom.getShortPulsesUnits(units);
+    $(".pulsesUnits").html(pulsesShort);
+
+    //update pulse volume units
+    const lower = units.toLowerCase();
+    let volumeUnits = (lower === 'lph') ? 'liter' : 'gallon';
+    $(".pulseVolumeUnitsLong").html(volumeUnits);
 
     //update gauge thresholds
     if (this.productFlowrateGauge) {
@@ -3997,10 +4018,10 @@
     data.brine_tds_sensor_offset = parseFloat($("#brine_tds_sensor_offset").val());
 
     data.has_product_flow_sensor = $("#has_product_flow_sensor").prop("checked");
-    data.product_flowmeter_ppl = parseInt($("#product_flowmeter_ppl").val());
+    data.product_flowmeter_ppl = Math.round(YB.bom.convertPulsesPerVolume(parseInt($("#product_flowmeter_ppl").val()), YB.App.config.brineomatic.flowrate_units, "lph"));
 
     data.has_brine_flow_sensor = $("#has_brine_flow_sensor").prop("checked");
-    data.brine_flowmeter_ppl = parseInt($("#brine_flowmeter_ppl").val());
+    data.brine_flowmeter_ppl = Math.round(YB.bom.convertPulsesPerVolume(parseInt($("#brine_flowmeter_ppl").val()), YB.App.config.brineomatic.flowrate_units, "lph"));
 
     data.motor_temperature_sensor_type = $("#motor_temperature_sensor_type").val();
     data.water_temperature_sensor_type = $("#water_temperature_sensor_type").val();
@@ -4657,6 +4678,13 @@
     return unit;
   }
 
+  Brineomatic.prototype.getShortPulsesUnits = function (unit) {
+    const lower = unit.toLowerCase();
+    if (lower === 'lph' || lower === 'liters per hour') return 'PPL';
+    if (lower === 'gph' || lower === 'gallons per hour') return 'PPG';
+    return unit;
+  }
+
   // units = C or F (or celsius, fahrenheit)
   Brineomatic.prototype.convertTemperature = function (value, start_units, end_units) {
     // Normalize long-form units to short-form
@@ -4792,6 +4820,31 @@
 
     // Convert from Liters per hour to Gallons per hour
     if (start_units === 'lph' && end_units === 'gph') {
+      return value * 0.264172;
+    }
+
+    // Invalid units provided
+    return value;
+  }
+
+  // units: lph (pulses per liter) / gph (pulses per gallon) - based on flowrate units
+  Brineomatic.prototype.convertPulsesPerVolume = function (value, start_units, end_units) {
+    // Normalize to lowercase for consistent comparison
+    start_units = start_units.toLowerCase();
+    end_units = end_units.toLowerCase();
+
+    // If units are the same, no conversion needed
+    if (start_units === end_units) {
+      return value;
+    }
+
+    // Convert from Pulses per liter to Pulses per gallon
+    if (start_units === 'lph' && end_units === 'gph') {
+      return value * 3.78541;
+    }
+
+    // Convert from Pulses per gallon to Pulses per liter
+    if (start_units === 'gph' && end_units === 'lph') {
       return value * 0.264172;
     }
 

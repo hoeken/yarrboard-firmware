@@ -2,8 +2,6 @@
 
 ## BRINEOMATIC
 
-* user selectable units
-    * add conversion to PPL settings
 * check if config panel exists before adding to avoid dupes
 * remove old chart code
 * add simple HA support to brineomatic?
@@ -11,7 +9,7 @@
     * sensors for each output type
     * YAML dashboard
 
-v2.4 TODO
+# v2.4 TODO
 
 ## FROTHFET
 
