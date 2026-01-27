@@ -20,9 +20,6 @@ class RelayChannel : public BaseChannel
 {
   protected:
     byte _pin;
-    char ha_topic_cmd_state[128];
-    char ha_topic_state_state[128];
-
     bool outputState = false;
 
   public:
@@ -37,10 +34,6 @@ class RelayChannel : public BaseChannel
     bool loadConfig(JsonVariantConst config, char* error, size_t err_size) override;
     void generateConfig(JsonVariant config) override;
     void generateUpdate(JsonVariant config) override;
-
-    void haGenerateDiscovery(JsonVariant doc, const char* uuid, MQTTController* mqtt) override;
-    void haPublishState(MQTTController* mqtt) override;
-    void haHandleCommand(const char* topic, const char* payload);
 
     void setup(byte pin);
     void setupDefaultState();

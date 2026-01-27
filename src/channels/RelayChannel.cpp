@@ -109,46 +109,4 @@ void RelayChannel::generateUpdate(JsonVariant config)
   config["source"] = this->source;
 }
 
-void RelayChannel::haGenerateDiscovery(JsonVariant doc, const char* uuid, MQTTController* mqtt)
-{
-  BaseChannel::haGenerateDiscovery(doc, uuid, mqtt);
-
-  // generate our topics
-  sprintf(ha_topic_cmd_state, "yarrboard/%s/relay/%s/ha_set", ha_key, this->key);
-  sprintf(ha_topic_state_state, "yarrboard/%s/relay/%s/ha_state", ha_key, this->key);
-
-  //  our callbacks to the command topics
-  mqtt->onTopic(ha_topic_cmd_state, 0, &RelayController::handleHACommandCallbackStatic);
-
-  // configuration object for the individual channel
-  JsonObject obj = doc[ha_uuid].to<JsonObject>();
-  obj["platform"] = "light";
-  obj["name"] = this->name;
-  obj["unique_id"] = ha_uuid;
-  obj["command_topic"] = ha_topic_cmd_state;
-  obj["state_topic"] = ha_topic_state_state;
-  obj["payload_on"] = "ON";
-  obj["payload_off"] = "OFF";
-
-  // availability is an array of objects
-  JsonArray availability = obj["availability"].to<JsonArray>();
-  JsonObject avail = availability.add<JsonObject>();
-  avail["topic"] = ha_topic_avail;
-}
-
-void RelayChannel::haPublishState(MQTTController* mqtt)
-{
-  mqtt->publish(ha_topic_state_state, this->getStatus(), false);
-}
-
-void RelayChannel::haHandleCommand(const char* topic, const char* payload)
-{
-  if (!strcmp(ha_topic_cmd_state, topic)) {
-    if (!strcmp(payload, "ON"))
-      this->setState(true);
-    else
-      this->setState(false);
-  }
-}
-
 #endif

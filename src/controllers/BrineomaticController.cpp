@@ -15,6 +15,9 @@
   #include <YarrboardApp.h>
   #include <YarrboardDebug.h>
 
+// Define the static member variable
+BrineomaticController* BrineomaticController::_instance = nullptr;
+
 BrineomaticController::BrineomaticController(YarrboardApp& app, RelayController& relays, ServoController& servos, StepperController& steppers) : BaseController(app, "brineomatic"),
                                                                                                                                                  wm(app, relays, servos, steppers)
 {
@@ -22,6 +25,8 @@ BrineomaticController::BrineomaticController(YarrboardApp& app, RelayController&
 
 bool BrineomaticController::setup()
 {
+  _instance = this; // Capture the instance for callbacks
+
   _app.protocol.registerCommand(GUEST, "start_watermaker", this, &BrineomaticController::handleStartWatermaker);
   _app.protocol.registerCommand(GUEST, "flush_watermaker", this, &BrineomaticController::handleFlushWatermaker);
   _app.protocol.registerCommand(GUEST, "pickle_watermaker", this, &BrineomaticController::handlePickleWatermaker);
@@ -172,6 +177,54 @@ void BrineomaticController::mqttUpdateHook(MQTTController* mqtt)
 
 void BrineomaticController::haUpdateHook(MQTTController* mqtt)
 {
+  mqtt->publish(ha_topic_avail, "online", false);
+
+  if (strcmp(wm.getStatus(), "IDLE") == 0)
+    mqtt->publish(ha_topic_state_state, "OFF", false);
+  else
+    mqtt->publish(ha_topic_state_state, "ON", false);
+}
+
+void BrineomaticController::haGenerateDiscoveryHook(JsonVariant components, const char* uuid, MQTTController* mqtt)
+{
+  sprintf(ha_uuid, "yarrboard/%s", _cfg.local_hostname);
+  sprintf(ha_topic_avail, "%s/ha/availability", ha_uuid);
+  sprintf(ha_topic_cmd_state, "%s/ha/set", ha_uuid);
+  sprintf(ha_topic_state_state, "%s/ha/state", ha_uuid);
+
+  mqtt->onTopic(ha_topic_cmd_state, 0, &BrineomaticController::handleHACommandCallbackStatic);
+
+  // configuration object for the individual channel
+  JsonObject obj = components[ha_uuid].to<JsonObject>();
+  obj["platform"] = "switch";
+  obj["name"] = _app.board_name;
+  obj["unique_id"] = ha_uuid;
+  obj["state_topic"] = ha_topic_state_state;
+  obj["command_topic"] = ha_topic_cmd_state;
+  obj["payload_on"] = "ON";
+  obj["payload_off"] = "OFF";
+  obj["icon"] = "mdi:water-sync";
+
+  // availability is an array of objects
+  JsonArray availability = obj["availability"].to<JsonArray>();
+  JsonObject avail = availability.add<JsonObject>();
+  avail["topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup)
+{
+  if (_instance) {
+    _instance->handleHACommandCallback(topic, payload, retain, qos, dup);
+  }
+}
+
+void BrineomaticController::handleHACommandCallback(const char* topic, const char* payload, int retain, int qos, bool dup)
+{
+  // start and stop internally handle if we're allowed to do it.
+  if (!strcmp(payload, "ON"))
+    wm.start();
+  else
+    wm.stop();
 }
 
 void BrineomaticController::generateStatsHook(JsonVariant output)

@@ -15,8 +15,6 @@
   #include <YarrboardDebug.h>
   #include <controllers/ProtocolController.h>
 
-RelayController* RelayController::_instance = nullptr;
-
 RelayController::RelayController(YarrboardApp& app) : ChannelController(app, "relay")
 {
 }
@@ -115,18 +113,19 @@ void RelayController::handleConfigCommand(JsonVariantConst input, JsonVariant ou
   ChannelController::handleConfigCommand(input, output);
 }
 
-void RelayController::handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup)
+// blank to disable MQTT
+void RelayController::mqttUpdateHook(MQTTController* mqtt)
 {
-  if (_instance) {
-    _instance->handleHACommandCallback(topic, payload, retain, qos, dup);
-  }
 }
 
-void RelayController::handleHACommandCallback(const char* topic, const char* payload, int retain, int qos, bool dup)
+// blank to disable HA
+void RelayController::haUpdateHook(MQTTController* mqtt)
 {
-  for (auto& ch : _channels) {
-    ch.haHandleCommand(topic, payload);
-  }
+}
+
+// blank to disable HA
+void RelayController::haGenerateDiscoveryHook(JsonVariant components, const char* uuid, MQTTController* mqtt)
+{
 }
 
 #endif

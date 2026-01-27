@@ -42,7 +42,12 @@ class BrineomaticController : public BaseController
     void generateUpdateHook(JsonVariant output) override;
     void generateStatsHook(JsonVariant output) override;
     void mqttUpdateHook(MQTTController* mqtt) override;
+
     void haUpdateHook(MQTTController* mqtt) override;
+    void haGenerateDiscoveryHook(JsonVariant components, const char* uuid, MQTTController* mqtt) override;
+
+    static void handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
+    void handleHACommandCallback(const char* topic, const char* payload, int retain, int qos, bool dup);
 
     void handleStartWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
     void handleFlushWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
@@ -60,6 +65,16 @@ class BrineomaticController : public BaseController
     Brineomatic wm;
 
     uint32_t lastOutput;
+
+    char ha_key[YB_HOSTNAME_LENGTH];
+    char ha_uuid[64];
+    char ha_topic_avail[128];
+    char ha_topic_cmd_state[128];
+    char ha_topic_state_state[128];
+    // char ha_topic_voltage[128];
+    // char ha_topic_current[128];
+
+    static BrineomaticController* _instance;
 
     // The actual state machine logic
     void stateMachine();

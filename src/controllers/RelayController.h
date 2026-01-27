@@ -29,13 +29,12 @@ class RelayController : public ChannelController<RelayChannel, YB_RELAY_CHANNEL_
     void handleSetCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
     void handleToggleCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
 
-    static void handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
+    void mqttUpdateHook(MQTTController* mqtt) override;
+    void haUpdateHook(MQTTController* mqtt) override;
+    void haGenerateDiscoveryHook(JsonVariant components, const char* uuid, MQTTController* mqtt) override;
 
   private:
     const byte _pins[YB_RELAY_CHANNEL_COUNT] = YB_RELAY_CHANNEL_PINS;
-
-    static RelayController* _instance;
-    void handleHACommandCallback(const char* topic, const char* payload, int retain, int qos, bool dup);
 };
 
 #endif
