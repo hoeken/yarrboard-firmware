@@ -11,6 +11,7 @@
 #ifdef YB_IS_BRINEOMATIC
 
   #include "BrineomaticController.h"
+  #include "UnitConversion.h"
   #include <YarrboardApp.h>
   #include <YarrboardDebug.h>
 
@@ -148,6 +149,24 @@ void BrineomaticController::mqttUpdateHook(MQTTController* mqtt)
 {
   JsonDocument output;
   wm.generateUpdateJSON(output);
+
+  // Convert temperature fields
+  output["motor_temperature"] = convertTemperature(output["motor_temperature"], "celsius", wm.getTemperatureUnits());
+  output["water_temperature"] = convertTemperature(output["water_temperature"], "celsius", wm.getTemperatureUnits());
+
+  // Convert pressure fields
+  output["filter_pressure"] = convertPressure(output["filter_pressure"], "bar", wm.getPressureUnits());
+  output["membrane_pressure"] = convertPressure(output["membrane_pressure"], "bar", wm.getPressureUnits());
+
+  // Convert volume fields
+  output["volume"] = convertVolume(output["volume"], "liters", wm.getVolumeUnits());
+  output["flush_volume"] = convertVolume(output["flush_volume"], "liters", wm.getVolumeUnits());
+
+  // Convert flowrate fields
+  output["product_flowrate"] = convertFlowrate(output["product_flowrate"], "lph", wm.getFlowrateUnits());
+  output["brine_flowrate"] = convertFlowrate(output["brine_flowrate"], "lph", wm.getFlowrateUnits());
+  output["total_flowrate"] = convertFlowrate(output["total_flowrate"], "lph", wm.getFlowrateUnits());
+
   mqtt->traverseJSON(output, "");
 }
 

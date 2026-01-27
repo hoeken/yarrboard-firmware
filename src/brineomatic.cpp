@@ -919,6 +919,26 @@ float Brineomatic::getTankCapacity()
   return tankCapacity;
 }
 
+const char* Brineomatic::getTemperatureUnits()
+{
+  return temperatureUnits.c_str();
+}
+
+const char* Brineomatic::getPressureUnits()
+{
+  return pressureUnits.c_str();
+}
+
+const char* Brineomatic::getVolumeUnits()
+{
+  return volumeUnits.c_str();
+}
+
+const char* Brineomatic::getFlowrateUnits()
+{
+  return flowrateUnits.c_str();
+}
+
 const char* Brineomatic::getStatus()
 {
   if (currentStatus == Status::STARTUP)

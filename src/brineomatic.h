@@ -257,6 +257,11 @@ class Brineomatic
     float getTankCapacity();
     float getMotorTemperatureMaximum();
 
+    const char* getTemperatureUnits();
+    const char* getPressureUnits();
+    const char* getVolumeUnits();
+    const char* getFlowrateUnits();
+
     void runStateMachine();
 
     void generateUpdateJSON(JsonVariant output);
