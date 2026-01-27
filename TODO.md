@@ -3,28 +3,12 @@
 ## BRINEOMATIC
 
 * user selectable units
-    * types / units:
-        * pressure (PSI / Bar / Kpa)
-        * volume (G / L)
-        * flowrate (gph / lph)
-    * step 2: update web UI to show/update units where needed
-        * use css classes and update when selection changes. eg: .temperatureUnits .pressureUnits .volumeUnits .flowrateUnits
-        * on config load
-        * on unit select change
-            * update settings field values when selection changes
-        * web ui gauge units / format
-        * validate.js schema
-        * web ui gauge thresholds
-    * step 3: add unit conversion to ui
-        * update / stats message handlers
-            * figure out how to send "no data" for sensors
-        * config form data population
-    * step 5: add unit conversion to ui data saving
+    * add conversion to PPL settings
+    * convert toPrecision to formatReadable
 * add simple HA support to brineomatic?
     * on/off switch to start/stop the watermaker
     * sensors for each output type
     * YAML dashboard
-* convert toPrecision to formatReadable
 * check if config panel exists before adding to avoid dupes
 * remove old chart code
 

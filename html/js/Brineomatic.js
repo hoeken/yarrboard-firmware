@@ -118,15 +118,24 @@
         "colors": [bootstrapColors.secondary, bootstrapColors.primary, bootstrapColors.success]
       },
       "product_flowrate": {
-        "thresholds": [20, 100, 180, 200, 250],
+        get thresholds() {
+          const lphThresholds = [20, 100, 180, 200, 250];
+          return lphThresholds.map(flowrate => YB.bom.convertFlowrate(flowrate, "lph", YB.App.config.brineomatic.flowrate_units));
+        },
         "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
       },
       "brine_flowrate": {
-        "thresholds": [100, 300],
+        get thresholds() {
+          const lphThresholds = [100, 300];
+          return lphThresholds.map(flowrate => YB.bom.convertFlowrate(flowrate, "lph", YB.App.config.brineomatic.flowrate_units));
+        },
         "colors": [bootstrapColors.secondary, bootstrapColors.success]
       },
       "total_flowrate": {
-        "thresholds": [100, 600],
+        get thresholds() {
+          const lphThresholds = [100, 600];
+          return lphThresholds.map(flowrate => YB.bom.convertFlowrate(flowrate, "lph", YB.App.config.brineomatic.flowrate_units));
+        },
         "colors": [bootstrapColors.secondary, bootstrapColors.success]
       },
       "tank_level": {
@@ -342,7 +351,8 @@
       gauge: {
         label: {
           format: function (value, ratio) {
-            return `${value} LPH`;
+            let short = YB.bom.getShortFlowrateUnits(YB.App.config.brineomatic.flowrate_units);
+            return `${value} ${short}`;
           },
           show: true
         },
@@ -373,7 +383,8 @@
       gauge: {
         label: {
           format: function (value, ratio) {
-            return `${value} LPH`;
+            let short = YB.bom.getShortFlowrateUnits(YB.App.config.brineomatic.flowrate_units);
+            return `${value} ${short}`;
           },
           show: true
         },
@@ -404,7 +415,8 @@
       gauge: {
         label: {
           format: function (value, ratio) {
-            return `${value} LPH`;
+            let short = YB.bom.getShortFlowrateUnits(YB.App.config.brineomatic.flowrate_units);
+            return `${value} ${short}`;
           },
           show: true
         },
@@ -727,15 +739,25 @@
     let water_temperature = YB.bom.convertTemperature(msg.water_temperature, "C", YB.App.config.brineomatic.temperature_units);
     water_temperature = Math.round(water_temperature);
 
-    let product_flowrate = Math.round(msg.product_flowrate);
-    let brine_flowrate = Math.round(msg.brine_flowrate);
-    let total_flowrate = Math.round(msg.total_flowrate);
-    let volume = msg.volume.toFixed(1);
+    let product_flowrate = YB.bom.convertFlowrate(msg.product_flowrate, "lph", YB.App.config.brineomatic.flowrate_units);
+    product_flowrate = Math.round(product_flowrate);
+
+    let brine_flowrate = YB.bom.convertFlowrate(msg.brine_flowrate, "lph", YB.App.config.brineomatic.flowrate_units);
+    brine_flowrate = Math.round(brine_flowrate);
+
+    let total_flowrate = YB.bom.convertFlowrate(msg.total_flowrate, "lph", YB.App.config.brineomatic.flowrate_units);
+    total_flowrate = Math.round(total_flowrate);
+
+    let volume = YB.bom.convertVolume(msg.volume, "liters", YB.App.config.brineomatic.volume_units);
+    volume = volume.toFixed(1);
     if (volume >= 100)
       volume = Math.round(volume);
-    let flush_volume = msg.flush_volume.toFixed(1);
+
+    let flush_volume = YB.bom.convertVolume(msg.flush_volume, "liters", YB.App.config.brineomatic.volume_units);
+    flush_volume = flush_volume.toFixed(1);
     if (flush_volume >= 100)
       flush_volume = Math.round(flush_volume);
+
     let product_salinity = Math.round(msg.product_salinity);
     let brine_salinity = Math.round(msg.brine_salinity);
 
@@ -1089,12 +1111,16 @@
 
   Brineomatic.prototype.handleStatsMessage = function (msg) {
     if (msg.brineomatic) {
-      let totalVolume = Math.round(msg.total_volume);
+      let totalVolume = YB.bom.convertVolume(msg.total_volume, "liters", YB.App.config.brineomatic.volume_units);
+      totalVolume = Math.round(totalVolume);
       totalVolume = totalVolume.toLocaleString('en-US');
+      let volumeUnits = YB.App.config.brineomatic.volume_units;
+
       let totalRuntime = (msg.total_runtime / (60 * 60)).toFixed(1);
       totalRuntime = totalRuntime.toLocaleString('en-US');
+
       $("#bomTotalCycles").html(msg.total_cycles.toLocaleString('en-US'));
-      $("#bomTotalVolume").html(`${totalVolume}L`);
+      $("#bomTotalVolume").html(`${totalVolume}${volumeUnits}`);
       $("#bomTotalRuntime").html(`${totalRuntime} hours`);
     }
   }
@@ -1175,6 +1201,9 @@
     $(e.currentTarget).blur();
     let volume = $("#bomRunVolumeInput").val();
 
+    // Convert from user's units to liters (firmware base unit)
+    volume = YB.bom.convertVolume(volume, YB.App.config.brineomatic.volume_units, "liters");
+
     if (volume > 0) {
       YB.client.send({
         "cmd": "start_watermaker",
@@ -1208,6 +1237,9 @@
   Brineomatic.prototype.flushVolume = function (e) {
     $(e.currentTarget).blur();
     let volume = $("#bomFlushVolumeInput").val();
+
+    // Convert from user's units to liters (firmware base unit)
+    volume = YB.bom.convertVolume(volume, YB.App.config.brineomatic.volume_units, "liters");
 
     if (volume > 0) {
       YB.client.send({
@@ -1598,7 +1630,7 @@
                                               <div class="input-group has-validation">
                                                   <input type="text" class="form-control text-center"
                                                       id="bomRunVolumeInput" value="250">
-                                                  <span class="input-group-text">liters</span>
+                                                  <span class="input-group-text volumeUnitsLong">liters</span>
                                                   <div class="invalid-feedback"></div>
                                               </div>
                                           </div>
@@ -1666,7 +1698,7 @@
                                               <div class="input-group has-validation">
                                                   <input type="text" class="form-control text-center"
                                                       id="bomFlushVolumeInput" value="15">
-                                                  <span class="input-group-text">liters</span>
+                                                  <span class="input-group-text volumeUnitsLong">liters</span>
                                                   <div class="invalid-feedback"></div>
                                               </div>
                                           </div>
@@ -1891,12 +1923,12 @@
               <div class="productVolumeUI col-md-3 col-sm-4 col-6 text-center">
                   <h6 class="my-0">Product Volume</h6>
                   <h1 class="bomVolumeData my-0 mt-3"></h1>
-                  <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
+                  <h5 id="volumeUnits" class="text-body-tertiary volumeUnitsLong">liters</h5>
               </div>
               <div class="flushVolumeUI col-md-3 col-sm-4 col-6 text-center">
                   <h6 class="my-0">Flush Volume</h6>
                   <h1 class="bomFlushVolumeData my-0 mt-3"></h1>
-                  <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
+                  <h5 id="volumeUnits" class="text-body-tertiary volumeUnitsLong">liters</h5>
               </div>
           </div>
           <div id="bomGaugesMFD" class="mfdShow row gx-0 gy-3 my-3 text-center">
@@ -1981,12 +2013,12 @@
               <div class="productVolumeUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Product Volume</h6>
                   <h1 class="bomVolumeData" class="my-0"></h1>
-                  <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
+                  <h5 id="volumeUnits" class="text-body-tertiary volumeUnitsLong">liters</h5>
               </div>
               <div class="flushVolumeUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Flush Volume</h6>
                   <h1 class="bomFlushVolumeData" class="my-0"></h1>
-                  <h5 id="volumeUnits" class="text-body-tertiary">liters</h5>
+                  <h5 id="volumeUnits" class="text-body-tertiary volumeUnitsLong">liters</h5>
               </div>
           </div>
           <div id="bomManualControls" class="col bomMANUAL">
@@ -2067,7 +2099,7 @@
         <div class="input-group has-validation">
           <span class="input-group-text">Autoflush Volume</span>
           <input id="autoflush_volume" type="text" class="form-control text-end">
-          <span class="input-group-text">liters</span>
+          <span class="input-group-text volumeUnitsLong">liters</span>
           <div class="invalid-feedback"></div>
         </div>
       </div>
@@ -2095,7 +2127,7 @@
         <div class="input-group has-validation">
           <span class="input-group-text">Tank Capacity</span>
           <input id="tank_capacity" type="text" class="form-control text-end">
-          <span class="input-group-text">liters</span>
+          <span class="input-group-text volumeUnitsLong">liters</span>
           <div class="invalid-feedback"></div>
         </div>
       </div>
@@ -2124,6 +2156,7 @@
       <div class="form-floating mb-3">
           <select id="volume_units" class="form-select" aria-label="Volume Units">
             <option value="liters">Liters</option>
+            <option value="gallons">Gallons</option>
           </select>
           <label for="volume_units">Volume Units</label>
           <div class="invalid-feedback"></div>
@@ -2132,6 +2165,7 @@
       <div class="form-floating mb-3">
           <select id="flowrate_units" class="form-select" aria-label="Flowrate Units">
             <option value="lph">LPH (liters per hour)</option>
+            <option value="gph">GPH (gallons per hour)</option>
           </select>
           <label for="flowrate_units">Flowrate Units</label>
           <div class="invalid-feedback"></div>
@@ -2855,7 +2889,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="product_flowrate_high_threshold">
-            <span class="input-group-text">LPH</span>
+            <span class="input-group-text flowrateUnits">LPH</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2880,7 +2914,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="product_flowrate_low_threshold">
-            <span class="input-group-text">LPH</span>
+            <span class="input-group-text flowrateUnits">LPH</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2905,7 +2939,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="run_total_flowrate_low_threshold">
-            <span class="input-group-text">LPH</span>
+            <span class="input-group-text flowrateUnits">LPH</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2930,7 +2964,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="pickle_total_flowrate_low_threshold">
-            <span class="input-group-text">LPH</span>
+            <span class="input-group-text flowrateUnits">LPH</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -3023,7 +3057,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="flush_flowrate_low_threshold">
-            <span class="input-group-text">LPH</span>
+            <span class="input-group-text flowrateUnits">LPH</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -3098,11 +3132,11 @@
     $("#autoflush_mode").val(data.autoflush_mode);
     $("#autoflush_salinity").val(data.autoflush_salinity);
     $("#autoflush_duration").val(data.autoflush_duration / (60 * 1000));
-    $("#autoflush_volume").val(data.autoflush_volume);
+    $("#autoflush_volume").val(YB.bom.convertVolume(data.autoflush_volume, "liters", YB.App.config.brineomatic.volume_units));
     $("#autoflush_interval").val(data.autoflush_interval / (60 * 60 * 1000));
     $("#autoflush_use_high_pressure_motor").prop('checked', data.autoflush_use_high_pressure_motor);
 
-    $("#tank_capacity").val(data.tank_capacity);
+    $("#tank_capacity").val(this.formatReadable(YB.bom.convertVolume(data.tank_capacity, "liters", YB.App.config.brineomatic.volume_units)));
     $("#temperature_units").val(data.temperature_units);
     $("#pressure_units").val(data.pressure_units);
     $("#volume_units").val(data.volume_units);
@@ -3110,8 +3144,8 @@
 
     this.updateTemperatureUnits(data.temperature_units);
     this.updatePressureUnits(data.pressure_units);
-    // this.updateVolumeUnits(data.volume_units);
-    // this.updateFlowrateUnits(data.flowrate_units);
+    this.updateVolumeUnits(data.volume_units);
+    this.updateFlowrateUnits(data.flowrate_units);
 
     YB.Util.populateMelodySelector($("#success_melody"));
     $("#success_melody").val(data.success_melody);
@@ -3232,19 +3266,19 @@
     $("#filter_pressure_low_threshold").val(filter_pressure_low_threshold);
 
     $("#enable_product_flowrate_high_check").prop('checked', data.enable_product_flowrate_high_check);
-    $("#product_flowrate_high_threshold").val(data.product_flowrate_high_threshold);
+    $("#product_flowrate_high_threshold").val(this.formatReadable(YB.bom.convertFlowrate(data.product_flowrate_high_threshold, "lph", YB.App.config.brineomatic.flowrate_units)));
     $("#product_flowrate_high_delay").val(data.product_flowrate_high_delay);
 
     $("#enable_product_flowrate_low_check").prop('checked', data.enable_product_flowrate_low_check);
-    $("#product_flowrate_low_threshold").val(data.product_flowrate_low_threshold);
+    $("#product_flowrate_low_threshold").val(this.formatReadable(YB.bom.convertFlowrate(data.product_flowrate_low_threshold, "lph", YB.App.config.brineomatic.flowrate_units)));
     $("#product_flowrate_low_delay").val(data.product_flowrate_low_delay);
 
     $("#enable_run_total_flowrate_low_check").prop('checked', data.enable_run_total_flowrate_low_check);
-    $("#run_total_flowrate_low_threshold").val(data.run_total_flowrate_low_threshold);
+    $("#run_total_flowrate_low_threshold").val(this.formatReadable(YB.bom.convertFlowrate(data.run_total_flowrate_low_threshold, "lph", YB.App.config.brineomatic.flowrate_units)));
     $("#run_total_flowrate_low_delay").val(data.run_total_flowrate_low_delay);
 
     $("#enable_pickle_total_flowrate_low_check").prop('checked', data.enable_pickle_total_flowrate_low_check);
-    $("#pickle_total_flowrate_low_threshold").val(data.pickle_total_flowrate_low_threshold);
+    $("#pickle_total_flowrate_low_threshold").val(this.formatReadable(YB.bom.convertFlowrate(data.pickle_total_flowrate_low_threshold, "lph", YB.App.config.brineomatic.flowrate_units)));
     $("#pickle_total_flowrate_low_delay").val(data.pickle_total_flowrate_low_delay);
 
     $("#enable_diverter_valve_closed_check").prop('checked', data.enable_diverter_valve_closed_check);
@@ -3262,7 +3296,7 @@
     $("#motor_temperature_high_threshold").val(motor_temp_threshold);
 
     $("#enable_flush_flowrate_low_check").prop('checked', data.enable_flush_flowrate_low_check);
-    $("#flush_flowrate_low_threshold").val(data.flush_flowrate_low_threshold);
+    $("#flush_flowrate_low_threshold").val(this.formatReadable(YB.bom.convertFlowrate(data.flush_flowrate_low_threshold, "lph", YB.App.config.brineomatic.flowrate_units)));
     $("#flush_flowrate_low_delay").val(data.flush_flowrate_low_delay);
 
     $("#enable_flush_filter_pressure_low_check").prop('checked', data.enable_flush_filter_pressure_low_check);
@@ -3368,6 +3402,43 @@
 
       //now do everything else.
       YB.bom.updatePressureUnits(e.target.value);
+    });
+
+    $("#volume_units").on("change", (e) => {
+      // helper function
+      const convertVolumeField = (fieldId) => {
+        let value = parseFloat($(fieldId).val());
+        value = YB.bom.convertVolume(value, YB.App.config.brineomatic.volume_units, e.target.value);
+        value = this.formatReadable(value);
+        $(fieldId).val(value);
+      };
+
+      // Brineomatic config volume fields
+      convertVolumeField("#autoflush_volume");
+      convertVolumeField("#tank_capacity");
+
+      //now do everything else.
+      YB.bom.updateVolumeUnits(e.target.value);
+    });
+
+    $("#flowrate_units").on("change", (e) => {
+      // helper function
+      const convertFlowrateField = (fieldId) => {
+        let value = parseFloat($(fieldId).val());
+        value = YB.bom.convertFlowrate(value, YB.App.config.brineomatic.flowrate_units, e.target.value);
+        value = this.formatReadable(value);
+        $(fieldId).val(value);
+      };
+
+      // Safeguards config flowrate fields
+      convertFlowrateField("#product_flowrate_high_threshold");
+      convertFlowrateField("#product_flowrate_low_threshold");
+      convertFlowrateField("#run_total_flowrate_low_threshold");
+      convertFlowrateField("#pickle_total_flowrate_low_threshold");
+      convertFlowrateField("#flush_flowrate_low_threshold");
+
+      //now do everything else.
+      YB.bom.updateFlowrateUnits(e.target.value);
     });
 
     $("#autoflush_mode").on("change", (e) => {
@@ -3525,6 +3596,62 @@
       //thresholds
       this.filterPressureGauge.internal.config.color_threshold.values = this.gaugeSetup.filter_pressure.thresholds;
       this.filterPressureGauge.internal.levelColor = this.filterPressureGauge.internal.generateLevelColor.call(this.filterPressureGauge.internal);
+    }
+  }
+
+  Brineomatic.prototype.updateVolumeUnits = function (units) {
+    //we need this as its pulled dynamically in other places
+    YB.App.config.brineomatic.volume_units = units;
+
+    //update static units
+    let short = YB.bom.getShortVolumeUnits(units);
+    $(".volumeUnits").html(short);
+    $(".volumeUnitsLong").html(units);
+  }
+
+  Brineomatic.prototype.updateFlowrateUnits = function (units) {
+    //we need this as its pulled dynamically in other places
+    YB.App.config.brineomatic.flowrate_units = units;
+
+    //update static units
+    let short = YB.bom.getShortFlowrateUnits(units);
+    $(".flowrateUnits").html(short);
+
+    //update gauge thresholds
+    if (this.productFlowrateGauge) {
+      //update our min/max
+      let tempMin = Math.round(YB.bom.convertFlowrate(0, "lph", YB.App.config.brineomatic.flowrate_units));
+      let tempMax = Math.round(YB.bom.convertFlowrate(250, "lph", YB.App.config.brineomatic.flowrate_units));
+      this.productFlowrateGauge.internal.config.gauge_min = tempMin;
+      this.productFlowrateGauge.internal.config.gauge_max = tempMax;
+
+      //thresholds
+      this.productFlowrateGauge.internal.config.color_threshold.values = this.gaugeSetup.product_flowrate.thresholds;
+      this.productFlowrateGauge.internal.levelColor = this.productFlowrateGauge.internal.generateLevelColor.call(this.productFlowrateGauge.internal);
+    }
+
+    if (this.brineFlowrateGauge) {
+      //update our min/max
+      let tempMin = Math.round(YB.bom.convertFlowrate(0, "lph", YB.App.config.brineomatic.flowrate_units));
+      let tempMax = Math.round(YB.bom.convertFlowrate(600, "lph", YB.App.config.brineomatic.flowrate_units));
+      this.brineFlowrateGauge.internal.config.gauge_min = tempMin;
+      this.brineFlowrateGauge.internal.config.gauge_max = tempMax;
+
+      //thresholds
+      this.brineFlowrateGauge.internal.config.color_threshold.values = this.gaugeSetup.brine_flowrate.thresholds;
+      this.brineFlowrateGauge.internal.levelColor = this.brineFlowrateGauge.internal.generateLevelColor.call(this.brineFlowrateGauge.internal);
+    }
+
+    if (this.totalFlowrateGauge) {
+      //update our min/max
+      let tempMin = Math.round(YB.bom.convertFlowrate(0, "lph", YB.App.config.brineomatic.flowrate_units));
+      let tempMax = Math.round(YB.bom.convertFlowrate(600, "lph", YB.App.config.brineomatic.flowrate_units));
+      this.totalFlowrateGauge.internal.config.gauge_min = tempMin;
+      this.totalFlowrateGauge.internal.config.gauge_max = tempMax;
+
+      //thresholds
+      this.totalFlowrateGauge.internal.config.color_threshold.values = this.gaugeSetup.total_flowrate.thresholds;
+      this.totalFlowrateGauge.internal.levelColor = this.totalFlowrateGauge.internal.generateLevelColor.call(this.totalFlowrateGauge.internal);
     }
   }
 
@@ -3792,11 +3919,11 @@
     data.autoflush_mode = $("#autoflush_mode").val();
     data.autoflush_salinity = parseFloat($("#autoflush_salinity").val());
     data.autoflush_duration = Math.round(parseFloat($("#autoflush_duration").val()) * 60 * 1000);
-    data.autoflush_volume = parseFloat($("#autoflush_volume").val());
+    data.autoflush_volume = YB.bom.convertVolume(parseFloat($("#autoflush_volume").val()), YB.App.config.brineomatic.volume_units, "liters");
     data.autoflush_interval = Math.round(parseFloat($("#autoflush_interval").val()) * 60 * 60 * 1000);
     data.autoflush_use_high_pressure_motor = $("#autoflush_use_high_pressure_motor").prop("checked");
 
-    data.tank_capacity = parseFloat($("#tank_capacity").val());
+    data.tank_capacity = YB.bom.convertVolume(parseFloat($("#tank_capacity").val()), YB.App.config.brineomatic.volume_units, "liters");
     data.temperature_units = $("#temperature_units").val();
     data.pressure_units = $("#pressure_units").val();
     data.volume_units = $("#volume_units").val();
@@ -3915,19 +4042,19 @@
     data.filter_pressure_low_delay = parseInt($("#filter_pressure_low_delay").val());
 
     data.enable_product_flowrate_high_check = $("#enable_product_flowrate_high_check").prop("checked");
-    data.product_flowrate_high_threshold = parseFloat($("#product_flowrate_high_threshold").val());
+    data.product_flowrate_high_threshold = YB.bom.convertFlowrate(parseFloat($("#product_flowrate_high_threshold").val()), YB.App.config.brineomatic.flowrate_units, "lph");
     data.product_flowrate_high_delay = parseInt($("#product_flowrate_high_delay").val());
 
     data.enable_product_flowrate_low_check = $("#enable_product_flowrate_low_check").prop("checked");
-    data.product_flowrate_low_threshold = parseFloat($("#product_flowrate_low_threshold").val());
+    data.product_flowrate_low_threshold = YB.bom.convertFlowrate(parseFloat($("#product_flowrate_low_threshold").val()), YB.App.config.brineomatic.flowrate_units, "lph");
     data.product_flowrate_low_delay = parseInt($("#product_flowrate_low_delay").val());
 
     data.enable_run_total_flowrate_low_check = $("#enable_run_total_flowrate_low_check").prop("checked");
-    data.run_total_flowrate_low_threshold = parseFloat($("#run_total_flowrate_low_threshold").val());
+    data.run_total_flowrate_low_threshold = YB.bom.convertFlowrate(parseFloat($("#run_total_flowrate_low_threshold").val()), YB.App.config.brineomatic.flowrate_units, "lph");
     data.run_total_flowrate_low_delay = parseInt($("#run_total_flowrate_low_delay").val());
 
     data.enable_pickle_total_flowrate_low_check = $("#enable_pickle_total_flowrate_low_check").prop("checked");
-    data.pickle_total_flowrate_low_threshold = parseFloat($("#pickle_total_flowrate_low_threshold").val());
+    data.pickle_total_flowrate_low_threshold = YB.bom.convertFlowrate(parseFloat($("#pickle_total_flowrate_low_threshold").val()), YB.App.config.brineomatic.flowrate_units, "lph");
     data.pickle_total_flowrate_low_delay = parseInt($("#pickle_total_flowrate_low_delay").val());
 
     data.enable_diverter_valve_closed_check = $("#enable_diverter_valve_closed_check").prop("checked");
@@ -3944,7 +4071,7 @@
     data.motor_temperature_high_threshold = YB.bom.convertTemperature(motor_temp_threshold, YB.App.config.brineomatic.temperature_units, "C");
 
     data.enable_flush_flowrate_low_check = $("#enable_flush_flowrate_low_check").prop("checked");
-    data.flush_flowrate_low_threshold = parseFloat($("#flush_flowrate_low_threshold").val());
+    data.flush_flowrate_low_threshold = YB.bom.convertFlowrate(parseFloat($("#flush_flowrate_low_threshold").val()), YB.App.config.brineomatic.flowrate_units, "lph");
     data.flush_flowrate_low_delay = parseInt($("#flush_flowrate_low_delay").val());
 
     data.enable_flush_filter_pressure_low_check = $("#enable_flush_filter_pressure_low_check").prop("checked");
