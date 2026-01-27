@@ -28,6 +28,10 @@ class ServoController : public ChannelController<ServoChannel, YB_SERVO_CHANNEL_
     void handleConfigCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
     void handleSetCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
 
+    // blank to disable HA hooks.
+    void haUpdateHook(MQTTController* mqtt) override {};
+    void haGenerateDiscoveryHook(JsonVariant components, const char* uuid, MQTTController* mqtt) override {};
+
   private:
     const byte _pins[YB_SERVO_CHANNEL_COUNT] = YB_SERVO_CHANNEL_PINS;
 };

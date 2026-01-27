@@ -113,19 +113,19 @@ void RelayController::handleConfigCommand(JsonVariantConst input, JsonVariant ou
   ChannelController::handleConfigCommand(input, output);
 }
 
-// blank to disable MQTT
-void RelayController::mqttUpdateHook(MQTTController* mqtt)
-{
-}
+// // blank to disable MQTT
+// void RelayController::mqttUpdateHook(MQTTController* mqtt)
+// {
+// }
 
-// blank to disable HA
-void RelayController::haUpdateHook(MQTTController* mqtt)
-{
-}
+// // blank to disable HA
+// void RelayController::haUpdateHook(MQTTController* mqtt)
+// {
+// }
 
-// blank to disable HA
-void RelayController::haGenerateDiscoveryHook(JsonVariant components, const char* uuid, MQTTController* mqtt)
-{
-}
+// // blank to disable HA
+// void RelayController::haGenerateDiscoveryHook(JsonVariant components, const char* uuid, MQTTController* mqtt)
+// {
+// }
 
 #endif

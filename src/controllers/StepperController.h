@@ -29,6 +29,10 @@ class StepperController : public ChannelController<StepperChannel, YB_STEPPER_CH
     void handleConfigCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
     void handleSetCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context);
 
+    // blank to disable HA hooks.
+    void haUpdateHook(MQTTController* mqtt) override {};
+    void haGenerateDiscoveryHook(JsonVariant components, const char* uuid, MQTTController* mqtt) override {};
+
   private:
     const byte _step_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_STEP_PINS;
     const byte _dir_pins[YB_STEPPER_CHANNEL_COUNT] = YB_STEPPER_DIR_PINS;

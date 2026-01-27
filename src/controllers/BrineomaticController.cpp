@@ -209,6 +209,66 @@ void BrineomaticController::haGenerateDiscoveryHook(JsonVariant components, cons
   JsonArray availability = obj["availability"].to<JsonArray>();
   JsonObject avail = availability.add<JsonObject>();
   avail["topic"] = ha_topic_avail;
+
+  if (wm.hasMotorTemperature())
+    haGenerateMotorTemperatureDiscovery(components);
+  if (wm.hasWaterTemperature())
+    haGenerateWaterTemperatureDiscovery(components);
+
+  // todo: the rest of the sensors
+  // docs: https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes
+  // docs: https://www.home-assistant.io/integrations/sensor/#device-class
+  // status enum (IDLE, RUNNING, etc)
+  // filter_pressure
+  // membrane_pressure
+  // product_salinity
+  // brine_salinity
+  // product_flowrate
+  // brine_flowrate
+  // total_flowrate
+  // tank_level
+  // product_volume
+  // flush_volume
+}
+
+void BrineomaticController::haGenerateMotorTemperatureDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_motor_temperature", ha_uuid);
+  sprintf(ha_topic_motor_temperature, "%s/motor_temperature", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Motor Temperature";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_motor_temperature;
+  obj["device_class"] = "temperature";
+  if (strcmp(wm.getTemperatureUnits(), "celcius") == 0)
+    obj["unit_of_measurement"] = "°C";
+  else
+    obj["unit_of_measurement"] = "°F";
+  obj["state_class"] = "measurement";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateWaterTemperatureDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_water_temperature", ha_uuid);
+  sprintf(ha_topic_water_temperature, "%s/water_temperature", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Water Temperature";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_water_temperature;
+  obj["device_class"] = "temperature";
+  if (strcmp(wm.getTemperatureUnits(), "celcius") == 0)
+    obj["unit_of_measurement"] = "°C";
+  else
+    obj["unit_of_measurement"] = "°F";
+  obj["state_class"] = "measurement";
+  obj["availability_topic"] = ha_topic_avail;
 }
 
 void BrineomaticController::handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup)

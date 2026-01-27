@@ -46,6 +46,9 @@ class BrineomaticController : public BaseController
     void haUpdateHook(MQTTController* mqtt) override;
     void haGenerateDiscoveryHook(JsonVariant components, const char* uuid, MQTTController* mqtt) override;
 
+    void haGenerateMotorTemperatureDiscovery(JsonVariant doc);
+    void haGenerateWaterTemperatureDiscovery(JsonVariant doc);
+
     static void handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
     void handleHACommandCallback(const char* topic, const char* payload, int retain, int qos, bool dup);
 
@@ -71,8 +74,9 @@ class BrineomaticController : public BaseController
     char ha_topic_avail[128];
     char ha_topic_cmd_state[128];
     char ha_topic_state_state[128];
-    // char ha_topic_voltage[128];
-    // char ha_topic_current[128];
+
+    char ha_topic_motor_temperature[128];
+    char ha_topic_water_temperature[128];
 
     static BrineomaticController* _instance;
 
