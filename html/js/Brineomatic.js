@@ -86,7 +86,6 @@
           const celsiusThresholds = [60, 70, 100];
           return celsiusThresholds.map(temp => YB.bom.convertTemperature(temp, "C", YB.App.config.brineomatic.temperature_units));
         },
-        // "thresholds": [60, 70, 100],
         "colors": [bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
       },
       "water_temperature": {
@@ -94,15 +93,20 @@
           const celsiusThresholds = [10, 30, 40, 50];
           return celsiusThresholds.map(temp => YB.bom.convertTemperature(temp, "C", YB.App.config.brineomatic.temperature_units));
         },
-        // "thresholds": [10, 30, 40, 50],
         "colors": [bootstrapColors.primary, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
       },
       "filter_pressure": {
-        "thresholds": [0, 0.34, 0.69, 2.76, 3.10, 3.45],
+        get thresholds() {
+          const barThresholds = [0, 0.34, 0.69, 2.76, 3.10, 3.45];
+          return barThresholds.map(pressure => YB.bom.convertPressure(pressure, "Bar", YB.App.config.brineomatic.pressure_units));
+        },
         "colors": [bootstrapColors.secondary, bootstrapColors.danger, bootstrapColors.warning, bootstrapColors.success, bootstrapColors.warning, bootstrapColors.danger]
       },
       "membrane_pressure": {
-        "thresholds": [0, 41.4, 48.3, 62.1, 69.0],
+        get thresholds() {
+          const barThresholds = [0, 41.4, 48.3, 62.1, 69.0];
+          return barThresholds.map(pressure => YB.bom.convertPressure(pressure, "Bar", YB.App.config.brineomatic.pressure_units));
+        },
         "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.primary, bootstrapColors.success, bootstrapColors.danger]
       },
       "product_salinity": {
@@ -212,12 +216,13 @@
       gauge: {
         label: {
           format: function (value, ratio) {
-            return `${value} Bar`;
+            let short = YB.bom.getShortPressureUnits(YB.App.config.brineomatic.pressure_units);
+            return `${value} ${short}`;
           },
           show: true
         },
-        min: 0,
-        max: 3.45,
+        min: YB.bom.convertPressure(0, "Bar", YB.App.config.brineomatic.pressure_units),
+        max: YB.bom.convertPressure(3.45, "Bar", YB.App.config.brineomatic.pressure_units),
       },
       color: {
         pattern: this.gaugeSetup.filter_pressure.colors,
@@ -243,12 +248,13 @@
       gauge: {
         label: {
           format: function (value, ratio) {
-            return `${value} Bar`;
+            let short = YB.bom.getShortPressureUnits(YB.App.config.brineomatic.pressure_units);
+            return `${value} ${short}`;
           },
           show: true
         },
-        min: 0,
-        max: 69.0,
+        min: YB.bom.convertPressure(0, "Bar", YB.App.config.brineomatic.pressure_units),
+        max: YB.bom.convertPressure(69.0, "Bar", YB.App.config.brineomatic.pressure_units),
       },
       color: {
         pattern: this.gaugeSetup.membrane_pressure.colors,
@@ -736,11 +742,13 @@
     let filter_pressure = parseFloat(msg.filter_pressure);
     if (filter_pressure < 0 && filter_pressure > -10)
       filter_pressure = 0;
+    filter_pressure = YB.bom.convertPressure(msg.filter_pressure, "Bar", YB.App.config.brineomatic.pressure_units);
     filter_pressure = Number(filter_pressure.toPrecision(2));
 
     let membrane_pressure = parseFloat(msg.membrane_pressure);
     if (membrane_pressure < 0 && membrane_pressure > -10)
       membrane_pressure = 0;
+    membrane_pressure = YB.bom.convertPressure(msg.membrane_pressure, "Bar", YB.App.config.brineomatic.pressure_units);
     membrane_pressure = Number(membrane_pressure.toPrecision(2));
 
     let tank_level = Math.round(msg.tank_level * 100);
@@ -1901,7 +1909,7 @@
                   </div>
                   <div class="filterPressureContent">
                     <h1 id="filterPressureData" class="my-0"></h1>
-                    <h5 id="filterPressureUnits" class="text-body-tertiary">Bar</h5>
+                    <h5 id="filterPressureUnits" class="text-body-tertiary pressureUnits">Bar</h5>
                   </div>
               </div>
               <div class="membranePressureUI col-md-3 col-sm-4 col-6">
@@ -1913,7 +1921,7 @@
                   </div>
                   <div class="membranePressureContent">
                     <h1 id="membranePressureData" class="my-0"></h1>
-                    <h5 id="membranePressureUnits" class="text-body-tertiary">Bar</h5>
+                    <h5 id="membranePressureUnits" class="text-body-tertiary pressureUnits">Bar</h5>
                   </div>
               </div>
               <div class="productSalinityUI col-md-3 col-sm-4 col-6">
@@ -2105,7 +2113,9 @@
 
       <div class="form-floating mb-3">
           <select id="pressure_units" class="form-select" aria-label="Pressure Units">
+            <option value="psi">PSI</option>
             <option value="bar">Bar</option>
+            <option value="kilopascal">Kpa</option>
           </select>
           <label for="pressure_units">Pressure Units</label>
           <div class="invalid-feedback"></div>
@@ -2186,7 +2196,7 @@
           <div class="input-group has-validation">
             <span class="input-group-text">Min</span>
             <input type="text" class="form-control text-end" id="membrane_pressure_sensor_min">
-            <span class="input-group-text">Bar</span>
+            <span class="input-group-text pressureUnits">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2195,7 +2205,7 @@
           <div class="input-group has-validation">
             <span class="input-group-text">Max</span>
             <input type="text" class="form-control text-end" id="membrane_pressure_sensor_max">
-            <span class="input-group-text">Bar</span>
+            <span class="input-group-text pressureUnits">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2218,7 +2228,7 @@
           <div class="input-group has-validation">
             <span class="input-group-text">Min</span>
             <input type="text" class="form-control text-end" id="filter_pressure_sensor_min">
-            <span class="input-group-text">Bar</span>
+            <span class="input-group-text pressureUnits">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2227,7 +2237,7 @@
           <div class="input-group has-validation">
             <span class="input-group-text">Max</span>
             <input type="text" class="form-control text-end" id="filter_pressure_sensor_max">
-            <span class="input-group-text">Bar</span>
+            <span class="input-group-text pressureUnits">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2446,7 +2456,7 @@
         <div class="input-group has-validation">
           <span class="input-group-text">Pressure Target</span>
           <input id="membrane_pressure_target" type="text" class="form-control text-end">
-          <span class="input-group-text">Bar</span>
+          <span class="input-group-text pressureUnits">Bar</span>
           <div class="invalid-feedback"></div>
         </div>
       </div>
@@ -2745,7 +2755,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="membrane_pressure_high_threshold">
-            <span class="input-group-text">Bar</span>
+            <span class="input-group-text pressureUnits">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2770,7 +2780,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="membrane_pressure_low_threshold">
-            <span class="input-group-text">Bar</span>
+            <span class="input-group-text pressureUnits">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2795,7 +2805,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="filter_pressure_high_threshold">
-            <span class="input-group-text">Bar</span>
+            <span class="input-group-text pressureUnits">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -2820,7 +2830,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="filter_pressure_low_threshold">
-            <span class="input-group-text">Bar</span>
+            <span class="input-group-text pressureUnits">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -3038,7 +3048,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="flush_filter_pressure_low_threshold">
-            <span class="input-group-text">Bar</span>
+            <span class="input-group-text pressureUnits">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -3063,7 +3073,7 @@
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="flush_valve_off_threshold">
-            <span class="input-group-text">Bar</span>
+            <span class="input-group-text pressureUnits">Bar</span>
             <div class="invalid-feedback"></div>
           </div>
         </div>
@@ -3099,6 +3109,9 @@
     $("#flowrate_units").val(data.flowrate_units);
 
     this.updateTemperatureUnits(data.temperature_units);
+    this.updatePressureUnits(data.pressure_units);
+    // this.updateVolumeUnits(data.volume_units);
+    // this.updateFlowrateUnits(data.flowrate_units);
 
     YB.Util.populateMelodySelector($("#success_melody"));
     $("#success_melody").val(data.success_melody);
@@ -3117,7 +3130,6 @@
     $("#high_pressure_modbus_frequency").val(data.high_pressure_modbus_frequency);
 
     $("#high_pressure_valve_control").val(data.high_pressure_valve_control);
-    $("#membrane_pressure_target").val(data.membrane_pressure_target);
     $("#high_pressure_valve_stepper_id").val(data.high_pressure_valve_stepper_id);
     $("#high_pressure_stepper_step_angle").val(data.high_pressure_stepper_step_angle);
     $("#high_pressure_stepper_gear_ratio").val(data.high_pressure_stepper_gear_ratio);
@@ -3125,6 +3137,10 @@
     $("#high_pressure_stepper_close_speed").val(data.high_pressure_stepper_close_speed);
     $("#high_pressure_stepper_open_angle").val(data.high_pressure_stepper_open_angle);
     $("#high_pressure_stepper_open_speed").val(data.high_pressure_stepper_open_speed);
+
+    let membrane_pressure_target = YB.bom.convertPressure(data.membrane_pressure_target, "Bar", YB.App.config.brineomatic.pressure_units);
+    membrane_pressure_target = membrane_pressure_target.toPrecision(2);
+    $("#membrane_pressure_target").val(membrane_pressure_target);
 
     $("#diverter_valve_control").val(data.diverter_valve_control);
     $("#diverter_valve_relay_id").val(data.diverter_valve_relay_id);
@@ -3151,12 +3167,24 @@
     $("#cooling_fan_off_temperature").val(cooling_fan_off_temp);
 
     $("#has_membrane_pressure_sensor").prop('checked', data.has_membrane_pressure_sensor);
-    $("#membrane_pressure_sensor_min").val(data.membrane_pressure_sensor_min);
-    $("#membrane_pressure_sensor_max").val(data.membrane_pressure_sensor_max);
+
+    let membrane_pressure_sensor_min = YB.bom.convertPressure(data.membrane_pressure_sensor_min, "Bar", YB.App.config.brineomatic.pressure_units);
+    membrane_pressure_sensor_min = membrane_pressure_sensor_min.toPrecision(2);
+    $("#membrane_pressure_sensor_min").val(membrane_pressure_sensor_min);
+
+    let membrane_pressure_sensor_max = YB.bom.convertPressure(data.membrane_pressure_sensor_max, "Bar", YB.App.config.brineomatic.pressure_units);
+    membrane_pressure_sensor_max = membrane_pressure_sensor_max.toPrecision(2);
+    $("#membrane_pressure_sensor_max").val(membrane_pressure_sensor_max);
 
     $("#has_filter_pressure_sensor").prop('checked', data.has_filter_pressure_sensor);
-    $("#filter_pressure_sensor_min").val(data.filter_pressure_sensor_min);
-    $("#filter_pressure_sensor_max").val(data.filter_pressure_sensor_max);
+
+    let filter_pressure_sensor_min = YB.bom.convertPressure(data.filter_pressure_sensor_min, "Bar", YB.App.config.brineomatic.pressure_units);
+    filter_pressure_sensor_min = filter_pressure_sensor_min.toPrecision(2);
+    $("#filter_pressure_sensor_min").val(filter_pressure_sensor_min);
+
+    let filter_pressure_sensor_max = YB.bom.convertPressure(data.filter_pressure_sensor_max, "Bar", YB.App.config.brineomatic.pressure_units);
+    filter_pressure_sensor_max = filter_pressure_sensor_max.toPrecision(2);
+    $("#filter_pressure_sensor_max").val(filter_pressure_sensor_max);
 
     $("#has_product_tds_sensor").prop('checked', data.has_product_tds_sensor);
     $("#product_tds_sensor_offset").val(data.product_tds_sensor_offset);
@@ -3180,20 +3208,28 @@
     $("#production_runtime_timeout").val(data.production_runtime_timeout / (60 * 60 * 1000));
 
     $("#enable_membrane_pressure_high_check").prop('checked', data.enable_membrane_pressure_high_check);
-    $("#membrane_pressure_high_threshold").val(data.membrane_pressure_high_threshold);
     $("#membrane_pressure_high_delay").val(data.membrane_pressure_high_delay);
+    let membrane_pressure_high_threshold = YB.bom.convertPressure(data.membrane_pressure_high_threshold, "Bar", YB.App.config.brineomatic.pressure_units);
+    membrane_pressure_high_threshold = membrane_pressure_high_threshold.toPrecision(2);
+    $("#membrane_pressure_high_threshold").val(membrane_pressure_high_threshold);
 
     $("#enable_membrane_pressure_low_check").prop('checked', data.enable_membrane_pressure_low_check);
-    $("#membrane_pressure_low_threshold").val(data.membrane_pressure_low_threshold);
     $("#membrane_pressure_low_delay").val(data.membrane_pressure_low_delay);
+    let membrane_pressure_low_threshold = YB.bom.convertPressure(data.membrane_pressure_low_threshold, "Bar", YB.App.config.brineomatic.pressure_units);
+    membrane_pressure_low_threshold = membrane_pressure_low_threshold.toPrecision(2);
+    $("#membrane_pressure_low_threshold").val(membrane_pressure_low_threshold);
 
     $("#enable_filter_pressure_high_check").prop('checked', data.enable_filter_pressure_high_check);
-    $("#filter_pressure_high_threshold").val(data.filter_pressure_high_threshold);
     $("#filter_pressure_high_delay").val(data.filter_pressure_high_delay);
+    let filter_pressure_high_threshold = YB.bom.convertPressure(data.filter_pressure_high_threshold, "Bar", YB.App.config.brineomatic.pressure_units);
+    filter_pressure_high_threshold = filter_pressure_high_threshold.toPrecision(2);
+    $("#filter_pressure_high_threshold").val(filter_pressure_high_threshold);
 
     $("#enable_filter_pressure_low_check").prop('checked', data.enable_filter_pressure_low_check);
-    $("#filter_pressure_low_threshold").val(data.filter_pressure_low_threshold);
     $("#filter_pressure_low_delay").val(data.filter_pressure_low_delay);
+    let filter_pressure_low_threshold = YB.bom.convertPressure(data.filter_pressure_low_threshold, "Bar", YB.App.config.brineomatic.pressure_units);
+    filter_pressure_low_threshold = filter_pressure_low_threshold.toPrecision(2);
+    $("#filter_pressure_low_threshold").val(filter_pressure_low_threshold);
 
     $("#enable_product_flowrate_high_check").prop('checked', data.enable_product_flowrate_high_check);
     $("#product_flowrate_high_threshold").val(data.product_flowrate_high_threshold);
@@ -3230,8 +3266,10 @@
     $("#flush_flowrate_low_delay").val(data.flush_flowrate_low_delay);
 
     $("#enable_flush_filter_pressure_low_check").prop('checked', data.enable_flush_filter_pressure_low_check);
-    $("#flush_filter_pressure_low_threshold").val(data.flush_filter_pressure_low_threshold);
     $("#flush_filter_pressure_low_delay").val(data.flush_filter_pressure_low_delay);
+    let flush_filter_pressure_low_threshold = YB.bom.convertPressure(data.flush_filter_pressure_low_threshold, "Bar", YB.App.config.brineomatic.pressure_units);
+    flush_filter_pressure_low_threshold = flush_filter_pressure_low_threshold.toPrecision(2);
+    $("#flush_filter_pressure_low_threshold").val(flush_filter_pressure_low_threshold);
 
     $("#enable_flush_valve_off_check").prop('checked', data.enable_flush_valve_off_check);
     $("#flush_valve_off_threshold").val(data.flush_valve_off_threshold);
@@ -3289,26 +3327,47 @@
 
   Brineomatic.prototype.addEditUIHandlers = function (data) {
     $("#temperature_units").on("change", (e) => {
-      /*
-      * Update our edit form first before the config is overwritten
-      */
-      let motor_temp_threshold = parseFloat($("#motor_temperature_high_threshold").val());
-      motor_temp_threshold = YB.bom.convertTemperature(motor_temp_threshold, YB.App.config.brineomatic.temperature_units, e.target.value);
-      motor_temp_threshold = Math.round(motor_temp_threshold);
-      $("#motor_temperature_high_threshold").val(motor_temp_threshold);
+      // helper function
+      const convertTemperatureField = (fieldId) => {
+        let value = parseFloat($(fieldId).val());
+        value = YB.bom.convertTemperature(value, YB.App.config.brineomatic.temperature_units, e.target.value);
+        value = Math.round(value);
+        $(fieldId).val(value);
+      };
 
-      let cooling_fan_on_temp = parseFloat($("#cooling_fan_on_temperature").val());
-      cooling_fan_on_temp = YB.bom.convertTemperature(cooling_fan_on_temp, YB.App.config.brineomatic.temperature_units, e.target.value);
-      cooling_fan_on_temp = Math.round(cooling_fan_on_temp);
-      $("#cooling_fan_on_temperature").val(cooling_fan_on_temp);
-
-      let cooling_fan_off_temp = parseFloat($("#cooling_fan_off_temperature").val());
-      cooling_fan_off_temp = YB.bom.convertTemperature(cooling_fan_off_temp, YB.App.config.brineomatic.temperature_units, e.target.value);
-      cooling_fan_off_temp = Math.round(cooling_fan_off_temp);
-      $("#cooling_fan_off_temperature").val(cooling_fan_off_temp);
+      convertTemperatureField("#motor_temperature_high_threshold");
+      convertTemperatureField("#cooling_fan_on_temperature");
+      convertTemperatureField("#cooling_fan_off_temperature");
 
       //now do everything else.
       YB.bom.updateTemperatureUnits(e.target.value);
+    });
+
+    $("#pressure_units").on("change", (e) => {
+      // helper function
+      const convertPressureField = (fieldId) => {
+        let value = parseFloat($(fieldId).val());
+        value = YB.bom.convertPressure(value, YB.App.config.brineomatic.pressure_units, e.target.value);
+        value = this.formatReadable(value);
+        $(fieldId).val(value);
+      };
+
+      // Hardware config pressure fields
+      convertPressureField("#membrane_pressure_target");
+      convertPressureField("#membrane_pressure_sensor_min");
+      convertPressureField("#membrane_pressure_sensor_max");
+      convertPressureField("#filter_pressure_sensor_min");
+      convertPressureField("#filter_pressure_sensor_max");
+
+      // Safeguards config pressure fields
+      convertPressureField("#membrane_pressure_high_threshold");
+      convertPressureField("#membrane_pressure_low_threshold");
+      convertPressureField("#filter_pressure_high_threshold");
+      convertPressureField("#filter_pressure_low_threshold");
+      convertPressureField("#flush_filter_pressure_low_threshold");
+
+      //now do everything else.
+      YB.bom.updatePressureUnits(e.target.value);
     });
 
     $("#autoflush_mode").on("change", (e) => {
@@ -3432,6 +3491,40 @@
       //thresholds
       this.waterTemperatureGauge.internal.config.color_threshold.values = this.gaugeSetup.water_temperature.thresholds;
       this.waterTemperatureGauge.internal.levelColor = this.waterTemperatureGauge.internal.generateLevelColor.call(this.waterTemperatureGauge.internal);
+    }
+  }
+
+  Brineomatic.prototype.updatePressureUnits = function (units) {
+    //we need this as its pulled dynamically in other places
+    YB.App.config.brineomatic.pressure_units = units;
+
+    //update static units
+    let short = YB.bom.getShortPressureUnits(units);
+    $(".pressureUnits").html(short);
+
+    //update gauge thresholds
+    if (this.membranePressureGauge) {
+      //update our min/max
+      let tempMin = Math.round(YB.bom.convertPressure(0, "Bar", YB.App.config.brineomatic.pressure_units));
+      let tempMax = Math.round(YB.bom.convertPressure(69.0, "Bar", YB.App.config.brineomatic.pressure_units));
+      this.membranePressureGauge.internal.config.gauge_min = tempMin;
+      this.membranePressureGauge.internal.config.gauge_max = tempMax;
+
+      //thresholds
+      this.membranePressureGauge.internal.config.color_threshold.values = this.gaugeSetup.membrane_pressure.thresholds;
+      this.membranePressureGauge.internal.levelColor = this.membranePressureGauge.internal.generateLevelColor.call(this.membranePressureGauge.internal);
+    }
+
+    if (this.filterPressureGauge) {
+      //update our min/max
+      let tempMin = Math.round(YB.bom.convertPressure(0, "Bar", YB.App.config.brineomatic.pressure_units));
+      let tempMax = Math.round(YB.bom.convertPressure(3.45, "Bar", YB.App.config.brineomatic.pressure_units));
+      this.filterPressureGauge.internal.config.gauge_min = tempMin;
+      this.filterPressureGauge.internal.config.gauge_max = tempMax;
+
+      //thresholds
+      this.filterPressureGauge.internal.config.color_threshold.values = this.gaugeSetup.filter_pressure.thresholds;
+      this.filterPressureGauge.internal.levelColor = this.filterPressureGauge.internal.generateLevelColor.call(this.filterPressureGauge.internal);
     }
   }
 
@@ -3730,7 +3823,6 @@
     data.high_pressure_modbus_frequency = parseFloat($("#high_pressure_modbus_frequency").val());
 
     data.high_pressure_valve_control = $("#high_pressure_valve_control").val();
-    data.membrane_pressure_target = parseFloat($("#membrane_pressure_target").val());
     data.high_pressure_valve_stepper_id = parseInt($("#high_pressure_valve_stepper_id").val());
     data.high_pressure_stepper_step_angle = parseFloat($("#high_pressure_stepper_step_angle").val());
     data.high_pressure_stepper_gear_ratio = parseFloat($("#high_pressure_stepper_gear_ratio").val());
@@ -3738,6 +3830,9 @@
     data.high_pressure_stepper_close_speed = parseFloat($("#high_pressure_stepper_close_speed").val());
     data.high_pressure_stepper_open_angle = parseFloat($("#high_pressure_stepper_open_angle").val());
     data.high_pressure_stepper_open_speed = parseFloat($("#high_pressure_stepper_open_speed").val());
+
+    let membrane_pressure_target = parseFloat($("#membrane_pressure_target").val());
+    data.membrane_pressure_target = YB.bom.convertPressure(membrane_pressure_target, YB.App.config.brineomatic.pressure_units, "Bar");
 
     data.diverter_valve_control = $("#diverter_valve_control").val();
     data.diverter_valve_relay_id = parseInt($("#diverter_valve_relay_id").val());
@@ -3761,12 +3856,16 @@
     data.cooling_fan_off_temperature = YB.bom.convertTemperature(cooling_fan_off_temp, YB.App.config.brineomatic.temperature_units, "C");
 
     data.has_membrane_pressure_sensor = $("#has_membrane_pressure_sensor").prop("checked");
-    data.membrane_pressure_sensor_min = parseFloat($("#membrane_pressure_sensor_min").val());
-    data.membrane_pressure_sensor_max = parseFloat($("#membrane_pressure_sensor_max").val());
+    let membrane_pressure_sensor_min = parseFloat($("#membrane_pressure_sensor_min").val());
+    data.membrane_pressure_sensor_min = YB.bom.convertPressure(membrane_pressure_sensor_min, YB.App.config.brineomatic.pressure_units, "Bar");
+    let membrane_pressure_sensor_max = parseFloat($("#membrane_pressure_sensor_max").val());
+    data.membrane_pressure_sensor_max = YB.bom.convertPressure(membrane_pressure_sensor_max, YB.App.config.brineomatic.pressure_units, "Bar");
 
     data.has_filter_pressure_sensor = $("#has_filter_pressure_sensor").prop("checked");
-    data.filter_pressure_sensor_min = parseFloat($("#filter_pressure_sensor_min").val());
-    data.filter_pressure_sensor_max = parseFloat($("#filter_pressure_sensor_max").val());
+    let filter_pressure_sensor_min = parseFloat($("#filter_pressure_sensor_min").val());
+    data.filter_pressure_sensor_min = YB.bom.convertPressure(filter_pressure_sensor_min, YB.App.config.brineomatic.pressure_units, "Bar");
+    let filter_pressure_sensor_max = parseFloat($("#filter_pressure_sensor_max").val());
+    data.filter_pressure_sensor_max = YB.bom.convertPressure(filter_pressure_sensor_max, YB.App.config.brineomatic.pressure_units, "Bar");
 
     data.has_product_tds_sensor = $("#has_product_tds_sensor").prop("checked");
     data.product_tds_sensor_offset = parseFloat($("#product_tds_sensor_offset").val());
@@ -3796,19 +3895,23 @@
     data.production_runtime_timeout = Math.round(parseFloat($("#production_runtime_timeout").val() * 60 * 60 * 1000));
 
     data.enable_membrane_pressure_high_check = $("#enable_membrane_pressure_high_check").prop("checked");
-    data.membrane_pressure_high_threshold = parseFloat($("#membrane_pressure_high_threshold").val());
+    let membrane_pressure_high_threshold = parseFloat($("#membrane_pressure_high_threshold").val());
+    data.membrane_pressure_high_threshold = YB.bom.convertPressure(membrane_pressure_high_threshold, YB.App.config.brineomatic.pressure_units, "Bar");
     data.membrane_pressure_high_delay = parseInt($("#membrane_pressure_high_delay").val());
 
     data.enable_membrane_pressure_low_check = $("#enable_membrane_pressure_low_check").prop("checked");
-    data.membrane_pressure_low_threshold = parseFloat($("#membrane_pressure_low_threshold").val());
+    let membrane_pressure_low_threshold = parseFloat($("#membrane_pressure_low_threshold").val());
+    data.membrane_pressure_low_threshold = YB.bom.convertPressure(membrane_pressure_low_threshold, YB.App.config.brineomatic.pressure_units, "Bar");
     data.membrane_pressure_low_delay = parseInt($("#membrane_pressure_low_delay").val());
 
     data.enable_filter_pressure_high_check = $("#enable_filter_pressure_high_check").prop("checked");
-    data.filter_pressure_high_threshold = parseFloat($("#filter_pressure_high_threshold").val());
+    let filter_pressure_high_threshold = parseFloat($("#filter_pressure_high_threshold").val());
+    data.filter_pressure_high_threshold = YB.bom.convertPressure(filter_pressure_high_threshold, YB.App.config.brineomatic.pressure_units, "Bar");
     data.filter_pressure_high_delay = parseInt($("#filter_pressure_high_delay").val());
 
     data.enable_filter_pressure_low_check = $("#enable_filter_pressure_low_check").prop("checked");
-    data.filter_pressure_low_threshold = parseFloat($("#filter_pressure_low_threshold").val());
+    let filter_pressure_low_threshold = parseFloat($("#filter_pressure_low_threshold").val());
+    data.filter_pressure_low_threshold = YB.bom.convertPressure(filter_pressure_low_threshold, YB.App.config.brineomatic.pressure_units, "Bar");
     data.filter_pressure_low_delay = parseInt($("#filter_pressure_low_delay").val());
 
     data.enable_product_flowrate_high_check = $("#enable_product_flowrate_high_check").prop("checked");
@@ -3845,7 +3948,8 @@
     data.flush_flowrate_low_delay = parseInt($("#flush_flowrate_low_delay").val());
 
     data.enable_flush_filter_pressure_low_check = $("#enable_flush_filter_pressure_low_check").prop("checked");
-    data.flush_filter_pressure_low_threshold = parseFloat($("#flush_filter_pressure_low_threshold").val());
+    let flush_filter_pressure_low_threshold = parseFloat($("#flush_filter_pressure_low_threshold").val());
+    data.flush_filter_pressure_low_threshold = YB.bom.convertPressure(flush_filter_pressure_low_threshold, YB.App.config.brineomatic.pressure_units, "Bar");
     data.flush_filter_pressure_low_delay = parseInt($("#flush_filter_pressure_low_delay").val());
 
     data.enable_flush_valve_off_check = $("#enable_flush_valve_off_check").prop("checked");
@@ -4408,6 +4512,28 @@
     return unit;
   }
 
+  Brineomatic.prototype.getShortPressureUnits = function (unit) {
+    const lower = unit.toLowerCase();
+    if (lower === 'kilopascal') return 'Kpa';
+    if (lower === 'psi') return 'PSI';
+    if (lower === 'bar') return 'Bar';
+    return unit;
+  }
+
+  Brineomatic.prototype.getShortVolumeUnits = function (unit) {
+    const lower = unit.toLowerCase();
+    if (lower === 'liters') return 'L';
+    if (lower === 'gallons') return 'G';
+    return unit;
+  }
+
+  Brineomatic.prototype.getShortFlowrateUnits = function (unit) {
+    const lower = unit.toLowerCase();
+    if (lower === 'lph' || lower === 'liters per hour') return 'LPH';
+    if (lower === 'gph' || lower === 'gallons per hour') return 'GPH';
+    return unit;
+  }
+
   // units = C or F (or celsius, fahrenheit)
   Brineomatic.prototype.convertTemperature = function (value, start_units, end_units) {
     // Normalize long-form units to short-form
@@ -4548,6 +4674,37 @@
 
     // Invalid units provided
     return value;
+  }
+
+  /**
+   * Formats a number for form inputs with dynamic precision.
+   * @param {number} value - The number to format.
+   * @param {number} totalPrecision - The target number of total digits (default 3).
+   */
+  Brineomatic.prototype.formatReadable = function (value, totalPrecision = 3) {
+    if (value === 0) return "0";
+
+    const absValue = Math.abs(value);
+
+    // Count integer digits (e.g., 123.4 -> 3)
+    // For numbers < 1, we treat integer digits as 1 (the leading 0)
+    const integerDigits = absValue >= 1 ? Math.floor(Math.log10(absValue)) + 1 : 1;
+
+    // Calculate decimals: total precision minus the space taken by whole numbers
+    let decimalPlaces = Math.max(0, totalPrecision - integerDigits);
+
+    // If the number is very small (0.00...), we want to ensure 
+    // we still show digits based on the precision.
+    if (absValue < 1 && absValue > 0) {
+      const firstSignificant = Math.ceil(-Math.log10(absValue));
+      decimalPlaces = Math.max(decimalPlaces, firstSignificant + (totalPrecision - 1));
+    }
+
+    return new Intl.NumberFormat('en-US', {
+      useGrouping: false, // Removes commas
+      minimumFractionDigits: 0,
+      maximumFractionDigits: decimalPlaces,
+    }).format(value);
   }
 
   YB.Brineomatic = Brineomatic;
