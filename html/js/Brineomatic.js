@@ -608,21 +608,29 @@
     volume = this.formatReadable(volume);
 
     let flush_volume = YB.bom.convertVolume(msg.flush_volume, "liters", YB.App.config.brineomatic.volume_units);
-    flush_volume = this.formatReadable(volume);
+    flush_volume = this.formatReadable(flush_volume);
 
     let product_salinity = this.formatReadable(msg.product_salinity);
     let brine_salinity = this.formatReadable(msg.brine_salinity);
 
     let filter_pressure = parseFloat(msg.filter_pressure);
+    //ignore small negative - measurement error
     if (filter_pressure < 0 && filter_pressure > -10)
       filter_pressure = 0;
-    filter_pressure = YB.bom.convertPressure(msg.filter_pressure, "Bar", YB.App.config.brineomatic.pressure_units);
+    //ignore low readings - measurement error
+    if (filter_pressure > 0 && filter_pressure < parseFloat(YB.App.config.brineomatic.filter_pressure_sensor_max) * 0.01)
+      filter_pressure = 0;
+    filter_pressure = YB.bom.convertPressure(filter_pressure, "Bar", YB.App.config.brineomatic.pressure_units);
     filter_pressure = this.formatReadable(filter_pressure);
 
     let membrane_pressure = parseFloat(msg.membrane_pressure);
+    //ignore small negative - measurement error
     if (membrane_pressure < 0 && membrane_pressure > -10)
       membrane_pressure = 0;
-    membrane_pressure = YB.bom.convertPressure(msg.membrane_pressure, "Bar", YB.App.config.brineomatic.pressure_units);
+    //ignore low readings - measurement error
+    if (membrane_pressure > 0 && membrane_pressure < parseFloat(YB.App.config.brineomatic.membrane_pressure_sensor_max) * 0.01)
+      membrane_pressure = 0;
+    membrane_pressure = YB.bom.convertPressure(membrane_pressure, "Bar", YB.App.config.brineomatic.pressure_units);
     membrane_pressure = this.formatReadable(membrane_pressure);
 
     let tank_level = this.formatReadable(msg.tank_level * 100);
@@ -4709,7 +4717,7 @@
   };
 
   /**
-   * Formats a number for form inputs with dynamic precision.
+   * Formats a number with dynamic precision.
    * @param {number} value - The number to format.
    * @param {number} totalPrecision - The target number of total digits (default 3).
    */
@@ -4734,7 +4742,7 @@
 
     return new Intl.NumberFormat('en-US', {
       useGrouping: false, // Removes commas
-      minimumFractionDigits: 0,
+      minimumFractionDigits: decimalPlaces,
       maximumFractionDigits: decimalPlaces,
     }).format(value);
   };
