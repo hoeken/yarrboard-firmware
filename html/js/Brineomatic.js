@@ -3,6 +3,49 @@
   var YB = global.YB || {};
 
 
+
+  /**
+ * Converts seconds to a human-readable string (Days, Hours, Minutes, Seconds).
+ * @param {number|string} seconds - The total seconds to convert.
+ * @param {number} [details=2] - The number of significant units to display.
+ * 1 = "1 day"
+ * 2 = "1 day, 2 hours"
+ */
+  YB.Util.secondsToDhms = function (seconds, details = 2, short = true) {
+    seconds = Number(seconds);
+
+    // Calculate all units
+    var months = Math.floor(seconds / (3600 * 24 * 30));
+    var d = Math.floor(seconds / (3600 * 24));
+    var h = Math.floor(seconds % (3600 * 24) / 3600);
+    var m = Math.floor(seconds % 3600 / 60);
+    var s = Math.floor(seconds % 60);
+
+    // Create an array of the non-zero parts
+    var parts = [];
+
+    if (short) {
+      if (months > 0) parts.push(months + (months == 1 ? " month" : " months"));
+      if (d > 0) parts.push(d + (d == 1 ? " day" : " days"));
+      if (h > 0) parts.push(h + (h == 1 ? " hr" : " hrs"));
+      if (m > 0) parts.push(m + (m == 1 ? " min" : " mins"));
+      if (s > 0) parts.push(s + (s == 1 ? " sec" : " secs"));
+    } else {
+      if (months > 0) parts.push(months + (months == 1 ? " month" : " months"));
+      if (d > 0) parts.push(d + (d == 1 ? " day" : " days"));
+      if (h > 0) parts.push(h + (h == 1 ? " hour" : " hours"));
+      if (m > 0) parts.push(m + (m == 1 ? " minute" : " minutes"));
+      if (s > 0) parts.push(s + (s == 1 ? " second" : " seconds"));
+    }
+
+    // If the input was 0, return empty string or "0 seconds" depending on preference
+    // The original function returned an empty string for 0, preserving that behavior:
+    if (parts.length === 0) return "";
+
+    // Slice the array to the requested number of details and join them
+    return parts.slice(0, details).join(", ");
+  };
+
   // Base class for all channels
   function Brineomatic() {
     this.resultText = {
