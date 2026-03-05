@@ -80,12 +80,26 @@ void PWMChannel::setupINA226()
   YBP.print("DIE:\t");
   YBP.println(ina226->getDieID(), HEX);
 
-  ina226->setBusVoltageConversionTime(INA226_8300_us);
+  ina226->setBusVoltageConversionTime(INA226_332_us);
   ina226->setShuntVoltageConversionTime(INA226_140_us);
   ina226->setAverage(INA226_128_SAMPLES);
 
-  YBP.printf("Bus Voltage Conversion Time: %dus\n", ina226->getBusVoltageConversionTime());
-  YBP.printf("Shunt Voltage Conversion Time: %dus\n", ina226->getShuntVoltageConversionTime());
+  static const uint32_t ina226_timing_us[] = {140, 204, 332, 588, 1100, 2100, 4200, 8300};
+  static const uint16_t ina226_samples[] = {1, 4, 16, 64, 128, 256, 512, 1024};
+
+  uint32_t busUs = ina226_timing_us[ina226->getBusVoltageConversionTime()];
+  uint32_t shuntUs = ina226_timing_us[ina226->getShuntVoltageConversionTime()];
+  uint16_t samples = ina226_samples[ina226->getAverage()];
+
+  YBP.printf("Bus Voltage Conversion Time: %d us\n", busUs);
+  YBP.printf("Shunt Voltage Conversion Time: %d us\n", shuntUs);
+  YBP.printf("Averages: %d samples\n", samples);
+
+  voltageUpdateInterval = (busUs * samples) / 1000 + 1;
+  amperageUpdateInterval = (shuntUs * samples) / 1000 + 1;
+
+  YBP.printf("Bus Voltage Conversion Time: %dms\n", voltageUpdateInterval);
+  YBP.printf("Shunt Voltage Conversion Time: %dms\n", amperageUpdateInterval);
 
   int x = ina226->setMaxCurrentShunt(YB_PWM_CHANNEL_MAX_AMPS, YB_PWM_CHANNEL_INA226_SHUNT);
   YBP.println("normalized = true (default)");
@@ -104,14 +118,12 @@ void PWMChannel::setupINA226()
 
 void PWMChannel::readINA226()
 {
-  // todo: need to calculate the actual voltage update time.
-  if (millis() - lastVoltageUpdate > 100) {
+  if (millis() - lastVoltageUpdate > voltageUpdateInterval) {
     lastVoltage = ina226->getBusVoltage();
     lastVoltageUpdate = millis();
   }
 
-  // todo: need to calculate the actual amperage update time.
-  if (millis() - lastAmperageUpdate > 100) {
+  if (millis() - lastAmperageUpdate > amperageUpdateInterval) {
     lastAmperage = ina226->getCurrent();
     lastAmperageUpdate = millis();
   }
@@ -443,8 +455,9 @@ void PWMChannel::checkFuseBlown()
           return;
 
         YBP.printf("CH%d BLOWN: %.3f < %.3f | DUTY: %.2f | isDimmable: %d | BUS VOLTAGE: %.3f\n", this->id, voltage, minVoltage, duty, isDimmable, bv);
+  #ifdef YB_HAS_CHANNEL_VOLTAGE
         this->voltageHelper->printDebug(this->id - 1, true);
-
+  #endif
         this->status = Status::BLOWN;
         this->outputState = false;
         this->updateOutput(false);
@@ -473,8 +486,9 @@ void PWMChannel::checkFuseBypassed()
         return;
 
       YBP.printf("CH%d BYPASSED: %.3f >= %.3f | STATUS: %s | BUS VOLTAGE: %.3f\n", this->id, voltage, minVoltage, this->getStatus(), bv);
+  #ifdef YB_HAS_CHANNEL_VOLTAGE
       this->voltageHelper->printDebug(this->id - 1, true);
-
+  #endif
       // dont change our outputState here... bypass can be temporary
       this->status = Status::BYPASSED;
     }
@@ -495,7 +509,9 @@ void PWMChannel::checkSoftFuse()
     if (amperage >= this->softFuseAmperage || amperage >= YB_PWM_CHANNEL_MAX_AMPS) {
 
       YBP.printf("CH%d TRIPPED: %.3f >= %.3f (soft) or %.3f (max) | STATUS: %s\n", this->id, amperage, this->softFuseAmperage, YB_PWM_CHANNEL_MAX_AMPS, this->getStatus());
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
       this->amperageHelper->printDebug(this->id - 1, true);
+  #endif
 
       // record some variables
       this->status = Status::TRIPPED;
@@ -769,7 +785,7 @@ void PWMChannel::setState(bool newState)
     else
       this->status = Status::OFF;
 
-  // clear our readings since we want fresh readings.
+      // clear our readings since we want fresh readings.
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
     this->amperageHelper->clearReadings(_adcAmperageChannel);
   #endif

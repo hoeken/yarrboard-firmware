@@ -152,8 +152,11 @@ class PWMChannel : public BaseChannel
     void readINA226();
     float lastVoltage;
     uint32_t lastVoltageUpdate = 0;
+    uint32_t voltageUpdateInterval = 100;
+
     float lastAmperage;
     uint32_t lastAmperageUpdate = 0;
+    uint32_t amperageUpdateInterval = 100;
   #endif
 
   #ifdef YB_PWM_CHANNEL_HAS_LM75

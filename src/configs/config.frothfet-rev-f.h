@@ -21,7 +21,7 @@
 
 #define YB_HAS_PWM_CHANNELS
 #define YB_PWM_CHANNEL_COUNT           8
-#define YB_PWM_CHANNEL_PINS            {9, 8, 7, 6, 5, 4, 2, 1}
+#define YB_PWM_CHANNEL_PINS            {1, 2, 4, 5, 6, 7, 8, 9}
 #define YB_PWM_CHANNEL_ENABLE_PIN      21
 #define YB_PWM_CHANNEL_INVERTED        true
 #define YB_PWM_CHANNEL_FREQUENCY       1000
