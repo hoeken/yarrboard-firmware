@@ -32,6 +32,8 @@ PWMController::PWMController(YarrboardApp& app) : ChannelController(app, "pwm")
 
 bool PWMController::setup()
 {
+  _instance = this; // Capture the instance for callbacks
+
   _app.protocol.registerCommand(GUEST, "set_pwm_channel", this, &PWMController::handleSetCommand);
   _app.protocol.registerCommand(GUEST, "toggle_pwm_channel", this, &PWMController::handleToggleCommand);
   _app.protocol.registerCommand(ADMIN, "config_pwm_channel", this, &PWMController::handleConfigCommand);

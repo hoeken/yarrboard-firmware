@@ -67,18 +67,18 @@ void PWMChannel::setupINA226()
     FALLING);
     #endif
 
-  YBP.printf("INA226 CH %d Setup\n", this->id);
+  // YBP.printf("INA226 CH %d Setup\n", this->id);
 
   ina226 = new INA226(_ina226_addresses[this->id - 1]);
   if (!ina226->begin())
-    YBP.println("INA226 could not connect.");
-  else
-    YBP.println("INA226 OK");
+    YBP.printf("INA226 CH%d could not connect.", this->id);
+  // else
+  //   YBP.printf("INA226 %d OK");
 
-  YBP.print("MAN:\t");
-  YBP.println(ina226->getManufacturerID(), HEX);
-  YBP.print("DIE:\t");
-  YBP.println(ina226->getDieID(), HEX);
+  // YBP.print("MAN:\t");
+  // YBP.println(ina226->getManufacturerID(), HEX);
+  // YBP.print("DIE:\t");
+  // YBP.println(ina226->getDieID(), HEX);
 
   ina226->setBusVoltageConversionTime(INA226_332_us);
   ina226->setShuntVoltageConversionTime(INA226_140_us);
@@ -91,29 +91,29 @@ void PWMChannel::setupINA226()
   uint32_t shuntUs = ina226_timing_us[ina226->getShuntVoltageConversionTime()];
   uint16_t samples = ina226_samples[ina226->getAverage()];
 
-  YBP.printf("Bus Voltage Conversion Time: %d us\n", busUs);
-  YBP.printf("Shunt Voltage Conversion Time: %d us\n", shuntUs);
-  YBP.printf("Averages: %d samples\n", samples);
+  // YBP.printf("Bus Voltage Conversion Time: %d us\n", busUs);
+  // YBP.printf("Shunt Voltage Conversion Time: %d us\n", shuntUs);
+  // YBP.printf("Averages: %d samples\n", samples);
 
   voltageUpdateInterval = (busUs * samples) / 1000 + 1;
   amperageUpdateInterval = (shuntUs * samples) / 1000 + 1;
 
-  YBP.printf("Bus Voltage Conversion Time: %dms\n", voltageUpdateInterval);
-  YBP.printf("Shunt Voltage Conversion Time: %dms\n", amperageUpdateInterval);
+  // YBP.printf("Bus Voltage Conversion Time: %dms\n", voltageUpdateInterval);
+  // YBP.printf("Shunt Voltage Conversion Time: %dms\n", amperageUpdateInterval);
 
   int x = ina226->setMaxCurrentShunt(YB_PWM_CHANNEL_MAX_AMPS, YB_PWM_CHANNEL_INA226_SHUNT);
-  YBP.println("normalized = true (default)");
-  YBP.println(x);
 
-  YBP.print("LSB:\t");
-  YBP.println(ina226->getCurrentLSB(), 10);
-  YBP.print("LSB_uA:\t");
-  YBP.println(ina226->getCurrentLSB_uA(), 3);
-  YBP.print("shunt:\t");
-  YBP.println(ina226->getShunt(), 3);
-  YBP.print("maxCur:\t");
-  YBP.println(ina226->getMaxCurrent(), 3);
-  YBP.println();
+  // YBP.println("normalized = true (default)");
+  // YBP.println(x);
+  // YBP.print("LSB:\t");
+  // YBP.println(ina226->getCurrentLSB(), 10);
+  // YBP.print("LSB_uA:\t");
+  // YBP.println(ina226->getCurrentLSB_uA(), 3);
+  // YBP.print("shunt:\t");
+  // YBP.println(ina226->getShunt(), 3);
+  // YBP.print("maxCur:\t");
+  // YBP.println(ina226->getMaxCurrent(), 3);
+  // YBP.println();
 }
 
 void PWMChannel::readINA226()
