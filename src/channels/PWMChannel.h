@@ -205,7 +205,7 @@ class PWMChannel : public BaseChannel
     void haPublishState(MQTTController* mqtt);
     void haHandleCommand(const char* topic, const char* payload);
 
-    static void ARDUINO_ISR_ATTR onFadeISR(void* arg)
+    static void IRAM_ATTR onFadeISR(void* arg)
     {
       // ISR context — keep it tiny
       auto* self = static_cast<PWMChannel*>(arg);
@@ -214,7 +214,7 @@ class PWMChannel : public BaseChannel
     }
 
     // ISR (Arduino style)
-    static void ARDUINO_ISR_ATTR gammaISR(void* arg);
+    static void IRAM_ATTR gammaISR(void* arg);
     static void continueGammaThunk(void* arg, uint32_t);
 
   private:

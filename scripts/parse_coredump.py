@@ -34,7 +34,7 @@ You need to run this every time you open a new shell:
     formatter_class=argparse.RawTextHelpFormatter
 	)
 	parser.add_argument("--version", help="Version of the firmware, eg. 1.2.3", default="dev")
-	parser.add_argument("--file", help="Path to the file.", default="coredump.txt");
+	parser.add_argument("--file", help="Path to the file.", default="coredump.bin");
 	parser.add_argument("--board", help="Hardware board revision, eg. RGB_INPUT_REV_A")
 
 	args = parser.parse_args()

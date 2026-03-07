@@ -664,7 +664,7 @@ bool PWMChannel::gammaFadeWithInterrupt(
     &gamma);
 }
 
-void ARDUINO_ISR_ATTR PWMChannel::gammaISR(void* arg)
+void IRAM_ATTR PWMChannel::gammaISR(void* arg)
 {
   auto* S = static_cast<PWMChannel::GammaState*>(arg);
   if (!S || !S->active)
