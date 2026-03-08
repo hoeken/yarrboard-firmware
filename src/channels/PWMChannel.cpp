@@ -936,7 +936,7 @@ void PWMChannel::haPublishState(MQTTController* mqtt)
       brightness = 255;
     snprintf(b, sizeof(b), "%u", brightness);
 
-    mqtt->publish(ha_topic_state_state, b, false);
+    mqtt->publish(ha_topic_state_brightness, b, false);
   }
 }
 
