@@ -78,6 +78,7 @@ class BrineomaticController : public BaseController
     char ha_topic_motor_temperature[128];
     char ha_topic_water_temperature[128];
 
+    bool _haCallbacksRegistered = false;
     static BrineomaticController* _instance;
 
     // The actual state machine logic

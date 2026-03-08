@@ -840,9 +840,13 @@ void PWMChannel::haGenerateDiscovery(JsonVariant doc, const char* uuid, MQTTCont
   sprintf(ha_topic_voltage, "yarrboard/%s/pwm/%s/voltage", ha_key, this->key);
   sprintf(ha_topic_current, "yarrboard/%s/pwm/%s/current", ha_key, this->key);
 
-  // our callbacks to the command topics
-  mqtt->onTopic(ha_topic_cmd_state, 0, &PWMController::handleHACommandCallbackStatic);
-  mqtt->onTopic(ha_topic_cmd_brightness, 0, &PWMController::handleHACommandCallbackStatic);
+  // Register command-topic callbacks once; haGenerateDiscovery is called on every
+  // HA reconnect so we must guard against accumulating duplicate entries.
+  if (!_haCallbacksRegistered) {
+    mqtt->onTopic(ha_topic_cmd_state, 0, &PWMController::handleHACommandCallbackStatic);
+    mqtt->onTopic(ha_topic_cmd_brightness, 0, &PWMController::handleHACommandCallbackStatic);
+    _haCallbacksRegistered = true;
+  }
 
   this->haGenerateLightDiscovery(doc);
   this->haGenerateVoltageDiscovery(doc);

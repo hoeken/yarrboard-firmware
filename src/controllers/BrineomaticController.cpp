@@ -192,7 +192,10 @@ void BrineomaticController::haGenerateDiscoveryHook(JsonVariant components, cons
   sprintf(ha_topic_cmd_state, "%s/ha/set", ha_uuid);
   sprintf(ha_topic_state_state, "%s/ha/state", ha_uuid);
 
-  mqtt->onTopic(ha_topic_cmd_state, 0, &BrineomaticController::handleHACommandCallbackStatic);
+  if (!_haCallbacksRegistered) {
+    mqtt->onTopic(ha_topic_cmd_state, 0, &BrineomaticController::handleHACommandCallbackStatic);
+    _haCallbacksRegistered = true;
+  }
 
   // configuration object for the individual channel
   JsonObject obj = components[ha_uuid].to<JsonObject>();
