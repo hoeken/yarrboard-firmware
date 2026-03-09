@@ -108,6 +108,18 @@
               <th id="pwmOnCountTotal" class="text-end"></th>
               <th id="pwmTripCountTotal" class="text-end"></th>
             </tr>
+            <tr>
+              <th>Temperature</th>
+              <td id="pwmAverageTemperature">
+            </tr>
+            <tr>
+              <th>Total Amps</th>
+              <td id="pwmTotalAmps">
+            </tr>
+            <tr>
+              <th>Total Watts</th>
+              <td id="pwmTotalWatts">
+            </tr>
           </tfoot>
         </table>
       </div>
@@ -466,6 +478,12 @@
 
   YB.PWMChannel = PWMChannel;
   YB.ChannelRegistry.registerChannelType("pwm", YB.PWMChannel)
+
+  YB.App.onMessage("stats", function (msg) {
+    $('#pwmAverageTemperature').html(Math.round(parseFloat(msg.avg_temperature)) + 'C');
+    $('#pwmTotalAmps').html(YB.Util.formatNumber(parseFloat(msg.total_amperage), 1) + 'A');
+    $('#pwmTotalWatts').html(YB.Util.formatNumber(parseFloat(msg.total_wattage), 1) + 'W');
+  });
 
   // expose to global
   global.YB = YB;

@@ -145,12 +145,28 @@ void PWMController::loop()
 
 void PWMController::generateStatsHook(JsonVariant output)
 {
+  float temperature = 0;
+  float total_current = 0;
+  float total_wattage = 0;
+
   // info about each of our channels
   JsonArray channels = output[_name].to<JsonArray>();
   for (auto& ch : _channels) {
     JsonObject jo = channels.add<JsonObject>();
     ch.generateStats(jo);
+
+    temperature += ch.getTemperature();
+    if (ch.getAmperage() > 0)
+      total_current += ch.getAmperage();
+    if (ch.getWattage() > 0)
+      total_wattage += ch.getWattage();
   }
+
+  // some summary variables
+  temperature = temperature / _channels.size();
+  output["avg_temperature"] = temperature;
+  output["total_amperage"] = total_current;
+  output["total_wattage"] = total_wattage;
 }
 
 void PWMController::updateBrightnessHook(float brightness)
