@@ -33,30 +33,30 @@ bool ADCController::setup()
 
   _adcVoltageADS1115_1.begin();
   if (_adcVoltageADS1115_1.isConnected())
-    YBP.println("Voltage ADS115 #1 OK");
+    YBP.println("Voltage ADS1115 #1 OK");
   else
-    YBP.println("Voltage ADS115 #1 Not Found");
+    YBP.println("Voltage ADS1115 #1 Not Found");
 
   // BASIC CONFIG
   _adcVoltageADS1115_1.setMode(ADS1X15_MODE_SINGLE);
   _adcVoltageADS1115_1.setGain(YB_ADC_GAIN);
   _adcVoltageADS1115_1.setDataRate(4);
 
-  adcHelper1 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_1);
+  adcHelper1 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_1, 200, 5000);
   adcHelper1->attachReadyPinInterrupt(YB_ADS1115_READY_PIN_1, FALLING);
 
   _adcVoltageADS1115_2.begin();
   if (_adcVoltageADS1115_2.isConnected())
-    YBP.println("Voltage ADS115 #2 OK");
+    YBP.println("Voltage ADS1115 #2 OK");
   else
-    YBP.println("Voltage ADS115 #2 Not Found");
+    YBP.println("Voltage ADS1115 #2 Not Found");
 
   // BASIC CONFIG
   _adcVoltageADS1115_2.setMode(ADS1X15_MODE_SINGLE);
   _adcVoltageADS1115_2.setGain(YB_ADC_GAIN);
   _adcVoltageADS1115_2.setDataRate(4);
 
-  adcHelper2 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_2);
+  adcHelper2 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_2, 200, 5000);
   adcHelper2->attachReadyPinInterrupt(YB_ADS1115_READY_PIN_2, FALLING);
 
   // setup our channels
@@ -78,6 +78,9 @@ void ADCController::loop()
 {
   adcHelper1->onLoop();
   adcHelper2->onLoop();
+
+  if (INTERVAL(5000))
+    adcHelper1->printDebug();
 }
 
 void ADCController::handleConfigCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context)
