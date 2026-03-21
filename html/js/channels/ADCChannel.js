@@ -4,7 +4,7 @@
 
   const ADC_TYPES = {
     "raw": "Raw Output",
-    "digital_switch": "Digital Switching",
+    "digital_switch": "Digital Input",
     "thermistor": "Thermistor",
     "4-20ma": "4-20mA Sensor",
     "high_volt_divider": "0-32v Input",
@@ -292,6 +292,9 @@
     $(`#btn-adc-add-row-${this.id}`).click(this.onAddCalibrationRow);
     $(`#btn-adc-copy-${this.id}`).click(this.onCopyAverage);
     $(`#btn-adc-reset-${this.id}`).click(this.onResetAverage);
+
+    //show/hide our elements.
+    this.refreshEditUI();
   };
 
   ADCChannel.prototype.getConfigFormData = function () {
@@ -317,12 +320,20 @@
 
   ADCChannel.prototype.onEditForm = function (e) {
     YB.BaseChannel.prototype.onEditForm.call(this, e);
+    this.refreshEditUI();
+  };
+
+  ADCChannel.prototype.refreshEditUI = function () {
 
     const enabled = this.enabled;
     $(`#f-adc-type-${this.id}`).prop('disabled', !enabled);
     $(`#f-adc-decimals-${this.id}`).prop('disabled', !enabled);
     $(`#f-adc-use-cal-${this.id}`).prop('disabled', !enabled);
     // Note: Calibration inner UI enablement is handled by toggleCalibrationUI + enabled check if needed
+
+    const isDigitalSwitch = this.cfg.type === 'digital_switch';
+    $(`#f-adc-decimals-${this.id}`).parent().toggle(!isDigitalSwitch);
+    $(`#f-adc-use-cal-${this.id}`).parent().toggle(!isDigitalSwitch);
   };
 
   // --- Specific ADC Helper Methods ---

@@ -79,8 +79,8 @@ void ADCController::loop()
   adcHelper1->onLoop();
   adcHelper2->onLoop();
 
-  if (INTERVAL(5000))
-    adcHelper1->printDebug();
+  // if (INTERVAL(5000))
+  //   adcHelper1->printDebug();
 }
 
 void ADCController::handleConfigCommand(JsonVariantConst input, JsonVariant output, ProtocolContext context)
