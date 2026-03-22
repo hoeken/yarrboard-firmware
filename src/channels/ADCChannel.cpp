@@ -192,6 +192,11 @@ bool ADCChannel::loadConfig(JsonVariantConst config, char* error, size_t len)
     this->averageWindowMs = max(0, (int)this->averageWindowMs);
     this->averageWindowMs = min(10000, (int)this->averageWindowMs);
 
+    // needs to have a minimum window otherwise we will skip values
+    if (this->averageWindowMs > 0) {
+      this->averageWindowMs = max(20, (int)this->averageWindowMs);
+    }
+
     if (this->adcHelper)
       this->adcHelper->setChannelWindow(_adcChannel, this->averageWindowMs);
   }

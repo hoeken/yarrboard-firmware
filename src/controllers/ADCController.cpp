@@ -40,9 +40,9 @@ bool ADCController::setup()
   // BASIC CONFIG
   _adcVoltageADS1115_1.setMode(ADS1X15_MODE_SINGLE);
   _adcVoltageADS1115_1.setGain(YB_ADC_GAIN);
-  _adcVoltageADS1115_1.setDataRate(4);
+  _adcVoltageADS1115_1.setDataRate(YB_ADC_DATA_RATE);
 
-  adcHelper1 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_1, 200, 5000);
+  adcHelper1 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_1, YB_ADC_RUNNING_AVERAGE_SIZE, YB_ADC_RUNNING_AVERAGE_WINDOW_MS);
   adcHelper1->attachReadyPinInterrupt(YB_ADS1115_READY_PIN_1, FALLING);
 
   _adcVoltageADS1115_2.begin();
@@ -54,9 +54,9 @@ bool ADCController::setup()
   // BASIC CONFIG
   _adcVoltageADS1115_2.setMode(ADS1X15_MODE_SINGLE);
   _adcVoltageADS1115_2.setGain(YB_ADC_GAIN);
-  _adcVoltageADS1115_2.setDataRate(4);
+  _adcVoltageADS1115_2.setDataRate(YB_ADC_DATA_RATE);
 
-  adcHelper2 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_2, 200, 5000);
+  adcHelper2 = new ADS1115Helper(YB_ADC_VREF, &_adcVoltageADS1115_2, YB_ADC_RUNNING_AVERAGE_SIZE, YB_ADC_RUNNING_AVERAGE_WINDOW_MS);
   adcHelper2->attachReadyPinInterrupt(YB_ADS1115_READY_PIN_2, FALLING);
 
   // setup our channels

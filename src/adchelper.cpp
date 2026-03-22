@@ -72,8 +72,12 @@ void ADCHelper::setChannelWindow(uint8_t channel, uint32_t window_ms)
 {
   // window_ms == 0 means "return latest sample only" — skip setWindow so the
   // RollingAverage keeps accumulating data and getLatestReading() always works.
-  if (channel < _totalChannels && window_ms > 0)
-    _averages[channel].setWindow(window_ms);
+  if (channel < _totalChannels) {
+    if (window_ms > 0)
+      _averages[channel].setWindow(window_ms);
+    else
+      _averages[channel].setWindow(YB_ADC_RUNNING_AVERAGE_WINDOW_MS);
+  }
 }
 
 void ADCHelper::printDebug(int8_t channel, bool rawData)
