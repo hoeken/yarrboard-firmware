@@ -1508,6 +1508,7 @@ void Brineomatic::runStateMachine()
       }
 
       enableHighPressurePump();
+      vTaskDelay(pdMS_TO_TICKS(2500));
 
       while (getPickleElapsed() < pickleDuration) {
         if (stopFlag)
@@ -1558,6 +1559,8 @@ void Brineomatic::runStateMachine()
       }
 
       enableHighPressurePump();
+      vTaskDelay(pdMS_TO_TICKS(2500));
+
       while (getDepickleElapsed() < depickleDuration) {
         if (stopFlag)
           break;
