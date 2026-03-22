@@ -2321,6 +2321,15 @@
           <div class="invalid-feedback"></div>
       </div>
 
+      <div class="has_boost_pump_form" class="mb-3">
+        <div class="input-group has-validation">
+          <span class="input-group-text">Boost Pump Delay (after turn on)</span>
+          <input type="text" class="form-control text-end" id="boost_pump_delay">
+          <span class="input-group-text"><span>ms</span></span>
+          <div class="invalid-feedback"></div>
+        </div>
+      </div>
+
       <hr class="bold">
 
       <div class="form-floating mb-3">
@@ -2374,6 +2383,15 @@
             <span class="input-group-text">hz</span>
             <div class="invalid-feedback"></div>
           </div>
+        </div>
+      </div>
+
+      <div class="has_high_pressure_pump_form" class="mb-3">
+        <div class="input-group has-validation">
+          <span class="input-group-text">High Pressure Pump Delay (after turn on)</span>
+          <input type="text" class="form-control text-end" id="high_pressure_pump_delay">
+          <span class="input-group-text"><span>ms</span></span>
+          <div class="invalid-feedback"></div>
         </div>
       </div>
 
@@ -3058,6 +3076,7 @@
     $("#boost_pump_control").val(data.boost_pump_control);
     $("#boost_pump_relay_id").val(data.boost_pump_relay_id);
     $("#boost_pump_relay_inverted").prop('checked', data.boost_pump_relay_inverted);
+    $("#boost_pump_delay").val(data.boost_pump_delay);
 
     $("#high_pressure_pump_control").val(data.high_pressure_pump_control);
     $("#high_pressure_relay_id").val(data.high_pressure_relay_id);
@@ -3065,6 +3084,7 @@
     $("#high_pressure_modbus_device").val(data.high_pressure_modbus_device);
     $("#high_pressure_modbus_slave_id").val(data.high_pressure_modbus_slave_id);
     $("#high_pressure_modbus_frequency").val(data.high_pressure_modbus_frequency);
+    $("#high_pressure_pump_delay").val(data.high_pressure_pump_delay);
 
     $("#high_pressure_valve_control").val(data.high_pressure_valve_control);
     $("#high_pressure_valve_stepper_id").val(data.high_pressure_valve_stepper_id);
@@ -3626,6 +3646,7 @@
       invertedDiv.show();
     }
 
+    $(".has_boost_pump_form").toggle(mode !== "NONE");
     $("#boostPumpControlUI").toggle(mode !== "NONE");
   }
 
@@ -3652,6 +3673,7 @@
     $("#depickleBrineomatic").toggleClass("bomPICKLED", mode !== "NONE");
     $("#depickleBrineomatic").toggle(mode !== "NONE");
 
+    $(".has_high_pressure_pump_form").toggle(mode !== "NONE");
     $("#highPressurePumpControlUI").toggle(mode !== "NONE");
   };
 
@@ -3865,6 +3887,7 @@
     data.boost_pump_control = $("#boost_pump_control").val();
     data.boost_pump_relay_id = parseInt($("#boost_pump_relay_id").val());
     data.boost_pump_relay_inverted = $("#boost_pump_relay_inverted").prop("checked");
+    data.boost_pump_delay = parseInt($("#boost_pump_delay").val());
 
     data.high_pressure_pump_control = $("#high_pressure_pump_control").val();
     data.high_pressure_relay_id = parseInt($("#high_pressure_relay_id").val());
@@ -3872,6 +3895,7 @@
     data.high_pressure_modbus_device = $("#high_pressure_modbus_device").val();
     data.high_pressure_modbus_slave_id = parseInt($("#high_pressure_modbus_slave_id").val());
     data.high_pressure_modbus_frequency = parseFloat($("#high_pressure_modbus_frequency").val());
+    data.high_pressure_pump_delay = parseInt($("#high_pressure_pump_delay").val());
 
     data.high_pressure_valve_control = $("#high_pressure_valve_control").val();
     data.high_pressure_valve_stepper_id = parseInt($("#high_pressure_valve_stepper_id").val());
@@ -4102,6 +4126,13 @@
         inclusion: [true, false]
       },
 
+      boost_pump_delay: {
+        numericality: {
+          greaterThanOrEqualTo: 0.0,
+          lessThanOrEqualTo: 60000.0
+        }
+      },
+
       high_pressure_pump_control: {
         presence: true,
         inclusion: ["NONE", "MANUAL", "RELAY", "MODBUS"]
@@ -4135,6 +4166,13 @@
         numericality: {
           greaterThanOrEqualTo: 0.0,
           lessThanOrEqualTo: 400.0
+        }
+      },
+
+      high_pressure_pump_delay: {
+        numericality: {
+          greaterThanOrEqualTo: 0.0,
+          lessThanOrEqualTo: 60000.0
         }
       },
 

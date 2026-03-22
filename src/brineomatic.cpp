@@ -1244,6 +1244,8 @@ void Brineomatic::runStateMachine()
       if (hasBoostPump()) {
         YBP.println("Boost Pump Started");
         enableBoostPump();
+        vTaskDelay(pdMS_TO_TICKS(boostPumpDelay));
+
         if (hasFilterPressureSensor && enableFilterPressureLowCheck) {
           while (getFilterPressure() < getFilterPressureMinimum()) {
             if (checkStopFlag(runResult))
@@ -1259,6 +1261,8 @@ void Brineomatic::runStateMachine()
       }
 
       enableHighPressurePump();
+      vTaskDelay(pdMS_TO_TICKS(highPressurePumpDelay));
+
       setMembranePressureTarget(membranePressureTarget);
 
       if (waitForMembranePressure()) {
@@ -1423,8 +1427,10 @@ void Brineomatic::runStateMachine()
 
       // start up our hardware
       openFlushValve();
-      if (autoflushUseHighPressureMotor)
+      if (autoflushUseHighPressureMotor) {
         enableHighPressurePump();
+        vTaskDelay(pdMS_TO_TICKS(highPressurePumpDelay));
+      }
 
       // check our sensors while we flush
       while (true) {
@@ -1508,7 +1514,7 @@ void Brineomatic::runStateMachine()
       }
 
       enableHighPressurePump();
-      vTaskDelay(pdMS_TO_TICKS(2500));
+      vTaskDelay(pdMS_TO_TICKS(highPressurePumpDelay));
 
       while (getPickleElapsed() < pickleDuration) {
         if (stopFlag)
@@ -1559,7 +1565,7 @@ void Brineomatic::runStateMachine()
       }
 
       enableHighPressurePump();
-      vTaskDelay(pdMS_TO_TICKS(2500));
+      vTaskDelay(pdMS_TO_TICKS(highPressurePumpDelay));
 
       while (getDepickleElapsed() < depickleDuration) {
         if (stopFlag)
@@ -2096,6 +2102,7 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["boost_pump_control"] = this->boostPumpControl;
   bom["boost_pump_relay_id"] = this->boostPumpRelayId;
   bom["boost_pump_relay_inverted"] = this->boostPumpRelayInverted;
+  bom["boost_pump_delay"] = this->boostPumpDelay;
 
   bom["high_pressure_pump_control"] = this->highPressurePumpControl;
   bom["high_pressure_relay_id"] = this->highPressureRelayId;
@@ -2103,6 +2110,7 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["high_pressure_modbus_device"] = this->highPressurePumpModbusDevice;
   bom["high_pressure_modbus_slave_id"] = this->highPressurePumpModbusSlaveId;
   bom["high_pressure_modbus_frequency"] = this->highPressurePumpModbusFrequency;
+  bom["high_pressure_pump_delay"] = this->highPressurePumpDelay;
 
   bom["high_pressure_valve_control"] = this->highPressureValveControl;
   bom["membrane_pressure_target"] = this->membranePressureTarget;
@@ -2361,6 +2369,14 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
     }
   }
 
+  if (config["boost_pump_delay"]) {
+    if (!checkIsInteger(config, "boost_pump_delay", error, err_size) ||
+        !checkIntGE(config, "boost_pump_delay", 0, error, err_size)) {
+      config.remove("boost_pump_delay");
+      ok = false;
+    }
+  }
+
   // ---------------------------------------------------------
   // High Pressure Pump
   // ---------------------------------------------------------
@@ -2396,6 +2412,14 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
   if (config["high_pressure_modbus_device"]) {
     if (!checkInclusion(config, "high_pressure_modbus_device", HIGH_PRESSURE_PUMP_MODBUS_DEVICES, error, err_size)) {
       config.remove("high_pressure_modbus_device");
+      ok = false;
+    }
+  }
+
+  if (config["high_pressure_pump_delay"]) {
+    if (!checkIsInteger(config, "high_pressure_pump_delay", error, err_size) ||
+        !checkIntGE(config, "high_pressure_pump_delay", 0, error, err_size)) {
+      config.remove("high_pressure_pump_delay");
       ok = false;
     }
   }
@@ -3151,6 +3175,7 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
   this->boostPumpControl = config["boost_pump_control"] | YB_BOOST_PUMP_CONTROL;
   this->boostPumpRelayId = config["boost_pump_relay_id"] | YB_BOOST_PUMP_RELAY_ID;
   this->boostPumpRelayInverted = config["boost_pump_relay_inverted"] | YB_BOOST_PUMP_RELAY_INVERTED;
+  this->boostPumpDelay = config["boost_pump_delay"] | YB_BOOST_PUMP_DELAY_MS;
 
   this->highPressurePumpControl = config["high_pressure_pump_control"] | YB_HIGH_PRESSURE_PUMP_CONTROL;
   this->highPressureRelayId = config["high_pressure_relay_id"] | YB_HIGH_PRESSURE_RELAY_ID;
@@ -3158,6 +3183,7 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
   this->highPressurePumpModbusDevice = config["high_pressure_modbus_device"] | YB_HIGH_PRESSURE_PUMP_MODBUS_DEVICE;
   this->highPressurePumpModbusSlaveId = config["high_pressure_modbus_slave_id"] | YB_HIGH_PRESSURE_PUMP_MODBUS_SLAVE_ID;
   this->highPressurePumpModbusFrequency = config["high_pressure_modbus_frequency"] | YB_HIGH_PRESSURE_PUMP_MODBUS_FREQUENCY;
+  this->highPressurePumpDelay = config["high_pressure_pump_delay"] | YB_HIGH_PRESSURE_PUMP_DELAY_MS;
 
   this->highPressureValveControl = config["high_pressure_valve_control"] | YB_HIGH_PRESSURE_VALVE_CONTROL;
   this->membranePressureTarget = config["membrane_pressure_target"] | YB_MEMBRANE_PRESSURE_TARGET;

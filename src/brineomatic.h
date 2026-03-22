@@ -365,6 +365,7 @@ class Brineomatic
     String boostPumpControl = YB_BOOST_PUMP_CONTROL;
     uint8_t boostPumpRelayId = YB_BOOST_PUMP_RELAY_ID;
     bool boostPumpRelayInverted = YB_BOOST_PUMP_RELAY_INVERTED;
+    uint32_t boostPumpDelay = YB_BOOST_PUMP_DELAY_MS;
 
     String highPressurePumpControl = YB_HIGH_PRESSURE_PUMP_CONTROL;
     uint8_t highPressureRelayId = YB_HIGH_PRESSURE_RELAY_ID;
@@ -372,6 +373,7 @@ class Brineomatic
     String highPressurePumpModbusDevice = YB_HIGH_PRESSURE_PUMP_MODBUS_DEVICE;
     uint8_t highPressurePumpModbusSlaveId = YB_HIGH_PRESSURE_PUMP_MODBUS_SLAVE_ID;
     float highPressurePumpModbusFrequency = YB_HIGH_PRESSURE_PUMP_MODBUS_FREQUENCY;
+    uint32_t highPressurePumpDelay = YB_HIGH_PRESSURE_PUMP_DELAY_MS;
 
     String highPressureValveControl = YB_HIGH_PRESSURE_VALVE_CONTROL;
     uint8_t highPressureValveStepperId = YB_HIGH_PRESSURE_VALVE_STEPPER_ID;
