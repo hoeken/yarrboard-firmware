@@ -29,12 +29,27 @@ float ADCChannel::getTypeValue()
   if (!strcmp(this->type, "raw"))
     value = this->getVoltage();
   else if (!strcmp(this->type, "digital_switch")) {
+
+    // Compute raw digital state with hysteresis
+    bool rawState;
     if (this->getVoltage() >= YB_ADC_VREF * 0.7)
-      value = 1.0;
+      rawState = true;
     else if (this->getVoltage() <= YB_ADC_VREF * 0.3)
-      value = 0.0;
+      rawState = false;
     else
-      value = this->lastValue;
+      rawState = this->lastRawDigital;
+
+    if (!strcmp(this->digitalInputMode, "inverted"))
+      value = !rawState ? 1.0f : 0.0f;
+    else if (!strcmp(this->digitalInputMode, "rising"))
+      value = (!this->lastRawDigital && rawState) ? 1.0f : 0.0f;
+    else if (!strcmp(this->digitalInputMode, "falling"))
+      value = (this->lastRawDigital && !rawState) ? 1.0f : 0.0f;
+    else // direct
+      value = rawState ? 1.0f : 0.0f;
+
+    this->lastRawDigital = rawState;
+
   } else if (!strcmp(this->type, "thermistor")) {
     // what pullup?
     float r_pullup = 10000.0;
@@ -145,6 +160,9 @@ bool ADCChannel::loadConfig(JsonVariantConst config, char* error, size_t len)
   value = config["type"].as<const char*>();
   snprintf(this->type, sizeof(this->type), "%s", (value && *value) ? value : "raw");
 
+  value = config["digitalInputMode"].as<const char*>();
+  snprintf(this->digitalInputMode, sizeof(this->digitalInputMode), "%s", (value && *value) ? value : "direct");
+
   this->displayDecimals = 2;
   if (config["displayDecimals"].is<unsigned int>()) {
     this->displayDecimals = config["displayDecimals"];
@@ -168,6 +186,7 @@ void ADCChannel::generateConfig(JsonVariant config)
   BaseChannel::generateConfig(config);
 
   config["type"] = this->type;
+  config["digitalInputMode"] = this->digitalInputMode;
   config["displayDecimals"] = this->displayDecimals;
   config["units"] = this->getTypeUnits();
   config["useCalibrationTable"] = this->useCalibrationTable;

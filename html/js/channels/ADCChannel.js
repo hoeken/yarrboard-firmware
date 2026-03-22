@@ -12,6 +12,13 @@
     "ten_k_pullup": "10k Pullup"
   };
 
+  const DIGITAL_INPUT_MODES = {
+    "direct": "Direct",
+    "inverted": "Inverted",
+    "toggle_falling": "Toggle Falling",
+    "toggle_rising": "Toggle Rising",
+  };
+
   function ADCChannel() {
     YB.BaseChannel.call(this, "adc", "ADC");
 
@@ -36,6 +43,12 @@
       presence: { allowEmpty: false },
       type: "string",
       length: { minimum: 1, maximum: 32 }
+    };
+
+    schema.digitalInputMode = {
+      presence: { allowEmpty: false },
+      type: "string",
+      length: { minimum: 1, maximum: 20 }
     };
 
     schema.displayDecimals = {
@@ -66,7 +79,11 @@
   };
 
   ADCChannel.prototype.generateControlUI = function () {
-    // Adapted from table row to Card format to match RelayChannel
+
+    let input_display = ADC_TYPES[this.cfg.type] || this.cfg.type;
+    if (this.cfg.type == 'digital_switch')
+      input_display += ` - ${DIGITAL_INPUT_MODES[this.cfg.digitalInputMode]}`;
+
     return `
       <div id="adcControlCard${this.id}" class="col-xs-12 col-sm-6 col-lg-3">
         <table class="w-100 h-100 p-2">
@@ -74,7 +91,7 @@
             <td>
               <div class="card p-2 text-center">
                  <div class="fw-bold">${this.name}</div>
-                 <div class="text-muted small">${ADC_TYPES[this.cfg.type] || this.cfg.type}</div>
+                 <div class="text-muted small">${input_display}</div>
                  <h3 id="adcValue${this.id}">--</h3>
               </div>
             </td>
@@ -190,6 +207,10 @@
       .map(([key, label]) => `<option value="${key}">${label}</option>`)
       .join("\n");
 
+    const digitalInputModeOptions = Object.entries(DIGITAL_INPUT_MODES)
+      .map(([key, label]) => `<option value="${key}">${label}</option>`)
+      .join("\n");
+
     return `
       <div id="adcEditCard${this.id}" class="col-12 mb-3">
         <div class="p-3 border border-secondary rounded">
@@ -201,6 +222,14 @@
               ${typeOptions}
             </select>
             <label for="f-adc-type-${this.id}">Input Type</label>
+            <div class="invalid-feedback"></div>
+          </div>
+
+          <div class="form-floating mb-3">
+            <select id="f-adc-digital-input-mode-${this.id}" class="form-select" aria-label="Digital Input Mode">
+              ${digitalInputModeOptions}
+            </select>
+            <label for="f-adc-type-${this.id}">Digital Input Mode</label>
             <div class="invalid-feedback"></div>
           </div>
 
@@ -265,6 +294,7 @@
 
     // Populate Data
     $(`#f-adc-type-${this.id}`).val(this.cfg.type);
+    $(`#f-adc-digital-input-mode-${this.id}`).val(this.cfg.digitalInputMode);
     $(`#f-adc-decimals-${this.id}`).val(this.cfg.displayDecimals);
     $(`#f-adc-use-cal-${this.id}`).prop('checked', this.cfg.useCalibrationTable);
     $(`#f-adc-cal-units-${this.id}`).val(this.cfg.calibratedUnits);
@@ -276,16 +306,11 @@
       this.cfg.calibrationTable.forEach(row => this.renderCalibrationRow(row[0], row[1]));
     }
 
-    // Toggle Visibility
-    this.toggleCalibrationUI();
-
     // Event Listeners
     $(`#f-adc-type-${this.id}`).change(this.onEditForm);
+    $(`#f-adc-digital-input-mode-${this.id}`).change(this.onEditForm);
     $(`#f-adc-decimals-${this.id}`).change(this.onEditForm);
-    $(`#f-adc-use-cal-${this.id}`).change((e) => {
-      this.toggleCalibrationUI();
-      this.onEditForm(e);
-    });
+    $(`#f-adc-use-cal-${this.id}`).change(this.onEditForm);
     $(`#f-adc-cal-units-${this.id}`).change(this.onEditForm);
 
     // Calibration Interactive Buttons
@@ -301,6 +326,7 @@
     let newcfg = YB.BaseChannel.prototype.getConfigFormData.call(this);
 
     newcfg.type = $(`#f-adc-type-${this.id}`).val();
+    newcfg.digitalInputMode = $(`#f-adc-digital-input-mode-${this.id}`).val();
     newcfg.displayDecimals = parseInt($(`#f-adc-decimals-${this.id}`).val());
     newcfg.useCalibrationTable = $(`#f-adc-use-cal-${this.id}`).is(':checked');
     newcfg.calibratedUnits = $(`#f-adc-cal-units-${this.id}`).val();
@@ -319,6 +345,7 @@
   };
 
   ADCChannel.prototype.onEditForm = function (e) {
+    console.log("here");
     YB.BaseChannel.prototype.onEditForm.call(this, e);
     this.refreshEditUI();
   };
@@ -329,23 +356,21 @@
     $(`#f-adc-type-${this.id}`).prop('disabled', !enabled);
     $(`#f-adc-decimals-${this.id}`).prop('disabled', !enabled);
     $(`#f-adc-use-cal-${this.id}`).prop('disabled', !enabled);
-    // Note: Calibration inner UI enablement is handled by toggleCalibrationUI + enabled check if needed
 
     const isDigitalSwitch = this.cfg.type === 'digital_switch';
+    $(`#f-adc-digital-input-mode-${this.id}`).parent().toggle(isDigitalSwitch);
     $(`#f-adc-decimals-${this.id}`).parent().toggle(!isDigitalSwitch);
     $(`#f-adc-use-cal-${this.id}`).parent().toggle(!isDigitalSwitch);
-  };
 
-  // --- Specific ADC Helper Methods ---
-
-  ADCChannel.prototype.toggleCalibrationUI = function () {
     const useCal = $(`#f-adc-use-cal-${this.id}`).is(':checked');
-    if (useCal && this.enabled) {
+    if (useCal && this.enabled && this.cfg.type !== 'digital_switch') {
       $(`#f-adc-cal-ui-${this.id}`).show();
     } else {
       $(`#f-adc-cal-ui-${this.id}`).hide();
     }
   };
+
+  // --- Specific ADC Helper Methods ---
 
   ADCChannel.prototype.renderCalibrationRow = function (raw, target) {
     const rowId = `cal-row-${this.id}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;

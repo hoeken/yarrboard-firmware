@@ -31,21 +31,30 @@ class ADCChannel : public BaseChannel
   public:
     int8_t displayDecimals = 2;
     float lastValue = 0.0;
+    bool lastRawDigital = false;
 
     bool useCalibrationTable = false;
     char calibratedUnits[YB_ADC_UNIT_LENGTH];
     etl::vector<CalibrationPoint, YB_ADC_CALIBRATION_TABLE_MAX> calibrationTable;
 
     /*
-    raw - Raw Output
-    digital_switch - Digital Switch
-    thermistor - Thermistor
-    4-20ma - 4-20mA Sensor
-    high_volt_divider - 0-32v Input
-    low_volt_divider - 0-5v Input
-    ten_k_pullup - 10k Pullup
+      raw - Raw Output
+      digital_switch - Digital Switch
+      thermistor - Thermistor
+      4-20ma - 4-20mA Sensor
+      high_volt_divider - 0-32v Input
+      low_volt_divider - 0-5v Input
+      ten_k_pullup - 10k Pullup
     */
     char type[33] = "raw";
+
+    /*
+      direct - Raw Output
+      inverted - Output Inverted
+      toggle_rising - Output Toggles on rising value
+      toggle_falling - Output toggles on falling value
+    */
+    char digitalInputMode[20] = "direct";
 
     ADS1115Helper* adcHelper;
     uint8_t _adcChannel = 0;
