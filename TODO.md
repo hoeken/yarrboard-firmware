@@ -1,14 +1,3 @@
-# v2.3 TODO
-
-## FROTHFET
-
-* add support for overcurrent alert interrupt to each channel
-* add to overhead to client UI (orange)
-* add overheat trip count to stats page
-* slow vs fast blow
-    * fast checks getLatestReading() (or alert interrupts)
-    * slow checks getAverageReading()
-
 # v2.4 TODO
 
 ## BRINEOMATIC
@@ -21,6 +10,12 @@
 
 ## FROTHFET
 
+* add support for overcurrent alert interrupt to each channel
+* add to overhead to client UI (orange)
+* add overheat trip count to stats page
+* slow vs fast blow
+    * fast checks getLatestReading() (or alert interrupts)
+    * slow checks getAverageReading()
 * update yarrboard client if any changes needed - probably for state
 * update signalk plugin - same
 * go through and re-adjust the various page sizes for our different viewports
