@@ -1781,13 +1781,13 @@
                   <h6 class="my-0 text-center">Product Salinity</h6>
                   <div id="productSalinityGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class="brineSalinityUI col-md-3 col-sm-4 col-6">
-                  <h6 class="my-0 text-center">Brine Salinity</h6>
-                  <div id="brineSalinityGauge" class="d-flex justify-content-center"></div>
-              </div>
               <div class="productFlowrateUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Product Flowrate</h6>
                   <div id="productFlowrateGauge" class="d-flex justify-content-center"></div>
+              </div>
+              <div class="brineSalinityUI col-md-3 col-sm-4 col-6">
+                  <h6 class="my-0 text-center">Brine Salinity</h6>
+                  <div id="brineSalinityGauge" class="d-flex justify-content-center"></div>
               </div>
               <div class="brineFlowrateUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0 text-center">Brine Flowrate</h6>
