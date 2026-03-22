@@ -19,6 +19,12 @@
 			"image": "img/frothfet_rev_e.jpg"
 		},
 		{
+			"name": "FROTHFET_REV_F",
+			"chip_family": "ESP32-S3",
+			"display_name": "FrothFET REV F",
+			"image": "img/frothfet_rev_f.jpg"
+		},
+		{
 			"name": "SENDIT_REV_C",
 			"chip_family": "ESP32-S3",
 			"display_name": "SendIT REV C",
