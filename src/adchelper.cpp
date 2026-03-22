@@ -68,6 +68,14 @@ void ADCHelper::clearReadings(uint8_t channel)
   _averages[channel].clear();
 }
 
+void ADCHelper::setChannelWindow(uint8_t channel, uint32_t window_ms)
+{
+  // window_ms == 0 means "return latest sample only" — skip setWindow so the
+  // RollingAverage keeps accumulating data and getLatestReading() always works.
+  if (channel < _totalChannels && window_ms > 0)
+    _averages[channel].setWindow(window_ms);
+}
+
 void ADCHelper::printDebug(int8_t channel, bool rawData)
 {
   if (channel == -1)

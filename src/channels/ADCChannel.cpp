@@ -14,11 +14,15 @@
 
 unsigned int ADCChannel::getReading()
 {
+  if (this->averageWindowMs == 0)
+    return this->adcHelper->getLatestReading(_adcChannel);
   return this->adcHelper->getAverageReading(_adcChannel);
 }
 
 float ADCChannel::getVoltage()
 {
+  if (this->averageWindowMs == 0)
+    return this->adcHelper->getLatestVoltage(_adcChannel);
   return this->adcHelper->getAverageVoltage(_adcChannel);
 }
 
@@ -155,6 +159,12 @@ void ADCChannel::init(uint8_t id)
   snprintf(this->name, sizeof(this->name), "ADC Channel %d", id);
 }
 
+void ADCChannel::setup()
+{
+  if (this->adcHelper)
+    this->adcHelper->setChannelWindow(_adcChannel, this->averageWindowMs);
+}
+
 bool ADCChannel::loadConfig(JsonVariantConst config, char* error, size_t len)
 {
   // make our parent do the work.
@@ -176,6 +186,16 @@ bool ADCChannel::loadConfig(JsonVariantConst config, char* error, size_t len)
     this->displayDecimals = min(4, (int)this->displayDecimals);
   }
 
+  this->averageWindowMs = YB_ADC_RUNNING_AVERAGE_WINDOW_MS;
+  if (config["averageWindowMs"].is<uint32_t>()) {
+    this->averageWindowMs = config["averageWindowMs"].as<uint32_t>();
+    this->averageWindowMs = max(0, (int)this->averageWindowMs);
+    this->averageWindowMs = min(10000, (int)this->averageWindowMs);
+
+    if (this->adcHelper)
+      this->adcHelper->setChannelWindow(_adcChannel, this->averageWindowMs);
+  }
+
   this->useCalibrationTable = config["useCalibrationTable"] | false;
 
   value = config["calibratedUnits"].as<const char*>();
@@ -194,6 +214,7 @@ void ADCChannel::generateConfig(JsonVariant config)
   config["type"] = this->type;
   config["digitalInputMode"] = this->digitalInputMode;
   config["displayDecimals"] = this->displayDecimals;
+  config["averageWindowMs"] = this->averageWindowMs;
   config["units"] = this->getTypeUnits();
   config["useCalibrationTable"] = this->useCalibrationTable;
   config["calibratedUnits"] = this->calibratedUnits;

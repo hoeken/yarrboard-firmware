@@ -30,6 +30,7 @@ class ADCChannel : public BaseChannel
 {
   public:
     int8_t displayDecimals = 2;
+    uint32_t averageWindowMs = YB_ADC_RUNNING_AVERAGE_WINDOW_MS;
     float lastValue = 0.0;
     bool lastRawDigital = false;
     bool toggleState = false;
@@ -67,6 +68,7 @@ class ADCChannel : public BaseChannel
     const char* getTypeUnits();
 
     void init(uint8_t id) override;
+    void setup();
     bool loadConfig(JsonVariantConst config, char* error, size_t len) override;
     void generateConfig(JsonVariant config) override;
     void generateUpdate(JsonVariant config) override;
