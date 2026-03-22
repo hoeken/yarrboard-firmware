@@ -430,7 +430,6 @@
   //we need updates for our calibration table averaging.
   YB.App.onStart(function () {
     let page = YB.App.getPage("settings");
-    console.log(page);
     if (page) {
       page.onOpen(YB.App.startUpdatePoller);
       page.onClose(YB.App.stopUpdatePoller);

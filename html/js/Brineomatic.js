@@ -878,7 +878,7 @@
 
     if (msg.depickle_elapsed > 0 && msg.depickle_countdown > 0) {
       const depickleProgress = (msg.depickle_elapsed / (msg.depickle_elapsed + msg.depickle_countdown)) * 100;
-      YB.Util.updateProgressBar("#bomDepickleProgressBar", depickleProgress);
+      YB.Util.updateProgressBar("bomDepickleProgressBar", depickleProgress);
       $('#bomDepickleProgressRow').show();
     } else {
       $('#bomDepickleProgressRow').hide();

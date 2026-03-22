@@ -6,7 +6,7 @@
 * add to overhead to client UI (orange)
 * add overheat trip count to stats page
 * slow vs fast blow
-    * fast checks getLatestReading()
+    * fast checks getLatestReading() (or alert interrupts)
     * slow checks getAverageReading()
 
 # v2.4 TODO
