@@ -1,23 +1,101 @@
 # Version 2.3.0
 
-## 🚀 New Features
+## Brineomatic
+
+### 🚀 New Features
+
+- **Unit Conversion Support**
+  - Selectable units for temperature (°C / °F)
+  - Selectable units for pressure (Bar / PSI)
+  - Selectable units for volume and flowrate (L / gal, LPM / GPM, LPH / GPH)
+  - Pressure stored internally in Bar; all conversions handled in UI
+  - MQTT output now respects selected unit conversion
+  - PPL settings also converted appropriately
+
+- **Home Assistant Integration**
+  - Basic on/off control for Brineomatic via Home Assistant
+  - HA temperature sensors for motor and water temperature
+
+- **Pickle / Depickle**
+  - Depickle progress bar now working (fixes #23)
+  - Added delay and longer default timeout for depickle (fixes #23)
+  - Pickle/depickle status now hidden after operation completes
+
+- **Configurable Startup Delays**
+  - Configurable pause/delay after enabling boost pump and/or high pressure pump (fixes #21)
 
 - **Stepper Motor Diagnostics**
+  - Added stepper motor overheating checks with automatic disable
   - Added TMC2209 error detection (over-temperature, short circuits, open loads)
-  - Automatic motor disable on error with console and web UI notifications
 
-## 🛠️ Improvements & Enhancements
+### 🛠️ Improvements & Enhancements
 
-- Enhanced PWM channel fault detection logging with detailed voltage and current readings
-- Added optional raw data output to ADCHelper::printDebug() for debugging ADC readings
-- Added configuration settings for motor and water temperature sensors (NONE, EXTERNAL, and DS18B20)
-- Added TDS calibration offset configuration options for product and brine salinity sensors. (fixes #5)
+- Swapped brine salinity and product flowrate order for cleaner layout on vertical phones
+- Swapped brine salinity / product flowrate in MFD view to match
+- Shortened time format display for readability
+- Added missing flush volume to UI
+- Threshold colors now update correctly when values change
+- Added configuration settings for motor and water temperature sensors (NONE, EXTERNAL, DS18B20)
+- TDS calibration offset configuration options for product and brine salinity sensors (fixes #5)
+- Pressure / Flow hardware config form now hides/shows fields appropriately
+- Changed non-overheating stepper errors to debug log to reduce noise
+- Added protections around MQTT callbacks to prevent crashes
 
-## 🐛 Bug Fixes
+### 🐛 Bug Fixes
 
+- Fixed zero handling for water temperature and tank level (fixes #20)
 - Failed homing now sets position to zero (fixes #16)
-- Added input validation for watermaker settings (fixes #20)
-- Pressure / Flow hardware config extra fields now hiding/showing appropriately.
+
+---
+
+## FrothFET
+
+### 🚀 New Features
+
+- **INA226 Current Sensing**
+  - Basic INA226 current/power sensing now functional on FrothFET Rev F
+
+- **Additional Stats**
+  - Added temperature, total amps, and total watts to PWM channel stats display
+
+### 🛠️ Improvements & Enhancements
+
+- Improved PWM channel fault detection logging with detailed voltage and current readings
+- Improved fuse blown detection logic to reduce false positives
+
+### 🐛 Bug Fixes
+
+- Fixed gamma fade ISR flash crash issue
+- Fixed Home Assistant integration (brightness control and general HA sync)
+- Added protections around MQTT callbacks to prevent crashes
+
+---
+
+## SendIt
+
+### 🚀 New Features
+
+- **Digital Input Modes**
+  - Added configurable input modes: direct, inverted, toggle rising, toggle falling
+  - UI for selecting and displaying digital input mode
+
+### 🛠️ Improvements & Enhancements
+
+- Increased ADC moving average window length for smoother readings
+- Added optional raw data output to ADCHelper::printDebug() for debugging
+
+### 🐛 Bug Fixes
+
+- Fixed toggle rising/falling mode behavior on digital inputs
+- Fixed ADC channel calibration live averaging
+
+---
+
+## Infrastructure
+
+- Updated to YarrboardFramework v2.4.1
+- Added firmware CI build script via GitHub Actions
+- Added npm package lock and CI caching
 
 # Version 2.2.0
 
