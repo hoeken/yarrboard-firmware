@@ -119,8 +119,8 @@
       }
     }
 
-    // 3. Update Running Average (Only on Config Page)
-    if (YB.App.currentPage == "config") {
+    // 3. Update Running Average (Only on settings page)
+    if (YB.App.currentPage == "settings") {
       // Manage sliding window using instance variable
       this.runningAverage.push(value);
 
@@ -345,7 +345,6 @@
   };
 
   ADCChannel.prototype.onEditForm = function (e) {
-    console.log("here");
     YB.BaseChannel.prototype.onEditForm.call(this, e);
     this.refreshEditUI();
   };
@@ -418,7 +417,8 @@
 
   ADCChannel.prototype.onResetAverage = function () {
     this.runningAverage = [];
-    $(`#f-adc-avg-output-${this.id}`).val(0);
+    $(`#f-adc-avg-output-${this.id}`).val('0.0000');
+    $(`#f-adc-avg-count-${this.id}`).text('(0 points)');
   };
 
   // Export and Register
@@ -428,10 +428,13 @@
   global.YB = YB;
 
   //we need updates for our calibration table averaging.
-  configPage = YB.App.getPage("config");
-  if (configPage) {
-    configPage.onOpen(YB.App.startUpdatePoller);
-    configPage.onClose(YB.App.stopUpdatePoller);
-  }
+  YB.App.onStart(function () {
+    let page = YB.App.getPage("settings");
+    console.log(page);
+    if (page) {
+      page.onOpen(YB.App.startUpdatePoller);
+      page.onClose(YB.App.stopUpdatePoller);
+    }
+  });
 
 })(this);
