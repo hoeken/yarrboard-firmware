@@ -113,6 +113,7 @@ void setup()
   yba.hardware_url = YB_HARDWARE_URL;
   yba.project_name = YB_PROJECT_NAME;
   yba.project_url = YB_PROJECT_URL;
+  yba.git_url = YB_GIT_URL;
 
   yba.ota.firmware_manifest_url = "https://hoeken.github.io/yarrboard-firmware/releases/ota_manifest.json";
   yba.ota.public_key = R"PUBLIC_KEY(

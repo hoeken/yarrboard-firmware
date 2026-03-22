@@ -9,7 +9,7 @@
 #ifndef YARR_CONFIG_H
 #define YARR_CONFIG_H
 
-#define YB_FIRMWARE_VERSION "2.3.0"
+#define YB_FIRMWARE_VERSION "2.3.9"
 
 #if defined YB_CONFIG_FROTHFET_REV_D
   #include "./configs/config.frothfet-rev-d.h"
@@ -33,6 +33,10 @@
   #include "./configs/config.waveshare-s3-eth-8di-8ro.h"
 #else
   #error "No board config has been defined"
+#endif
+
+#ifndef YB_GIT_URL
+  #define YB_GIT_URL "https://github.com/hoeken/yarrboard-firmware"
 #endif
 
 #ifndef YB_IS_DEVELOPMENT
