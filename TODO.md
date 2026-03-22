@@ -1,5 +1,16 @@
 # v2.3 TODO
 
+## FROTHFET
+
+* add support for overcurrent alert interrupt to each channel
+* add to overhead to client UI (orange)
+* add overheat trip count to stats page
+* slow vs fast blow
+    * fast checks getLatestReading()
+    * slow checks getAverageReading()
+
+# v2.4 TODO
+
 ## BRINEOMATIC
 
 * add stepper power configuration: normal and homing
@@ -8,19 +19,8 @@
     * sensors for each output type
     * YAML dashboard
 
-# v2.4 TODO
-
 ## FROTHFET
 
-* Rev F: add support for INA226 to each channel
-    * add support for overcurrent alert interrupt to each channel
-* Rev F: add support for LM75 to each channel
-    * add to client UI (orange)
-    * add overheat trip count to stats page
-* sporadic crash when fading and saving to prefs at the same time.
-* slow vs fast blow
-    * fast checks getLatestReading()
-    * slow checks getAverageReading()
 * update yarrboard client if any changes needed - probably for state
 * update signalk plugin - same
 * go through and re-adjust the various page sizes for our different viewports
@@ -31,26 +31,16 @@
 
 # LONG TERM:
 
-* UI
-    * combine config and settings page into a single mega page
-    * dio channels
-    * fan channels?
 * signalk plugins
     * should we move this to the firmware instead?
     * frothfet plugin - use key for paths instead of id
     * signalk sendit plugin - use key for paths instead of id
 * remove all onclick calls from the html.
 * global cleanup of strcpy, sprintf, etc.
-* espwebtools?  https://esphome.github.io/esp-web-tools/
-* yarrboard c++ framework
-    * more yarrboard.js functions:
-        * app.addPage("page", "content", openCallback);
-        * app.onOpenPage(page, callback);
-        * many other app.* callbacks to register various things.
-    * refactor yarrboard-firmware into:
-        * frothfet-firmware
-        * brineomatic-firmware
-        * sendit-firmware
+* refactor yarrboard-firmware into:
+    * frothfet-firmware
+    * brineomatic-firmware
+    * sendit-firmware
 * other MFD integrations:
     * garmin?
     * raymarine?
