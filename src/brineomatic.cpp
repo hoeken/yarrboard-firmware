@@ -1225,6 +1225,9 @@ void Brineomatic::runStateMachine()
     case Status::RUNNING: {
       YBP.println("RUNNING");
 
+      pickleResult = Result::STARTUP;
+      depickleResult = Result::STARTUP;
+
       resetErrorTimers();
       runtimeStart = millis();
       uint32_t lastRuntimeUpdate = runtimeStart;
@@ -1406,6 +1409,9 @@ void Brineomatic::runStateMachine()
       }
 
       resetErrorTimers();
+
+      depickleResult = Result::STARTUP;
+      pickleResult = Result::STARTUP;
 
       flushStart = millis();
       currentFlushVolume = 0;
