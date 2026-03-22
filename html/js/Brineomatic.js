@@ -1864,15 +1864,15 @@
                   <h1 id="productSalinityData" class="my-0"></h1>
                   <h5 id="productSalinityUnits" class="text-body-tertiary">PPM</h5>
               </div>
-              <div class="brineSalinityUI col-md-3 col-sm-4 col-6">
-                  <h6 class="my-0">Brine Salinity</h6>
-                  <h1 id="brineSalinityData" class="my-0"></h1>
-                  <h5 id="brineSalinityUnits" class="text-body-tertiary">PPM</h5>
-              </div>
               <div class="productFlowrateUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Product Flowrate</h6>
                   <h1 id="productFlowrateData" class="my-0"></h1>
                   <h5 id="productFlowrateUnits" class="text-body-tertiary">LPH</h5>
+              </div>
+              <div class="brineSalinityUI col-md-3 col-sm-4 col-6">
+                  <h6 class="my-0">Brine Salinity</h6>
+                  <h1 id="brineSalinityData" class="my-0"></h1>
+                  <h5 id="brineSalinityUnits" class="text-body-tertiary">PPM</h5>
               </div>
               <div class="brineFlowrateUI col-md-3 col-sm-4 col-6">
                   <h6 class="my-0">Brine Flowrate</h6>
