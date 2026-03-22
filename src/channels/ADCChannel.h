@@ -32,6 +32,7 @@ class ADCChannel : public BaseChannel
     int8_t displayDecimals = 2;
     float lastValue = 0.0;
     bool lastRawDigital = false;
+    bool toggleState = false;
 
     bool useCalibrationTable = false;
     char calibratedUnits[YB_ADC_UNIT_LENGTH];

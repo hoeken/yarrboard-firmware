@@ -1,5 +1,11 @@
 # v2.4 TODO
 
+## SENDIT
+
+* Add per-channel configuration for rolling average window size
+* 0 should just be latest sample, 10000ms max
+* Determine the appropriate sample size and data rate from ads1115
+
 ## BRINEOMATIC
 
 * add stepper power configuration: normal and homing

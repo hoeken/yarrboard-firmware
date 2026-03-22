@@ -39,14 +39,20 @@ float ADCChannel::getTypeValue()
     else
       rawState = this->lastRawDigital;
 
-    if (!strcmp(this->digitalInputMode, "inverted"))
-      value = !rawState ? 1.0f : 0.0f;
-    else if (!strcmp(this->digitalInputMode, "rising"))
-      value = (!this->lastRawDigital && rawState) ? 1.0f : 0.0f;
-    else if (!strcmp(this->digitalInputMode, "falling"))
-      value = (this->lastRawDigital && !rawState) ? 1.0f : 0.0f;
-    else // direct
+    if (!strcmp(this->digitalInputMode, "direct"))
       value = rawState ? 1.0f : 0.0f;
+    else if (!strcmp(this->digitalInputMode, "inverted"))
+      value = !rawState ? 1.0f : 0.0f;
+    else if (!strcmp(this->digitalInputMode, "toggle_rising")) {
+      if (!this->lastRawDigital && rawState)
+        this->toggleState = !this->toggleState;
+      value = this->toggleState ? 1.0f : 0.0f;
+    } else if (!strcmp(this->digitalInputMode, "toggle_falling")) {
+      if (this->lastRawDigital && !rawState)
+        this->toggleState = !this->toggleState;
+      value = this->toggleState ? 1.0f : 0.0f;
+    } else // error - no mode.
+      value = -1.0;
 
     this->lastRawDigital = rawState;
 
