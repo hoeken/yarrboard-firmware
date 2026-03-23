@@ -9,6 +9,10 @@
 #include "adchelper.h"
 #include <YarrboardDebug.h>
 
+#ifndef YB_ADC_RUNNING_AVERAGE_WINDOW_MS
+  #define YB_ADC_RUNNING_AVERAGE_WINDOW_MS 1000
+#endif
+
 ADCHelper::ADCHelper(uint8_t channels, float vref, uint8_t resolution, uint16_t samples, uint32_t window_ms) : _totalChannels(channels),
                                                                                                                _vref(vref),
                                                                                                                _resolution(resolution),
