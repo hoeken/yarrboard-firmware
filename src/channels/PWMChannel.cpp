@@ -539,6 +539,7 @@ void PWMChannel::checkSoftFuse()
 
 void PWMChannel::checkOverheat()
 {
+  #ifdef YB_PWM_CHANNEL_HAS_LM75
   // only trip once....
   if (this->status != Status::OVERHEAT) {
     // are we too hot?
@@ -580,6 +581,7 @@ void PWMChannel::checkOverheat()
       this->sendFastUpdate = true;
     }
   }
+  #endif
 }
 
 void PWMChannel::startFade(float duty, int fade_time)

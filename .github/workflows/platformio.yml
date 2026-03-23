@@ -28,6 +28,7 @@ jobs:
             "BRINEOMATIC_REV_B",
             "BRINEOMATIC_REV_C",
             "FROTHFET_REV_E",
+            "FROTHFET_REV_F",
             "SENDIT_REV_C"
           ]
 
