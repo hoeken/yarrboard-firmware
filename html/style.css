@@ -83,6 +83,21 @@ html[data-bs-theme="dark"] .c3 .c3-axis text {
     fill: var(--bs-body-color) !important;
 }
 
+.btn-overheat {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #fd7e14;
+    --bs-btn-border-color: #fd7e14;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #d76809;
+    --bs-btn-hover-border-color: #ca6308;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #ca6308;
+    --bs-btn-active-border-color: #be5d07;
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: #fd7e14;
+    --bs-btn-disabled-border-color: #fd7e14;
+}
+
 .filterPressureError,
 .membranePressureError,
 .motorTemperatureError,

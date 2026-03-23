@@ -11,7 +11,8 @@
 ## FROTHFET
 
 * add support for overcurrent alert interrupt to each channel
-* add to overhead to client UI (orange)
+    - need to add extra #define for short circuit trip current
+    - setup ina226 overcurrent alert
 * add overheat trip count to stats page
 * slow vs fast blow
     * fast checks getLatestReading() (or alert interrupts)

@@ -362,7 +362,8 @@
   }
 
   PWMChannel.prototype.toggleState = function () {
-    YB.client.togglePWMChannel(this.id, YB.App.config.hostname, true);
+    if (this.data.state != "OVERHEAT")
+      YB.client.togglePWMChannel(this.id, YB.App.config.hostname, true);
   }
 
   PWMChannel.prototype.updateControlUI = function () {
@@ -372,6 +373,7 @@
       $('#pwmState' + this.id).removeClass("btn-warning");
       $('#pwmState' + this.id).removeClass("btn-danger");
       $('#pwmState' + this.id).removeClass("btn-secondary");
+      $('#pwmState' + this.id).removeClass("btn-overheat");
       $(`#pwmStatus${this.id}`).hide();
       $(`#pwmData${this.id}`).show();
     }
@@ -381,6 +383,7 @@
       $('#pwmState' + this.id).removeClass("btn-success");
       $('#pwmState' + this.id).removeClass("btn-danger");
       $('#pwmState' + this.id).removeClass("btn-secondary");
+      $('#pwmState' + this.id).removeClass("btn-overheat");
       $(`#pwmStatus${this.id}`).html("SOFT TRIP");
       $(`#pwmStatus${this.id}`).show();
       $(`#pwmData${this.id}`).hide();
@@ -391,6 +394,7 @@
       $('#pwmState' + this.id).removeClass("btn-warning");
       $('#pwmState' + this.id).removeClass("btn-success");
       $('#pwmState' + this.id).removeClass("btn-secondary");
+      $('#pwmState' + this.id).removeClass("btn-overheat");
       $(`#pwmStatus${this.id}`).html("FUSE BLOWN");
       $(`#pwmStatus${this.id}`).show();
       $(`#pwmData${this.id}`).hide();
@@ -401,16 +405,29 @@
       $('#pwmState' + this.id).removeClass("btn-warning");
       $('#pwmState' + this.id).removeClass("btn-success");
       $('#pwmState' + this.id).removeClass("btn-secondary");
+      $('#pwmState' + this.id).removeClass("btn-overheat");
       $(`#pwmStatus${this.id}`).html("BYPASSED");
       $(`#pwmStatus${this.id}`).show();
       $(`#pwmData${this.id}`).show();
     }
-    else if (this.data.state == "OFF") {
+    else if (this.data.state == "OVERHEAT") {
+      $('#pwmState' + this.id).addClass("btn-overheat");
+      $('#pwmState' + this.id).removeClass("btn-primary");
+      $('#pwmState' + this.id).removeClass("btn-danger");
+      $('#pwmState' + this.id).removeClass("btn-warning");
+      $('#pwmState' + this.id).removeClass("btn-success");
+      $('#pwmState' + this.id).removeClass("btn-secondary");
+      let temp = Math.round(this.data.temperature);
+      $(`#pwmStatus${this.id}`).html(`OVERHEATED: ${temp}C`);
+      $(`#pwmStatus${this.id}`).show();
+      $(`#pwmData${this.id}`).hide();
+    } else if (this.data.state == "OFF") {
       $('#pwmState' + this.id).addClass("btn-secondary");
       $('#pwmState' + this.id).removeClass("btn-primary");
       $('#pwmState' + this.id).removeClass("btn-warning");
       $('#pwmState' + this.id).removeClass("btn-success");
       $('#pwmState' + this.id).removeClass("btn-danger");
+      $('#pwmState' + this.id).removeClass("btn-overheat");
       $(`#pwmStatus${this.id}`).hide();
       $(`#pwmData${this.id}`).hide();
     }

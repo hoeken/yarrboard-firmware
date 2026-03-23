@@ -541,7 +541,7 @@ void PWMChannel::checkOverheat()
 {
   // only trip once....
   if (this->status != Status::OVERHEAT) {
-    // Check our soft fuse, and our max limit for the board.
+    // are we too hot?
     if (this->getTemperature() >= YB_PWM_CHANNEL_MAX_TEMPERATURE) {
 
       // record some variables
@@ -564,6 +564,20 @@ void PWMChannel::checkOverheat()
       char prefIndex[YB_PREF_KEY_LENGTH];
       sprintf(prefIndex, "pwmOhtCount%d", this->id);
       _cfg->preferences.putUInt(prefIndex, this->overheatCount);
+    }
+  } else if (this->status == Status::OVERHEAT) {
+    // are we too hot?
+    if (this->getTemperature() <= YB_PWM_CHANNEL_RESET_TEMPERATURE) {
+
+      // record some variables
+      this->status = Status::OFF;
+      this->outputState = false;
+
+      // actually shut it down!
+      this->updateOutput(false);
+
+      // we will want to notify
+      this->sendFastUpdate = true;
     }
   }
 }
