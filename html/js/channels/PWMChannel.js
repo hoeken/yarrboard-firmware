@@ -83,44 +83,51 @@
     PWMChannel.total_wh = 0.0;
     PWMChannel.total_on_count = 0;
     PWMChannel.total_trip_count = 0;
+    PWMChannel.total_overheat_count = 0;
   };
 
   PWMChannel.prototype.generateStatsContainer = function () {
     return `
       <div id="pwmStatsDiv">
-        <h5>PWM Statistics</h5>
+        <h5>Individual Channel Statistics</h5>
         <table id="pwmStatsTable" class="table table-striped table-hover">
           <thead>
             <tr>
               <th scope="col">Channel</th>
-              <th class="text-end" scope="col">aH</th>
               <th class="text-end" scope="col">wH</th>
               <th class="text-end" scope="col">Switches</th>
               <th class="text-end" scope="col">Trips</th>
+              <th class="text-end" scope="col">Overheat</th>
             </tr>
           </thead>
           <tbody id="pwmStatsTableBody" class="table-group-divider"></tbody>
           <tfoot>
             <tr id="pwmStatsTotal"></tr>
               <th class="pwmName">Total</th>
-              <th id="pwmAmpHoursTotal" class="text-end"></th>
               <th id="pwmWattHoursTotal" class="text-end"></th>
               <th id="pwmOnCountTotal" class="text-end"></th>
               <th id="pwmTripCountTotal" class="text-end"></th>
+              <th id="pwmOverheatCountTotal" class="text-end"></th>
             </tr>
+          </tfoot>
+        </table>
+
+        <h5>Aggregate Channel Statistics</h5>
+        <table id="pwmStatsTable" class="table table-striped table-hover">
+            <tbody id="pwmStatsTableBody" class="table-group-divider"></tbody>
             <tr>
-              <th>Temperature</th>
+              <th>Average Temperature</th>
               <td id="pwmAverageTemperature">
             </tr>
             <tr>
-              <th>Total Amps</th>
+              <th>Total Amperage</th>
               <td id="pwmTotalAmps">
             </tr>
             <tr>
-              <th>Total Watts</th>
+              <th>Total Wattage</th>
               <td id="pwmTotalWatts">
             </tr>
-          </tfoot>
+          </tbody>
         </table>
       </div>
     `;
@@ -466,31 +473,32 @@
     $('#pwmStatsTableBody').append(`
       <tr id="pwmStats${this.id}">
         <td class="pwmName" > ${this.name}</td >
-        <td id="pwmAmpHours${this.id}" class= "text-end"></td >
         <td id="pwmWattHours${this.id}" class= "text-end"></td >
         <td id="pwmOnCount${this.id}" class= "text-end"></td >
         <td id="pwmTripCount${this.id}" class= "text-end"></td >
+        <td id="pwmOverheatCount${this.id}" class= "text-end"></td >
       </tr>
     `);
   };
 
   PWMChannel.prototype.updateStatsUI = function (stats) {
     if (this.enabled) {
-      $('#pwmAmpHours' + this.id).html(YB.Util.formatAmpHours(stats.aH));
       $('#pwmWattHours' + this.id).html(YB.Util.formatWattHours(stats.wH));
       $('#pwmOnCount' + this.id).html(stats.state_change_count.toLocaleString("en-US"));
       $('#pwmTripCount' + this.id).html(stats.soft_fuse_trip_count.toLocaleString("en-US"));
+      $('#pwmOverheatCount' + this.id).html(stats.overheat_count.toLocaleString("en-US"));
 
       PWMChannel.total_ah += parseFloat(stats.aH);
       PWMChannel.total_wh += parseFloat(stats.wH);
       PWMChannel.total_on_count += parseInt(stats.state_change_count);
       PWMChannel.total_trip_count += parseInt(stats.soft_fuse_trip_count);
+      PWMChannel.total_overheat_count += parseInt(stats.overheat_count);
     }
 
-    $('#pwmAmpHoursTotal').html(YB.Util.formatAmpHours(PWMChannel.total_ah));
     $('#pwmWattHoursTotal').html(YB.Util.formatWattHours(PWMChannel.total_wh));
     $('#pwmOnCountTotal').html(PWMChannel.total_on_count.toLocaleString("en-US"));
     $('#pwmTripCountTotal').html(PWMChannel.total_trip_count.toLocaleString("en-US"));
+    $('#pwmOverheatCountTotal').html(PWMChannel.total_overheat_count.toLocaleString("en-US"));
   };
 
   YB.PWMChannel = PWMChannel;

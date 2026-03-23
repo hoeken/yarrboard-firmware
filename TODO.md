@@ -13,19 +13,24 @@
 * add support for overcurrent alert interrupt to each channel
     - need to add extra #define for short circuit trip current
     - setup ina226 overcurrent alert
-* add overheat trip count to stats page
 * slow vs fast blow
     * fast checks getLatestReading() (or alert interrupts)
     * slow checks getAverageReading()
-* update yarrboard client if any changes needed - probably for state
-* update signalk plugin - same
-* go through and re-adjust the various page sizes for our different viewports
-* protocol documentation
-* add buzzer support - enable alarms for tripped or bypassed on a per-channel basis
+* add more piezo codes for monotone - morse letters would be good.
+* add buzzer support - enable alarms for:
+    * blown
+    * tripped
+    * bypassed
+    * overheat
 * how to handle global set_brightness command
 * make sure fast updates are working
+* go through and re-adjust the various page sizes for our different viewports
+* update yarrboard client if any changes needed - probably for state
+* update signalk plugin - same
 
 # LONG TERM:
+
+* protocol documentation
 
 * signalk plugins
     * should we move this to the firmware instead?

@@ -1053,6 +1053,7 @@ void PWMChannel::generateStats(JsonVariant output)
   output["wH"] = wattHours;
   output["state_change_count"] = stateChangeCount;
   output["soft_fuse_trip_count"] = softFuseTripCount;
+  output["overheat_count"] = overheatCount;
 }
 
 #endif
