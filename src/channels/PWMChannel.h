@@ -22,6 +22,7 @@
   #include <Arduino.h>
   #include <SPI.h>
   #include <channels/BaseChannel.h>
+  #include <controllers/BuzzerController.h>
   #include <controllers/MQTTController.h>
 
   #ifdef YB_PWM_CHANNEL_HAS_INA226
@@ -130,6 +131,12 @@ class PWMChannel : public BaseChannel
     float wattHours = 0.0;
 
     bool isDimmable = false;
+
+    BuzzerController* buzzer = nullptr;
+    String bypassMelody = YB_BYPASS_MELODY;
+    String trippedMelody = YB_TRIPPED_MELODY;
+    String blownMelody = YB_BLOWN_MELODY;
+    String overheatMelody = YB_OVERHEAT_MELODY;
 
     ConfigManager* _cfg = nullptr;
     BusVoltageController* busVoltage = nullptr;

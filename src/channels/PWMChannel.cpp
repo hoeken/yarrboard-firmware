@@ -461,6 +461,9 @@ void PWMChannel::checkFuseBlown()
         this->status = Status::BLOWN;
         this->outputState = false;
         this->updateOutput(false);
+
+        if (buzzer)
+          buzzer->playMelodyByName(this->blownMelody.c_str());
       }
     }
   }
@@ -491,6 +494,9 @@ void PWMChannel::checkFuseBypassed()
   #endif
       // dont change our outputState here... bypass can be temporary
       this->status = Status::BYPASSED;
+
+      if (buzzer)
+        buzzer->playMelodyByName(this->bypassMelody.c_str());
     }
   } else if (this->status == Status::BYPASSED) {
     if (!this->outputState && this->getVoltage() < 2.0) {
@@ -533,6 +539,9 @@ void PWMChannel::checkSoftFuse()
       char prefIndex[YB_PREF_KEY_LENGTH];
       sprintf(prefIndex, "pwmTripCount%d", this->id);
       _cfg->preferences.putUInt(prefIndex, this->softFuseTripCount);
+
+      if (buzzer)
+        buzzer->playMelodyByName(this->trippedMelody.c_str());
     }
   }
 }
@@ -565,6 +574,9 @@ void PWMChannel::checkOverheat()
       char prefIndex[YB_PREF_KEY_LENGTH];
       sprintf(prefIndex, "pwmOhtCount%d", this->id);
       _cfg->preferences.putUInt(prefIndex, this->overheatCount);
+
+      if (buzzer)
+        buzzer->playMelodyByName(this->overheatMelody.c_str());
     }
   } else if (this->status == Status::OVERHEAT) {
     // are we too hot?
@@ -765,24 +777,14 @@ void PWMChannel::calculateAverages(unsigned int delta)
 
 void PWMChannel::setState(const char* state)
 {
-  if (!strcmp(state, "ON"))
+  if (!strcmp(state, "ON")) {
     this->status = Status::ON;
-  else if (!strcmp(state, "OFF"))
-    this->status = Status::OFF;
-  // these happen elsewhere in the code.
-  // else if (!strcmp(state, "TRIPPED"))
-  //   this->status = Status::TRIPPED;
-  // else if (!strcmp(state, "BLOWN"))
-  //   this->status = Status::BLOWN;
-  // else if (!strcmp(state, "BYPASSED"))
-  //   this->status = Status::BYPASSED;
-  // else
-  //   this->status = Status::OFF;
-
-  if (!strcmp(state, "ON"))
     this->setState(true);
-  else
+
+  } else if (!strcmp(state, "OFF")) {
+    this->status = Status::OFF;
     this->setState(false);
+  }
 }
 
 void PWMChannel::setState(bool newState)
@@ -1015,6 +1017,11 @@ bool PWMChannel::loadConfig(JsonVariantConst config, char* error, size_t len)
   strlcpy(this->type, config["type"] | "other", sizeof(this->type));
   strlcpy(this->defaultState, config["defaultState"] | "OFF", sizeof(this->defaultState));
 
+  this->bypassMelody = config["bypassMelody"] | YB_BYPASS_MELODY;
+  this->bypassMelody = config["trippedMelody"] | YB_TRIPPED_MELODY;
+  this->bypassMelody = config["blownMelody"] | YB_BLOWN_MELODY;
+  this->bypassMelody = config["overheatMelody"] | YB_OVERHEAT_MELODY;
+
   return true;
 }
 
@@ -1027,6 +1034,11 @@ void PWMChannel::generateConfig(JsonVariant config)
   config["softFuse"] = round2(this->softFuseAmperage);
   config["isDimmable"] = this->isDimmable;
   config["defaultState"] = this->defaultState;
+
+  config["bypassMelody"] = this->bypassMelody;
+  config["trippedMelody"] = this->trippedMelody;
+  config["blownMelody"] = this->blownMelody;
+  config["overheatMelody"] = this->overheatMelody;
 }
 
 void PWMChannel::generateUpdate(JsonVariant config)

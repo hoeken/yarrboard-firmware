@@ -288,7 +288,7 @@
             <label for="f-pwm-defaultState-${this.id}">Default State (on boot)</label>
             <div class="invalid-feedback"></div>
           </div>
-          <div class="form-floating">
+          <div class="form-floating mb-3">
             <select id="f-pwm-type-${this.id}" class="form-select" aria-label="Output Type">
               <option value="light">Light</option>
               <option value="motor">Motor</option>
@@ -306,6 +306,30 @@
             <label for="f-pwm-type-${this.id}">Output Type</label>
             <div class="invalid-feedback"></div>
           </div>
+          <div class="form-floating mb-3">
+              <select id="f-pwm-bypassMelody-${this.id}" class="form-select" aria-label="Bypassed Melody">
+              </select>
+              <label for="f-pwm-bypassMelody-${this.id}">Bypassed Melody</label>
+              <div class="invalid-feedback"></div>
+          </div>
+          <div class="form-floating mb-3">
+              <select id="f-pwm-trippedMelody-${this.id}" class="form-select" aria-label="Soft Tripped Melody">
+              </select>
+              <label for="f-pwm-trippedMelody-${this.id}">Soft Tripped Melody</label>
+              <div class="invalid-feedback"></div>
+          </div>
+          <div class="form-floating mb-3">
+              <select id="f-pwm-blownMelody-${this.id}" class="form-select" aria-label="Fuse Blown Melody">
+              </select>
+              <label for="f-pwm-blownMelody-${this.id}">Fuse Blown Melody</label>
+              <div class="invalid-feedback"></div>
+          </div>
+          <div class="form-floating">
+              <select id="f-pwm-overheatMelody-${this.id}" class="form-select" aria-label="Overheated Melody">
+              </select>
+              <label for="f-pwm-overheatMelody-${this.id}">Overheated Melody</label>
+              <div class="invalid-feedback"></div>
+          </div>
         </div>
       </div>
     `;
@@ -319,17 +343,35 @@
     $(`#f-pwm-type-${this.id}`).val(this.cfg.type);
     $(`#f-pwm-defaultState-${this.id}`).val(this.cfg.defaultState);
 
+    YB.Util.populateMelodySelector($(`#f-pwm-bypassMelody-${this.id}`));
+    YB.Util.populateMelodySelector($(`#f-pwm-trippedMelody-${this.id}`));
+    YB.Util.populateMelodySelector($(`#f-pwm-blownMelody-${this.id}`));
+    YB.Util.populateMelodySelector($(`#f-pwm-overheatMelody-${this.id}`));
+
+    $(`#f-pwm-bypassMelody-${this.id}`).val(this.cfg.bypassMelody);
+    $(`#f-pwm-trippedMelody-${this.id}`).val(this.cfg.trippedMelody);
+    $(`#f-pwm-blownMelody-${this.id}`).val(this.cfg.blownMelody);
+    $(`#f-pwm-overheatMelody-${this.id}`).val(this.cfg.overheatMelody);
+
     //enable/disable other stuff.
     $(`#f-pwm-isDimmable-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-softFuse-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-type-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-defaultState-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-pwm-bypassMelody-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-pwm-trippedMelody-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-pwm-blownMelody-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-pwm-overheatMelody-${this.id}`).prop('disabled', !this.enabled);
 
     //validate + save
     $(`#f-pwm-isDimmable-${this.id}`).change(this.onEditForm);
     $(`#f-pwm-softFuse-${this.id}`).change(this.onEditForm);
     $(`#f-pwm-type-${this.id}`).change(this.onEditForm);
     $(`#f-pwm-defaultState-${this.id}`).change(this.onEditForm);
+    $(`#f-pwm-bypassMelody-${this.id}`).change(this.onEditForm);
+    $(`#f-pwm-trippedMelody-${this.id}`).change(this.onEditForm);
+    $(`#f-pwm-blownMelody-${this.id}`).change(this.onEditForm);
+    $(`#f-pwm-overheatMelody-${this.id}`).change(this.onEditForm);
   };
 
   PWMChannel.prototype.getConfigFormData = function () {
@@ -338,6 +380,10 @@
     newcfg.softFuse = $(`#f-pwm-softFuse-${this.id}`).val();
     newcfg.type = $(`#f-pwm-type-${this.id}`).val();
     newcfg.defaultState = $(`#f-pwm-defaultState-${this.id}`).val();
+    newcfg.bypassMelody = $(`#f-pwm-bypassMelody-${this.id}`).val();
+    newcfg.trippedMelody = $(`#f-pwm-trippedMelody-${this.id}`).val();
+    newcfg.blownMelody = $(`#f-pwm-blownMelody-${this.id}`).val();
+    newcfg.overheatMelody = $(`#f-pwm-overheatMelody-${this.id}`).val();
     return newcfg;
   }
 
@@ -349,6 +395,10 @@
     $(`#f-pwm-softFuse-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-type-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-defaultState-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-pwm-bypassMelody-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-pwm-trippedMelody-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-pwm-blownMelody-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-pwm-overheatMelody-${this.id}`).prop('disabled', !this.enabled);
   };
 
   PWMChannel.prototype.setDutyCycle = function (e) {

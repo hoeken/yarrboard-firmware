@@ -19,6 +19,11 @@
 #define YB_PIEZO_ACTIVE
 #define YB_PIEZO_PIN 14
 
+#define YB_BYPASS_MELODY   "MORSE_Y"
+#define YB_TRIPPED_MELODY  "MORSE_T"
+#define YB_BLOWN_MELODY    "MORSE_B"
+#define YB_OVERHEAT_MELODY "MORSE_O"
+
 #define YB_HAS_PWM_CHANNELS
 #define YB_PWM_CHANNEL_COUNT             8
 #define YB_PWM_CHANNEL_PINS              {1, 2, 4, 5, 6, 7, 8, 9}

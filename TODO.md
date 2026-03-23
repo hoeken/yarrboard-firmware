@@ -16,14 +16,9 @@
 * slow vs fast blow
     * fast checks getLatestReading() (or alert interrupts)
     * slow checks getAverageReading()
-* add more piezo codes for monotone - morse letters would be good.
-* add buzzer support - enable alarms for:
-    * blown
-    * tripped
-    * bypassed
-    * overheat
 * how to handle global set_brightness command
 * make sure fast updates are working
+
 * go through and re-adjust the various page sizes for our different viewports
 * update yarrboard client if any changes needed - probably for state
 * update signalk plugin - same

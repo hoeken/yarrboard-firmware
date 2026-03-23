@@ -95,6 +95,7 @@ bool PWMController::setup()
     ch._cfg = &_cfg;
     ch.busVoltage = busVoltage;
     ch.rgb = rgb;
+    ch.buzzer = (BuzzerController*)_app.getController("buzzer");
 
     ch.setup();
     ch.setupLedc();
