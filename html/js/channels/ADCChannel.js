@@ -45,6 +45,14 @@
       length: { minimum: 1, maximum: 32 }
     };
 
+    schema.averageWindowMs = {
+      numericality: {
+        onlyInteger: true,
+        greaterThanOrEqualTo: 0,
+        lessThanOrEqualTo: 10000
+      }
+    };
+
     schema.digitalInputMode = {
       presence: { allowEmpty: false },
       type: "string",
@@ -226,6 +234,12 @@
           </div>
 
           <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="f-adc-averageWindowMs-${this.id}" value="${this.cfg.averageWindowMs}">
+            <label for="f-adc-averageWindowMs-${this.id}">Running Average Window (ms)</label>
+            <div class="invalid-feedback"></div>
+          </div>
+
+          <div class="form-floating mb-3">
             <select id="f-adc-digital-input-mode-${this.id}" class="form-select" aria-label="Digital Input Mode">
               ${digitalInputModeOptions}
             </select>
@@ -294,6 +308,7 @@
 
     // Populate Data
     $(`#f-adc-type-${this.id}`).val(this.cfg.type);
+    $(`#f-adc-averageWindowMs-${this.id}`).val(this.cfg.averageWindowMs);
     $(`#f-adc-digital-input-mode-${this.id}`).val(this.cfg.digitalInputMode);
     $(`#f-adc-decimals-${this.id}`).val(this.cfg.displayDecimals);
     $(`#f-adc-use-cal-${this.id}`).prop('checked', this.cfg.useCalibrationTable);
@@ -308,6 +323,7 @@
 
     // Event Listeners
     $(`#f-adc-type-${this.id}`).change(this.onEditForm);
+    $(`#f-adc-averageWindowMs-${this.id}`).change(this.onEditForm);
     $(`#f-adc-digital-input-mode-${this.id}`).change(this.onEditForm);
     $(`#f-adc-decimals-${this.id}`).change(this.onEditForm);
     $(`#f-adc-use-cal-${this.id}`).change(this.onEditForm);
@@ -326,6 +342,7 @@
     let newcfg = YB.BaseChannel.prototype.getConfigFormData.call(this);
 
     newcfg.type = $(`#f-adc-type-${this.id}`).val();
+    newcfg.averageWindowMs = parseInt($(`#f-adc-averageWindowMs-${this.id}`).val());
     newcfg.digitalInputMode = $(`#f-adc-digital-input-mode-${this.id}`).val();
     newcfg.displayDecimals = parseInt($(`#f-adc-decimals-${this.id}`).val());
     newcfg.useCalibrationTable = $(`#f-adc-use-cal-${this.id}`).is(':checked');
@@ -353,6 +370,7 @@
 
     const enabled = this.enabled;
     $(`#f-adc-type-${this.id}`).prop('disabled', !enabled);
+    $(`#f-adc-averageWindowMs-${this.id}`).prop('disabled', !enabled);
     $(`#f-adc-decimals-${this.id}`).prop('disabled', !enabled);
     $(`#f-adc-use-cal-${this.id}`).prop('disabled', !enabled);
 
