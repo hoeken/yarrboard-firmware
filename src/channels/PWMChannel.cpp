@@ -490,6 +490,51 @@ float PWMChannel::getAverageWattage()
     return busVoltage->getBusVoltage() * this->getAverageAmperage();
 }
 
+void PWMChannel::printDebug(bool rawData)
+{
+  #ifdef YB_PWM_CHANNEL_HAS_INA226
+  {
+    uint16_t vcnt = voltageAverage.count();
+    YBP.printf("PWM CH%d voltageAverage: Window: %dms | Readings: %d/%d | Average: %.3f | Latest: %.3f\n",
+      this->id,
+      voltageAverage.window(),
+      vcnt,
+      voltageAverage.cap(),
+      voltageAverage.average() / (float)YB_INA226_FACTOR,
+      voltageAverage.latest() / (float)YB_INA226_FACTOR);
+
+    if (rawData && vcnt > 0) {
+      YBP.printf("Raw Voltage: ");
+      for (uint16_t j = 0; j < vcnt; j++) {
+        if (j > 0)
+          YBP.printf(", ");
+        YBP.printf("%.3f", voltageAverage.get(j) / (float)YB_INA226_FACTOR);
+      }
+      YBP.printf("\n");
+    }
+
+    uint16_t acnt = amperageAverage.count();
+    YBP.printf("PWM CH%d amperageAverage: Window: %dms | Readings: %d/%d | Average: %.3f | Latest: %.3f\n",
+      this->id,
+      amperageAverage.window(),
+      acnt,
+      amperageAverage.cap(),
+      amperageAverage.average() / (float)YB_INA226_FACTOR,
+      amperageAverage.latest() / (float)YB_INA226_FACTOR);
+
+    if (rawData && acnt > 0) {
+      YBP.printf("Raw Amperage: ");
+      for (uint16_t j = 0; j < acnt; j++) {
+        if (j > 0)
+          YBP.printf(", ");
+        YBP.printf("%.3f", amperageAverage.get(j) / (float)YB_INA226_FACTOR);
+      }
+      YBP.printf("\n");
+    }
+  }
+  #endif
+}
+
 float PWMChannel::toVoltage(float adcVoltage)
 {
   #ifdef YB_PWM_CHANNEL_VOLTAGE_R1
@@ -565,7 +610,7 @@ void PWMChannel::checkFuseBlown()
     return;
 
   // dimming lights need more time.
-  unsigned long firstCheckTime = 1000;
+  unsigned long firstCheckTime = YB_PWM_CHANNEL_AVERAGE_WINDOW_MS;
   if (isDimmable && !strcmp(this->type, "light"))
     firstCheckTime += rampOnMillis;
 
@@ -606,7 +651,7 @@ void PWMChannel::checkFuseBypassed()
   if (this->status != Status::ON && this->status != Status::BYPASSED && !this->isFading) {
 
     // dimming lights are a special case...
-    unsigned long firstCheckTime = 1000;
+    unsigned long firstCheckTime = YB_PWM_CHANNEL_AVERAGE_WINDOW_MS;
     if (isDimmable && !strcmp(this->type, "light"))
       firstCheckTime += rampOffMillis;
 
@@ -645,7 +690,7 @@ void PWMChannel::checkSoftFuse()
 
   // grace period for SLOW blow soft fuse.
   if (!strcmp(this->softFuseType, "SLOW")) {
-    unsigned long firstCheckTime = 1000;
+    unsigned long firstCheckTime = YB_PWM_CHANNEL_AVERAGE_WINDOW_MS;
     if (millis() - lastStateChange < firstCheckTime)
       return;
   }

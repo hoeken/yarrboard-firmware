@@ -157,7 +157,7 @@ class PWMChannel : public BaseChannel
     void setupDefaultState();
 
   #ifdef YB_PWM_CHANNEL_HAS_INA226
-    PWMChannel() : voltageAverage(200, 1000), amperageAverage(200, 1000) {}
+    PWMChannel() : voltageAverage(100, YB_PWM_CHANNEL_AVERAGE_WINDOW_MS), amperageAverage(200, YB_PWM_CHANNEL_AVERAGE_WINDOW_MS) {}
 
     INA226* ina226;
     void setupINA226();
@@ -200,6 +200,8 @@ class PWMChannel : public BaseChannel
     float getAverageAmperage();
     float getAverageWattage();
     float getTemperature();
+
+    void printDebug(bool rawData = false);
 
     void checkFuseBlown();
     void checkFuseBypassed();
