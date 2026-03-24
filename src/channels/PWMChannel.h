@@ -150,6 +150,7 @@ class PWMChannel : public BaseChannel
     void generateConfig(JsonVariant config) override;
     void generateUpdate(JsonVariant config) override;
     void generateStats(JsonVariant output) override;
+    void onConfigUpdatedHook() override;
 
     void setup();
     void setupLedc();

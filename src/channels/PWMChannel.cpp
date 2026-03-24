@@ -151,6 +151,15 @@ void PWMChannel::setINA226AlertLimit(float limit_current)
   }
 }
 
+void PWMChannel::onConfigUpdatedHook()
+{
+  // update our soft fuse interrupt
+  float limit = YB_PWM_CHANNEL_SHORT_CIRCUIT_AMPS;
+  if (!strcmp(this->softFuseType, "FASTEST"))
+    limit = min(limit, this->softFuseAmperage);
+  setINA226AlertLimit(limit);
+}
+
 void PWMChannel::readINA226()
 {
   if (millis() - lastVoltageUpdate > voltageUpdateInterval) {

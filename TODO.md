@@ -3,7 +3,6 @@
 ## FROTHFET
 
 * measure soft fuse response times.
-* setup ina226 interrupt on update (override handleConfigCommand in PWMController)
 
 * make sure fast updates are working
 * go through and re-adjust the various page sizes for our different viewports
