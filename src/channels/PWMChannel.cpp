@@ -864,6 +864,7 @@ void PWMChannel::haGenerateDiscovery(JsonVariant doc, const char* uuid, MQTTCont
   sprintf(ha_topic_state_brightness, "yarrboard/%s/pwm/%s/ha_brightness/state", ha_key, this->key);
   sprintf(ha_topic_voltage, "yarrboard/%s/pwm/%s/voltage", ha_key, this->key);
   sprintf(ha_topic_current, "yarrboard/%s/pwm/%s/current", ha_key, this->key);
+  sprintf(ha_topic_wattage, "yarrboard/%s/pwm/%s/wattage", ha_key, this->key);
 
   // Register command-topic callbacks once; haGenerateDiscovery is called on every
   // HA reconnect so we must guard against accumulating duplicate entries.
@@ -876,6 +877,7 @@ void PWMChannel::haGenerateDiscovery(JsonVariant doc, const char* uuid, MQTTCont
   this->haGenerateLightDiscovery(doc);
   this->haGenerateVoltageDiscovery(doc);
   this->haGenerateAmperageDiscovery(doc);
+  this->haGenerateWattageDiscovery(doc);
 }
 
 void PWMChannel::haGenerateLightDiscovery(JsonVariant doc)
@@ -940,6 +942,30 @@ void PWMChannel::haGenerateAmperageDiscovery(JsonVariant doc)
   obj["state_topic"] = ha_topic_current;
   obj["unit_of_measurement"] = "A";
   obj["device_class"] = "current";
+  obj["state_class"] = "measurement";
+  obj["entity_category"] = "diagnostic";
+
+  // availability is an array of objects
+  JsonArray availability = obj["availability"].to<JsonArray>();
+  JsonObject avail = availability.add<JsonObject>();
+  avail["topic"] = ha_topic_avail;
+}
+
+void PWMChannel::haGenerateWattageDiscovery(JsonVariant doc)
+{
+  // configuration object for the channel voltage
+  char ha_uuid_wattage[128];
+  sprintf(ha_uuid_wattage, "%s_wattage", ha_uuid);
+  char ha_wattage_name[128];
+  sprintf(ha_wattage_name, "%s Wattage", this->name);
+
+  JsonObject obj = doc[ha_uuid_wattage].to<JsonObject>();
+  obj["p"] = "sensor";
+  obj["name"] = ha_wattage_name;
+  obj["unique_id"] = ha_uuid_wattage;
+  obj["state_topic"] = ha_topic_wattage;
+  obj["unit_of_measurement"] = "W";
+  obj["device_class"] = "power";
   obj["state_class"] = "measurement";
   obj["entity_category"] = "diagnostic";
 

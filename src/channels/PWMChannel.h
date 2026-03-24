@@ -42,6 +42,7 @@ class PWMChannel : public BaseChannel
     char ha_topic_state_brightness[128];
     char ha_topic_voltage[128];
     char ha_topic_current[128];
+    char ha_topic_wattage[128];
 
     byte pin = 0;
     unsigned long lastStateChange = 0;
@@ -209,6 +210,7 @@ class PWMChannel : public BaseChannel
     void haGenerateLightDiscovery(JsonVariant doc);
     void haGenerateVoltageDiscovery(JsonVariant doc);
     void haGenerateAmperageDiscovery(JsonVariant doc);
+    void haGenerateWattageDiscovery(JsonVariant doc);
     void haPublishState(MQTTController* mqtt);
     void haHandleCommand(const char* topic, const char* payload);
 
