@@ -2,13 +2,8 @@
 
 ## FROTHFET
 
-* slow vs fast blow
-    * add configuration option
-    * slow - uses getAverageReading() + possible time delay like brineomatic (measure speed)
-    * fast - uses getLatestReading() (measure speed)
-    * fastest - alert interrupt (measure)
-        * pull out the ina226 alert setup into separate function.
-        * call it on update (override handleConfigCommand in PWMController)
+* measure soft fuse response times.
+* setup ina226 interrupt on update (override handleConfigCommand in PWMController)
 * add printDebug for averages
 * add a lastStateChange check to generateUpdate() -> use latest or average depending.
 

@@ -112,27 +112,11 @@ void PWMChannel::setupINA226()
     YBP.println();
   }
 
-  // Configure the ALERT pin to fire when current exceeds YB_PWM_CHANNEL_MAX_AMPS.
-  // The INA226 has no direct overcurrent alert, but shunt voltage is proportional
-  // to current (V = I * R), so we use the Shunt Over Voltage alert mode instead.
-  //
-  // Shunt voltage at the overcurrent threshold:
-  //   V_shunt = MAX_AMPS * SHUNT_OHMS
-  //           = YB_PWM_CHANNEL_MAX_AMPS * YB_PWM_CHANNEL_INA226_SHUNT
-  //
-  // The Alert Limit register uses a fixed 2.5 µV/LSB (hardware constant, matches
-  // the shunt voltage register resolution), so:
-  //   alert_limit = V_shunt / 2.5e-6
-  //
-  // Latch mode is enabled so the ALERT pin stays asserted until the MCU reads the
-  // Mask/Enable register — prevents the interrupt from re-firing before it is serviced.
-  ina226->setAlertRegister(INA226_SHUNT_OVER_VOLTAGE | INA226_ALERT_LATCH_ENABLE_FLAG);
-  float shuntVoltageLimit = YB_PWM_CHANNEL_SHORT_CIRCUIT_AMPS * YB_PWM_CHANNEL_INA226_SHUNT;
-  ina226->setAlertLimit((uint16_t)(shuntVoltageLimit / 2.5e-6));
-
-  if (this->id == 1) {
-    YBP.printf("Shunt Voltage Limit %.4fV\n", shuntVoltageLimit);
-  }
+  // setup our limit.
+  float limit = YB_PWM_CHANNEL_SHORT_CIRCUIT_AMPS;
+  if (!strcmp(this->softFuseType, "FASTEST"))
+    limit = min(limit, this->softFuseAmperage);
+  setINA226AlertLimit(limit);
 
   pinMode(_ina226_alert_pins[this->id - 1], INPUT);
   attachInterruptArg(
@@ -141,6 +125,30 @@ void PWMChannel::setupINA226()
     this,
     FALLING);
     #endif
+}
+
+void PWMChannel::setINA226AlertLimit(float limit_current)
+{
+  // Configure the ALERT pin to fire when current exceeds limit_current.
+  // The INA226 has no direct overcurrent alert, but shunt voltage is proportional
+  // to current (V = I * R), so we use the Shunt Over Voltage alert mode instead.
+  //
+  // Shunt voltage at the overcurrent threshold:
+  //   V_shunt = limit_current * SHUNT_OHMS
+  //
+  // The Alert Limit register uses a fixed 2.5 µV/LSB (hardware constant, matches
+  // the shunt voltage register resolution), so:
+  //   alert_limit = V_shunt / 2.5e-6
+  //
+  // Latch mode is enabled so the ALERT pin stays asserted until the MCU reads the
+  // Mask/Enable register — prevents the interrupt from re-firing before it is serviced.
+  ina226->setAlertRegister(INA226_SHUNT_OVER_VOLTAGE | INA226_ALERT_LATCH_ENABLE_FLAG);
+  float shuntVoltageLimit = limit_current * YB_PWM_CHANNEL_INA226_SHUNT;
+  ina226->setAlertLimit((uint16_t)(shuntVoltageLimit / 2.5e-6));
+
+  if (this->id == 1) {
+    YBP.printf("Shunt Voltage Limit %.4fV\n", shuntVoltageLimit);
+  }
 }
 
 void PWMChannel::readINA226()
@@ -635,14 +643,21 @@ void PWMChannel::checkSoftFuse()
   this->handleINA226Trip();
   #endif
 
-  // grace period when changing state or duty
-  unsigned long firstCheckTime = 1000;
-  if (millis() - lastStateChange < firstCheckTime)
-    return;
+  // grace period for SLOW blow soft fuse.
+  if (!strcmp(this->softFuseType, "SLOW")) {
+    unsigned long firstCheckTime = 1000;
+    if (millis() - lastStateChange < firstCheckTime)
+      return;
+  }
 
   // only trip once....
   if (this->status != Status::TRIPPED) {
-    float amperage = abs(this->getAverageAmperage());
+    float amperage;
+
+    if (!strcmp(this->softFuseType, "SLOW"))
+      amperage = abs(this->getAverageAmperage());
+    else
+      amperage = abs(this->getLatestAmperage());
 
     // Check our soft fuse, and our max limit for the board.
     if (amperage >= this->softFuseAmperage || amperage >= YB_PWM_CHANNEL_MAX_AMPS) {
@@ -770,6 +785,7 @@ void PWMChannel::startFade(float duty, int fade_time)
     this->lastStateChange = millis();
 
     // clear our averages
+  #ifdef YB_PWM_CHANNEL_HAS_INA226
     voltageAverage.clear();
     amperageAverage.clear();
 
@@ -777,6 +793,7 @@ void PWMChannel::startFade(float duty, int fade_time)
     uint32_t start = millis();
     while (millis() - start < 2)
       this->handleINA226Trip();
+  #endif
   }
 }
 
@@ -972,6 +989,7 @@ void PWMChannel::writePWM(uint16_t pwm)
   // track when we last changed states.
   this->lastStateChange = millis();
 
+  #ifdef YB_PWM_CHANNEL_HAS_INA226
   // clear our averages
   voltageAverage.clear();
   amperageAverage.clear();
@@ -982,6 +1000,7 @@ void PWMChannel::writePWM(uint16_t pwm)
     while (millis() - start < 2)
       this->handleINA226Trip();
   }
+  #endif
 }
 
 const char* PWMChannel::getStatus()

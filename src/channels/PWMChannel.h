@@ -161,6 +161,7 @@ class PWMChannel : public BaseChannel
 
     INA226* ina226;
     void setupINA226();
+    void setINA226AlertLimit(float limit_current);
     void readINA226();
     void handleINA226Trip();
     uint32_t lastVoltageUpdate = 0;
