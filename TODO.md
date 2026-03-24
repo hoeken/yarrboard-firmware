@@ -2,8 +2,6 @@
 
 ## FROTHFET
 
-* measure soft fuse response times.
-
 * make sure fast updates are working
 * go through and re-adjust the various page sizes for our different viewports
 * update yarrboard client if any changes needed - probably for state

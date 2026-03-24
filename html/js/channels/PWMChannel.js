@@ -291,9 +291,9 @@
 
           <div class="form-floating mb-3">
             <select id="f-pwm-softFuseType-${this.id}" class="form-select" aria-label="Soft Fuse Type">
-              <option value="SLOW">SLOW (???s)</option>
-              <option value="FAST">FAST (???ms)</option>
-              <option value="FASTEST">FASTEST (???us)</option>
+              <option value="SLOW">SLOW (2-3s)</option>
+              <option value="FAST">FAST (20-30ms)</option>
+              <option value="FASTEST">FASTEST (2-3ms)</option>
             </select>
             <label for="f-pwm-defaultState-${this.id}">Soft Fuse Type</label>
             <div class="invalid-feedback"></div>
