@@ -1296,9 +1296,15 @@ void PWMChannel::generateUpdate(JsonVariant config)
   config["source"] = this->source;
   if (this->isDimmable)
     config["duty"] = round2(this->dutyCycle);
-  config["voltage"] = round2(this->getAverageVoltage());
-  config["current"] = round2(this->getAverageAmperage());
-  config["wattage"] = round2(this->getAverageWattage());
+  if (millis() - lastStateChange > YB_PWM_CHANNEL_AVERAGE_WINDOW_MS) {
+    config["voltage"] = round2(this->getAverageVoltage());
+    config["current"] = round2(this->getAverageAmperage());
+    config["wattage"] = round2(this->getAverageWattage());
+  } else {
+    config["voltage"] = round2(this->getLatestVoltage());
+    config["current"] = round2(this->getLatestAmperage());
+    config["wattage"] = round2(this->getLatestWattage());
+  }
   config["temperature"] = round2(this->getTemperature());
   config["aH"] = round3(this->ampHours);
   config["wH"] = round3(this->wattHours);
