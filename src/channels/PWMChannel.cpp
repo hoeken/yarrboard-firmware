@@ -261,7 +261,6 @@ void PWMChannel::setupLedc()
 {
   // track our fades
   this->isFading = false;
-  this->fadeOver = false;
 
   // now attach ledc
   if (!ledcAttach(this->pin, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION))
@@ -937,21 +936,22 @@ void PWMChannel::continueGammaThunk(void* arg, uint32_t)
     const int dur_ms = lastSeg ? S->last_ms : S->step_ms;
     S->idx++;
 
-    // SAFE here (task context):
-    ledcFadeWithInterruptArg(S->pin, from, to, dur_ms, &PWMChannel::gammaISR, S);
+    // ESP32 LEDC does not fire the fade interrupt when the target is MAX_DUTY.
+    // Also skip the hardware fade if from == to (no-op) or it fails.
+    // In those cases, write directly and complete the chain immediately.
+    constexpr uint32_t MAX_DUTY = (1u << YB_PWM_CHANNEL_RESOLUTION) - 1;
+    bool faded = (from != to) && (to < MAX_DUTY) &&
+                 ledcFadeWithInterruptArg(S->pin, from, to, dur_ms, &PWMChannel::gammaISR, S);
+    if (!faded) {
+      ledcWrite(S->pin, to);
+      S->active = false;
+      if (S->user_cb)
+        S->user_cb(S->user_arg);
+    }
   } else {
     S->active = false;
     if (S->user_cb)
-      S->user_cb(S->user_arg); // also safe here if you prefer
-  }
-}
-
-void PWMChannel::checkIfFadeOver()
-{
-  // has our fade ended?
-  if (!this->isFading && this->fadeOver) {
-    this->fadeOver = false;
-    this->updateOutput(true);
+      S->user_cb(S->user_arg);
   }
 }
 

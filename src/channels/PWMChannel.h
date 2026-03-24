@@ -98,8 +98,6 @@ class PWMChannel : public BaseChannel
 
     // polled from other code; updated in ISR
     volatile bool isFading = false; // used to check if we're actively fading
-    volatile bool fadeOver = false; // used for running code after a fade
-
     // bool isInverted = false; // determines whether our output pin is inverted or not
 
     float dutyCycle = 0.0;
@@ -158,7 +156,7 @@ class PWMChannel : public BaseChannel
     void setupDefaultState();
 
   #ifdef YB_PWM_CHANNEL_HAS_INA226
-    PWMChannel() : voltageAverage(100, YB_PWM_CHANNEL_AVERAGE_WINDOW_MS), amperageAverage(200, YB_PWM_CHANNEL_AVERAGE_WINDOW_MS) {}
+    PWMChannel() : voltageAverage(100, YB_PWM_CHANNEL_AVERAGE_WINDOW_MS), amperageAverage(100, YB_PWM_CHANNEL_AVERAGE_WINDOW_MS) {}
 
     INA226* ina226;
     void setupINA226();
@@ -209,7 +207,6 @@ class PWMChannel : public BaseChannel
     void checkSoftFuse();
     void checkOverheat();
 
-    void checkIfFadeOver();
     void setState(const char* state);
     void setState(bool newState);
     void writePWM(uint16_t pwm);
@@ -234,7 +231,6 @@ class PWMChannel : public BaseChannel
       // ISR context — keep it tiny
       auto* self = static_cast<PWMChannel*>(arg);
       self->isFading = false;
-      self->fadeOver = true;
     }
 
     // ISR (Arduino style)

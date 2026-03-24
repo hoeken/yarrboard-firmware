@@ -138,10 +138,8 @@ void PWMController::loop()
   #endif
 
       ch.checkStatus();
-      ch.saveThrottledDutyCycle();
-      ch.checkIfFadeOver();
-
       ch.updateOutputLED();
+      ch.saveThrottledDutyCycle();
     }
   }
 }
