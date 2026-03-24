@@ -128,19 +128,21 @@ void PWMController::loop()
 
   // maintenance on our channels.
   for (auto& ch : _channels) {
+    if (ch.isEnabled) {
   #ifdef YB_PWM_CHANNEL_HAS_INA226
-    ch.readINA226();
+      ch.readINA226();
   #endif
 
   #ifdef YB_PWM_CHANNEL_HAS_LM75
-    ch.readLM75();
+      ch.readLM75();
   #endif
 
-    ch.checkStatus();
-    ch.saveThrottledDutyCycle();
-    ch.checkIfFadeOver();
+      ch.checkStatus();
+      ch.saveThrottledDutyCycle();
+      ch.checkIfFadeOver();
 
-    ch.updateOutputLED();
+      ch.updateOutputLED();
+    }
   }
 }
 

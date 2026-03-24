@@ -248,6 +248,13 @@ float PWMChannel::getCurrentDutyCycle()
 
 void PWMChannel::updateOutput(bool check_status)
 {
+  // turn off disabled channels and ignore them.
+  if (!this->isEnabled) {
+    this->writePWM(0);
+    this->outputState = false;
+    return;
+  }
+
   // first of all, if its tripped or blown zero it out.
   if (this->status == Status::TRIPPED || this->status == Status::BLOWN || this->status == Status::OVERHEAT) {
     this->writePWM(0);
