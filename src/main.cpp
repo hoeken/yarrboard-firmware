@@ -82,6 +82,8 @@ void setup()
   bus_voltage.r2 = YB_BUS_VOLTAGE_R2;
   yba.registerController(bus_voltage);
 
+  yba.default_melody = "ACTIVE_STARTUP";
+
   pwm.busVoltage = &bus_voltage;
   pwm.rgb = (RGBControllerInterface*)yba.getController("rgb");
   yba.registerController(pwm);
