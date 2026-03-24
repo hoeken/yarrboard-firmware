@@ -1198,6 +1198,7 @@ bool PWMChannel::loadConfig(JsonVariantConst config, char* error, size_t len)
 
   strlcpy(this->type, config["type"] | "other", sizeof(this->type));
   strlcpy(this->defaultState, config["defaultState"] | "OFF", sizeof(this->defaultState));
+  strlcpy(this->softFuseType, config["softFuseType"] | YB_PWM_CHANNEL_SOFT_FUSE_TYPE, sizeof(this->softFuseType));
 
   this->bypassMelody = config["bypassMelody"] | YB_BYPASS_MELODY;
   this->bypassMelody = config["trippedMelody"] | YB_TRIPPED_MELODY;
@@ -1216,7 +1217,7 @@ void PWMChannel::generateConfig(JsonVariant config)
   config["softFuse"] = round2(this->softFuseAmperage);
   config["isDimmable"] = this->isDimmable;
   config["defaultState"] = this->defaultState;
-
+  config["softFuseType"] = this->softFuseType;
   config["bypassMelody"] = this->bypassMelody;
   config["trippedMelody"] = this->trippedMelody;
   config["blownMelody"] = this->blownMelody;

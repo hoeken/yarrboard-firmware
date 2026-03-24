@@ -155,6 +155,15 @@
       }
     };
 
+    schema.softFuseType = {
+      type: "string",
+      presence: { allowEmpty: false },
+      inclusion: {
+        within: ["SLOW", "FAST", "FASTEST"],
+        message: "^softFuseType must be SLOW, FAST, or FASTEST"
+      }
+    };
+
     // Boolean flag for whether calibration is used
     schema.isDimmable = {
       inclusion: {
@@ -163,7 +172,6 @@
       }
     };
 
-    // Optional calibrated units string
     schema.defaultState = {
       type: "string",
       inclusion: {
@@ -280,6 +288,17 @@
             <label for="f-pwm-softFuse-${this.id}">Soft Fuse (Amps)</label>
             <div class="invalid-feedback"></div>
           </div>
+
+          <div class="form-floating mb-3">
+            <select id="f-pwm-softFuseType-${this.id}" class="form-select" aria-label="Soft Fuse Type">
+              <option value="SLOW">SLOW (???s)</option>
+              <option value="FAST">FAST (???ms)</option>
+              <option value="FASTEST">FASTEST (???us)</option>
+            </select>
+            <label for="f-pwm-defaultState-${this.id}">Soft Fuse Type</label>
+            <div class="invalid-feedback"></div>
+          </div>
+
           <div class="form-floating mb-3">
             <select id="f-pwm-defaultState-${this.id}" class="form-select" aria-label="Default State (on boot)">
               <option value="ON">ON</option>
@@ -342,6 +361,7 @@
     $(`#f-pwm-isDimmable-${this.id}`).prop("checked", this.cfg.isDimmable);
     $(`#f-pwm-type-${this.id}`).val(this.cfg.type);
     $(`#f-pwm-defaultState-${this.id}`).val(this.cfg.defaultState);
+    $(`#f-pwm-softFuseType-${this.id}`).val(this.cfg.softFuseType);
 
     YB.Util.populateMelodySelector($(`#f-pwm-bypassMelody-${this.id}`));
     YB.Util.populateMelodySelector($(`#f-pwm-trippedMelody-${this.id}`));
@@ -358,6 +378,7 @@
     $(`#f-pwm-softFuse-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-type-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-defaultState-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-pwm-softFuseType-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-bypassMelody-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-trippedMelody-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-blownMelody-${this.id}`).prop('disabled', !this.enabled);
@@ -368,6 +389,7 @@
     $(`#f-pwm-softFuse-${this.id}`).change(this.onEditForm);
     $(`#f-pwm-type-${this.id}`).change(this.onEditForm);
     $(`#f-pwm-defaultState-${this.id}`).change(this.onEditForm);
+    $(`#f-pwm-softFuseType-${this.id}`).change(this.onEditForm);
     $(`#f-pwm-bypassMelody-${this.id}`).change(this.onEditForm);
     $(`#f-pwm-trippedMelody-${this.id}`).change(this.onEditForm);
     $(`#f-pwm-blownMelody-${this.id}`).change(this.onEditForm);
@@ -380,6 +402,7 @@
     newcfg.softFuse = $(`#f-pwm-softFuse-${this.id}`).val();
     newcfg.type = $(`#f-pwm-type-${this.id}`).val();
     newcfg.defaultState = $(`#f-pwm-defaultState-${this.id}`).val();
+    newcfg.softFuseType = $(`#f-pwm-softFuseType-${this.id}`).val();
     newcfg.bypassMelody = $(`#f-pwm-bypassMelody-${this.id}`).val();
     newcfg.trippedMelody = $(`#f-pwm-trippedMelody-${this.id}`).val();
     newcfg.blownMelody = $(`#f-pwm-blownMelody-${this.id}`).val();
@@ -395,6 +418,7 @@
     $(`#f-pwm-softFuse-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-type-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-defaultState-${this.id}`).prop('disabled', !this.enabled);
+    $(`#f-pwm-softFuseType-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-bypassMelody-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-trippedMelody-${this.id}`).prop('disabled', !this.enabled);
     $(`#f-pwm-blownMelody-${this.id}`).prop('disabled', !this.enabled);

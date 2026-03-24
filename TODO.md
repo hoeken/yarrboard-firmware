@@ -2,13 +2,15 @@
 
 ## FROTHFET
 
-* voltage / current
-    * add rolling window to both
 * slow vs fast blow
+    * add configuration option
     * slow - uses getAverageReading() + possible time delay like brineomatic (measure speed)
     * fast - uses getLatestReading() (measure speed)
     * fastest - alert interrupt (measure)
-    * add configuration option
+        * pull out the ina226 alert setup into separate function.
+        * call it on update (override handleConfigCommand in PWMController)
+* add printDebug for averages
+* add a lastStateChange check to generateUpdate() -> use latest or average depending.
 
 * make sure fast updates are working
 * go through and re-adjust the various page sizes for our different viewports

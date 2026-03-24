@@ -90,6 +90,7 @@ class PWMChannel : public BaseChannel
     char type[30] = "other";
     char defaultState[10] = "OFF";
     char source[YB_HOSTNAME_LENGTH];
+    char softFuseType[10] = YB_PWM_CHANNEL_SOFT_FUSE_TYPE;
 
     unsigned int stateChangeCount = 0;
     volatile unsigned int softFuseTripCount = 0;
