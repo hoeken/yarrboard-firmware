@@ -61,7 +61,7 @@ void PWMChannel::onConfigUpdatedHook()
 {
   #ifdef YB_PWM_CHANNEL_HAS_INA226
   // update our soft fuse interrupt
-  float limit = YB_PWM_CHANNEL_MAX_AMPS;
+  float limit = YB_PWM_CHANNEL_SHORT_CIRCUIT_AMPS;
   if (!strcmp(this->softFuseType, "FASTEST"))
     limit = min(limit, this->softFuseAmperage);
   setINA226AlertLimit(limit);
@@ -107,7 +107,7 @@ void PWMChannel::setupINA226()
     YBP.printf("Shunt Voltage Update Interval: %dms\n", amperageUpdateInterval);
   }
 
-  int x = ina226->setMaxCurrentShunt(YB_PWM_CHANNEL_MAX_AMPS, YB_PWM_CHANNEL_INA226_SHUNT);
+  int x = ina226->setMaxCurrentShunt(YB_PWM_CHANNEL_SHORT_CIRCUIT_AMPS, YB_PWM_CHANNEL_INA226_SHUNT);
 
   if (this->id == 1) {
     YBP.println("normalized = true (default)");
@@ -124,7 +124,7 @@ void PWMChannel::setupINA226()
   }
 
   // setup our limit.
-  float limit = YB_PWM_CHANNEL_MAX_AMPS;
+  float limit = YB_PWM_CHANNEL_SHORT_CIRCUIT_AMPS;
   if (!strcmp(this->softFuseType, "FASTEST"))
     limit = min(limit, this->softFuseAmperage);
   setINA226AlertLimit(limit);
