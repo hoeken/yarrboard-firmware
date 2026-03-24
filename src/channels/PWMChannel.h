@@ -20,6 +20,7 @@
   #include "freertos/FreeRTOS.h"
   #include "freertos/timers.h"
   #include <Arduino.h>
+  #include <RollingAverage.h>
   #include <SPI.h>
   #include <channels/BaseChannel.h>
   #include <controllers/BuzzerController.h>
@@ -155,17 +156,19 @@ class PWMChannel : public BaseChannel
     void setupDefaultState();
 
   #ifdef YB_PWM_CHANNEL_HAS_INA226
+    PWMChannel() : voltageAverage(200, 1000), amperageAverage(200, 1000) {}
+
     INA226* ina226;
     void setupINA226();
     void readINA226();
     void handleINA226Trip();
-    float lastVoltage;
     uint32_t lastVoltageUpdate = 0;
     uint32_t voltageUpdateInterval = 100;
+    RollingAverage voltageAverage;
 
-    float lastAmperage;
     uint32_t lastAmperageUpdate = 0;
     uint32_t amperageUpdateInterval = 100;
+    RollingAverage amperageAverage;
 
     // Set to true by ina226AlertHandler ISR; cleared by checkSoftFuse after
     // the full trip sequence runs in the main loop.
@@ -185,18 +188,20 @@ class PWMChannel : public BaseChannel
     void updateOutput(bool check_status = false);
     void checkStatus();
 
-    float getVoltage();
     float toVoltage(float adcVoltage);
+    float toAmperage(float voltage);
+
+    float getLatestVoltage();
+    float getLatestAmperage();
+    float getLatestWattage();
+    float getAverageVoltage();
+    float getAverageAmperage();
+    float getAverageWattage();
+    float getTemperature();
+
     void checkFuseBlown();
     void checkFuseBypassed();
-
-    float getAmperage();
-    float toAmperage(float voltage);
     void checkSoftFuse();
-
-    float getWattage();
-
-    float getTemperature();
     void checkOverheat();
 
     void checkIfFadeOver();

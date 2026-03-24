@@ -17,6 +17,8 @@
   #include <ConfigManager.h>
   #include <YarrboardDebug.h>
 
+  #define YB_INA226_FACTOR 10000.0
+
 void PWMChannel::setup()
 {
   char prefIndex[YB_PREF_KEY_LENGTH];
@@ -94,19 +96,21 @@ void PWMChannel::setupINA226()
     YBP.printf("Shunt Voltage Update Interval: %dms\n", amperageUpdateInterval);
   }
 
-  int x = ina226->setMaxCurrentShunt(YB_PWM_CHANNEL_MAX_AMPS, YB_PWM_CHANNEL_INA226_SHUNT);
+  int x = ina226->setMaxCurrentShunt(YB_PWM_CHANNEL_SHORT_CIRCUIT_AMPS, YB_PWM_CHANNEL_INA226_SHUNT);
 
-  // YBP.println("normalized = true (default)");
-  // YBP.println(x);
-  // YBP.print("LSB:\t");
-  // YBP.println(ina226->getCurrentLSB(), 10);
-  // YBP.print("LSB_uA:\t");
-  // YBP.println(ina226->getCurrentLSB_uA(), 3);
-  // YBP.print("shunt:\t");
-  // YBP.println(ina226->getShunt(), 3);
-  // YBP.print("maxCur:\t");
-  // YBP.println(ina226->getMaxCurrent(), 3);
-  // YBP.println();
+  if (this->id == 1) {
+    YBP.println("normalized = true (default)");
+    YBP.println(x);
+    YBP.print("LSB:\t");
+    YBP.println(ina226->getCurrentLSB(), 10);
+    YBP.print("LSB_uA:\t");
+    YBP.println(ina226->getCurrentLSB_uA(), 3);
+    YBP.print("shunt:\t");
+    YBP.println(ina226->getShunt(), 3);
+    YBP.print("maxCur:\t");
+    YBP.println(ina226->getMaxCurrent(), 3);
+    YBP.println();
+  }
 
   // Configure the ALERT pin to fire when current exceeds YB_PWM_CHANNEL_MAX_AMPS.
   // The INA226 has no direct overcurrent alert, but shunt voltage is proportional
@@ -123,10 +127,12 @@ void PWMChannel::setupINA226()
   // Latch mode is enabled so the ALERT pin stays asserted until the MCU reads the
   // Mask/Enable register — prevents the interrupt from re-firing before it is serviced.
   ina226->setAlertRegister(INA226_SHUNT_OVER_VOLTAGE | INA226_ALERT_LATCH_ENABLE_FLAG);
-  float shuntVoltageLimit = YB_PWM_CHANNEL_MAX_AMPS * YB_PWM_CHANNEL_INA226_SHUNT;
+  float shuntVoltageLimit = YB_PWM_CHANNEL_SHORT_CIRCUIT_AMPS * YB_PWM_CHANNEL_INA226_SHUNT;
   ina226->setAlertLimit((uint16_t)(shuntVoltageLimit / 2.5e-6));
 
-  // YBP.printf("Shunt Voltage Limit %.4fV\n", shuntVoltageLimit);
+  if (this->id == 1) {
+    YBP.printf("Shunt Voltage Limit %.4fV\n", shuntVoltageLimit);
+  }
 
   pinMode(_ina226_alert_pins[this->id - 1], INPUT);
   attachInterruptArg(
@@ -140,13 +146,19 @@ void PWMChannel::setupINA226()
 void PWMChannel::readINA226()
 {
   if (millis() - lastVoltageUpdate > voltageUpdateInterval) {
-    lastVoltage = ina226->getBusVoltage();
     lastVoltageUpdate = millis();
+    float voltage = ina226->getBusVoltage();
+    if (voltage < 0)
+      voltage = 0;
+    voltageAverage.add(voltage * YB_INA226_FACTOR);
   }
 
   if (millis() - lastAmperageUpdate > amperageUpdateInterval) {
-    lastAmperage = ina226->getCurrent();
     lastAmperageUpdate = millis();
+    float amperage = ina226->getCurrent();
+    if (amperage < 0)
+      amperage = 0;
+    amperageAverage.add(amperage * YB_INA226_FACTOR);
   }
 }
 
@@ -190,7 +202,7 @@ void PWMChannel::handleINA226Trip()
 
   this->ina226TripPending = false;
 
-  YBP.printf("CH%d TRIPPED (INA226 alert): STATUS: %s\n", this->id, this->getStatus());
+  YBP.printf("CH%d TRIPPED (INA226 Interrupt)\n", this->id, this->getStatus());
 
   this->status = Status::TRIPPED;
   this->outputState = false;
@@ -307,9 +319,6 @@ void PWMChannel::setupDefaultState()
     this->status = Status::OFF;
   }
 
-  // our first state change too
-  this->lastStateChange = millis();
-
   // update our pin, but dont check it
   this->updateOutput(false);
 }
@@ -413,23 +422,64 @@ float PWMChannel::toAmperage(float voltage)
   #endif
 }
 
-float PWMChannel::getAmperage()
+float PWMChannel::getLatestVoltage()
 {
-  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
-  return this->toAmperage(this->amperageHelper->getAverageVoltage(this->_adcAmperageChannel));
+  #ifdef YB_HAS_CHANNEL_VOLTAGE
+  return this->toVoltage(this->voltageHelper->getAverageVoltage(_adcVoltageChannel));
   #elifdef YB_PWM_CHANNEL_HAS_INA226
-  return lastAmperage;
+  return voltageAverage.latest() / YB_INA226_FACTOR;
   #else
   return -1;
   #endif
 }
 
-float PWMChannel::getWattage()
+float PWMChannel::getAverageVoltage()
+{
+  #ifdef YB_HAS_CHANNEL_VOLTAGE
+  return this->toVoltage(this->voltageHelper->getAverageVoltage(_adcVoltageChannel));
+  #elifdef YB_PWM_CHANNEL_HAS_INA226
+  return voltageAverage.average() / YB_INA226_FACTOR;
+  #else
+  return -1;
+  #endif
+}
+
+float PWMChannel::getLatestAmperage()
+{
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
+  return this->toAmperage(this->amperageHelper->getAverageVoltage(this->_adcAmperageChannel));
+  #elifdef YB_PWM_CHANNEL_HAS_INA226
+  return amperageAverage.latest() / YB_INA226_FACTOR;
+  #else
+  return -1;
+  #endif
+}
+
+float PWMChannel::getAverageAmperage()
+{
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
+  return this->toAmperage(this->amperageHelper->getAverageVoltage(this->_adcAmperageChannel));
+  #elifdef YB_PWM_CHANNEL_HAS_INA226
+  return amperageAverage.average() / YB_INA226_FACTOR;
+  #else
+  return -1;
+  #endif
+}
+
+float PWMChannel::getLatestWattage()
 {
   if (this->dutyCycle == 1.0)
-    return this->getVoltage() * this->getAmperage();
+    return this->getLatestVoltage() * this->getLatestAmperage();
   else
-    return busVoltage->getBusVoltage() * this->getAmperage();
+    return busVoltage->getBusVoltage() * this->getLatestAmperage();
+}
+
+float PWMChannel::getAverageWattage()
+{
+  if (this->dutyCycle == 1.0)
+    return this->getAverageVoltage() * this->getAverageAmperage();
+  else
+    return busVoltage->getBusVoltage() * this->getAverageAmperage();
 }
 
 float PWMChannel::toVoltage(float adcVoltage)
@@ -484,17 +534,6 @@ void PWMChannel::updateOutputLED()
   #endif
 }
 
-float PWMChannel::getVoltage()
-{
-  #ifdef YB_HAS_CHANNEL_VOLTAGE
-  return this->toVoltage(this->voltageHelper->getAverageVoltage(_adcVoltageChannel));
-  #elifdef YB_PWM_CHANNEL_HAS_INA226
-  return lastVoltage;
-  #else
-  return -1;
-  #endif
-}
-
 void PWMChannel::checkFuseBlown()
 {
   // how should we treat our duty cycle?
@@ -533,7 +572,7 @@ void PWMChannel::checkFuseBlown()
       // grace period when changing state or duty
       if (millis() - lastStateChange > firstCheckTime && millis() - lastDutyCycleUpdate > firstCheckTime) {
 
-        float voltage = this->getVoltage();
+        float voltage = this->getAverageVoltage();
 
         // if our voltage is at a high enough level, we're fine.
         if (voltage >= minVoltage)
@@ -566,7 +605,7 @@ void PWMChannel::checkFuseBypassed()
     // grace period when changing state or duty
     if (millis() - lastStateChange > firstCheckTime && millis() - lastDutyCycleUpdate > firstCheckTime) {
 
-      float voltage = this->getVoltage();
+      float voltage = this->getAverageVoltage();
       float bv = busVoltage->getBusVoltage();
       float minVoltage = bv * 0.90;
 
@@ -584,7 +623,7 @@ void PWMChannel::checkFuseBypassed()
         buzzer->playMelodyByName(this->bypassMelody.c_str());
     }
   } else if (this->status == Status::BYPASSED) {
-    if (!this->outputState && this->getVoltage() < 2.0) {
+    if (!this->outputState && this->getAverageVoltage() < 2.0) {
       this->status = Status::OFF;
     }
   }
@@ -596,9 +635,14 @@ void PWMChannel::checkSoftFuse()
   this->handleINA226Trip();
   #endif
 
+  // grace period when changing state or duty
+  unsigned long firstCheckTime = 1000;
+  if (millis() - lastStateChange < firstCheckTime)
+    return;
+
   // only trip once....
   if (this->status != Status::TRIPPED) {
-    float amperage = abs(this->getAmperage());
+    float amperage = abs(this->getAverageAmperage());
 
     // Check our soft fuse, and our max limit for the board.
     if (amperage >= this->softFuseAmperage || amperage >= YB_PWM_CHANNEL_MAX_AMPS) {
@@ -721,6 +765,13 @@ void PWMChannel::startFade(float duty, int fade_time)
     if (!ok) {
       this->isFading = false;
     }
+
+    // track when we last changed states.
+    this->lastStateChange = millis();
+
+    // clear our averages
+    voltageAverage.clear();
+    amperageAverage.clear();
 
     // immediately check for trips
     uint32_t start = millis();
@@ -863,9 +914,9 @@ void PWMChannel::setDuty(float duty)
 void PWMChannel::calculateAverages(unsigned int delta)
 {
   // record our total consumption
-  if (this->getAmperage() > 0) {
-    this->ampHours += this->getAmperage() * ((float)delta / 3600000.0);
-    this->wattHours += this->getWattage() * ((float)delta / 3600000.0);
+  if (this->getAverageAmperage() > 0) {
+    this->ampHours += this->getAverageAmperage() * ((float)delta / 3600000.0);
+    this->wattHours += this->getAverageWattage() * ((float)delta / 3600000.0);
   }
 }
 
@@ -905,9 +956,6 @@ void PWMChannel::setState(bool newState)
     this->voltageHelper->clearReadings(_adcVoltageChannel);
   #endif
 
-    // track when we last changed states.
-    this->lastStateChange = millis();
-
     // change our output pin to reflect
     this->updateOutput(true);
 
@@ -920,6 +968,13 @@ void PWMChannel::writePWM(uint16_t pwm)
 {
   pwm = constrain(pwm, 0, MAX_DUTY_CYCLE);
   ledcWrite(this->pin, pwm);
+
+  // track when we last changed states.
+  this->lastStateChange = millis();
+
+  // clear our averages
+  voltageAverage.clear();
+  amperageAverage.clear();
 
   // immediately check for trips
   if (pwm > 0) {
@@ -1176,9 +1231,9 @@ void PWMChannel::generateUpdate(JsonVariant config)
   config["source"] = this->source;
   if (this->isDimmable)
     config["duty"] = round2(this->dutyCycle);
-  config["voltage"] = round2(this->getVoltage());
-  config["current"] = round2(this->getAmperage());
-  config["wattage"] = round2(this->getWattage());
+  config["voltage"] = round2(this->getAverageVoltage());
+  config["current"] = round2(this->getAverageAmperage());
+  config["wattage"] = round2(this->getAverageWattage());
   config["temperature"] = round2(this->getTemperature());
   config["aH"] = round3(this->ampHours);
   config["wH"] = round3(this->wattHours);

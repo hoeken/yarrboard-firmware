@@ -159,10 +159,10 @@ void PWMController::generateStatsHook(JsonVariant output)
     ch.generateStats(jo);
 
     temperature += ch.getTemperature();
-    if (ch.getAmperage() > 0)
-      total_current += ch.getAmperage();
-    if (ch.getWattage() > 0)
-      total_wattage += ch.getWattage();
+    if (ch.getAverageAmperage() > 0)
+      total_current += ch.getAverageAmperage();
+    if (ch.getAverageWattage() > 0)
+      total_wattage += ch.getAverageWattage();
   }
 
   // some summary variables
@@ -205,7 +205,7 @@ float PWMController::getAverageCurrent()
   for (auto& ch : _channels) {
     // only count enabled channels
     if (ch.isEnabled) {
-      amps += ch.getAmperage();
+      amps += ch.getAverageAmperage();
       enabled_count++;
     }
   }
@@ -220,7 +220,7 @@ float PWMController::getMaxCurrent()
   for (auto& ch : _channels) {
     // only count enabled channels
     if (ch.isEnabled) {
-      amps = max(amps, ch.getAmperage());
+      amps = max(amps, ch.getAverageAmperage());
     }
   }
 
