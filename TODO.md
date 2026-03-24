@@ -1,5 +1,24 @@
 # v2.4 TODO
 
+## FROTHFET
+
+* slow vs fast blow
+    * super fast - alert interrupt
+    * fast - uses getLatestReading()
+    * slow - uses getAverageReading() + possible time delay like brineomatic
+* make sure fast updates are working
+
+* test global brightness
+* test HA wattage
+* test interrupt soft trip speed
+* test regular trip speed
+
+* go through and re-adjust the various page sizes for our different viewports
+* update yarrboard client if any changes needed - probably for state
+* update signalk plugin - same
+
+# LONG TERM:
+
 ## BRINEOMATIC
 
 * add stepper power configuration: normal and homing
@@ -7,22 +26,6 @@
     * on/off switch to start/stop the watermaker
     * sensors for each output type
     * YAML dashboard
-
-## FROTHFET
-
-* add support for overcurrent alert interrupt to each channel
-    - need to add extra #define for short circuit trip current
-    - setup ina226 overcurrent alert
-* slow vs fast blow
-    * fast checks getLatestReading() (or alert interrupts)
-    * slow checks getAverageReading()
-* make sure fast updates are working
-
-* go through and re-adjust the various page sizes for our different viewports
-* update yarrboard client if any changes needed - probably for state
-* update signalk plugin - same
-
-# LONG TERM:
 
 * protocol documentation
 

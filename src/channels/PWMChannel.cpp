@@ -59,14 +59,6 @@ void PWMChannel::setup()
 void PWMChannel::setupINA226()
 {
     #ifdef YB_PWM_CHANNEL_INA226_ALERT
-  pinMode(_ina226_alert_pins[this->id - 1], INPUT);
-  attachInterruptArg(
-    digitalPinToInterrupt(_ina226_alert_pins[this->id - 1]),
-    PWMChannel::ina226AlertHandler,
-    this,
-    FALLING);
-    #endif
-
   // YBP.printf("INA226 CH %d Setup\n", this->id);
 
   ina226 = new INA226(_ina226_addresses[this->id - 1]);
@@ -114,6 +106,34 @@ void PWMChannel::setupINA226()
   // YBP.print("maxCur:\t");
   // YBP.println(ina226->getMaxCurrent(), 3);
   // YBP.println();
+
+  // Configure the ALERT pin to fire when current exceeds YB_PWM_CHANNEL_MAX_AMPS.
+  // The INA226 has no direct overcurrent alert, but shunt voltage is proportional
+  // to current (V = I * R), so we use the Shunt Over Voltage alert mode instead.
+  //
+  // Shunt voltage at the overcurrent threshold:
+  //   V_shunt = MAX_AMPS * SHUNT_OHMS
+  //           = YB_PWM_CHANNEL_MAX_AMPS * YB_PWM_CHANNEL_INA226_SHUNT
+  //
+  // The Alert Limit register uses a fixed 2.5 µV/LSB (hardware constant, matches
+  // the shunt voltage register resolution), so:
+  //   alert_limit = V_shunt / 2.5e-6
+  //
+  // Latch mode is enabled so the ALERT pin stays asserted until the MCU reads the
+  // Mask/Enable register — prevents the interrupt from re-firing before it is serviced.
+  ina226->setAlertRegister(INA226_SHUNT_OVER_VOLTAGE | INA226_ALERT_LATCH_ENABLE_FLAG);
+  float shuntVoltageLimit = YB_PWM_CHANNEL_MAX_AMPS * YB_PWM_CHANNEL_INA226_SHUNT;
+  ina226->setAlertLimit((uint16_t)(shuntVoltageLimit / 2.5e-6));
+
+  // YBP.printf("Shunt Voltage Limit %.4fV\n", shuntVoltageLimit);
+
+  pinMode(_ina226_alert_pins[this->id - 1], INPUT);
+  attachInterruptArg(
+    digitalPinToInterrupt(_ina226_alert_pins[this->id - 1]),
+    PWMChannel::ina226AlertHandler,
+    this,
+    FALLING);
+    #endif
 }
 
 void PWMChannel::readINA226()
@@ -132,10 +152,65 @@ void PWMChannel::readINA226()
 void IRAM_ATTR PWMChannel::ina226AlertHandler(void* arg)
 {
   PWMChannel* ch = static_cast<PWMChannel*>(arg);
-  ch->status == Status::TRIPPED;
-  ch->updateOutput();
-  ch->softFuseTripCount = ch->softFuseTripCount + 1;
-  ch->sendFastUpdate = true;
+
+    // Kill the output immediately via direct GPIO register write.  This bypasses
+    // ledcWrite() (not IRAM-safe) and cuts the pin within a single CPU cycle.
+    //
+    // ledcOutputInvert() flips the LEDC signal in hardware, which means the
+    // physical pin level for "off" is the opposite of a non-inverted channel:
+    //   Normal  : pin LOW  = output off → write-1-to-clear (w1tc)
+    //   Inverted: pin HIGH = output off → write-1-to-set   (w1ts)
+    //
+    // GPIO.out_w1tc / GPIO.out1_w1tc cover pins 0-31 / 32+.
+    // Note: direct GPIO writes bypass LEDC inversion, so LEDC will re-assert
+    // on its next PWM cycle.  ina226TripPending causes checkSoftFuse() to call
+    // ledcWrite(0) promptly, clamping any glitch to at most one PWM period (~1ms).
+    #ifdef YB_PWM_CHANNEL_INVERTED
+  if (ch->pin < 32)
+    GPIO.out_w1ts = (1UL << ch->pin); // plain uint32_t on ESP32-S3
+  else
+    GPIO.out1_w1ts.val = (1UL << (ch->pin - 32)); // struct with .val for pins 32+
+    #else
+  if (ch->pin < 32)
+    GPIO.out_w1tc = (1UL << ch->pin);
+  else
+    GPIO.out1_w1tc.val = (1UL << (ch->pin - 32));
+    #endif
+
+  // Signal the main loop to run the full trip sequence (ledcWrite, status
+  // update, buzzer, MQTT, etc.) — none of those are safe to call from an ISR.
+  ch->ina226TripPending = true;
+}
+
+void PWMChannel::handleINA226Trip()
+{
+  if (!this->ina226TripPending)
+    return;
+
+  this->ina226TripPending = false;
+
+  YBP.printf("CH%d TRIPPED (INA226 alert): STATUS: %s\n", this->id, this->getStatus());
+
+  this->status = Status::TRIPPED;
+  this->outputState = false;
+
+  // Make LEDC agree with the GPIO state the ISR already forced.
+  this->updateOutput(false);
+
+  // Reading the Mask/Enable register clears the alert latch on the INA226,
+  // re-arming it for the next overcurrent event.
+  ina226->getAlertRegister();
+
+  this->softFuseTripCount = this->softFuseTripCount + 1;
+  this->sendFastUpdate = true;
+  strlcpy(this->source, _cfg->local_hostname, sizeof(this->source));
+
+  char prefIndex[YB_PREF_KEY_LENGTH];
+  sprintf(prefIndex, "pwmTripCount%d", this->id);
+  _cfg->preferences.putUInt(prefIndex, this->softFuseTripCount);
+
+  if (buzzer)
+    buzzer->playMelodyByName(this->trippedMelody.c_str());
 }
 
   #endif
@@ -152,7 +227,6 @@ void PWMChannel::readLM75()
 
 void PWMChannel::setupLedc()
 {
-
   // track our fades
   this->isFading = false;
   this->fadeOver = false;
@@ -180,15 +254,18 @@ void PWMChannel::setupOffset()
 
   // // average a bunch of readings
   float tv = 0;
-  for (byte i = 0; i < readings; i++) {
   #ifdef YB_HAS_CHANNEL_VOLTAGE
+  for (byte i = 0; i < readings; i++) {
     tv += this->voltageHelper->getNewVoltage(_adcVoltageChannel);
-  #elifdef YB_PWM_CHANNEL_HAS_INA226
-    if (ina226->waitConversionReady())
-      tv += ina226->getBusVoltage();
-  #endif
   }
   float v = this->toVoltage(tv / readings);
+  #elifdef YB_PWM_CHANNEL_HAS_INA226
+  for (byte i = 0; i < readings; i++) {
+    if (ina226->waitConversionReady())
+      tv += ina226->getBusVoltage();
+  }
+  float v = tv / readings;
+  #endif
 
   // low enough value to be an offset?
   this->voltageOffset = 0.0;
@@ -197,22 +274,25 @@ void PWMChannel::setupOffset()
 
   // average a bunch of readings
   float ta = 0;
-  for (byte i = 0; i < readings; i++) {
   #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
+  for (byte i = 0; i < readings; i++) {
     ta += this->amperageHelper->getNewVoltage(_adcAmperageChannel);
-  #elifdef YB_PWM_CHANNEL_HAS_INA226
-    if (ina226->waitConversionReady())
-      ta += ina226->getCurrent();
-  #endif
   }
   float a = this->toAmperage(ta / readings);
+  #elifdef YB_PWM_CHANNEL_HAS_INA226
+  for (byte i = 0; i < readings; i++) {
+    if (ina226->waitConversionReady())
+      ta += ina226->getCurrent();
+  }
+  float a = ta / readings;
+  #endif
 
   // amperage zero state
   this->amperageOffset = 0.0;
   if (a < (YB_PWM_CHANNEL_MAX_AMPS * 0.05))
     this->amperageOffset = a;
 
-  // YBP.printf("CH%d Voltage Offset: %0.3f / Amperage Offset: %0.3f\n", this->id, this->voltageOffset, this->amperageOffset);
+  YBP.printf("CH%d Voltage Offset: %0.3f / Amperage Offset: %0.3f\n", this->id, this->voltageOffset, this->amperageOffset);
 }
 
 void PWMChannel::setupDefaultState()
@@ -511,6 +591,10 @@ void PWMChannel::checkFuseBypassed()
 
 void PWMChannel::checkSoftFuse()
 {
+  #ifdef YB_PWM_CHANNEL_HAS_INA226
+  this->handleINA226Trip();
+  #endif
+
   // only trip once....
   if (this->status != Status::TRIPPED) {
     float amperage = abs(this->getAmperage());
@@ -636,6 +720,11 @@ void PWMChannel::startFade(float duty, int fade_time)
     if (!ok) {
       this->isFading = false;
     }
+
+    // immediately check for trips
+    uint32_t start = millis();
+    while (millis() - start < 2)
+      this->handleINA226Trip();
   }
 }
 
@@ -830,6 +919,13 @@ void PWMChannel::writePWM(uint16_t pwm)
 {
   pwm = constrain(pwm, 0, MAX_DUTY_CYCLE);
   ledcWrite(this->pin, pwm);
+
+  // immediately check for trips
+  if (pwm > 0) {
+    uint32_t start = millis();
+    while (millis() - start < 2)
+      this->handleINA226Trip();
+  }
 }
 
 const char* PWMChannel::getStatus()

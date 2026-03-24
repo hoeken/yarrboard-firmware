@@ -158,6 +158,7 @@ class PWMChannel : public BaseChannel
     INA226* ina226;
     void setupINA226();
     void readINA226();
+    void handleINA226Trip();
     float lastVoltage;
     uint32_t lastVoltageUpdate = 0;
     uint32_t voltageUpdateInterval = 100;
@@ -165,6 +166,10 @@ class PWMChannel : public BaseChannel
     float lastAmperage;
     uint32_t lastAmperageUpdate = 0;
     uint32_t amperageUpdateInterval = 100;
+
+    // Set to true by ina226AlertHandler ISR; cleared by checkSoftFuse after
+    // the full trip sequence runs in the main loop.
+    volatile bool ina226TripPending = false;
   #endif
 
   #ifdef YB_PWM_CHANNEL_HAS_LM75
