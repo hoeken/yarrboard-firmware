@@ -72,7 +72,7 @@ void PWMChannel::setupINA226()
   // YBP.print("DIE:\t");
   // YBP.println(ina226->getDieID(), HEX);
 
-  ina226->setBusVoltageConversionTime(INA226_332_us);
+  ina226->setBusVoltageConversionTime(INA226_140_us);
   ina226->setShuntVoltageConversionTime(INA226_140_us);
   ina226->setAverage(INA226_128_SAMPLES);
 
@@ -83,15 +83,16 @@ void PWMChannel::setupINA226()
   uint32_t shuntUs = ina226_timing_us[ina226->getShuntVoltageConversionTime()];
   uint16_t samples = ina226_samples[ina226->getAverage()];
 
-  // YBP.printf("Bus Voltage Conversion Time: %d us\n", busUs);
-  // YBP.printf("Shunt Voltage Conversion Time: %d us\n", shuntUs);
-  // YBP.printf("Averages: %d samples\n", samples);
-
   voltageUpdateInterval = (busUs * samples) / 1000 + 1;
   amperageUpdateInterval = (shuntUs * samples) / 1000 + 1;
 
-  // YBP.printf("Bus Voltage Conversion Time: %dms\n", voltageUpdateInterval);
-  // YBP.printf("Shunt Voltage Conversion Time: %dms\n", amperageUpdateInterval);
+  if (this->id == 1) {
+    YBP.printf("Bus Voltage Conversion Time: %d us\n", busUs);
+    YBP.printf("Shunt Voltage Conversion Time: %d us\n", shuntUs);
+    YBP.printf("Averages: %d samples\n", samples);
+    YBP.printf("Bus Voltage Update Interval: %dms\n", voltageUpdateInterval);
+    YBP.printf("Shunt Voltage Update Interval: %dms\n", amperageUpdateInterval);
+  }
 
   int x = ina226->setMaxCurrentShunt(YB_PWM_CHANNEL_MAX_AMPS, YB_PWM_CHANNEL_INA226_SHUNT);
 

@@ -2,17 +2,15 @@
 
 ## FROTHFET
 
+* voltage / current
+    * add rolling window to both
 * slow vs fast blow
-    * super fast - alert interrupt
-    * fast - uses getLatestReading()
-    * slow - uses getAverageReading() + possible time delay like brineomatic
+    * slow - uses getAverageReading() + possible time delay like brineomatic (measure speed)
+    * fast - uses getLatestReading() (measure speed)
+    * fastest - alert interrupt (measure)
+    * add configuration option
+
 * make sure fast updates are working
-
-* test global brightness
-* test HA wattage
-* test interrupt soft trip speed
-* test regular trip speed
-
 * go through and re-adjust the various page sizes for our different viewports
 * update yarrboard client if any changes needed - probably for state
 * update signalk plugin - same
