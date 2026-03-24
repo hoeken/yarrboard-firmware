@@ -142,10 +142,6 @@ void PWMController::loop()
       ch.checkIfFadeOver();
 
       ch.updateOutputLED();
-
-      if (ch.id == 5)
-        if (INTERVAL(5000))
-          ch.printDebug();
     }
   }
 }
