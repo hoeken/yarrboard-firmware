@@ -16,7 +16,6 @@
 * slow vs fast blow
     * fast checks getLatestReading() (or alert interrupts)
     * slow checks getAverageReading()
-* how to handle global set_brightness command
 * make sure fast updates are working
 
 * go through and re-adjust the various page sizes for our different viewports

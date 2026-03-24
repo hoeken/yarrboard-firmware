@@ -284,9 +284,6 @@ void PWMChannel::updateOutput(bool check_status)
   else {
     float duty = this->dutyCycle;
 
-    // follow our global brightness command
-    duty = min(duty, _cfg->globalBrightness);
-
     // duty constraints 0....1
     duty = max(0.0f, duty);
     duty = min(1.0f, duty);

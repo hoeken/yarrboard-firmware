@@ -174,8 +174,13 @@ void PWMController::generateStatsHook(JsonVariant output)
 
 void PWMController::updateBrightnessHook(float brightness)
 {
-  for (auto& ch : _channels)
-    ch.updateOutput();
+  // only update our dimmable lights.
+  for (auto& ch : _channels) {
+    if (ch.isDimmable && !strcmp(ch.type, "light")) {
+      ch.setDuty(brightness);
+      ch.updateOutput();
+    }
+  }
 }
 
 void PWMController::handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup)
