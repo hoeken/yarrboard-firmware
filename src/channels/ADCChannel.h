@@ -78,7 +78,6 @@ class ADCChannel : public BaseChannel
     bool addCalibrationValue(CalibrationPoint cp);
 
     void haGenerateDiscovery(JsonVariant doc, const char* uuid, MQTTController* mqtt);
-    void haGenerateSensorDiscovery(JsonVariant doc);
 
   private:
     char ha_topic_value[128];

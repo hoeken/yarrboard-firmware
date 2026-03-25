@@ -10,6 +10,7 @@
     * fast blow
     * interrupt
 
+* test with interrupt to see how fast we can make it or if there is any room for improvement.
 * motor load
 * resistive load
 * led load
@@ -17,11 +18,10 @@
 ## BRINEOMATIC
 
 * add stepper power configuration: normal and homing
-* YAML dashboard for HA
 
 ## SENDIT
 
-* add HA discovery for all channels
+* add HA device class as a configurable option per channel
 
 # LONG TERM:
 

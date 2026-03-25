@@ -347,23 +347,31 @@ void ADCChannel::haGenerateDiscovery(JsonVariant doc, const char* uuid, MQTTCont
 {
   BaseChannel::haGenerateDiscovery(doc, uuid, mqtt);
 
-  sprintf(ha_topic_value, "yarrboard/%s/adc/%s/value", uuid, this->key);
+  if (this->useCalibrationTable)
+    sprintf(ha_topic_value, "yarrboard/%s/%s/%s/calibrated_value", ha_key, channel_type, this->key);
+  else
+    sprintf(ha_topic_value, "yarrboard/%s/%s/%s/value", ha_key, channel_type, this->key);
 
-  this->haGenerateSensorDiscovery(doc);
-}
-
-void ADCChannel::haGenerateSensorDiscovery(JsonVariant doc)
-{
   JsonObject obj = doc[ha_uuid].to<JsonObject>();
-  obj["platform"] = "sensor";
+
   obj["name"] = this->name;
   obj["unique_id"] = ha_uuid;
   obj["state_topic"] = ha_topic_value;
-  obj["unit_of_measurement"] = this->getTypeUnits();
-  // obj["device_class"] = "voltage";
+
+  if (!strcmp(this->type, "digital_switch")) {
+    obj["platform"] = "binary_sensor";
+    obj["payload_on"] = "true";
+    obj["payload_off"] = "false";
+  } else {
+    obj["platform"] = "sensor";
+    // obj["device_class"] = "voltage";
+    if (strlen(this->calibratedUnits))
+      obj["unit_of_measurement"] = this->calibratedUnits;
+    else
+      obj["unit_of_measurement"] = this->getTypeUnits();
+    obj["suggested_display_precision"] = this->displayDecimals;
+  }
   obj["state_class"] = "measurement";
-  obj["entity_category"] = "diagnostic";
-  obj["suggested_display_precision"] = this->displayDecimals;
 
   // availability is an array of objects
   JsonArray availability = obj["availability"].to<JsonArray>();
