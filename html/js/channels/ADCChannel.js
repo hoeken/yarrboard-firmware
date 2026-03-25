@@ -19,6 +19,69 @@
     "toggle_rising": "Toggle Rising",
   };
 
+  const HA_SENSOR_DEVICE_CLASSES = {
+    "none": "None (Generic)",
+    "absolute_humidity": "Absolute Humidity",
+    "apparent_power": "Apparent Power",
+    "aqi": "Air Quality Index",
+    "area": "Area",
+    "atmospheric_pressure": "Atmospheric Pressure",
+    "battery": "Battery",
+    "blood_glucose_concentration": "Blood Glucose Concentration",
+    "carbon_dioxide": "Carbon Dioxide",
+    "carbon_monoxide": "Carbon Monoxide",
+    "current": "Current",
+    "data_rate": "Data Rate",
+    "data_size": "Data Size",
+    "date": "Date",
+    "distance": "Distance",
+    "duration": "Duration",
+    "energy": "Energy",
+    "energy_distance": "Energy Distance",
+    "energy_storage": "Energy Storage",
+    "enum": "Enum",
+    "frequency": "Frequency",
+    "gas": "Gas",
+    "humidity": "Humidity",
+    "illuminance": "Illuminance",
+    "irradiance": "Irradiance",
+    "moisture": "Moisture",
+    "monetary": "Monetary",
+    "nitrogen_dioxide": "Nitrogen Dioxide",
+    "nitrogen_monoxide": "Nitrogen Monoxide",
+    "nitrous_oxide": "Nitrous Oxide",
+    "ozone": "Ozone",
+    "ph": "pH",
+    "pm1": "PM1 (<1µm)",
+    "pm25": "PM2.5 (<2.5µm)",
+    "pm4": "PM4 (<4µm)",
+    "pm10": "PM10 (<10µm)",
+    "power_factor": "Power Factor",
+    "power": "Power",
+    "precipitation": "Precipitation",
+    "precipitation_intensity": "Precipitation Intensity",
+    "pressure": "Pressure",
+    "reactive_energy": "Reactive Energy",
+    "reactive_power": "Reactive Power",
+    "signal_strength": "Signal Strength",
+    "sound_pressure": "Sound Pressure",
+    "speed": "Speed",
+    "sulphur_dioxide": "Sulphur Dioxide",
+    "temperature": "Temperature",
+    "temperature_delta": "Temperature Delta",
+    "timestamp": "Timestamp",
+    "volatile_organic_compounds": "Volatile Organic Compounds",
+    "volatile_organic_compounds_parts": "VOC Parts",
+    "voltage": "Voltage",
+    "volume": "Volume",
+    "volume_flow_rate": "Volume Flow Rate",
+    "volume_storage": "Volume Storage",
+    "water": "Water",
+    "weight": "Weight",
+    "wind_direction": "Wind Direction",
+    "wind_speed": "Wind Speed",
+  };
+
   function ADCChannel() {
     YB.BaseChannel.call(this, "adc", "ADC");
 
@@ -81,6 +144,15 @@
 
     schema.calibrationTable = {
       type: "array"
+    };
+
+    schema.haDeviceClass = {
+      presence: { allowEmpty: false },
+      type: "string",
+      inclusion: {
+        within: Object.keys(HA_SENSOR_DEVICE_CLASSES),
+        message: "^haDeviceClass must be a valid HA device class"
+      }
     };
 
     return schema;
@@ -219,6 +291,10 @@
       .map(([key, label]) => `<option value="${key}">${label}</option>`)
       .join("\n");
 
+    const haDeviceClassOptions = Object.entries(HA_SENSOR_DEVICE_CLASSES)
+      .map(([key, label]) => `<option value="${key}">${label}</option>`)
+      .join("\n");
+
     return `
       <div id="adcEditCard${this.id}" class="col-12 mb-3">
         <div class="p-3 border border-secondary rounded">
@@ -230,6 +306,15 @@
               ${typeOptions}
             </select>
             <label for="f-adc-type-${this.id}">Input Type</label>
+            <div class="invalid-feedback"></div>
+          </div>
+
+          <div class="form-floating mb-3">
+            <select id="f-adc-ha-device-class-${this.id}" class="form-select" aria-label="Home Assisant Device Class">
+              ${haDeviceClassOptions}
+            </select>
+            <label for="f-adc-ha-device-class-${this.id}">Home Assisant Device Class</label>
+            <div class="small"><a href="https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes">HA device documentation</a></div>
             <div class="invalid-feedback"></div>
           </div>
 
@@ -313,6 +398,7 @@
     $(`#f-adc-decimals-${this.id}`).val(this.cfg.displayDecimals);
     $(`#f-adc-use-cal-${this.id}`).prop('checked', this.cfg.useCalibrationTable);
     $(`#f-adc-cal-units-${this.id}`).val(this.cfg.calibratedUnits);
+    $(`#f-adc-ha-device-class-${this.id}`).val(this.cfg.haDeviceClass || 'none');
 
     // Render Calibration Table
     const tableBody = $(`#adc-cal-table-body-${this.id}`);
@@ -328,6 +414,7 @@
     $(`#f-adc-decimals-${this.id}`).change(this.onEditForm);
     $(`#f-adc-use-cal-${this.id}`).change(this.onEditForm);
     $(`#f-adc-cal-units-${this.id}`).change(this.onEditForm);
+    $(`#f-adc-ha-device-class-${this.id}`).change(this.onEditForm);
 
     // Calibration Interactive Buttons
     $(`#btn-adc-add-row-${this.id}`).click(this.onAddCalibrationRow);
@@ -347,6 +434,7 @@
     newcfg.displayDecimals = parseInt($(`#f-adc-decimals-${this.id}`).val());
     newcfg.useCalibrationTable = $(`#f-adc-use-cal-${this.id}`).is(':checked');
     newcfg.calibratedUnits = $(`#f-adc-cal-units-${this.id}`).val();
+    newcfg.haDeviceClass = $(`#f-adc-ha-device-class-${this.id}`).val();
 
     // Scrape table data
     newcfg.calibrationTable = [];
@@ -373,11 +461,13 @@
     $(`#f-adc-averageWindowMs-${this.id}`).prop('disabled', !enabled);
     $(`#f-adc-decimals-${this.id}`).prop('disabled', !enabled);
     $(`#f-adc-use-cal-${this.id}`).prop('disabled', !enabled);
+    $(`#f-adc-ha-device-class-${this.id}`).prop('disabled', !enabled);
 
     const isDigitalSwitch = this.cfg.type === 'digital_switch';
     $(`#f-adc-digital-input-mode-${this.id}`).parent().toggle(isDigitalSwitch);
     $(`#f-adc-decimals-${this.id}`).parent().toggle(!isDigitalSwitch);
     $(`#f-adc-use-cal-${this.id}`).parent().toggle(!isDigitalSwitch);
+    $(`#f-adc-ha-device-class-${this.id}`).parent().toggle(!isDigitalSwitch);
 
     const useCal = $(`#f-adc-use-cal-${this.id}`).is(':checked');
     if (useCal && this.enabled && this.cfg.type !== 'digital_switch') {

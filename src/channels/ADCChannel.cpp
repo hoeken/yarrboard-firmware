@@ -206,6 +206,9 @@ bool ADCChannel::loadConfig(JsonVariantConst config, char* error, size_t len)
   value = config["calibratedUnits"].as<const char*>();
   snprintf(this->calibratedUnits, sizeof(this->calibratedUnits), "%s", (value && *value) ? value : "");
 
+  value = config["haDeviceClass"].as<const char*>();
+  snprintf(this->haDeviceClass, sizeof(this->haDeviceClass), "%s", (value && *value) ? value : "none");
+
   if (this->useCalibrationTable)
     return this->parseCalibrationTableJson(config["calibrationTable"], error, len);
 
@@ -223,6 +226,7 @@ void ADCChannel::generateConfig(JsonVariant config)
   config["units"] = this->getTypeUnits();
   config["useCalibrationTable"] = this->useCalibrationTable;
   config["calibratedUnits"] = this->calibratedUnits;
+  config["haDeviceClass"] = this->haDeviceClass;
 
   JsonArray table = config["calibrationTable"].to<JsonArray>();
   for (auto& cp : this->calibrationTable) {
@@ -364,7 +368,8 @@ void ADCChannel::haGenerateDiscovery(JsonVariant doc, const char* uuid, MQTTCont
     obj["payload_off"] = "false";
   } else {
     obj["platform"] = "sensor";
-    // obj["device_class"] = "voltage";
+    if (strcmp(this->haDeviceClass, "none") != 0)
+      obj["device_class"] = this->haDeviceClass;
     if (strlen(this->calibratedUnits))
       obj["unit_of_measurement"] = this->calibratedUnits;
     else

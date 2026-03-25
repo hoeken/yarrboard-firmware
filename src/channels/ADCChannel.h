@@ -39,6 +39,8 @@ class ADCChannel : public BaseChannel
     char calibratedUnits[YB_ADC_UNIT_LENGTH];
     etl::vector<CalibrationPoint, YB_ADC_CALIBRATION_TABLE_MAX> calibrationTable;
 
+    char haDeviceClass[64] = "none";
+
     /*
       raw - Raw Output
       digital_switch - Digital Switch
