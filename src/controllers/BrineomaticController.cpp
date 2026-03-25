@@ -179,7 +179,7 @@ void BrineomaticController::haUpdateHook(MQTTController* mqtt)
 {
   mqtt->publish(ha_topic_avail, "online", false);
 
-  if (strcmp(wm.getStatus(), "IDLE") == 0)
+  if (strcmp(wm.getStatus(), "IDLE") == 0 || strcmp(wm.getStatus(), "STOPPING") == 0 || strcmp(wm.getStatus(), "STARTUP") == 0 || strcmp(wm.getStatus(), "MANUAL") == 0)
     mqtt->publish(ha_topic_state_state, "OFF", false);
   else
     mqtt->publish(ha_topic_state_state, "ON", false);
