@@ -2489,6 +2489,28 @@
             </div>
           </div>
         </div>
+
+        <div class="row g-3 mb-3">
+          <h6>Stepper Motor Current</h6>
+
+          <div class="col-12 col-md-6 mt-1">
+            <div class="input-group has-validation">
+              <span class="input-group-text">Run Current</span>
+              <input type="text" class="form-control text-end" id="high_pressure_stepper_run_current">
+              <span class="input-group-text">%</span>
+              <div class="invalid-feedback"></div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6 mt-1">
+            <div class="input-group has-validation">
+              <span class="input-group-text">Home Current</span>
+              <input type="text" class="form-control text-end" id="high_pressure_stepper_home_current">
+              <span class="input-group-text">%</span>
+              <div class="invalid-feedback"></div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <hr class="bold">
@@ -3094,6 +3116,8 @@
     $("#high_pressure_stepper_close_speed").val(data.high_pressure_stepper_close_speed);
     $("#high_pressure_stepper_open_angle").val(data.high_pressure_stepper_open_angle);
     $("#high_pressure_stepper_open_speed").val(data.high_pressure_stepper_open_speed);
+    $("#high_pressure_stepper_run_current").val(data.high_pressure_stepper_run_current);
+    $("#high_pressure_stepper_home_current").val(data.high_pressure_stepper_home_current);
 
     let membrane_pressure_target = YB.bom.convertPressure(data.membrane_pressure_target, "Bar", YB.App.config.brineomatic.pressure_units);
     membrane_pressure_target = this.formatReadable(membrane_pressure_target);
@@ -3905,6 +3929,8 @@
     data.high_pressure_stepper_close_speed = parseFloat($("#high_pressure_stepper_close_speed").val());
     data.high_pressure_stepper_open_angle = parseFloat($("#high_pressure_stepper_open_angle").val());
     data.high_pressure_stepper_open_speed = parseFloat($("#high_pressure_stepper_open_speed").val());
+    data.high_pressure_stepper_run_current = parseInt($("#high_pressure_stepper_run_current").val());
+    data.high_pressure_stepper_home_current = parseInt($("#high_pressure_stepper_home_current").val());
 
     let membrane_pressure_target = parseFloat($("#membrane_pressure_target").val());
     data.membrane_pressure_target = YB.bom.convertPressure(membrane_pressure_target, YB.App.config.brineomatic.pressure_units, "Bar");
@@ -4232,6 +4258,22 @@
         numericality: {
           greaterThan: 0,
           lessThanOrEqualTo: 200
+        }
+      },
+
+      high_pressure_stepper_run_current: {
+        numericality: {
+          onlyInteger: true,
+          greaterThanOrEqualTo: 0,
+          lessThanOrEqualTo: 100
+        }
+      },
+
+      high_pressure_stepper_home_current: {
+        numericality: {
+          onlyInteger: true,
+          greaterThanOrEqualTo: 0,
+          lessThanOrEqualTo: 100
         }
       },
 

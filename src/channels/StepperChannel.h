@@ -70,7 +70,7 @@ class StepperChannel : public BaseChannel
     TMC2209 _tmc2209;
     byte _diag_pin;
     uint8_t _run_current = 50;
-    uint8_t _home_current = 30; // defaults to 60% of _run_current
+    uint8_t _home_current = 30;
     uint8_t _hold_current = 20;
     uint8_t _stall_guard = 90;
 

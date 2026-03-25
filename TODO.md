@@ -15,10 +15,6 @@
 * resistive load
 * led load
 
-## BRINEOMATIC
-
-* add stepper power configuration: normal and homing
-
 # LONG TERM:
 
 * update yarrboard client if any changes needed - probably for state
