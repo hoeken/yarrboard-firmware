@@ -59,6 +59,18 @@ class BrineomaticController : public BaseController
     void haGenerateTankLevelDiscovery(JsonVariant doc);
     void haGenerateVolumeDiscovery(JsonVariant doc);
     void haGenerateFlushVolumeDiscovery(JsonVariant doc);
+    void haGenerateHighPressurePumpDiscovery(JsonVariant doc);
+    void haGenerateDiverterValveDiscovery(JsonVariant doc);
+    void haGenerateFlushValveDiscovery(JsonVariant doc);
+    void haGenerateCoolingFanDiscovery(JsonVariant doc);
+    void haGenerateBoostPumpDiscovery(JsonVariant doc);
+    void haGenerateRunResultDiscovery(JsonVariant doc);
+    void haGenerateFlushResultDiscovery(JsonVariant doc);
+    void haGeneratePickleResultDiscovery(JsonVariant doc);
+    void haGenerateDepickleResultDiscovery(JsonVariant doc);
+    void haGenerateNextFlushCountdownDiscovery(JsonVariant doc);
+    void haGenerateRuntimeElapsedDiscovery(JsonVariant doc);
+    void haGenerateFinishCountdownDiscovery(JsonVariant doc);
 
     static void handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
     void handleHACommandCallback(const char* topic, const char* payload, int retain, int qos, bool dup);
@@ -99,6 +111,18 @@ class BrineomaticController : public BaseController
     char ha_topic_tank_level[128];
     char ha_topic_volume[128];
     char ha_topic_flush_volume[128];
+    char ha_topic_high_pressure_pump_on[128];
+    char ha_topic_diverter_valve_open[128];
+    char ha_topic_flush_valve_open[128];
+    char ha_topic_cooling_fan_on[128];
+    char ha_topic_boost_pump_on[128];
+    char ha_topic_run_result[128];
+    char ha_topic_flush_result[128];
+    char ha_topic_pickle_result[128];
+    char ha_topic_depickle_result[128];
+    char ha_topic_next_flush_countdown[128];
+    char ha_topic_runtime_elapsed[128];
+    char ha_topic_finish_countdown[128];
 
     bool _haCallbacksRegistered = false;
     static BrineomaticController* _instance;

@@ -219,6 +219,13 @@ void BrineomaticController::haGenerateDiscoveryHook(JsonVariant components, cons
     haGenerateWaterTemperatureDiscovery(components);
 
   haGenerateStatusDiscovery(components);
+  haGenerateRunResultDiscovery(components);
+  haGenerateFlushResultDiscovery(components);
+  haGeneratePickleResultDiscovery(components);
+  haGenerateDepickleResultDiscovery(components);
+  haGenerateNextFlushCountdownDiscovery(components);
+  haGenerateRuntimeElapsedDiscovery(components);
+  haGenerateFinishCountdownDiscovery(components);
 
   if (wm.hasFilterPressure())
     haGenerateFilterPressureDiscovery(components);
@@ -238,6 +245,17 @@ void BrineomaticController::haGenerateDiscoveryHook(JsonVariant components, cons
   haGenerateTankLevelDiscovery(components);
   haGenerateVolumeDiscovery(components);
   haGenerateFlushVolumeDiscovery(components);
+
+  if (wm.hasBoostPump())
+    haGenerateBoostPumpDiscovery(components);
+  if (wm.hasHighPressurePump())
+    haGenerateHighPressurePumpDiscovery(components);
+  if (wm.hasDiverterValve())
+    haGenerateDiverterValveDiscovery(components);
+  if (wm.hasFlushValve())
+    haGenerateFlushValveDiscovery(components);
+  if (wm.hasCoolingFan())
+    haGenerateCoolingFanDiscovery(components);
 }
 
 void BrineomaticController::haGenerateMotorTemperatureDiscovery(JsonVariant doc)
@@ -292,6 +310,120 @@ void BrineomaticController::haGenerateStatusDiscovery(JsonVariant doc)
   obj["unique_id"] = unique_id;
   obj["state_topic"] = ha_topic_status;
   obj["icon"] = "mdi:water-sync";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateRunResultDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_run_result", ha_uuid);
+  sprintf(ha_topic_run_result, "%s/run_result", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Run Result";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_run_result;
+  obj["icon"] = "mdi:water-sync";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateFlushResultDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_flush_result", ha_uuid);
+  sprintf(ha_topic_flush_result, "%s/flush_result", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Flush Result";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_flush_result;
+  obj["icon"] = "mdi:water-sync";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGeneratePickleResultDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_pickle_result", ha_uuid);
+  sprintf(ha_topic_pickle_result, "%s/pickle_result", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Pickle Result";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_pickle_result;
+  obj["icon"] = "mdi:water-sync";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateDepickleResultDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_depickle_result", ha_uuid);
+  sprintf(ha_topic_depickle_result, "%s/depickle_result", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Depickle Result";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_depickle_result;
+  obj["icon"] = "mdi:water-sync";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateNextFlushCountdownDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_next_flush_countdown", ha_uuid);
+  sprintf(ha_topic_next_flush_countdown, "%s/next_flush_countdown", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Next Flush Countdown";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_next_flush_countdown;
+  obj["device_class"] = "duration";
+  obj["unit_of_measurement"] = "h";
+  obj["value_template"] = "{{ (value | int / 3600000) | round(2) }}";
+  obj["state_class"] = "measurement";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateRuntimeElapsedDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_runtime_elapsed", ha_uuid);
+  sprintf(ha_topic_runtime_elapsed, "%s/runtime_elapsed", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Runtime Elapsed";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_runtime_elapsed;
+  obj["device_class"] = "duration";
+  obj["unit_of_measurement"] = "min";
+  obj["value_template"] = "{{ (value | int / 60000) | round(2) }}";
+  obj["state_class"] = "measurement";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateFinishCountdownDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_finish_countdown", ha_uuid);
+  sprintf(ha_topic_finish_countdown, "%s/finish_countdown", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Finish Countdown";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_finish_countdown;
+  obj["device_class"] = "duration";
+  obj["unit_of_measurement"] = "min";
+  obj["value_template"] = "{{ (value | int / 60000) | round(2) }}";
+  obj["state_class"] = "measurement";
   obj["availability_topic"] = ha_topic_avail;
 }
 
@@ -487,6 +619,91 @@ void BrineomaticController::haGenerateFlushVolumeDiscovery(JsonVariant doc)
   else
     obj["unit_of_measurement"] = "gal";
   obj["state_class"] = "total_increasing";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateBoostPumpDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_boost_pump_on", ha_uuid);
+  sprintf(ha_topic_boost_pump_on, "%s/boost_pump_on", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "binary_sensor";
+  obj["name"] = "Boost Pump";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_boost_pump_on;
+  obj["payload_on"] = "true";
+  obj["payload_off"] = "false";
+  obj["icon"] = "mdi:water-pump";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateHighPressurePumpDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_high_pressure_pump_on", ha_uuid);
+  sprintf(ha_topic_high_pressure_pump_on, "%s/high_pressure_pump_on", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "binary_sensor";
+  obj["name"] = "High Pressure Pump";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_high_pressure_pump_on;
+  obj["payload_on"] = "true";
+  obj["payload_off"] = "false";
+  obj["icon"] = "mdi:water-pump";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateDiverterValveDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_diverter_valve_open", ha_uuid);
+  sprintf(ha_topic_diverter_valve_open, "%s/diverter_valve_open", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "binary_sensor";
+  obj["name"] = "Diverter Valve";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_diverter_valve_open;
+  obj["payload_on"] = "true";
+  obj["payload_off"] = "false";
+  obj["icon"] = "mdi:valve";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateFlushValveDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_flush_valve_open", ha_uuid);
+  sprintf(ha_topic_flush_valve_open, "%s/flush_valve_open", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "binary_sensor";
+  obj["name"] = "Flush Valve";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_flush_valve_open;
+  obj["payload_on"] = "true";
+  obj["payload_off"] = "false";
+  obj["icon"] = "mdi:valve";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateCoolingFanDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_cooling_fan_on", ha_uuid);
+  sprintf(ha_topic_cooling_fan_on, "%s/cooling_fan_on", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "binary_sensor";
+  obj["name"] = "Cooling Fan";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_cooling_fan_on;
+  obj["payload_on"] = "true";
+  obj["payload_off"] = "false";
+  obj["icon"] = "mdi:fan";
   obj["availability_topic"] = ha_topic_avail;
 }
 
