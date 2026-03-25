@@ -1,13 +1,18 @@
-# v2.4 TODO
+# v2.4
 
-## FROTHFET
+* more detailed testing of timing on interrupt alert w/ oscilloscope
+    * pwm signal
+    * alert signal
+    * 24v output
+    * mosfet gate
+* test:
+    * slow blow w/ switch
+    * fast blow
+    * interrupt
 
-* make sure fast updates are working
-* go through and re-adjust the various page sizes for our different viewports
-* update yarrboard client if any changes needed - probably for state
-* update signalk plugin - same
-
-# LONG TERM:
+* motor load
+* resistive load
+* led load
 
 ## BRINEOMATIC
 
@@ -16,6 +21,11 @@
     * on/off switch to start/stop the watermaker
     * sensors for each output type
     * YAML dashboard
+
+# LONG TERM:
+
+* update yarrboard client if any changes needed - probably for state
+* update signalk plugin - same
 
 * protocol documentation
 

@@ -60,11 +60,7 @@ void PWMChannel::setup()
 void PWMChannel::onConfigUpdatedHook()
 {
   #ifdef YB_PWM_CHANNEL_HAS_INA226
-  // update our soft fuse interrupt
-  float limit = YB_PWM_CHANNEL_SHORT_CIRCUIT_AMPS;
-  if (!strcmp(this->softFuseType, "FASTEST"))
-    limit = min(limit, this->softFuseAmperage);
-  setINA226AlertLimit(limit);
+  setINA226AlertLimit();
   #endif
 }
 
@@ -88,6 +84,7 @@ void PWMChannel::setupINA226()
   ina226->setBusVoltageConversionTime(INA226_140_us);
   ina226->setShuntVoltageConversionTime(INA226_140_us);
   ina226->setAverage(INA226_128_SAMPLES);
+  ina226->setMode(7); // shunt + bus continuous
 
   static const uint32_t ina226_timing_us[] = {140, 204, 332, 588, 1100, 2100, 4200, 8300};
   static const uint16_t ina226_samples[] = {1, 4, 16, 64, 128, 256, 512, 1024};
@@ -99,17 +96,15 @@ void PWMChannel::setupINA226()
   voltageUpdateInterval = (busUs * samples) / 1000 + 1;
   amperageUpdateInterval = (shuntUs * samples) / 1000 + 1;
 
+  int x = ina226->setMaxCurrentShunt(YB_PWM_CHANNEL_SHORT_CIRCUIT_AMPS, YB_PWM_CHANNEL_INA226_SHUNT);
+
   if (this->id == 1) {
     YBP.printf("Bus Voltage Conversion Time: %d us\n", busUs);
     YBP.printf("Shunt Voltage Conversion Time: %d us\n", shuntUs);
     YBP.printf("Averages: %d samples\n", samples);
     YBP.printf("Bus Voltage Update Interval: %dms\n", voltageUpdateInterval);
     YBP.printf("Shunt Voltage Update Interval: %dms\n", amperageUpdateInterval);
-  }
 
-  int x = ina226->setMaxCurrentShunt(YB_PWM_CHANNEL_SHORT_CIRCUIT_AMPS, YB_PWM_CHANNEL_INA226_SHUNT);
-
-  if (this->id == 1) {
     YBP.println("normalized = true (default)");
     YBP.println(x);
     YBP.print("LSB:\t");
@@ -124,10 +119,7 @@ void PWMChannel::setupINA226()
   }
 
   // setup our limit.
-  float limit = YB_PWM_CHANNEL_SHORT_CIRCUIT_AMPS;
-  if (!strcmp(this->softFuseType, "FASTEST"))
-    limit = min(limit, this->softFuseAmperage);
-  setINA226AlertLimit(limit);
+  setINA226AlertLimit();
 
   pinMode(_ina226_alert_pins[this->id - 1], INPUT);
   attachInterruptArg(
@@ -138,8 +130,12 @@ void PWMChannel::setupINA226()
     #endif
 }
 
-void PWMChannel::setINA226AlertLimit(float limit_current)
+void PWMChannel::setINA226AlertLimit()
 {
+  float limit = YB_PWM_CHANNEL_SHORT_CIRCUIT_AMPS;
+  if (!strcmp(this->softFuseType, "FASTEST"))
+    limit = min(limit, this->softFuseAmperage);
+
   // Configure the ALERT pin to fire when current exceeds limit_current.
   // The INA226 has no direct overcurrent alert, but shunt voltage is proportional
   // to current (V = I * R), so we use the Shunt Over Voltage alert mode instead.
@@ -154,7 +150,7 @@ void PWMChannel::setINA226AlertLimit(float limit_current)
   // Latch mode is enabled so the ALERT pin stays asserted until the MCU reads the
   // Mask/Enable register — prevents the interrupt from re-firing before it is serviced.
   ina226->setAlertRegister(INA226_SHUNT_OVER_VOLTAGE | INA226_ALERT_LATCH_ENABLE_FLAG);
-  float shuntVoltageLimit = limit_current * YB_PWM_CHANNEL_INA226_SHUNT;
+  float shuntVoltageLimit = limit * YB_PWM_CHANNEL_INA226_SHUNT;
   ina226->setAlertLimit((uint16_t)(shuntVoltageLimit / 2.5e-6));
 
   if (this->id == 1) {
