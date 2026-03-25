@@ -48,6 +48,17 @@ class BrineomaticController : public BaseController
 
     void haGenerateMotorTemperatureDiscovery(JsonVariant doc);
     void haGenerateWaterTemperatureDiscovery(JsonVariant doc);
+    void haGenerateStatusDiscovery(JsonVariant doc);
+    void haGenerateFilterPressureDiscovery(JsonVariant doc);
+    void haGenerateMembranePressureDiscovery(JsonVariant doc);
+    void haGenerateProductSalinityDiscovery(JsonVariant doc);
+    void haGenerateBrineSalinityDiscovery(JsonVariant doc);
+    void haGenerateProductFlowrateDiscovery(JsonVariant doc);
+    void haGenerateBrineFlowrateDiscovery(JsonVariant doc);
+    void haGenerateTotalFlowrateDiscovery(JsonVariant doc);
+    void haGenerateTankLevelDiscovery(JsonVariant doc);
+    void haGenerateVolumeDiscovery(JsonVariant doc);
+    void haGenerateFlushVolumeDiscovery(JsonVariant doc);
 
     static void handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
     void handleHACommandCallback(const char* topic, const char* payload, int retain, int qos, bool dup);
@@ -77,6 +88,17 @@ class BrineomaticController : public BaseController
 
     char ha_topic_motor_temperature[128];
     char ha_topic_water_temperature[128];
+    char ha_topic_status[128];
+    char ha_topic_filter_pressure[128];
+    char ha_topic_membrane_pressure[128];
+    char ha_topic_product_salinity[128];
+    char ha_topic_brine_salinity[128];
+    char ha_topic_product_flowrate[128];
+    char ha_topic_brine_flowrate[128];
+    char ha_topic_total_flowrate[128];
+    char ha_topic_tank_level[128];
+    char ha_topic_volume[128];
+    char ha_topic_flush_volume[128];
 
     bool _haCallbacksRegistered = false;
     static BrineomaticController* _instance;

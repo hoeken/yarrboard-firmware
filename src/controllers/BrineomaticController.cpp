@@ -218,20 +218,26 @@ void BrineomaticController::haGenerateDiscoveryHook(JsonVariant components, cons
   if (wm.hasWaterTemperature())
     haGenerateWaterTemperatureDiscovery(components);
 
-  // todo: the rest of the sensors
-  // docs: https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes
-  // docs: https://www.home-assistant.io/integrations/sensor/#device-class
-  // status enum (IDLE, RUNNING, etc)
-  // filter_pressure
-  // membrane_pressure
-  // product_salinity
-  // brine_salinity
-  // product_flowrate
-  // brine_flowrate
-  // total_flowrate
-  // tank_level
-  // product_volume
-  // flush_volume
+  haGenerateStatusDiscovery(components);
+
+  if (wm.hasFilterPressure())
+    haGenerateFilterPressureDiscovery(components);
+  if (wm.hasMembranePressure())
+    haGenerateMembranePressureDiscovery(components);
+  if (wm.hasProductTDS())
+    haGenerateProductSalinityDiscovery(components);
+  if (wm.hasBrineTDS())
+    haGenerateBrineSalinityDiscovery(components);
+  if (wm.hasProductFlow())
+    haGenerateProductFlowrateDiscovery(components);
+  if (wm.hasBrineFlow())
+    haGenerateBrineFlowrateDiscovery(components);
+  if (wm.hasProductFlow() || wm.hasBrineFlow())
+    haGenerateTotalFlowrateDiscovery(components);
+
+  haGenerateTankLevelDiscovery(components);
+  haGenerateVolumeDiscovery(components);
+  haGenerateFlushVolumeDiscovery(components);
 }
 
 void BrineomaticController::haGenerateMotorTemperatureDiscovery(JsonVariant doc)
@@ -246,7 +252,7 @@ void BrineomaticController::haGenerateMotorTemperatureDiscovery(JsonVariant doc)
   obj["unique_id"] = unique_id;
   obj["state_topic"] = ha_topic_motor_temperature;
   obj["device_class"] = "temperature";
-  if (strcmp(wm.getTemperatureUnits(), "celcius") == 0)
+  if (!strcmp(wm.getTemperatureUnits(), "celsius"))
     obj["unit_of_measurement"] = "°C";
   else
     obj["unit_of_measurement"] = "°F";
@@ -266,11 +272,221 @@ void BrineomaticController::haGenerateWaterTemperatureDiscovery(JsonVariant doc)
   obj["unique_id"] = unique_id;
   obj["state_topic"] = ha_topic_water_temperature;
   obj["device_class"] = "temperature";
-  if (strcmp(wm.getTemperatureUnits(), "celcius") == 0)
+  if (!strcmp(wm.getTemperatureUnits(), "celsius"))
     obj["unit_of_measurement"] = "°C";
   else
     obj["unit_of_measurement"] = "°F";
   obj["state_class"] = "measurement";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateStatusDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_status", ha_uuid);
+  sprintf(ha_topic_status, "%s/status", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Status";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_status;
+  obj["icon"] = "mdi:water-sync";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateFilterPressureDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_filter_pressure", ha_uuid);
+  sprintf(ha_topic_filter_pressure, "%s/filter_pressure", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Filter Pressure";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_filter_pressure;
+  obj["device_class"] = "pressure";
+  if (strcmp(wm.getPressureUnits(), "kilopascal") == 0)
+    obj["unit_of_measurement"] = "kPa";
+  else if (strcmp(wm.getPressureUnits(), "psi") == 0)
+    obj["unit_of_measurement"] = "psi";
+  else
+    obj["unit_of_measurement"] = "bar";
+  obj["state_class"] = "measurement";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateMembranePressureDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_membrane_pressure", ha_uuid);
+  sprintf(ha_topic_membrane_pressure, "%s/membrane_pressure", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Membrane Pressure";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_membrane_pressure;
+  obj["device_class"] = "pressure";
+  if (strcmp(wm.getPressureUnits(), "kilopascal") == 0)
+    obj["unit_of_measurement"] = "kPa";
+  else if (strcmp(wm.getPressureUnits(), "psi") == 0)
+    obj["unit_of_measurement"] = "psi";
+  else
+    obj["unit_of_measurement"] = "bar";
+  obj["state_class"] = "measurement";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateProductSalinityDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_product_salinity", ha_uuid);
+  sprintf(ha_topic_product_salinity, "%s/product_salinity", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Product Salinity";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_product_salinity;
+  obj["unit_of_measurement"] = "ppm";
+  obj["suggested_display_precision"] = 0;
+  obj["state_class"] = "measurement";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateBrineSalinityDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_brine_salinity", ha_uuid);
+  sprintf(ha_topic_brine_salinity, "%s/brine_salinity", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Brine Salinity";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_brine_salinity;
+  obj["unit_of_measurement"] = "ppm";
+  obj["suggested_display_precision"] = 0;
+  obj["state_class"] = "measurement";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateProductFlowrateDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_product_flowrate", ha_uuid);
+  sprintf(ha_topic_product_flowrate, "%s/product_flowrate", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Product Flowrate";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_product_flowrate;
+  obj["device_class"] = "volume_flow_rate";
+  if (strcmp(wm.getFlowrateUnits(), "lph") == 0)
+    obj["unit_of_measurement"] = "L/h";
+  else
+    obj["unit_of_measurement"] = "gal/h";
+  obj["state_class"] = "measurement";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateBrineFlowrateDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_brine_flowrate", ha_uuid);
+  sprintf(ha_topic_brine_flowrate, "%s/brine_flowrate", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Brine Flowrate";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_brine_flowrate;
+  obj["device_class"] = "volume_flow_rate";
+  if (strcmp(wm.getFlowrateUnits(), "lph") == 0)
+    obj["unit_of_measurement"] = "L/h";
+  else
+    obj["unit_of_measurement"] = "gal/h";
+  obj["state_class"] = "measurement";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateTotalFlowrateDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_total_flowrate", ha_uuid);
+  sprintf(ha_topic_total_flowrate, "%s/total_flowrate", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Total Flowrate";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_total_flowrate;
+  obj["device_class"] = "volume_flow_rate";
+  if (strcmp(wm.getFlowrateUnits(), "lph") == 0)
+    obj["unit_of_measurement"] = "L/h";
+  else
+    obj["unit_of_measurement"] = "gal/h";
+  obj["state_class"] = "measurement";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateTankLevelDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_tank_level", ha_uuid);
+  sprintf(ha_topic_tank_level, "%s/tank_level", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Tank Level";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_tank_level;
+  obj["unit_of_measurement"] = "%";
+  obj["value_template"] = "{{ (value | float * 100) | round(1) }}";
+  obj["state_class"] = "measurement";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateVolumeDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_volume", ha_uuid);
+  sprintf(ha_topic_volume, "%s/volume", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Product Volume";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_volume;
+  obj["device_class"] = "volume";
+  if (strcmp(wm.getVolumeUnits(), "liters") == 0)
+    obj["unit_of_measurement"] = "L";
+  else
+    obj["unit_of_measurement"] = "gal";
+  obj["state_class"] = "total_increasing";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
+void BrineomaticController::haGenerateFlushVolumeDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_flush_volume", ha_uuid);
+  sprintf(ha_topic_flush_volume, "%s/flush_volume", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Flush Volume";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_flush_volume;
+  obj["device_class"] = "volume";
+  if (strcmp(wm.getVolumeUnits(), "liters") == 0)
+    obj["unit_of_measurement"] = "L";
+  else
+    obj["unit_of_measurement"] = "gal";
+  obj["state_class"] = "total_increasing";
   obj["availability_topic"] = ha_topic_avail;
 }
 

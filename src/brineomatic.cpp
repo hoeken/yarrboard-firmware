@@ -1135,6 +1135,36 @@ bool Brineomatic::hasHighPressureValve()
   return !highPressureValveControl.equals("NONE");
 }
 
+bool Brineomatic::hasFilterPressure()
+{
+  return hasFilterPressureSensor;
+}
+
+bool Brineomatic::hasMembranePressure()
+{
+  return hasMembranePressureSensor;
+}
+
+bool Brineomatic::hasProductFlow()
+{
+  return hasProductFlowSensor;
+}
+
+bool Brineomatic::hasBrineFlow()
+{
+  return hasBrineFlowSensor;
+}
+
+bool Brineomatic::hasProductTDS()
+{
+  return hasProductTDSSensor;
+}
+
+bool Brineomatic::hasBrineTDS()
+{
+  return hasBrineTDSSensor;
+}
+
 void Brineomatic::manageHighPressureValve()
 {
   //

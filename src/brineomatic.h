@@ -216,6 +216,12 @@ class Brineomatic
 
     bool hasMotorTemperature();
     bool hasWaterTemperature();
+    bool hasFilterPressure();
+    bool hasMembranePressure();
+    bool hasProductFlow();
+    bool hasBrineFlow();
+    bool hasProductTDS();
+    bool hasBrineTDS();
 
     const char* getStatus();
     const char* resultToString(Result result);
