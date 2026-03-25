@@ -218,6 +218,27 @@ void StepperChannel::printDebug()
   #endif
 }
 
+void StepperChannel::setRunCurrent(uint8_t current)
+{
+  _run_current = constrain(current, 0, 100);
+  #ifdef YB_STEPPER_DRIVER_TMC2209
+  _tmc2209.setRunCurrent(_run_current);
+  #endif
+}
+
+void StepperChannel::setHomeCurrent(uint8_t current)
+{
+  _home_current = constrain(current, 0, 100);
+}
+
+void StepperChannel::setHoldCurrent(uint8_t current)
+{
+  _hold_current = constrain(current, 0, 100);
+  #ifdef YB_STEPPER_DRIVER_TMC2209
+  _tmc2209.setHoldCurrent(_hold_current);
+  #endif
+}
+
 void StepperChannel::setSpeed(float rpm)
 {
   uint32_t hz = (rpm * _steps_per_degree * 360.0) / 60.0;
@@ -369,7 +390,7 @@ bool StepperChannel::home()
 bool StepperChannel::home(float rpm)
 {
   // home at a lower current so we dont jam
-  _tmc2209.setRunCurrent(_run_current * 0.60);
+  _tmc2209.setRunCurrent(_home_current);
 
   _home_speed_rpm = rpm;
 

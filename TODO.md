@@ -19,10 +19,6 @@
 
 * add stepper power configuration: normal and homing
 
-## SENDIT
-
-* add HA device class as a configurable option per channel
-
 # LONG TERM:
 
 * update yarrboard client if any changes needed - probably for state

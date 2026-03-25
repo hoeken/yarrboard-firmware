@@ -38,6 +38,9 @@ class StepperChannel : public BaseChannel
     void setup(FastAccelStepperEngine* engine, byte step_pin, byte dir_pin, byte enable_pin, byte diag_pin);
     void setSpeed(float rpm);
     void setStepsPerDegree(float steps);
+    void setRunCurrent(uint8_t current);
+    void setHomeCurrent(uint8_t current);
+    void setHoldCurrent(uint8_t current);
     float getSpeed();
     float getAngle();
     int32_t getPosition();
@@ -67,6 +70,7 @@ class StepperChannel : public BaseChannel
     TMC2209 _tmc2209;
     byte _diag_pin;
     uint8_t _run_current = 50;
+    uint8_t _home_current = 30; // defaults to 60% of _run_current
     uint8_t _hold_current = 20;
     uint8_t _stall_guard = 90;
 
