@@ -159,8 +159,8 @@
       type: "string",
       presence: { allowEmpty: false },
       inclusion: {
-        within: ["SLOW", "FAST", "FASTEST"],
-        message: "^softFuseType must be SLOW, FAST, or FASTEST"
+        within: ["SLOW", "MEDIUM", "FAST"],
+        message: "^softFuseType must be SLOW, MEDIUM, or FAST"
       }
     };
 
@@ -292,8 +292,8 @@
           <div class="form-floating mb-3">
             <select id="f-pwm-softFuseType-${this.id}" class="form-select" aria-label="Soft Fuse Type">
               <option value="SLOW">SLOW (2-3s)</option>
-              <option value="FAST">FAST (20-50ms)</option>
-              <option value="FASTEST">FASTEST (50us-1000us)</option>
+              <option value="MEDIUM">MEDIUM (20-50ms)</option>
+              <option value="FAST">FAST (50μs-1000μs)</option>
             </select>
             <label for="f-pwm-defaultState-${this.id}">Soft Fuse Type</label>
             <div class="invalid-feedback"></div>

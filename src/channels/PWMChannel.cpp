@@ -133,7 +133,7 @@ void PWMChannel::setupINA226()
 void PWMChannel::setINA226AlertLimit()
 {
   float limit = YB_PWM_CHANNEL_SHORT_CIRCUIT_AMPS;
-  if (!strcmp(this->softFuseType, "FASTEST"))
+  if (!strcmp(this->softFuseType, "FAST"))
     limit = min(limit, this->softFuseAmperage);
 
   // Configure the ALERT pin to fire when current exceeds limit_current.
