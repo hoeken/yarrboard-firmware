@@ -207,13 +207,16 @@ if __name__ == '__main__':
 
 		print (f'Building {board_name} firmware for {chip_family}')
 
-		#make our firmware.json entry
+		#make our ota_manifest.json entry
 		bdata = {}
 		bdata['type'] = board_name
 		bdata['version'] = version
 		bdata['url'] = f'{firmware_url_base}{board_name}/{version}.bin'
-		bdata['changelog'] = changelog
+		bdata['changelog'] = f'{firmware_url_base}{board_name}/CHANGELOG-{version}.md'
 		config.append(bdata)
+
+		#write changelog file for this board
+		changelog_filename = f'CHANGELOG-{version}.md'
 
 		#build the firmware
 		cmd = f'pio run -e "{board_name}" -s'
@@ -242,6 +245,14 @@ if __name__ == '__main__':
 			print(f'mkdir -p {board_dir}')
 		else:
 			os.makedirs(board_dir, exist_ok=True)
+
+		#write changelog file
+		changelog_path = f'{board_dir}/{changelog_filename}'
+		if test_mode:
+			print(f'Writing {changelog_path}')
+		else:
+			with open(changelog_path, 'w') as f:
+				f.write(changelog)
 
 		#copy our firmware to output directory
 		cmd = f'cp .pio/build/{board_name}/signed.bin {board_dir}/{version}.bin'
