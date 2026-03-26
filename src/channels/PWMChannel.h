@@ -132,6 +132,7 @@ class PWMChannel : public BaseChannel
     float wattHours = 0.0;
 
     bool isDimmable = false;
+    uint8_t ledcChannel = -1;
 
     BuzzerController* buzzer = nullptr;
     String bypassMelody = YB_BYPASS_MELODY;

@@ -1,20 +1,5 @@
 # v2.4
 
-* more detailed testing of timing on interrupt alert w/ oscilloscope
-    * pwm signal
-    * alert signal
-    * 24v output
-    * mosfet gate
-* test:
-    * slow blow w/ switch
-    * fast blow
-    * interrupt
-
-* test with interrupt to see how fast we can make it or if there is any room for improvement.
-* motor load
-* resistive load
-* led load
-
 # LONG TERM:
 
 * update yarrboard client if any changes needed - probably for state

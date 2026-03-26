@@ -181,29 +181,11 @@ void IRAM_ATTR PWMChannel::ina226AlertHandler(void* arg)
 {
   PWMChannel* ch = static_cast<PWMChannel*>(arg);
 
-    // Kill the output immediately via direct GPIO register write.  This bypasses
-    // ledcWrite() (not IRAM-safe) and cuts the pin within a single CPU cycle.
-    //
-    // ledcOutputInvert() flips the LEDC signal in hardware, which means the
-    // physical pin level for "off" is the opposite of a non-inverted channel:
-    //   Normal  : pin LOW  = output off → write-1-to-clear (w1tc)
-    //   Inverted: pin HIGH = output off → write-1-to-set   (w1ts)
-    //
-    // GPIO.out_w1tc / GPIO.out1_w1tc cover pins 0-31 / 32+.
-    // Note: direct GPIO writes bypass LEDC inversion, so LEDC will re-assert
-    // on its next PWM cycle.  ina226TripPending causes checkSoftFuse() to call
-    // ledcWrite(0) promptly, clamping any glitch to at most one PWM period (~1ms).
-    #ifdef YB_PWM_CHANNEL_INVERTED
-  if (ch->pin < 32)
-    GPIO.out_w1ts = (1UL << ch->pin); // plain uint32_t on ESP32-S3
-  else
-    GPIO.out1_w1ts.val = (1UL << (ch->pin - 32)); // struct with .val for pins 32+
-    #else
-  if (ch->pin < 32)
-    GPIO.out_w1tc = (1UL << ch->pin);
-  else
-    GPIO.out1_w1tc.val = (1UL << (ch->pin - 32));
-    #endif
+  // Immediate hardware stop of the LEDC channel.
+  ledc_stop(
+    LEDC_LOW_SPEED_MODE,
+    static_cast<ledc_channel_t>(ch->ledcChannel),
+    0);
 
   // Signal the main loop to run the full trip sequence (ledcWrite, status
   // update, buzzer, MQTT, etc.) — none of those are safe to call from an ISR.
@@ -221,9 +203,6 @@ void PWMChannel::handleINA226Trip()
 
   this->status = Status::TRIPPED;
   this->outputState = false;
-
-  // Make LEDC agree with the GPIO state the ISR already forced.
-  this->updateOutput(false);
 
   // Reading the Mask/Enable register clears the alert latch on the INA226,
   // re-arming it for the next overcurrent event.
@@ -258,8 +237,9 @@ void PWMChannel::setupLedc()
   // track our fades
   this->isFading = false;
 
-  // now attach ledc
-  if (!ledcAttach(this->pin, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION))
+  // Assign LEDC channel explicitly so the ISR can call ledc_stop() on it.
+  this->ledcChannel = this->id - 1;
+  if (!ledcAttachChannel(this->pin, YB_PWM_CHANNEL_FREQUENCY, YB_PWM_CHANNEL_RESOLUTION, this->ledcChannel))
     YBP.printf("PWM CH%d error attaching to LEDC\n");
 
   #ifdef YB_PWM_CHANNEL_INVERTED
@@ -567,9 +547,14 @@ float PWMChannel::getTemperature()
 
 void PWMChannel::checkStatus()
 {
-  this->checkFuseBypassed();
+  // needs to be first to handle trip.
+  #ifdef YB_PWM_CHANNEL_HAS_INA226
+  this->handleINA226Trip();
+  #endif
+
   this->checkSoftFuse();
   this->checkFuseBlown();
+  this->checkFuseBypassed();
   this->checkOverheat();
 }
 
@@ -690,10 +675,6 @@ void PWMChannel::checkFuseBypassed()
 
 void PWMChannel::checkSoftFuse()
 {
-  #ifdef YB_PWM_CHANNEL_HAS_INA226
-  this->handleINA226Trip();
-  #endif
-
   // grace period for SLOW blow soft fuse.
   if (!strcmp(this->softFuseType, "SLOW")) {
     unsigned long firstCheckTime = YB_PWM_CHANNEL_AVERAGE_WINDOW_MS;
