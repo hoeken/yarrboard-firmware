@@ -1,5 +1,3 @@
-# v2.4
-
 # LONG TERM:
 
 * update yarrboard client if any changes needed - probably for state
