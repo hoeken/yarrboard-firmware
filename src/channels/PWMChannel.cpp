@@ -816,6 +816,14 @@ void PWMChannel::startFade(float duty, int fade_time)
     // track when we last changed states.
     this->lastStateChange = millis();
 
+  // clear our readings since we want fresh readings.
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
+    this->amperageHelper->clearReadings(_adcAmperageChannel);
+  #endif
+  #ifdef YB_HAS_CHANNEL_VOLTAGE
+    this->voltageHelper->clearReadings(_adcVoltageChannel);
+  #endif
+
     // clear our averages
   #ifdef YB_PWM_CHANNEL_HAS_INA226
     voltageAverage.clear();
@@ -998,14 +1006,6 @@ void PWMChannel::setState(bool newState)
     else
       this->status = Status::OFF;
 
-      // clear our readings since we want fresh readings.
-  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
-    this->amperageHelper->clearReadings(_adcAmperageChannel);
-  #endif
-  #ifdef YB_HAS_CHANNEL_VOLTAGE
-    this->voltageHelper->clearReadings(_adcVoltageChannel);
-  #endif
-
     // change our output pin to reflect
     this->updateOutput(true);
 
@@ -1021,6 +1021,14 @@ void PWMChannel::writePWM(uint16_t pwm)
 
   // track when we last changed states.
   this->lastStateChange = millis();
+
+  // clear our readings since we want fresh readings.
+  #ifdef YB_PWM_CHANNEL_CURRENT_ADC_DRIVER_MCP3564
+  this->amperageHelper->clearReadings(_adcAmperageChannel);
+  #endif
+  #ifdef YB_HAS_CHANNEL_VOLTAGE
+  this->voltageHelper->clearReadings(_adcVoltageChannel);
+  #endif
 
   #ifdef YB_PWM_CHANNEL_HAS_INA226
   // clear our averages
