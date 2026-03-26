@@ -156,6 +156,16 @@ if __name__ == '__main__':
 		print("🔴 YB_FIRMWARE_VERSION not #defined in src/config.h 🔴")
 		sys.exit(1)   # bail out
 
+	# Check that library.json version matches (only if library.json exists)
+	library_json_path = Path("library.json")
+	if library_json_path.exists():
+		with open(library_json_path, "r") as f:
+			library_data = json.load(f)
+		library_version = library_data.get("version", "")
+		if library_version != version:
+			print(f"🔴 Version mismatch: YarrboardVersion.h says {version} but library.json says {library_version} 🔴")
+			sys.exit(1)
+
  	#turn off dev mode
 	if dev_mode:
 		print("🔴 YB_IS_DEVELOPMENT set to true in src/config.h 🔴")
