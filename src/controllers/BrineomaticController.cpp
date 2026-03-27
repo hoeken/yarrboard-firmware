@@ -667,8 +667,8 @@ void BrineomaticController::haGenerateDiverterValveDiscovery(JsonVariant doc)
   obj["name"] = "Diverter Valve";
   obj["unique_id"] = unique_id;
   obj["state_topic"] = ha_topic_diverter_valve_open;
-  obj["payload_on"] = "true";
-  obj["payload_off"] = "false";
+  obj["payload_on"] = "false"; // invert... false = overboard
+  obj["payload_off"] = "true"; // invert... true = tanks
   obj["icon"] = "mdi:valve";
   obj["availability_topic"] = ha_topic_avail;
 }
