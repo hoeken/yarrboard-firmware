@@ -2249,6 +2249,7 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["motor_temperature_sensor_type"] = this->motorTemperatureSensorType;
   bom["water_temperature_sensor_type"] = this->waterTemperatureSensorType;
   bom["tank_level_sensor_type"] = this->tankLevelSensorType;
+  bom["tank_level_mqtt_path"] = this->tankLevelMqttPath;
   bom["battery_level_sensor_type"] = this->batteryLevelSensorType;
   bom["battery_level_mqtt_path"] = this->batteryLevelMqttPath;
 
@@ -2899,6 +2900,15 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
     }
   }
 
+  if (config["tank_level_mqtt_path"]) {
+    const char* path = config["tank_level_mqtt_path"];
+    if (strlen(path) > 255) {
+      snprintf(error, err_size, "tank_level_mqtt_path must be 255 characters or fewer");
+      config.remove("tank_level_mqtt_path");
+      ok = false;
+    }
+  }
+
   if (config["battery_level_sensor_type"]) {
     if (!checkInclusion(config, "battery_level_sensor_type", BATTERY_LEVEL_SENSOR_TYPES, error, err_size)) {
       config.remove("battery_level_sensor_type");
@@ -3386,6 +3396,7 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
   this->waterTemperatureSensorType = config["water_temperature_sensor_type"] | YB_WATER_TEMPERATURE_SENSOR_TYPE;
 
   this->tankLevelSensorType = config["tank_level_sensor_type"] | YB_TANK_LEVEL_SENSOR_TYPE;
+  this->tankLevelMqttPath = config["tank_level_mqtt_path"] | YB_TANK_LEVEL_MQTT_PATH;
   this->tankCapacity = config["tank_capacity"] | YB_TANK_CAPACITY;
 
   this->batteryLevelSensorType = config["battery_level_sensor_type"] | YB_BATTERY_LEVEL_SENSOR_TYPE;
