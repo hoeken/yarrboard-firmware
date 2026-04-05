@@ -2250,6 +2250,7 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["water_temperature_sensor_type"] = this->waterTemperatureSensorType;
   bom["tank_level_sensor_type"] = this->tankLevelSensorType;
   bom["battery_level_sensor_type"] = this->batteryLevelSensorType;
+  bom["battery_level_mqtt_path"] = this->batteryLevelMqttPath;
 
   bom["enable_membrane_pressure_high_check"] = this->enableMembranePressureHighCheck;
   bom["membrane_pressure_high_threshold"] = this->membranePressureHighThreshold;
@@ -2905,6 +2906,15 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
     }
   }
 
+  if (config["battery_level_mqtt_path"]) {
+    const char* path = config["battery_level_mqtt_path"];
+    if (strlen(path) > 255) {
+      snprintf(error, err_size, "battery_level_mqtt_path must be 255 characters or fewer");
+      config.remove("battery_level_mqtt_path");
+      ok = false;
+    }
+  }
+
   return ok;
 }
 
@@ -3379,6 +3389,7 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
   this->tankCapacity = config["tank_capacity"] | YB_TANK_CAPACITY;
 
   this->batteryLevelSensorType = config["battery_level_sensor_type"] | YB_BATTERY_LEVEL_SENSOR_TYPE;
+  this->batteryLevelMqttPath = config["battery_level_mqtt_path"] | YB_BATTERY_LEVEL_MQTT_PATH;
 
   // smart backup of the old boolean style
   if (this->motorTemperatureSensorType.equals("NONE") && config["has_motor_temperature_sensor"])
