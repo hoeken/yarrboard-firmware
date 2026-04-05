@@ -3299,7 +3299,6 @@ void Brineomatic::loadGeneralConfigJSON(JsonVariant config)
   this->autoflushVolume = config["autoflush_volume"] | YB_AUTOFLUSH_VOLUME;
   this->autoflushInterval = config["autoflush_interval"] | YB_AUTOFLUSH_INTERVAL;
   this->autoflushUseHighPressureMotor = config["autoflush_use_high_pressure_motor"] | YB_AUTOFLUSH_USE_HIGH_PRESSURE_MOTOR;
-  this->tankCapacity = config["tank_capacity"] | YB_TANK_CAPACITY;
   this->temperatureUnits = config["temperature_units"] | YB_TEMPERATURE_UNITS;
   this->pressureUnits = config["pressure_units"] | YB_PRESSURE_UNITS;
   this->volumeUnits = config["volume_units"] | YB_VOLUME_UNITS;
@@ -3374,7 +3373,10 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
 
   this->motorTemperatureSensorType = config["motor_temperature_sensor_type"] | YB_MOTOR_TEMPERATURE_SENSOR_TYPE;
   this->waterTemperatureSensorType = config["water_temperature_sensor_type"] | YB_WATER_TEMPERATURE_SENSOR_TYPE;
+
   this->tankLevelSensorType = config["tank_level_sensor_type"] | YB_TANK_LEVEL_SENSOR_TYPE;
+  this->tankCapacity = config["tank_capacity"] | YB_TANK_CAPACITY;
+
   this->batteryLevelSensorType = config["battery_level_sensor_type"] | YB_BATTERY_LEVEL_SENSOR_TYPE;
 
   // smart backup of the old boolean style
