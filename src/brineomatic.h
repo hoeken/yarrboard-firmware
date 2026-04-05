@@ -99,8 +99,8 @@ class Brineomatic
     static constexpr const char* DIVERTER_VALVE_CONTROLS[] = {"NONE", "MANUAL", "RELAY", "SERVO"};
     static constexpr const char* FLUSH_VALVE_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
     static constexpr const char* COOLING_FAN_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
-    static constexpr const char* MOTOR_TEMPERATURE_TYPES[] = {"NONE", "EXTERNAL", "DS18B20"};
-    static constexpr const char* WATER_TEMPERATURE_TYPES[] = {"NONE", "EXTERNAL", "DS18B20"};
+    static constexpr const char* MOTOR_TEMPERATURE_TYPES[] = {"NONE", "EXTERNAL", "DS18B20", "MQTT"};
+    static constexpr const char* WATER_TEMPERATURE_TYPES[] = {"NONE", "EXTERNAL", "DS18B20", "MQTT"};
     static constexpr const char* TANK_LEVEL_SENSOR_TYPES[] = {"NONE", "EXTERNAL", "MQTT"};
     static constexpr const char* BATTERY_LEVEL_SENSOR_TYPES[] = {"NONE", "EXTERNAL", "MQTT"};
 
@@ -437,7 +437,9 @@ class Brineomatic
     float brineFlowmeterPPL = YB_BRINE_FLOWMETER_PPL;
 
     String motorTemperatureSensorType = YB_MOTOR_TEMPERATURE_SENSOR_TYPE;
+    String motorTemperatureMqttPath = YB_MOTOR_TEMPERATURE_MQTT_PATH;
     String waterTemperatureSensorType = YB_WATER_TEMPERATURE_SENSOR_TYPE;
+    String waterTemperatureMqttPath = YB_WATER_TEMPERATURE_MQTT_PATH;
     String tankLevelSensorType = YB_TANK_LEVEL_SENSOR_TYPE;
     String tankLevelMqttPath = YB_TANK_LEVEL_MQTT_PATH;
     String batteryLevelSensorType = YB_BATTERY_LEVEL_SENSOR_TYPE;

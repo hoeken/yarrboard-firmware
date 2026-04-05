@@ -101,6 +101,16 @@ bool BrineomaticController::loadConfigHook(JsonVariant config, char* error, size
       MQTTController* mqtt = (MQTTController*)_app.getController("mqtt");
       String type;
 
+      type = bom["motor_temperature_sensor_type"].as<String>();
+      if (type.equals("MQTT")) {
+        mqtt->onTopic(bom["motor_temperature_mqtt_path"], 0, &BrineomaticController::handleMotorTemperatureCallbackStatic);
+      }
+
+      type = bom["water_temperature_sensor_type"].as<String>();
+      if (type.equals("MQTT")) {
+        mqtt->onTopic(bom["water_temperature_mqtt_path"], 0, &BrineomaticController::handleWaterTemperatureCallbackStatic);
+      }
+
       type = bom["tank_level_sensor_type"].as<String>();
       if (type.equals("MQTT")) {
         mqtt->onTopic(bom["tank_level_mqtt_path"], 0, &BrineomaticController::handleTankLevelCallbackStatic);
@@ -755,6 +765,48 @@ void BrineomaticController::handleHACommandCallback(const char* topic, const cha
     wm.start();
   else
     wm.stop();
+}
+
+void BrineomaticController::handleWaterTemperatureCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup)
+{
+  if (_instance) {
+    _instance->handleWaterTemperatureCallback(topic, payload, retain, qos, dup);
+  }
+}
+
+void BrineomaticController::handleWaterTemperatureCallback(const char* topic, const char* payload, int retain, int qos, bool dup)
+{
+  float temp = atof(payload);
+
+  // convert from obvious kelvins
+  if (temp > 150)
+    temp += -273.15;
+  // convert from obvious fahrenheit
+  else if (temp > 50)
+    temp = (temp * 9 / 5) + 32;
+
+  wm.setWaterTemperature(temp);
+}
+
+void BrineomaticController::handleMotorTemperatureCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup)
+{
+  if (_instance) {
+    _instance->handleMotorTemperatureCallback(topic, payload, retain, qos, dup);
+  }
+}
+
+void BrineomaticController::handleMotorTemperatureCallback(const char* topic, const char* payload, int retain, int qos, bool dup)
+{
+  float temp = atof(payload);
+
+  // convert from obvious kelvins
+  if (temp > 200)
+    temp -= -273.15;
+  // convert from obvious fahrenheit
+  else if (temp > 100)
+    temp = (temp * 9 / 5) + 32;
+
+  wm.setMotorTemperature(temp);
 }
 
 void BrineomaticController::handleTankLevelCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup)
