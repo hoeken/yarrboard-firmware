@@ -57,6 +57,7 @@ class BrineomaticController : public BaseController
     void haGenerateBrineFlowrateDiscovery(JsonVariant doc);
     void haGenerateTotalFlowrateDiscovery(JsonVariant doc);
     void haGenerateTankLevelDiscovery(JsonVariant doc);
+    void haGenerateBatteryLevelDiscovery(JsonVariant doc);
     void haGenerateVolumeDiscovery(JsonVariant doc);
     void haGenerateFlushVolumeDiscovery(JsonVariant doc);
     void haGenerateHighPressurePumpDiscovery(JsonVariant doc);
@@ -109,6 +110,7 @@ class BrineomaticController : public BaseController
     char ha_topic_brine_flowrate[128];
     char ha_topic_total_flowrate[128];
     char ha_topic_tank_level[128];
+    char ha_topic_battery_level[128];
     char ha_topic_volume[128];
     char ha_topic_flush_volume[128];
     char ha_topic_high_pressure_pump_on[128];

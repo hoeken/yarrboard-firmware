@@ -76,6 +76,7 @@ void Brineomatic::init()
   coolingFanOnState = false;
 
   currentTankLevel = -1;
+  currentBatteryLevel = -1;
   currentWaterTemperature = 25.0;
   currentMotorTemperature = 0.0;
   currentProductFlowrate = 0.0;
@@ -881,6 +882,11 @@ void Brineomatic::setTankLevel(float level)
   currentTankLevel = level;
 }
 
+void Brineomatic::setBatteryLevel(float level)
+{
+  currentBatteryLevel = level;
+}
+
 void Brineomatic::setMotorTemperature(float temp)
 {
   currentMotorTemperature = temp;
@@ -919,6 +925,11 @@ float Brineomatic::getTankLevel()
 float Brineomatic::getTankCapacity()
 {
   return tankCapacity;
+}
+
+float Brineomatic::getBatteryLevel()
+{
+  return currentBatteryLevel;
 }
 
 const char* Brineomatic::getTemperatureUnits()
@@ -1267,6 +1278,10 @@ void Brineomatic::runStateMachine()
       currentVolume = 0;
       currentFlushVolume = 0;
 
+      // error out early for low battery
+      if (checkBatteryLevel(runResult))
+        return;
+
       if (initializeHardware()) {
         currentStatus = Status::IDLE;
         return;
@@ -1281,6 +1296,9 @@ void Brineomatic::runStateMachine()
         if (hasFilterPressureSensor && enableFilterPressureLowCheck) {
           while (getFilterPressure() < getFilterPressureMinimum()) {
             if (checkStopFlag(runResult))
+              return;
+
+            if (checkBatteryLevel(runResult))
               return;
 
             if (checkFilterPressureLow())
@@ -1316,6 +1334,9 @@ void Brineomatic::runStateMachine()
 
       uint32_t productionStart = millis();
       while (true) {
+        if (checkBatteryLevel(runResult))
+          return;
+
         if (checkDiverterValveClosed())
           return;
 
@@ -1540,6 +1561,10 @@ void Brineomatic::runStateMachine()
 
       pickleStart = millis();
 
+      // error out early for low battery
+      if (checkBatteryLevel(pickleResult))
+        return;
+
       if (initializeHardware()) {
         currentStatus = Status::IDLE;
         return;
@@ -1590,6 +1615,10 @@ void Brineomatic::runStateMachine()
       resetErrorTimers();
 
       depickleStart = millis();
+
+      // error out early for low battery
+      if (checkBatteryLevel(depickleResult))
+        return;
 
       if (initializeHardware()) {
         currentStatus = Status::IDLE;
@@ -2044,6 +2073,21 @@ bool Brineomatic::checkTankLevel()
   return currentTankLevel >= tankLevelFull;
 }
 
+bool Brineomatic::checkBatteryLevel(Result& result)
+{
+  // bail if we arent using battery level.
+  if (currentBatteryLevel < 0)
+    return false;
+
+  if (currentBatteryLevel <= batteryLevelLow) {
+    currentStatus = Status::STOPPING;
+    result = Result::ERR_BATTERY_LEVEL;
+    return true;
+  }
+
+  return false;
+}
+
 void Brineomatic::generateUpdateJSON(JsonVariant output)
 {
   output["brineomatic"] = true;
@@ -2064,6 +2108,7 @@ void Brineomatic::generateUpdateJSON(JsonVariant output)
   output["filter_pressure"] = getFilterPressure();
   output["membrane_pressure"] = getMembranePressure();
   output["tank_level"] = getTankLevel();
+  output["battery_level"] = getBatteryLevel();
 
   if (hasBoostPump())
     output["boost_pump_on"] = isBoostPumpOn();
