@@ -99,8 +99,14 @@ bool BrineomaticController::loadConfigHook(JsonVariant config, char* error, size
 
     if (_cfg.app_enable_mqtt) {
       MQTTController* mqtt = (MQTTController*)_app.getController("mqtt");
+      String type;
 
-      String type = bom["battery_level_sensor_type"];
+      type = bom["tank_level_sensor_type"].as<String>();
+      if (type.equals("MQTT")) {
+        mqtt->onTopic(bom["tank_level_mqtt_path"], 0, &BrineomaticController::handleTankLevelCallbackStatic);
+      }
+
+      type = bom["battery_level_sensor_type"].as<String>();
       if (type.equals("MQTT")) {
         mqtt->onTopic(bom["battery_level_mqtt_path"], 0, &BrineomaticController::handleBatteryLevelCallbackStatic);
       }
@@ -749,6 +755,23 @@ void BrineomaticController::handleHACommandCallback(const char* topic, const cha
     wm.start();
   else
     wm.stop();
+}
+
+void BrineomaticController::handleTankLevelCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup)
+{
+  if (_instance) {
+    _instance->handleTankLevelCallback(topic, payload, retain, qos, dup);
+  }
+}
+
+void BrineomaticController::handleTankLevelCallback(const char* topic, const char* payload, int retain, int qos, bool dup)
+{
+  float level = atof(payload);
+
+  if (level >= 0.0 && level <= 1.0)
+    wm.setTankLevel(level);
+  else if (level > 1.0 && level <= 100.0)
+    wm.setTankLevel(level / 100.0);
 }
 
 void BrineomaticController::handleBatteryLevelCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup)

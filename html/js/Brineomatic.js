@@ -2721,9 +2721,18 @@
           <select id="tank_level_sensor_type" class="form-select" aria-label="Tank Level Sensor">
             <option value="NONE">None</option>
             <option value="EXTERNAL">External (via NodeRED or API)</option>
+            <option value="MQTT">MQTT</option>
           </select>
           <label for="tank_level_sensor_type">Tank Level Sensor</label>
           <div class="invalid-feedback"></div>
+      </div>
+
+      <div id="tank_level_mqtt_path_form">
+        <div class="form-floating mb-3">
+          <input type="text" id="tank_level_mqtt_path" class="form-control" maxlength="255" placeholder="MQTT Path">
+          <label for="tank_level_mqtt_path">Tank Level MQTT Path</label>
+          <div class="invalid-feedback"></div>
+        </div>
       </div>
 
       <div id="tank_capacity_form">
@@ -3299,6 +3308,7 @@
     $("#water_temperature_sensor_type").val(data.water_temperature_sensor_type);
 
     $("#tank_level_sensor_type").val(data.tank_level_sensor_type);
+    $("#tank_level_mqtt_path").val(data.tank_level_mqtt_path);
     $("#tank_capacity").val(this.formatReadable(YB.bom.convertVolume(data.tank_capacity, "liters", YB.App.config.brineomatic.volume_units)));
 
     $("#battery_level_sensor_type").val(data.battery_level_sensor_type);
@@ -4026,6 +4036,7 @@
   Brineomatic.prototype.updateTankVisibility = function (tank_level_sensor_type) {
     $("#startRunAutomaticDialog").toggle(tank_level_sensor_type !== "NONE");
     $("#tank_capacity_form").toggle(tank_level_sensor_type !== "NONE");
+    $("#tank_level_mqtt_path_form").toggle(tank_level_sensor_type === "MQTT");
   }
 
   Brineomatic.prototype.updateBatteryLevelVisibility = function (battery_level_sensor_type) {
@@ -4133,6 +4144,7 @@
     data.water_temperature_sensor_type = $("#water_temperature_sensor_type").val();
 
     data.tank_level_sensor_type = $("#tank_level_sensor_type").val();
+    data.tank_level_mqtt_path = $("#tank_level_mqtt_path").val();
     data.tank_capacity = YB.bom.convertVolume(parseFloat($("#tank_capacity").val()), YB.App.config.brineomatic.volume_units, "liters");
 
     data.battery_level_sensor_type = $("#battery_level_sensor_type").val();
@@ -4607,7 +4619,11 @@
 
       tank_level_sensor_type: {
         presence: true,
-        inclusion: ["NONE", "EXTERNAL"]
+        inclusion: ["NONE", "EXTERNAL", "MQTT"]
+      },
+
+      tank_level_mqtt_path: {
+        length: { maximum: 255 }
       },
 
       tank_capacity: {

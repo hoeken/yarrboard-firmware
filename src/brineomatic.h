@@ -101,7 +101,7 @@ class Brineomatic
     static constexpr const char* COOLING_FAN_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
     static constexpr const char* MOTOR_TEMPERATURE_TYPES[] = {"NONE", "EXTERNAL", "DS18B20"};
     static constexpr const char* WATER_TEMPERATURE_TYPES[] = {"NONE", "EXTERNAL", "DS18B20"};
-    static constexpr const char* TANK_LEVEL_SENSOR_TYPES[] = {"NONE", "EXTERNAL"};
+    static constexpr const char* TANK_LEVEL_SENSOR_TYPES[] = {"NONE", "EXTERNAL", "MQTT"};
     static constexpr const char* BATTERY_LEVEL_SENSOR_TYPES[] = {"NONE", "EXTERNAL", "MQTT"};
 
     bool isPickled;
@@ -439,6 +439,7 @@ class Brineomatic
     String motorTemperatureSensorType = YB_MOTOR_TEMPERATURE_SENSOR_TYPE;
     String waterTemperatureSensorType = YB_WATER_TEMPERATURE_SENSOR_TYPE;
     String tankLevelSensorType = YB_TANK_LEVEL_SENSOR_TYPE;
+    String tankLevelMqttPath = YB_TANK_LEVEL_MQTT_PATH;
     String batteryLevelSensorType = YB_BATTERY_LEVEL_SENSOR_TYPE;
     String batteryLevelMqttPath = YB_BATTERY_LEVEL_MQTT_PATH;
 
