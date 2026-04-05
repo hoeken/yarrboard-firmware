@@ -76,6 +76,12 @@ class BrineomaticController : public BaseController
     static void handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
     void handleHACommandCallback(const char* topic, const char* payload, int retain, int qos, bool dup);
 
+    static void handleMotorTemperatureCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
+    void handleMotorTemperatureCallback(const char* topic, const char* payload, int retain, int qos, bool dup);
+
+    static void handleWaterTemperatureCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
+    void handleWaterTemperatureCallback(const char* topic, const char* payload, int retain, int qos, bool dup);
+
     static void handleTankLevelCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
     void handleTankLevelCallback(const char* topic, const char* payload, int retain, int qos, bool dup);
 

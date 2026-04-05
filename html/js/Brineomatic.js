@@ -2270,9 +2270,18 @@
             <option value="NONE">None</option>
             <option value="EXTERNAL">External (via NodeRED or API)</option>
             <option value="DS18B20">DS18B20 (directly connected)</option>
+            <option value="MQTT">MQTT</option>
           </select>
           <label for="motor_temperature_sensor_type">Motor Temperature Sensor</label>
           <div class="invalid-feedback"></div>
+      </div>
+
+      <div id="motor_temperature_mqtt_path_form">
+        <div class="form-floating mb-3">
+          <input type="text" id="motor_temperature_mqtt_path" class="form-control" maxlength="255" placeholder="MQTT Path">
+          <label for="motor_temperature_mqtt_path">Motor Temperature MQTT Path</label>
+          <div class="invalid-feedback"></div>
+        </div>
       </div>
     `;
 
@@ -2284,9 +2293,18 @@
             <option value="NONE">None</option>
             <option value="EXTERNAL">External (via NodeRED or API)</option>
             <option value="DS18B20">DS18B20 (directly connected)</option>
+            <option value="MQTT">MQTT</option>
           </select>
           <label for="water_temperature_sensor_type">Water Temperature Sensor</label>
           <div class="invalid-feedback"></div>
+      </div>
+
+      <div id="water_temperature_mqtt_path_form">
+        <div class="form-floating mb-3">
+          <input type="text" id="water_temperature_mqtt_path" class="form-control" maxlength="255" placeholder="MQTT Path">
+          <label for="water_temperature_mqtt_path">Water Temperature MQTT Path</label>
+          <div class="invalid-feedback"></div>
+        </div>
       </div>
     `;
 
@@ -3305,7 +3323,9 @@
     $("#brine_flowmeter_ppl").val(this.formatReadable(YB.bom.convertPulsesPerVolume(data.brine_flowmeter_ppl, "lph", YB.App.config.brineomatic.flowrate_units)));
 
     $("#motor_temperature_sensor_type").val(data.motor_temperature_sensor_type);
+    $("#motor_temperature_mqtt_path").val(data.motor_temperature_mqtt_path);
     $("#water_temperature_sensor_type").val(data.water_temperature_sensor_type);
+    $("#water_temperature_mqtt_path").val(data.water_temperature_mqtt_path);
 
     $("#tank_level_sensor_type").val(data.tank_level_sensor_type);
     $("#tank_level_mqtt_path").val(data.tank_level_mqtt_path);
@@ -4020,9 +4040,11 @@
 
   Brineomatic.prototype.updateMotorTemperatureVisibility = function (type) {
     $("#enable_motor_temperature_check").prop("disabled", type == "NONE");
+    $("#motor_temperature_mqtt_path_form").toggle(type === "MQTT");
   }
 
   Brineomatic.prototype.updateWaterTemperatureVisibility = function (type) {
+    $("#water_temperature_mqtt_path_form").toggle(type === "MQTT");
   }
 
   Brineomatic.prototype.updateDiverterValveClosedCheckVisibility = function (has_product_flow_sensor, has_brine_flow_sensor) {
@@ -4141,7 +4163,9 @@
     data.brine_flowmeter_ppl = Math.round(YB.bom.convertPulsesPerVolume(parseInt($("#brine_flowmeter_ppl").val()), YB.App.config.brineomatic.flowrate_units, "lph"));
 
     data.motor_temperature_sensor_type = $("#motor_temperature_sensor_type").val();
+    data.motor_temperature_mqtt_path = $("#motor_temperature_mqtt_path").val();
     data.water_temperature_sensor_type = $("#water_temperature_sensor_type").val();
+    data.water_temperature_mqtt_path = $("#water_temperature_mqtt_path").val();
 
     data.tank_level_sensor_type = $("#tank_level_sensor_type").val();
     data.tank_level_mqtt_path = $("#tank_level_mqtt_path").val();
@@ -4609,12 +4633,20 @@
 
       motor_temperature_sensor_type: {
         presence: true,
-        inclusion: ["NONE", "EXTERNAL", "DS18B20"]
+        inclusion: ["NONE", "EXTERNAL", "DS18B20", "MQTT"]
+      },
+
+      motor_temperature_mqtt_path: {
+        length: { maximum: 255 }
       },
 
       water_temperature_sensor_type: {
         presence: true,
-        inclusion: ["NONE", "EXTERNAL", "DS18B20"]
+        inclusion: ["NONE", "EXTERNAL", "DS18B20", "MQTT"]
+      },
+
+      water_temperature_mqtt_path: {
+        length: { maximum: 255 }
       },
 
       tank_level_sensor_type: {

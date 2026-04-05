@@ -2247,7 +2247,9 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["brine_flowmeter_ppl"] = this->brineFlowmeterPPL;
 
   bom["motor_temperature_sensor_type"] = this->motorTemperatureSensorType;
+  bom["motor_temperature_mqtt_path"] = this->motorTemperatureMqttPath;
   bom["water_temperature_sensor_type"] = this->waterTemperatureSensorType;
+  bom["water_temperature_mqtt_path"] = this->waterTemperatureMqttPath;
   bom["tank_level_sensor_type"] = this->tankLevelSensorType;
   bom["tank_level_mqtt_path"] = this->tankLevelMqttPath;
   bom["battery_level_sensor_type"] = this->batteryLevelSensorType;
@@ -2886,9 +2888,27 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
     }
   }
 
+  if (config["motor_temperature_mqtt_path"]) {
+    const char* path = config["motor_temperature_mqtt_path"];
+    if (strlen(path) > 255) {
+      snprintf(error, err_size, "motor_temperature_mqtt_path must be 255 characters or fewer");
+      config.remove("motor_temperature_mqtt_path");
+      ok = false;
+    }
+  }
+
   if (config["water_temperature_sensor_type"]) {
     if (!checkInclusion(config, "water_temperature_sensor_type", WATER_TEMPERATURE_TYPES, error, err_size)) {
       config.remove("water_temperature_sensor_type");
+      ok = false;
+    }
+  }
+
+  if (config["water_temperature_mqtt_path"]) {
+    const char* path = config["water_temperature_mqtt_path"];
+    if (strlen(path) > 255) {
+      snprintf(error, err_size, "water_temperature_mqtt_path must be 255 characters or fewer");
+      config.remove("water_temperature_mqtt_path");
       ok = false;
     }
   }
@@ -3393,7 +3413,9 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
   this->brineFlowmeterPPL = config["brine_flowmeter_ppl"] | YB_BRINE_FLOWMETER_PPL;
 
   this->motorTemperatureSensorType = config["motor_temperature_sensor_type"] | YB_MOTOR_TEMPERATURE_SENSOR_TYPE;
+  this->motorTemperatureMqttPath = config["motor_temperature_mqtt_path"] | YB_MOTOR_TEMPERATURE_MQTT_PATH;
   this->waterTemperatureSensorType = config["water_temperature_sensor_type"] | YB_WATER_TEMPERATURE_SENSOR_TYPE;
+  this->waterTemperatureMqttPath = config["water_temperature_mqtt_path"] | YB_WATER_TEMPERATURE_MQTT_PATH;
 
   this->tankLevelSensorType = config["tank_level_sensor_type"] | YB_TANK_LEVEL_SENSOR_TYPE;
   this->tankLevelMqttPath = config["tank_level_mqtt_path"] | YB_TANK_LEVEL_MQTT_PATH;
