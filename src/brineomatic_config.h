@@ -446,6 +446,15 @@
   #define YB_FLUSH_VALVE_OFF_DELAY (15 * 1000)
 #endif
 
+#ifndef YB_ENABLE_BATTERY_LEVEL_LOW_CHECK
+  #define YB_ENABLE_BATTERY_LEVEL_LOW_CHECK true
+#endif
+
+#ifndef YB_BATTERY_LEVEL_LOW_THRESHOLD
+  // 0 = empty, 1 = full
+  #define YB_BATTERY_LEVEL_LOW_THRESHOLD 0.35
+#endif
+
 #ifndef YB_FLUSH_TIMEOUT
   #define YB_FLUSH_TIMEOUT (5 * 60 * 1000)
 #endif

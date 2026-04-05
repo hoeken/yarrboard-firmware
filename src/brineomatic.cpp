@@ -2084,10 +2084,10 @@ bool Brineomatic::checkBatteryLevel(Result& result)
   if (batteryLevelSensorType.equals("NONE"))
     return false;
 
-  if (currentBatteryLevel < 0)
+  if (!enableBatteryLevelLowCheck)
     return false;
 
-  if (currentBatteryLevel <= batteryLevelLow) {
+  if (currentBatteryLevel <= batteryLevelLowThreshold) {
     currentStatus = Status::STOPPING;
     result = Result::ERR_BATTERY_LEVEL;
     return true;
@@ -2305,6 +2305,9 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["enable_flush_valve_off_check"] = this->enableFlushValveOffCheck;
   bom["flush_valve_off_threshold"] = this->flushValveOffThreshold;
   bom["flush_valve_off_delay"] = this->flushValveOffDelay;
+
+  bom["enable_battery_level_low_check"] = this->enableBatteryLevelLowCheck;
+  bom["battery_level_low_threshold"] = this->batteryLevelLowThreshold;
 }
 
 bool Brineomatic::validateConfigJSON(JsonVariant config, char* error, size_t err_size)
@@ -3262,6 +3265,22 @@ bool Brineomatic::validateSafeguardsConfigJSON(JsonVariant config,
     }
   }
 
+  // enable_battery_level_low_check
+  if (config["enable_battery_level_low_check"]) {
+    if (!checkIsBool(config, "enable_battery_level_low_check", error, err_size)) {
+      config.remove("enable_battery_level_low_check");
+      ok = false;
+    }
+  }
+
+  if (config["battery_level_low_threshold"]) {
+    if (!checkIsNumber(config, "battery_level_low_threshold", error, err_size) ||
+        !checkNumGT(config, "battery_level_low_threshold", 0.0f, error, err_size)) {
+      config.remove("battery_level_low_threshold");
+      ok = false;
+    }
+  }
+
   return ok;
 }
 
@@ -3427,6 +3446,9 @@ void Brineomatic::loadSafeguardsConfigJSON(JsonVariant config)
   this->enableFlushValveOffCheck = config["enable_flush_valve_off_check"] | YB_ENABLE_FLUSH_VALVE_OFF_CHECK;
   this->flushValveOffThreshold = config["flush_valve_off_threshold"] | YB_FLUSH_VALVE_OFF_THRESHOLD;
   this->flushValveOffDelay = config["flush_valve_off_delay"] | YB_FLUSH_VALVE_OFF_DELAY;
+
+  this->enableBatteryLevelLowCheck = config["enable_battery_level_low_check"] | YB_ENABLE_BATTERY_LEVEL_LOW_CHECK;
+  this->batteryLevelLowThreshold = config["battery_level_low_threshold"] | YB_BATTERY_LEVEL_LOW_THRESHOLD;
 }
 
 void Brineomatic::updateMQTT()

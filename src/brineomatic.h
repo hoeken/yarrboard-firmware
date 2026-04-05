@@ -365,7 +365,6 @@ class Brineomatic
 
     float tankLevelFull = 0.99;            // 0 = empty, 1 = full
     float tankCapacity = YB_TANK_CAPACITY; // Liters
-    float batteryLevelLow = 0.35;          // 0 = empty, 1 = full
 
     String temperatureUnits = YB_TEMPERATURE_UNITS;
     String pressureUnits = YB_PRESSURE_UNITS;
@@ -502,6 +501,9 @@ class Brineomatic
     bool enableFlushValveOffCheck = YB_ENABLE_FLUSH_VALVE_OFF_CHECK;
     float flushValveOffThreshold = YB_FLUSH_VALVE_OFF_THRESHOLD;
     uint32_t flushValveOffDelay = YB_FLUSH_VALVE_OFF_DELAY;
+
+    bool enableBatteryLevelLowCheck = YB_ENABLE_BATTERY_LEVEL_LOW_CHECK;
+    float batteryLevelLowThreshold = YB_BATTERY_LEVEL_LOW_THRESHOLD;
 
     void resetErrorTimers();
 
