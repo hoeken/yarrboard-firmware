@@ -96,6 +96,15 @@ bool BrineomaticController::loadConfigHook(JsonVariant config, char* error, size
     wm.loadGeneralConfigJSON(bom);
     wm.loadHardwareConfigJSON(bom);
     wm.loadSafeguardsConfigJSON(bom);
+
+    if (_cfg.app_enable_mqtt) {
+      MQTTController* mqtt = (MQTTController*)_app.getController("mqtt");
+
+      String type = bom["battery_level_sensor_type"];
+      if (type.equals("MQTT")) {
+        mqtt->onTopic(bom["battery_level_mqtt_path"], 0, &BrineomaticController::handleBatteryLevelCallbackStatic);
+      }
+    }
   }
 
   return result;
@@ -740,6 +749,23 @@ void BrineomaticController::handleHACommandCallback(const char* topic, const cha
     wm.start();
   else
     wm.stop();
+}
+
+void BrineomaticController::handleBatteryLevelCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup)
+{
+  if (_instance) {
+    _instance->handleBatteryLevelCallback(topic, payload, retain, qos, dup);
+  }
+}
+
+void BrineomaticController::handleBatteryLevelCallback(const char* topic, const char* payload, int retain, int qos, bool dup)
+{
+  float level = atof(payload);
+
+  if (level >= 0.0 && level <= 1.0)
+    wm.setBatteryLevel(level);
+  else if (level > 1.0 && level <= 100.0)
+    wm.setBatteryLevel(level / 100.0);
 }
 
 void BrineomaticController::generateStatsHook(JsonVariant output)

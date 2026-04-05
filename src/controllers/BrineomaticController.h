@@ -76,6 +76,9 @@ class BrineomaticController : public BaseController
     static void handleHACommandCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
     void handleHACommandCallback(const char* topic, const char* payload, int retain, int qos, bool dup);
 
+    static void handleBatteryLevelCallbackStatic(const char* topic, const char* payload, int retain, int qos, bool dup);
+    void handleBatteryLevelCallback(const char* topic, const char* payload, int retain, int qos, bool dup);
+
     void handleStartWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
     void handleFlushWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
     void handlePickleWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);

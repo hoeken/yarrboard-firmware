@@ -2743,9 +2743,18 @@
           <select id="battery_level_sensor_type" class="form-select" aria-label="Battery Level Sensor">
             <option value="NONE">None</option>
             <option value="EXTERNAL">External (via NodeRED or API)</option>
+            <option value="MQTT">MQTT</option>
           </select>
           <label for="battery_level_sensor_type">Battery Level Sensor</label>
           <div class="invalid-feedback"></div>
+      </div>
+
+      <div id="battery_level_mqtt_path_form">
+        <div class="form-floating mb-3">
+          <input type="text" id="battery_level_mqtt_path" class="form-control" maxlength="255" placeholder="MQTT Path">
+          <label for="battery_level_mqtt_path">Battery Level MQTT Path</label>
+          <div class="invalid-feedback"></div>
+        </div>
       </div>
 
       <div class="text-center mb-3">
@@ -3293,6 +3302,7 @@
     $("#tank_capacity").val(this.formatReadable(YB.bom.convertVolume(data.tank_capacity, "liters", YB.App.config.brineomatic.volume_units)));
 
     $("#battery_level_sensor_type").val(data.battery_level_sensor_type);
+    $("#battery_level_mqtt_path").val(data.battery_level_mqtt_path);
 
     $("#flush_timeout").val(data.flush_timeout / (1000));
     $("#membrane_pressure_timeout").val(data.membrane_pressure_timeout / (1000));
@@ -3394,7 +3404,7 @@
     this.updateDiverterValveClosedCheckVisibility(data.has_product_flow_sensor, data.has_brine_flow_sensor);
     this.updateFlushValveClosedCheckVisibility(data.has_filter_pressure_sensor, data.has_brine_flow_sensor);
     this.updateTankVisibility(data.tank_level_sensor_type);
-    this.updateBatteryLevelLowCheckVisibility(data.battery_level_sensor_type);
+    this.updateBatteryLevelVisibility(data.battery_level_sensor_type);
 
     this.updateSafeguardChecks();
 
@@ -3608,7 +3618,7 @@
     });
 
     $("#battery_level_sensor_type").on("change", (e) => {
-      YB.bom.updateBatteryLevelLowCheckVisibility(e.target.value);
+      YB.bom.updateBatteryLevelVisibility(e.target.value);
       YB.bom.updateSafeguardChecks();
     });
 
@@ -4018,8 +4028,9 @@
     $("#tank_capacity_form").toggle(tank_level_sensor_type !== "NONE");
   }
 
-  Brineomatic.prototype.updateBatteryLevelLowCheckVisibility = function (battery_level_sensor_type) {
+  Brineomatic.prototype.updateBatteryLevelVisibility = function (battery_level_sensor_type) {
     $("#enable_battery_level_low_check").prop("disabled", battery_level_sensor_type === "NONE");
+    $("#battery_level_mqtt_path_form").toggle(battery_level_sensor_type === "MQTT");
   }
 
   Brineomatic.prototype.getBrineomaticConfigFormData = function () {
@@ -4125,6 +4136,7 @@
     data.tank_capacity = YB.bom.convertVolume(parseFloat($("#tank_capacity").val()), YB.App.config.brineomatic.volume_units, "liters");
 
     data.battery_level_sensor_type = $("#battery_level_sensor_type").val();
+    data.battery_level_mqtt_path = $("#battery_level_mqtt_path").val();
 
     return data;
   };
@@ -4607,7 +4619,11 @@
 
       battery_level_sensor_type: {
         presence: true,
-        inclusion: ["NONE", "EXTERNAL"]
+        inclusion: ["NONE", "EXTERNAL", "MQTT"]
+      },
+
+      battery_level_mqtt_path: {
+        length: { maximum: 255 }
       }
     };
   }
