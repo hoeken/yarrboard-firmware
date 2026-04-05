@@ -101,13 +101,15 @@ html[data-bs-theme="dark"] .c3 .c3-axis text {
 .filterPressureError,
 .membranePressureError,
 .motorTemperatureError,
-.tankLevelError {
+.tankLevelError,
+.batteryLevelError {
     display: none;
 }
 
 .filterPressureError>.d-flex,
 .membranePressureError>.d-flex,
 .motorTemperatureError>.d-flex,
-.tankLevelError>.d-flex {
+.tankLevelError>.d-flex,
+.batteryLevelError>.d-flex {
     height: 100px;
 }
