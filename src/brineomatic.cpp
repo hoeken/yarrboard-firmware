@@ -3293,12 +3293,6 @@ void Brineomatic::loadConfigJSON(JsonVariant config)
 
 void Brineomatic::loadGeneralConfigJSON(JsonVariant config)
 {
-  this->autoflushMode = config["autoflush_mode"] | YB_AUTOFLUSH_MODE;
-  this->autoflushSalinity = config["autoflush_salinity"] | YB_AUTOFLUSH_SALINITY;
-  this->autoflushDuration = config["autoflush_duration"] | YB_AUTOFLUSH_DURATION;
-  this->autoflushVolume = config["autoflush_volume"] | YB_AUTOFLUSH_VOLUME;
-  this->autoflushInterval = config["autoflush_interval"] | YB_AUTOFLUSH_INTERVAL;
-  this->autoflushUseHighPressureMotor = config["autoflush_use_high_pressure_motor"] | YB_AUTOFLUSH_USE_HIGH_PRESSURE_MOTOR;
   this->temperatureUnits = config["temperature_units"] | YB_TEMPERATURE_UNITS;
   this->pressureUnits = config["pressure_units"] | YB_PRESSURE_UNITS;
   this->volumeUnits = config["volume_units"] | YB_VOLUME_UNITS;
@@ -3344,6 +3338,13 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
   this->flushValveControl = config["flush_valve_control"] | YB_FLUSH_VALVE_CONTROL;
   this->flushValveRelayId = config["flush_valve_relay_id"] | YB_FLUSH_VALVE_RELAY_ID;
   this->flushValveRelayInverted = config["flush_valve_relay_inverted"] | YB_FLUSH_VALVE_RELAY_INVERTED;
+
+  this->autoflushMode = config["autoflush_mode"] | YB_AUTOFLUSH_MODE;
+  this->autoflushSalinity = config["autoflush_salinity"] | YB_AUTOFLUSH_SALINITY;
+  this->autoflushDuration = config["autoflush_duration"] | YB_AUTOFLUSH_DURATION;
+  this->autoflushVolume = config["autoflush_volume"] | YB_AUTOFLUSH_VOLUME;
+  this->autoflushInterval = config["autoflush_interval"] | YB_AUTOFLUSH_INTERVAL;
+  this->autoflushUseHighPressureMotor = config["autoflush_use_high_pressure_motor"] | YB_AUTOFLUSH_USE_HIGH_PRESSURE_MOTOR;
 
   this->coolingFanControl = config["cooling_fan_control"] | YB_COOLING_FAN_CONTROL;
   this->coolingFanRelayId = config["cooling_fan_relay_id"] | YB_COOLING_FAN_RELAY_ID;
