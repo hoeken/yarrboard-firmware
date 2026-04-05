@@ -513,7 +513,7 @@
     });
 
     this.batteryLevelGauge = c3.generate({
-      bindto: '#batterytLevelGauge',
+      bindto: '#batteryLevelGauge',
       data: {
         columns: [
           ['Battery Level', 0]
@@ -749,7 +749,7 @@
         this.brineFlowrateGauge.load({ columns: [['Brine Flowrate', brine_flowrate]] });
         this.totalFlowrateGauge.load({ columns: [['Total Flowrate', total_flowrate]] });
         this.tankLevelGauge.load({ columns: [['Tank Level', tank_level]] });
-        this.batteryLevelGauge.load({ columns: [['Battery Level', tank_level]] });
+        this.batteryLevelGauge.load({ columns: [['Battery Level', battery_level]] });
       }
     } else {
       $("#filterPressureData").html(filter_pressure);
@@ -3154,6 +3154,24 @@
         </div>
       </div>
 
+      <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="enable_battery_level_low_check">
+          <label class="form-check-label" for="enable_battery_level_low_check">
+              Battery Level Low
+          </label>
+          <div class="invalid-feedback"></div>
+      </div>
+
+      <div id="enable_battery_level_low_check_form" class="row">
+        <div class="col-12 col-md-6">
+          <div class="input-group has-validation mb-3">
+            <input type="text" class="form-control text-end" id="battery_level_low_threshold">
+            <span class="input-group-text">%</span>
+            <div class="invalid-feedback"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="text-center">
           <button id="saveSafeguardsSettings" type="button" class="btn btn-primary">
               Save Safeguard Settings
@@ -3348,6 +3366,9 @@
     $("#enable_flush_valve_off_check").prop('checked', data.enable_flush_valve_off_check);
     $("#flush_valve_off_threshold").val(data.flush_valve_off_threshold);
     $("#flush_valve_off_delay").val(data.flush_valve_off_delay);
+
+    $("#enable_battery_level_low_check").prop('checked', data.enable_battery_level_low_check);
+    $("#battery_level_low_threshold").val(this.formatReadable(data.battery_level_low_threshold * 100));
   }
 
   Brineomatic.prototype.updateHardwareUIConfig = function (data) {
@@ -3371,6 +3392,7 @@
 
     this.updateDiverterValveClosedCheckVisibility(data.has_product_flow_sensor, data.has_brine_flow_sensor);
     this.updateFlushValveClosedCheckVisibility(data.has_filter_pressure_sensor, data.has_brine_flow_sensor);
+    this.updateBatteryLevelLowCheckVisibility(data.battery_level_sensor_type);
 
     this.updateSafeguardChecks();
 
@@ -3583,6 +3605,7 @@
     });
 
     $("#battery_level_sensor_type").on("change", (e) => {
+      YB.bom.updateBatteryLevelLowCheckVisibility(e.target.value);
       YB.bom.updateSafeguardChecks();
     });
 
@@ -3986,6 +4009,10 @@
     $("#enable_flush_valve_off_check").prop("disabled", !(has_filter_pressure_sensor || has_brine_flow_sensor));
   }
 
+  Brineomatic.prototype.updateBatteryLevelLowCheckVisibility = function (battery_level_sensor_type) {
+    $("#enable_battery_level_low_check").prop("disabled", battery_level_sensor_type === "NONE");
+  }
+
   Brineomatic.prototype.getBrineomaticConfigFormData = function () {
     const data = {};
 
@@ -4161,6 +4188,9 @@
     data.enable_flush_valve_off_check = $("#enable_flush_valve_off_check").prop("checked");
     data.flush_valve_off_threshold = parseFloat($("#flush_valve_off_threshold").val());
     data.flush_valve_off_delay = parseInt($("#flush_valve_off_delay").val());
+
+    data.enable_battery_level_low_check = $("#enable_battery_level_low_check").prop("checked");
+    data.battery_level_low_threshold = parseFloat($("#battery_level_low_threshold").val()) / 100;
 
     return data;
   };
@@ -4664,7 +4694,10 @@
 
       enable_flush_valve_off_check: { inclusion: [true, false] },
       flush_valve_off_threshold: { numericality: { greaterThan: 0 } },
-      flush_valve_off_delay: { numericality: { greaterThanOrEqualTo: 0 } }
+      flush_valve_off_delay: { numericality: { greaterThanOrEqualTo: 0 } },
+
+      enable_battery_level_low_check: { inclusion: [true, false] },
+      battery_level_low_threshold: { numericality: { greaterThan: 0, lessThanOrEqualTo: 100 } }
     };
   }
 
