@@ -863,8 +863,10 @@ void BrineomaticController::handleSetWatermaker(JsonVariantConst input, JsonVari
   if (input["tank_level"].is<float>()) {
     float level = input["tank_level"];
 
-    if (level < 0.0 || level > 1.0)
-      return _app.protocol.generateErrorJSON(output, "Tank level must be between 0.0 and 1.0");
+    if (level < 0.0 || level > 100.0)
+      return _app.protocol.generateErrorJSON(output, "Tank level must be between 0.0 and 100.0");
+    if (level > 1.0)
+      level /= 100.0;
 
     wm.setTankLevel(level);
     return;
@@ -873,8 +875,10 @@ void BrineomaticController::handleSetWatermaker(JsonVariantConst input, JsonVari
   if (input["battery_level"].is<float>()) {
     float level = input["battery_level"];
 
-    if (level < 0.0 || level > 1.0)
-      return _app.protocol.generateErrorJSON(output, "Battery level must be between 0.0 and 1.0");
+    if (level < 0.0 || level > 100.0)
+      return _app.protocol.generateErrorJSON(output, "Battery level must be between 0.0 and 100.0");
+    if (level > 1.0)
+      level /= 100.0;
 
     wm.setBatteryLevel(level);
     return;
