@@ -2070,12 +2070,20 @@ bool Brineomatic::waitForFlushValveOff()
 
 bool Brineomatic::checkTankLevel()
 {
+  if (tankLevelSensorType.equals("NONE"))
+    return false;
+
+  if (currentTankLevel < 0)
+    return false;
+
   return currentTankLevel >= tankLevelFull;
 }
 
 bool Brineomatic::checkBatteryLevel(Result& result)
 {
-  // bail if we arent using battery level.
+  if (batteryLevelSensorType.equals("NONE"))
+    return false;
+
   if (currentBatteryLevel < 0)
     return false;
 
@@ -2240,6 +2248,8 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
 
   bom["motor_temperature_sensor_type"] = this->motorTemperatureSensorType;
   bom["water_temperature_sensor_type"] = this->waterTemperatureSensorType;
+  bom["tank_level_sensor_type"] = this->tankLevelSensorType;
+  bom["battery_level_sensor_type"] = this->batteryLevelSensorType;
 
   bom["enable_membrane_pressure_high_check"] = this->enableMembranePressureHighCheck;
   bom["membrane_pressure_high_threshold"] = this->membranePressureHighThreshold;
@@ -2878,6 +2888,20 @@ bool Brineomatic::validateHardwareConfigJSON(JsonVariant config,
     }
   }
 
+  if (config["tank_level_sensor_type"]) {
+    if (!checkInclusion(config, "tank_level_sensor_type", TANK_LEVEL_SENSOR_TYPES, error, err_size)) {
+      config.remove("tank_level_sensor_type");
+      ok = false;
+    }
+  }
+
+  if (config["battery_level_sensor_type"]) {
+    if (!checkInclusion(config, "battery_level_sensor_type", BATTERY_LEVEL_SENSOR_TYPES, error, err_size)) {
+      config.remove("battery_level_sensor_type");
+      ok = false;
+    }
+  }
+
   return ok;
 }
 
@@ -3331,6 +3355,8 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
 
   this->motorTemperatureSensorType = config["motor_temperature_sensor_type"] | YB_MOTOR_TEMPERATURE_SENSOR_TYPE;
   this->waterTemperatureSensorType = config["water_temperature_sensor_type"] | YB_WATER_TEMPERATURE_SENSOR_TYPE;
+  this->tankLevelSensorType = config["tank_level_sensor_type"] | YB_TANK_LEVEL_SENSOR_TYPE;
+  this->batteryLevelSensorType = config["battery_level_sensor_type"] | YB_BATTERY_LEVEL_SENSOR_TYPE;
 
   // smart backup of the old boolean style
   if (this->motorTemperatureSensorType.equals("NONE") && config["has_motor_temperature_sensor"])

@@ -101,6 +101,8 @@ class Brineomatic
     static constexpr const char* COOLING_FAN_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
     static constexpr const char* MOTOR_TEMPERATURE_TYPES[] = {"NONE", "EXTERNAL", "DS18B20"};
     static constexpr const char* WATER_TEMPERATURE_TYPES[] = {"NONE", "EXTERNAL", "DS18B20"};
+    static constexpr const char* TANK_LEVEL_SENSOR_TYPES[] = {"NONE", "EXTERNAL"};
+    static constexpr const char* BATTERY_LEVEL_SENSOR_TYPES[] = {"NONE", "EXTERNAL"};
 
     bool isPickled;
     int64_t pickledOnTimestamp = 0;
@@ -437,6 +439,8 @@ class Brineomatic
 
     String motorTemperatureSensorType = YB_MOTOR_TEMPERATURE_SENSOR_TYPE;
     String waterTemperatureSensorType = YB_WATER_TEMPERATURE_SENSOR_TYPE;
+    String tankLevelSensorType = YB_TANK_LEVEL_SENSOR_TYPE;
+    String batteryLevelSensorType = YB_BATTERY_LEVEL_SENSOR_TYPE;
 
     uint32_t flushTimeout = YB_FLUSH_TIMEOUT;                          // timeout for flush cycle in ms
     uint32_t membranePressureTimeout = YB_MEMBRANE_PRESSURE_TIMEOUT;   // timeout for membrane pressure to stabilize in ms

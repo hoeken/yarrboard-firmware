@@ -1868,7 +1868,7 @@
                   </div>
               </div>
               <div class="batteryLevelUI col-md-3 col-sm-4 col-6">
-                  <h6 class="my-0 text-center">Tank Level</h6>
+                  <h6 class="my-0 text-center">Battery Level</h6>
                   <div class="batteryLevelError">
                     <div class="d-flex align-items-center justify-content-center">
                       <h4 class="text-danger text-center m-0">No Data</h4>
@@ -1969,7 +1969,7 @@
                   </div>
               </div>
               <div class="batteryLevelUI col-md-3 col-sm-4 col-6">
-                  <h6 class="my-0">Tank Level</h6>
+                  <h6 class="my-0"> Battery Level</h6>
                   <div class="batteryLevelError">
                     <div class="d-flex align-items-center justify-content-center">
                       <h4 class="text-danger text-center m-0">No Data</h4>
@@ -2358,6 +2358,28 @@
       </div>
     `;
 
+    let tankLevelSensor = /*html*/ `
+      <div class="form-floating mb-3">
+          <select id="tank_level_sensor_type" class="form-select" aria-label="Tank Level Sensor">
+            <option value="NONE">None</option>
+            <option value="EXTERNAL">External (via NodeRED or API)</option>
+          </select>
+          <label for="tank_level_sensor_type">Tank Level Sensor</label>
+          <div class="invalid-feedback"></div>
+      </div>
+    `;
+
+    let batteryLevelSensor = /*html*/ `
+      <div class="form-floating mb-3">
+          <select id="battery_level_sensor_type" class="form-select" aria-label="Battery Level Sensor">
+            <option value="NONE">None</option>
+            <option value="EXTERNAL">External (via NodeRED or API)</option>
+          </select>
+          <label for="battery_level_sensor_type">Battery Level Sensor</label>
+          <div class="invalid-feedback"></div>
+      </div>
+    `;
+
     return /*html*/ `
       <div id="hardwareSettingsDisabled" class="alert alert-warning" role="alert" style="display: none">
         Hardware configuration disabled. <b>IDLE</b> or <b>MANUAL</b> mode only.
@@ -2725,6 +2747,8 @@
       ${brineTDS}
       ${motorTemperature}
       ${waterTemperature}
+      ${tankLevelSensor}
+      ${batteryLevelSensor}
 
       <div class="text-center mb-3">
           <button id="saveHardwareSettings" type="button" class="btn btn-primary">
@@ -3248,6 +3272,8 @@
 
     $("#motor_temperature_sensor_type").val(data.motor_temperature_sensor_type);
     $("#water_temperature_sensor_type").val(data.water_temperature_sensor_type);
+    $("#tank_level_sensor_type").val(data.tank_level_sensor_type);
+    $("#battery_level_sensor_type").val(data.battery_level_sensor_type);
 
     $("#flush_timeout").val(data.flush_timeout / (1000));
     $("#membrane_pressure_timeout").val(data.membrane_pressure_timeout / (1000));
@@ -3358,6 +3384,8 @@
     $(".totalFlowrateUI").toggle(!!data.has_brine_flow_sensor && !!data.has_product_flow_sensor);
     $(".motorTemperatureUI").toggle(data.motor_temperature_sensor_type != "NONE");
     $(".waterTemperatureUI").toggle(data.water_temperature_sensor_type != "NONE");
+    $(".tankLevelUI").toggle(data.tank_level_sensor_type != "NONE");
+    $(".batteryLevelUI").toggle(data.battery_level_sensor_type != "NONE");
     $(".productVolumeUI").toggle(!!data.has_product_flow_sensor);
     $(".flushVolumeUI").toggle(!!data.has_brine_flow_sensor);
   }
@@ -3547,6 +3575,14 @@
 
     $("#water_temperature_sensor_type").on("change", (e) => {
       YB.bom.updateWaterTemperatureVisibility(e.target.value);
+      YB.bom.updateSafeguardChecks();
+    });
+
+    $("#tank_level_sensor_type").on("change", (e) => {
+      YB.bom.updateSafeguardChecks();
+    });
+
+    $("#battery_level_sensor_type").on("change", (e) => {
       YB.bom.updateSafeguardChecks();
     });
 
@@ -4049,6 +4085,8 @@
 
     data.motor_temperature_sensor_type = $("#motor_temperature_sensor_type").val();
     data.water_temperature_sensor_type = $("#water_temperature_sensor_type").val();
+    data.tank_level_sensor_type = $("#tank_level_sensor_type").val();
+    data.battery_level_sensor_type = $("#battery_level_sensor_type").val();
 
     return data;
   };
@@ -4519,6 +4557,16 @@
       water_temperature_sensor_type: {
         presence: true,
         inclusion: ["NONE", "EXTERNAL", "DS18B20"]
+      },
+
+      tank_level_sensor_type: {
+        presence: true,
+        inclusion: ["NONE", "EXTERNAL"]
+      },
+
+      battery_level_sensor_type: {
+        presence: true,
+        inclusion: ["NONE", "EXTERNAL"]
       }
     };
   }
