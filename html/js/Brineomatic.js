@@ -2093,17 +2093,6 @@
 
       <hr class="bold">
 
-      <div class="mb-3">
-        <div class="input-group has-validation">
-          <span class="input-group-text">Tank Capacity</span>
-          <input id="tank_capacity" type="text" class="form-control text-end">
-          <span class="input-group-text volumeUnitsLong">liters</span>
-          <div class="invalid-feedback"></div>
-        </div>
-      </div>
-
-      <hr class="bold">
-
       <div class="form-floating mb-3">
           <select id="temperature_units" class="form-select" aria-label="Temperature Units">
             <option value="celsius">Celsius</option>
@@ -2354,28 +2343,6 @@
             <option value="DS18B20">DS18B20 (directly connected)</option>
           </select>
           <label for="water_temperature_sensor_type">Water Temperature Sensor</label>
-          <div class="invalid-feedback"></div>
-      </div>
-    `;
-
-    let tankLevelSensor = /*html*/ `
-      <div class="form-floating mb-3">
-          <select id="tank_level_sensor_type" class="form-select" aria-label="Tank Level Sensor">
-            <option value="NONE">None</option>
-            <option value="EXTERNAL">External (via NodeRED or API)</option>
-          </select>
-          <label for="tank_level_sensor_type">Tank Level Sensor</label>
-          <div class="invalid-feedback"></div>
-      </div>
-    `;
-
-    let batteryLevelSensor = /*html*/ `
-      <div class="form-floating mb-3">
-          <select id="battery_level_sensor_type" class="form-select" aria-label="Battery Level Sensor">
-            <option value="NONE">None</option>
-            <option value="EXTERNAL">External (via NodeRED or API)</option>
-          </select>
-          <label for="battery_level_sensor_type">Battery Level Sensor</label>
           <div class="invalid-feedback"></div>
       </div>
     `;
@@ -2747,8 +2714,39 @@
       ${brineTDS}
       ${motorTemperature}
       ${waterTemperature}
-      ${tankLevelSensor}
-      ${batteryLevelSensor}
+
+      <hr class="bold">
+
+      <div class="form-floating mb-3">
+          <select id="tank_level_sensor_type" class="form-select" aria-label="Tank Level Sensor">
+            <option value="NONE">None</option>
+            <option value="EXTERNAL">External (via NodeRED or API)</option>
+          </select>
+          <label for="tank_level_sensor_type">Tank Level Sensor</label>
+          <div class="invalid-feedback"></div>
+      </div>
+
+      <div id="tank_capacity_form">
+        <div class="mb-3">
+          <div class="input-group has-validation">
+            <span class="input-group-text">Tank Capacity</span>
+            <input id="tank_capacity" type="text" class="form-control text-end">
+            <span class="input-group-text volumeUnitsLong">liters</span>
+            <div class="invalid-feedback"></div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="bold">
+
+      <div class="form-floating mb-3">
+          <select id="battery_level_sensor_type" class="form-select" aria-label="Battery Level Sensor">
+            <option value="NONE">None</option>
+            <option value="EXTERNAL">External (via NodeRED or API)</option>
+          </select>
+          <label for="battery_level_sensor_type">Battery Level Sensor</label>
+          <div class="invalid-feedback"></div>
+      </div>
 
       <div class="text-center mb-3">
           <button id="saveHardwareSettings" type="button" class="btn btn-primary">
@@ -3188,7 +3186,6 @@
     $("#autoflush_interval").val(data.autoflush_interval / (60 * 60 * 1000));
     $("#autoflush_use_high_pressure_motor").prop('checked', data.autoflush_use_high_pressure_motor);
 
-    $("#tank_capacity").val(this.formatReadable(YB.bom.convertVolume(data.tank_capacity, "liters", YB.App.config.brineomatic.volume_units)));
     $("#temperature_units").val(data.temperature_units);
     $("#pressure_units").val(data.pressure_units);
     $("#volume_units").val(data.volume_units);
@@ -3290,7 +3287,10 @@
 
     $("#motor_temperature_sensor_type").val(data.motor_temperature_sensor_type);
     $("#water_temperature_sensor_type").val(data.water_temperature_sensor_type);
+
     $("#tank_level_sensor_type").val(data.tank_level_sensor_type);
+    $("#tank_capacity").val(this.formatReadable(YB.bom.convertVolume(data.tank_capacity, "liters", YB.App.config.brineomatic.volume_units)));
+
     $("#battery_level_sensor_type").val(data.battery_level_sensor_type);
 
     $("#flush_timeout").val(data.flush_timeout / (1000));
@@ -3392,6 +3392,7 @@
 
     this.updateDiverterValveClosedCheckVisibility(data.has_product_flow_sensor, data.has_brine_flow_sensor);
     this.updateFlushValveClosedCheckVisibility(data.has_filter_pressure_sensor, data.has_brine_flow_sensor);
+    this.updateTankVisibility(data.tank_level_sensor_type);
     this.updateBatteryLevelLowCheckVisibility(data.battery_level_sensor_type);
 
     this.updateSafeguardChecks();
@@ -3601,6 +3602,7 @@
     });
 
     $("#tank_level_sensor_type").on("change", (e) => {
+      YB.bom.updateTankVisibility(e.target.value);
       YB.bom.updateSafeguardChecks();
     });
 
@@ -4009,6 +4011,11 @@
     $("#enable_flush_valve_off_check").prop("disabled", !(has_filter_pressure_sensor || has_brine_flow_sensor));
   }
 
+  Brineomatic.prototype.updateTankVisibility = function (tank_level_sensor_type) {
+    $("#startRunAutomaticDialog").toggle(tank_level_sensor_type !== "NONE");
+    $("#tank_capacity_form").toggle(tank_level_sensor_type !== "NONE");
+  }
+
   Brineomatic.prototype.updateBatteryLevelLowCheckVisibility = function (battery_level_sensor_type) {
     $("#enable_battery_level_low_check").prop("disabled", battery_level_sensor_type === "NONE");
   }
@@ -4023,7 +4030,6 @@
     data.autoflush_interval = Math.round(parseFloat($("#autoflush_interval").val()) * 60 * 60 * 1000);
     data.autoflush_use_high_pressure_motor = $("#autoflush_use_high_pressure_motor").prop("checked");
 
-    data.tank_capacity = YB.bom.convertVolume(parseFloat($("#tank_capacity").val()), YB.App.config.brineomatic.volume_units, "liters");
     data.temperature_units = $("#temperature_units").val();
     data.pressure_units = $("#pressure_units").val();
     data.volume_units = $("#volume_units").val();
@@ -4112,7 +4118,10 @@
 
     data.motor_temperature_sensor_type = $("#motor_temperature_sensor_type").val();
     data.water_temperature_sensor_type = $("#water_temperature_sensor_type").val();
+
     data.tank_level_sensor_type = $("#tank_level_sensor_type").val();
+    data.tank_capacity = YB.bom.convertVolume(parseFloat($("#tank_capacity").val()), YB.App.config.brineomatic.volume_units, "liters");
+
     data.battery_level_sensor_type = $("#battery_level_sensor_type").val();
 
     return data;
@@ -4229,13 +4238,6 @@
 
       autoflush_use_high_pressure_motor: {
         inclusion: [true, false]
-      },
-
-      tank_capacity: {
-        presence: true,
-        numericality: {
-          greaterThan: 0
-        }
       },
 
       temperature_units: {
@@ -4592,6 +4594,13 @@
       tank_level_sensor_type: {
         presence: true,
         inclusion: ["NONE", "EXTERNAL"]
+      },
+
+      tank_capacity: {
+        presence: true,
+        numericality: {
+          greaterThan: 0
+        }
       },
 
       battery_level_sensor_type: {
