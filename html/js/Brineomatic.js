@@ -2,8 +2,6 @@
   // work in the global YB namespace.
   var YB = global.YB || {};
 
-
-
   /**
  * Converts seconds to a human-readable string (Days, Hours, Minutes, Seconds).
  * @param {number|string} seconds - The total seconds to convert.
@@ -56,6 +54,8 @@
       "SUCCESS_TANK_LEVEL": "Success: Tank Full",
       "SUCCESS_SALINITY": "Success: Salinity OK",
       "USER_STOP": "Stopped by user",
+
+      "ERR_BATTERY_LEVEL": "Battery level low",
 
       "ERR_FILTER_PRESSURE_TIMEOUT": "Filter pressure timeout",
       "ERR_FILTER_PRESSURE_LOW": "Filter pressure low",
@@ -181,6 +181,10 @@
       },
       "tank_level": {
         "thresholds": [10, 20, 100],
+        "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.success]
+      },
+      "battery_level": {
+        "thresholds": [20, 40, 100],
         "colors": [bootstrapColors.secondary, bootstrapColors.warning, bootstrapColors.success]
       },
       "volume": {
@@ -508,6 +512,37 @@
       legend: { hide: true }
     });
 
+    this.batteryLevelGauge = c3.generate({
+      bindto: '#batterytLevelGauge',
+      data: {
+        columns: [
+          ['Battery Level', 0]
+        ],
+        type: 'gauge',
+      },
+      gauge: {
+        label: {
+          format: function (value, ratio) {
+            return `${value}%`;
+          },
+          show: true
+        },
+        min: 0,
+        max: 100,
+      },
+      color: {
+        pattern: this.gaugeSetup.battery_level.colors,
+        threshold: {
+          unit: 'value',
+          values: this.gaugeSetup.battery_level.thresholds
+        }
+      },
+      size: { height: 130, width: 200 },
+      interaction: { enabled: false },
+      transition: { duration: 0 },
+      legend: { hide: true }
+    });
+
     // Define the data
     this.timeData = ['x'];
     this.motorTemperatureData = ['Motor Temperature'];
@@ -517,6 +552,7 @@
     this.productSalinityData = ['Product Salinity'];
     this.productFlowrateData = ['Product Flowrate'];
     this.tankLevelData = ['Tank Level'];
+    this.batteryLevelData = ['Battery Level'];
   }
 
   Brineomatic.prototype.handleConfigMessage = function (msg) {
@@ -677,6 +713,7 @@
     membrane_pressure = this.formatReadable(membrane_pressure);
 
     let tank_level = this.formatReadable(msg.tank_level * 100);
+    let battery_level = this.formatReadable(msg.battery_level * 100);
 
     //errors or no?
     let err = filter_pressure < 0;
@@ -695,6 +732,10 @@
     $(".tankLevelContent").toggle(!err);
     $(".tankLevelError").toggle(err);
 
+    err = battery_level < 0;
+    $(".batteryLevelContent").toggle(!err);
+    $(".batteryLevelError").toggle(err);
+
     //update our gauges.
     if (!YB.App.isMFD()) {
       if (YB.App.currentPage == "home") {
@@ -708,6 +749,7 @@
         this.brineFlowrateGauge.load({ columns: [['Brine Flowrate', brine_flowrate]] });
         this.totalFlowrateGauge.load({ columns: [['Total Flowrate', total_flowrate]] });
         this.tankLevelGauge.load({ columns: [['Tank Level', tank_level]] });
+        this.batteryLevelGauge.load({ columns: [['Battery Level', tank_level]] });
       }
     } else {
       $("#filterPressureData").html(filter_pressure);
@@ -740,6 +782,8 @@
       $("#tankLevelData").html(tank_level);
       this.setDataColor("tank_level", tank_level, $("#tankLevelData"));
 
+      $("#batteryLevelData").html(battery_level);
+      this.setDataColor("battery_level", battery_level, $("#batteryLevelData"));
     }
 
     $(".bomVolumeData").html(volume);
@@ -1823,6 +1867,17 @@
                     <div id="tankLevelGauge" class="d-flex justify-content-center"></div>
                   </div>
               </div>
+              <div class="batteryLevelUI col-md-3 col-sm-4 col-6">
+                  <h6 class="my-0 text-center">Tank Level</h6>
+                  <div class="batteryLevelError">
+                    <div class="d-flex align-items-center justify-content-center">
+                      <h4 class="text-danger text-center m-0">No Data</h4>
+                    </div>
+                  </div>
+                  <div class="batteryLevelContent">
+                    <div id="batteryLevelGauge" class="d-flex justify-content-center"></div>
+                  </div>
+              </div>
               <div class="productVolumeUI col-md-3 col-sm-4 col-6 text-center">
                   <h6 class="my-0">Product Volume</h6>
                   <h1 class="bomVolumeData my-0 mt-3"></h1>
@@ -1911,6 +1966,18 @@
                   <div class="tankLevelContent">
                     <h1 id="tankLevelData" class="my-0"></h1>
                     <h5 id="tankLevelUnits" class="text-body-tertiary">%</h5>
+                  </div>
+              </div>
+              <div class="batteryLevelUI col-md-3 col-sm-4 col-6">
+                  <h6 class="my-0">Tank Level</h6>
+                  <div class="batteryLevelError">
+                    <div class="d-flex align-items-center justify-content-center">
+                      <h4 class="text-danger text-center m-0">No Data</h4>
+                    </div>
+                  </div>
+                  <div class="batteryLevelContent">
+                    <h1 id="batteryLevelData" class="my-0"></h1>
+                    <h5 id="batteryLevelUnits" class="text-body-tertiary">%</h5>
                   </div>
               </div>
               <div class="productVolumeUI col-md-3 col-sm-4 col-6">

@@ -57,6 +57,7 @@ class Brineomatic
     X(SUCCESS_TANK_LEVEL)            \
     X(SUCCESS_SALINITY)              \
     X(USER_STOP)                     \
+    X(ERR_BATTERY_LEVEL)             \
     X(ERR_FILTER_PRESSURE_TIMEOUT)   \
     X(ERR_FILTER_PRESSURE_LOW)       \
     X(ERR_FILTER_PRESSURE_HIGH)      \
@@ -166,6 +167,7 @@ class Brineomatic
     void setMotorTemperature(float temp);
     void setWaterTemperature(float temp);
     void setTankLevel(float level);
+    void setBatteryLevel(float level);
 
     void idle();
     void manual();
@@ -261,6 +263,7 @@ class Brineomatic
     float getBrineSalinity();
     float getTankLevel();
     float getTankCapacity();
+    float getBatteryLevel();
     float getMotorTemperatureMaximum();
 
     const char* getTemperatureUnits();
@@ -322,6 +325,7 @@ class Brineomatic
     bool coolingFanOnState;
 
     float currentTankLevel;
+    float currentBatteryLevel;
     float currentWaterTemperature;
     float currentMotorTemperature;
     float currentProductFlowrate;
@@ -359,6 +363,7 @@ class Brineomatic
 
     float tankLevelFull = 0.99;            // 0 = empty, 1 = full
     float tankCapacity = YB_TANK_CAPACITY; // Liters
+    float batteryLevelLow = 0.35;          // 0 = empty, 1 = full
 
     String temperatureUnits = YB_TEMPERATURE_UNITS;
     String pressureUnits = YB_PRESSURE_UNITS;
@@ -498,6 +503,7 @@ class Brineomatic
 
     bool checkStopFlag(Result& result);
     bool checkTankLevel();
+    bool checkBatteryLevel(Result& result);
     bool checkMembranePressureHigh();
     bool checkMembranePressureLow();
     bool checkFilterPressureHigh();

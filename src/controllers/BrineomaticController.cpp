@@ -243,6 +243,7 @@ void BrineomaticController::haGenerateDiscoveryHook(JsonVariant components, cons
     haGenerateTotalFlowrateDiscovery(components);
 
   haGenerateTankLevelDiscovery(components);
+  haGenerateBatteryLevelDiscovery(components);
   haGenerateVolumeDiscovery(components);
   haGenerateFlushVolumeDiscovery(components);
 
@@ -582,6 +583,24 @@ void BrineomaticController::haGenerateTankLevelDiscovery(JsonVariant doc)
   obj["availability_topic"] = ha_topic_avail;
 }
 
+void BrineomaticController::haGenerateBatteryLevelDiscovery(JsonVariant doc)
+{
+  char unique_id[128];
+  sprintf(unique_id, "%s_battery_level", ha_uuid);
+  sprintf(ha_topic_battery_level, "%s/battery_level", ha_uuid);
+
+  JsonObject obj = doc[unique_id].to<JsonObject>();
+  obj["platform"] = "sensor";
+  obj["name"] = "Battery Level";
+  obj["unique_id"] = unique_id;
+  obj["state_topic"] = ha_topic_battery_level;
+  obj["unit_of_measurement"] = "%";
+  obj["value_template"] = "{{ (value | float * 100) | round(1) }}";
+  obj["state_class"] = "measurement";
+  obj["device_class"] = "battery";
+  obj["availability_topic"] = ha_topic_avail;
+}
+
 void BrineomaticController::haGenerateVolumeDiscovery(JsonVariant doc)
 {
   char unique_id[128];
@@ -848,6 +867,16 @@ void BrineomaticController::handleSetWatermaker(JsonVariantConst input, JsonVari
       return _app.protocol.generateErrorJSON(output, "Tank level must be between 0.0 and 1.0");
 
     wm.setTankLevel(level);
+    return;
+  }
+
+  if (input["battery_level"].is<float>()) {
+    float level = input["battery_level"];
+
+    if (level < 0.0 || level > 1.0)
+      return _app.protocol.generateErrorJSON(output, "Battery level must be between 0.0 and 1.0");
+
+    wm.setBatteryLevel(level);
     return;
   }
 
