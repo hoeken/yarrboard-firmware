@@ -670,6 +670,25 @@
       if (!YB.App.isMFD())
         this.createGauges();
 
+      if (msg.brineomatic.gauge_order) {
+        const savedOrder = JSON.parse(msg.brineomatic.gauge_order);
+        this.gaugeOrder = savedOrder;
+
+        // Hide gauges not in saved order
+        this.gaugeAllKeys.forEach(key => {
+          if (!savedOrder.includes(key))
+            $('[data-gauge="' + key + '"]').addClass('d-none');
+        });
+
+        // Reorder tiles in both containers to match saved order
+        ['#bomGauges', '#bomGaugesMFD'].forEach(containerId => {
+          const $container = $(containerId);
+          savedOrder.forEach(key => {
+            $container.find('[data-gauge="' + key + '"]').appendTo($container);
+          });
+        });
+      }
+
       //finally, show our interface.
       $('#bomInterface').css('visibility', 'visible');
     };
@@ -2244,8 +2263,10 @@
   };
 
   Brineomatic.prototype.onGaugeOrderChanged = function (order) {
-    console.log('Gauge order changed:', order);
-    // TODO: POST to backend
+    let data = {};
+    data["cmd"] = "brineomatic_save_ui_config";
+    data["gauge_order"] = JSON.stringify(order);
+    YB.client.send(data, true);
   };
 
   Brineomatic.prototype.generateSettingsUI = function () {
