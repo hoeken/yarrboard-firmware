@@ -116,6 +116,16 @@
     this.toggleDiverterValve = this.toggleDiverterValve.bind(this);
     this.toggleFlushValve = this.toggleFlushValve.bind(this);
     this.toggleCoolingFan = this.toggleCoolingFan.bind(this);
+
+    this.gaugeAllKeys = [
+      'filterPressure', 'membranePressure', 'productSalinity', 'productFlowrate',
+      'brineSalinity', 'brineFlowrate', 'totalFlowrate', 'motorTemperature',
+      'waterTemperature', 'tankLevel', 'batteryLevel', 'productVolume', 'flushVolume'
+    ];
+    this.gaugeOrder = [...this.gaugeAllKeys];
+    this.gaugeEditMode = false;
+    this.sortableGauges = null;
+    this.sortableGaugesMFD = null;
   }
 
   Brineomatic.prototype.buildGaugeSetup = function () {
@@ -798,10 +808,16 @@
 
     if (msg.status == "STARTUP")
       $("#bomStatus").addClass("text-bg-info");
-    else if (msg.status == "IDLE")
+    else if (msg.status == "IDLE") {
+      if (this.gaugeEditMode)
+        this.endGaugeEditMode();
       $("#bomStatus").addClass("text-bg-secondary");
-    else if (msg.status == "MANUAL")
+    }
+    else if (msg.status == "MANUAL") {
+      if (!this.gaugeEditMode)
+        this.startGaugeEditMode();
       $("#bomStatus").addClass("text-bg-secondary");
+    }
     else if (msg.status == "RUNNING")
       $("#bomStatus").addClass("text-bg-success");
     else if (msg.status == "FLUSHING")
@@ -1233,6 +1249,9 @@
   }
 
   Brineomatic.prototype.manual = function (e) {
+    if (!this.gaugeEditMode)
+      this.startGaugeEditMode();
+
     $(e.currentTarget).blur();
     YB.client.send({
       "cmd": "manual_watermaker",
@@ -1240,6 +1259,10 @@
   }
 
   Brineomatic.prototype.idle = function (e) {
+
+    if (this.gaugeEditMode)
+      this.endGaugeEditMode();
+
     $(e.currentTarget).blur();
 
     $("#servoControlDiv").hide();
@@ -1798,9 +1821,25 @@
                       </div>
                   </div>
               </div>
+
+              <div class="modal fade" id="addGaugeModal" tabindex="-1" role="dialog"
+                  aria-labelledby="addGaugeModalTitle" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered" role="document">
+                      <div class="modal-content">
+                          <div class="modal-header">
+                              <h1 class="modal-title fs-5" id="addGaugeModalTitle">Add Gauge</h1>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                  aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body" id="addGaugeModalBody">
+                          </div>
+                      </div>
+                  </div>
+              </div>
           </div>
           <div id="bomGauges" class="row gx-0 my-3 mfdHide">
-              <div class="filterPressureUI col-md-3 col-sm-4 col-6">
+              <div class="filterPressureUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="filterPressure">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0 text-center">Filter Pressure</h6>
                   <div class="filterPressureError">
                     <div class="d-flex align-items-center justify-content-center">
@@ -1811,7 +1850,8 @@
                     <div id="filterPressureGauge" class="d-flex justify-content-center"></div>
                   </div>
               </div>
-              <div class="membranePressureUI col-md-3 col-sm-4 col-6">
+              <div class="membranePressureUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="membranePressure">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0 text-center">Membrane Pressure</h6>
                   <div class="membranePressureError">
                     <div class="d-flex align-items-center justify-content-center">
@@ -1822,27 +1862,33 @@
                     <div id="membranePressureGauge" class="d-flex justify-content-center"></div>
                   </div>
               </div>
-              <div class="productSalinityUI col-md-3 col-sm-4 col-6">
+              <div class="productSalinityUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="productSalinity">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0 text-center">Product Salinity</h6>
                   <div id="productSalinityGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class="productFlowrateUI col-md-3 col-sm-4 col-6">
+              <div class="productFlowrateUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="productFlowrate">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0 text-center">Product Flowrate</h6>
                   <div id="productFlowrateGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class="brineSalinityUI col-md-3 col-sm-4 col-6">
+              <div class="brineSalinityUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="brineSalinity">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0 text-center">Brine Salinity</h6>
                   <div id="brineSalinityGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class="brineFlowrateUI col-md-3 col-sm-4 col-6">
+              <div class="brineFlowrateUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="brineFlowrate">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0 text-center">Brine Flowrate</h6>
                   <div id="brineFlowrateGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class="totalFlowrateUI col-md-3 col-sm-4 col-6">
+              <div class="totalFlowrateUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="totalFlowrate">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0 text-center">Total Flowrate</h6>
                   <div id="totalFlowrateGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class="motorTemperatureUI col-md-3 col-sm-4 col-6">
+              <div class="motorTemperatureUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="motorTemperature">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0 text-center">Motor Temperature</h6>
                   <div class="motorTemperatureError">
                     <div class="d-flex align-items-center justify-content-center">
@@ -1853,11 +1899,13 @@
                     <div id="motorTemperatureGauge" class="d-flex justify-content-center"></div>
                   </div>
               </div>
-              <div class="waterTemperatureUI col-md-3 col-sm-4 col-6">
+              <div class="waterTemperatureUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="waterTemperature">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0 text-center">Water Temperature</h6>
                   <div id="waterTemperatureGauge" class="d-flex justify-content-center"></div>
               </div>
-              <div class="tankLevelUI col-md-3 col-sm-4 col-6">
+              <div class="tankLevelUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="tankLevel">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0 text-center">Tank Level</h6>
                   <div class="tankLevelError">
                     <div class="d-flex align-items-center justify-content-center">
@@ -1868,7 +1916,8 @@
                     <div id="tankLevelGauge" class="d-flex justify-content-center"></div>
                   </div>
               </div>
-              <div class="batteryLevelUI col-md-3 col-sm-4 col-6">
+              <div class="batteryLevelUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="batteryLevel">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0 text-center">Battery Level</h6>
                   <div class="batteryLevelError">
                     <div class="d-flex align-items-center justify-content-center">
@@ -1879,19 +1928,22 @@
                     <div id="batteryLevelGauge" class="d-flex justify-content-center"></div>
                   </div>
               </div>
-              <div class="productVolumeUI col-md-3 col-sm-4 col-6 text-center">
+              <div class="productVolumeUI bomGaugeItem col-md-3 col-sm-4 col-6 text-center" data-gauge="productVolume">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0">Product Volume</h6>
                   <h1 class="bomVolumeData my-0 mt-3"></h1>
                   <h5 id="volumeUnits" class="text-body-tertiary volumeUnitsLong">liters</h5>
               </div>
-              <div class="flushVolumeUI col-md-3 col-sm-4 col-6 text-center">
+              <div class="flushVolumeUI bomGaugeItem col-md-3 col-sm-4 col-6 text-center" data-gauge="flushVolume">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0">Flush Volume</h6>
                   <h1 class="bomFlushVolumeData my-0 mt-3"></h1>
                   <h5 id="volumeUnits" class="text-body-tertiary volumeUnitsLong">liters</h5>
               </div>
           </div>
           <div id="bomGaugesMFD" class="mfdShow row gx-0 gy-3 my-3 text-center">
-              <div class="filterPressureUI col-md-3 col-sm-4 col-6">
+              <div class="filterPressureUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="filterPressure">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0">Filter Pressure</h6>
                   <div class="filterPressureError">
                     <div class="d-flex align-items-center justify-content-center">
@@ -1903,7 +1955,8 @@
                     <h5 id="filterPressureUnits" class="text-body-tertiary pressureUnits">Bar</h5>
                   </div>
               </div>
-              <div class="membranePressureUI col-md-3 col-sm-4 col-6">
+              <div class="membranePressureUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="membranePressure">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0">Membrane Pressure</h6>
                   <div class="membranePressureError">
                     <div class="d-flex align-items-center justify-content-center">
@@ -1915,32 +1968,38 @@
                     <h5 id="membranePressureUnits" class="text-body-tertiary pressureUnits">Bar</h5>
                   </div>
               </div>
-              <div class="productSalinityUI col-md-3 col-sm-4 col-6">
+              <div class="productSalinityUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="productSalinity">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0">Product Salinity</h6>
                   <h1 id="productSalinityData" class="my-0"></h1>
                   <h5 id="productSalinityUnits" class="text-body-tertiary">PPM</h5>
               </div>
-              <div class="productFlowrateUI col-md-3 col-sm-4 col-6">
+              <div class="productFlowrateUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="productFlowrate">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0">Product Flowrate</h6>
                   <h1 id="productFlowrateData" class="my-0"></h1>
                   <h5 id="productFlowrateUnits" class="text-body-tertiary">LPH</h5>
               </div>
-              <div class="brineSalinityUI col-md-3 col-sm-4 col-6">
+              <div class="brineSalinityUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="brineSalinity">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0">Brine Salinity</h6>
                   <h1 id="brineSalinityData" class="my-0"></h1>
                   <h5 id="brineSalinityUnits" class="text-body-tertiary">PPM</h5>
               </div>
-              <div class="brineFlowrateUI col-md-3 col-sm-4 col-6">
+              <div class="brineFlowrateUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="brineFlowrate">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0">Brine Flowrate</h6>
                   <h1 id="brineFlowrateData" class="my-0"></h1>
                   <h5 id="brineFlowrateUnits" class="text-body-tertiary">LPH</h5>
               </div>
-              <div class="totalFlowrateUI col-md-3 col-sm-4 col-6">
+              <div class="totalFlowrateUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="totalFlowrate">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0">Total Flowrate</h6>
                   <h1 id="totalFlowrateData" class="my-0"></h1>
                   <h5 id="totalFlowrateUnits" class="text-body-tertiary">LPH</h5>
               </div>
-              <div class="motorTemperatureUI col-md-3 col-sm-4 col-6">
+              <div class="motorTemperatureUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="motorTemperature">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0">Motor Temperature</h6>
                   <div class="motorTemperatureError">
                     <div class="d-flex align-items-center justify-content-center">
@@ -1952,12 +2011,14 @@
                     <h5 id="motorTemperatureUnits" class="text-body-tertiary">°<span class="temperatureUnits">C</span></h5>
                   </div>
               </div>
-              <div class="waterTemperatureUI col-md-3 col-sm-4 col-6">
+              <div class="waterTemperatureUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="waterTemperature">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0">Water Temperature</h6>
                   <h1 id="waterTemperatureData" class="my-0"></h1>
                   <h5 id="waterTemperatureUnits" class="text-body-tertiary">°<span class="temperatureUnits">C</span></h5>
               </div>
-              <div class="tankLevelUI col-md-3 col-sm-4 col-6">
+              <div class="tankLevelUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="tankLevel">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0">Tank Level</h6>
                   <div class="tankLevelError">
                     <div class="d-flex align-items-center justify-content-center">
@@ -1969,8 +2030,9 @@
                     <h5 id="tankLevelUnits" class="text-body-tertiary">%</h5>
                   </div>
               </div>
-              <div class="batteryLevelUI col-md-3 col-sm-4 col-6">
-                  <h6 class="my-0"> Battery Level</h6>
+              <div class="batteryLevelUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="batteryLevel">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
+                  <h6 class="my-0">Battery Level</h6>
                   <div class="batteryLevelError">
                     <div class="d-flex align-items-center justify-content-center">
                       <h4 class="text-danger text-center m-0">No Data</h4>
@@ -1981,14 +2043,16 @@
                     <h5 id="batteryLevelUnits" class="text-body-tertiary">%</h5>
                   </div>
               </div>
-              <div class="productVolumeUI col-md-3 col-sm-4 col-6">
+              <div class="productVolumeUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="productVolume">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0">Product Volume</h6>
-                  <h1 class="bomVolumeData" class="my-0"></h1>
+                  <h1 class="bomVolumeData my-0"></h1>
                   <h5 id="volumeUnits" class="text-body-tertiary volumeUnitsLong">liters</h5>
               </div>
-              <div class="flushVolumeUI col-md-3 col-sm-4 col-6">
+              <div class="flushVolumeUI bomGaugeItem col-md-3 col-sm-4 col-6" data-gauge="flushVolume">
+                  <button class="gauge-hide-btn btn-close" aria-label="Hide"></button>
                   <h6 class="my-0">Flush Volume</h6>
-                  <h1 class="bomFlushVolumeData" class="my-0"></h1>
+                  <h1 class="bomFlushVolumeData my-0"></h1>
                   <h5 id="volumeUnits" class="text-body-tertiary volumeUnitsLong">liters</h5>
               </div>
           </div>
@@ -2034,6 +2098,155 @@
       </div>
     `;
   }
+
+  Brineomatic.prototype.startGaugeEditMode = function () {
+    this.gaugeEditMode = true;
+    $('#bomGauges, #bomGaugesMFD').addClass('gauge-editing');
+
+    this.sortableGauges = Sortable.create(document.getElementById('bomGauges'), {
+      animation: 150,
+      filter: '.gauge-hide-btn',
+      onEnd: () => this.syncMFDOrder()
+    });
+    this.sortableGaugesMFD = Sortable.create(document.getElementById('bomGaugesMFD'), {
+      animation: 150,
+      filter: '.gauge-hide-btn',
+      onEnd: () => this.syncGaugesOrder()
+    });
+
+    // Wire X buttons
+    $('#bomGauges .gauge-hide-btn').off('click.gaugeEdit').on('click.gaugeEdit', (e) => {
+      const key = $(e.target).closest('[data-gauge]').data('gauge');
+      this.hideGauge(key);
+      this.renderAddGaugeTile();
+    });
+
+    this.renderAddGaugeTile();
+  };
+
+  Brineomatic.prototype.endGaugeEditMode = function () {
+    this.gaugeEditMode = false;
+    $('#bomGauges, #bomGaugesMFD').removeClass('gauge-editing');
+
+    if (this.sortableGauges) { this.sortableGauges.destroy(); this.sortableGauges = null; }
+    if (this.sortableGaugesMFD) { this.sortableGaugesMFD.destroy(); this.sortableGaugesMFD = null; }
+
+    $('#bomAddGaugeTile, #bomAddGaugeTileMFD').remove();
+
+    // Read new order from DOM
+    this.gaugeOrder = $('#bomGauges [data-gauge]:not(.d-none)')
+      .map((_i, el) => el.dataset.gauge).toArray();
+
+    this.onGaugeOrderChanged(this.gaugeOrder);
+  };
+
+  Brineomatic.prototype.hideGauge = function (key) {
+    $('[data-gauge="' + key + '"]').addClass('d-none');
+    const order = $('#bomGauges [data-gauge]:not(.d-none)').map((_i, el) => el.dataset.gauge).toArray();
+    this.onGaugeOrderChanged(order);
+  };
+
+  Brineomatic.prototype.showGauge = function (key) {
+    const gaugesTile = $('#bomGauges [data-gauge="' + key + '"]');
+    const mfdTile = $('#bomGaugesMFD [data-gauge="' + key + '"]');
+    gaugesTile.removeClass('d-none').insertBefore('#bomAddGaugeTile');
+    mfdTile.removeClass('d-none').insertBefore('#bomAddGaugeTileMFD');
+    this.renderAddGaugeTile();
+    const order = $('#bomGauges [data-gauge]:not(.d-none)').map((_i, el) => el.dataset.gauge).toArray();
+    this.onGaugeOrderChanged(order);
+  };
+
+  Brineomatic.prototype.renderAddGaugeTile = function () {
+    const gaugeLabels = {
+      filterPressure: 'Filter Pressure',
+      membranePressure: 'Membrane Pressure',
+      productSalinity: 'Product Salinity',
+      productFlowrate: 'Product Flowrate',
+      brineSalinity: 'Brine Salinity',
+      brineFlowrate: 'Brine Flowrate',
+      totalFlowrate: 'Total Flowrate',
+      motorTemperature: 'Motor Temperature',
+      waterTemperature: 'Water Temperature',
+      tankLevel: 'Tank Level',
+      batteryLevel: 'Battery Level',
+      productVolume: 'Product Volume',
+      flushVolume: 'Flush Volume'
+    };
+
+    const hiddenKeys = this.gaugeAllKeys.filter(key =>
+      $('#bomGauges [data-gauge="' + key + '"]').hasClass('d-none')
+    );
+
+    // Populate modal body
+    let modalBodyHtml = '';
+    if (hiddenKeys.length === 0) {
+      modalBodyHtml = '<p class="text-body-tertiary text-center">All gauges visible</p>';
+    } else {
+      modalBodyHtml = '<div class="d-grid gap-2" style="grid-template-columns: 1fr 1fr;">' +
+        hiddenKeys.map(key =>
+          '<button class="btn btn-outline-primary bomAddGaugeBtn" data-add-gauge="' + key + '">' +
+          gaugeLabels[key] + '</button>'
+        ).join('') +
+        '</div>';
+    }
+    $('#addGaugeModalBody').html(modalBodyHtml);
+
+    const tileInner = '<div class="bomAddGaugeTile d-flex flex-column align-items-center justify-content-center p-2">' +
+      '<div class="bom-add-gauge-plus">+</div>' +
+      '<h6 class="my-0">Add Gauge</h6></div>';
+
+    const tileHtml = '<div id="bomAddGaugeTile" class="bomGaugeItem col-md-3 col-sm-4 col-6"' +
+      ' data-bs-toggle="modal" data-bs-target="#addGaugeModal">' + tileInner + '</div>';
+
+    const mfdTileHtml = '<div id="bomAddGaugeTileMFD" class="bomGaugeItem col-md-3 col-sm-4 col-6"' +
+      ' data-bs-toggle="modal" data-bs-target="#addGaugeModal">' + tileInner + '</div>';
+
+    $('#bomAddGaugeTile').remove();
+    $('#bomAddGaugeTileMFD').remove();
+    if (hiddenKeys.length > 0) {
+      $('#bomGauges').append(tileHtml);
+      $('#bomGaugesMFD').append(mfdTileHtml);
+    }
+
+    // Wire add buttons in modal
+    $('#addGaugeModalBody').on('click', '.bomAddGaugeBtn', (e) => {
+      const key = $(e.currentTarget).data('add-gauge');
+      bootstrap.Modal.getInstance(document.getElementById('addGaugeModal')).hide();
+      this.showGauge(key);
+    });
+  };
+
+  Brineomatic.prototype.syncMFDOrder = function () {
+    const order = $('#bomGauges [data-gauge]').map((_i, el) => el.dataset.gauge).toArray();
+    const mfd = $('#bomGaugesMFD');
+    order.forEach(key => mfd.append(mfd.find('[data-gauge="' + key + '"]')));
+    const visibleOrder = $('#bomGauges [data-gauge]:not(.d-none)').map((_i, el) => el.dataset.gauge).toArray();
+    this.onGaugeOrderChanged(visibleOrder);
+  };
+
+  Brineomatic.prototype.syncGaugesOrder = function () {
+    const order = $('#bomGaugesMFD [data-gauge]').map((_i, el) => el.dataset.gauge).toArray();
+    const gauges = $('#bomGauges');
+    order.forEach(key => gauges.append(gauges.find('[data-gauge="' + key + '"]')));
+    const visibleOrder = $('#bomGauges [data-gauge]:not(.d-none)').map((_i, el) => el.dataset.gauge).toArray();
+    this.onGaugeOrderChanged(visibleOrder);
+  };
+
+  Brineomatic.prototype.applyGaugeOrder = function (order) {
+    for (const containerId of ['#bomGauges', '#bomGaugesMFD']) {
+      const container = $(containerId);
+      order.forEach(key => container.append(container.find('[data-gauge="' + key + '"]')));
+      container.find('[data-gauge]').each((_i, item) => {
+        const key = item.dataset.gauge;
+        $(item).toggleClass('d-none', !order.includes(key));
+      });
+    }
+  };
+
+  Brineomatic.prototype.onGaugeOrderChanged = function (order) {
+    console.log('Gauge order changed:', order);
+    // TODO: POST to backend
+  };
 
   Brineomatic.prototype.generateSettingsUI = function () {
     return /*html*/ `
