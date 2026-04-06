@@ -1494,6 +1494,9 @@ void Brineomatic::runStateMachine()
         if (checkFlushFlowrateLow())
           break;
 
+        if (checkFlushTankLevelLow())
+          break;
+
         if (hasHighPressurePump() && autoflushUseHighPressureMotor && checkMotorTemperature(flushResult))
           break;
 
@@ -1675,6 +1678,7 @@ void Brineomatic::resetErrorTimers()
   totalFlowrateLowStart = 0;
   flushFilterPressureLowStart = 0;
   flushFlowrateLowStart = 0;
+  flushTankLevelLowStart = 0;
   diverterValveOpenStart = 0;
   productSalinityHighStart = 0;
   motorTemperatureStart = 0;
@@ -1832,6 +1836,22 @@ bool Brineomatic::checkFlushFlowrateLow()
     flushFlowrateLowStart,
     flushFlowrateLowDelay,
     Result::ERR_FLUSH_FLOWRATE_LOW,
+    flushResult);
+}
+
+bool Brineomatic::checkFlushTankLevelLow()
+{
+  if (tankLevelSensorType.equals("NONE"))
+    return false;
+
+  if (!enableFlushTankLevelLowCheck)
+    return false;
+
+  return checkTimedError(
+    currentTankLevel < flushTankLevelLowThreshold,
+    flushTankLevelLowStart,
+    flushTankLevelLowDelay,
+    Result::ERR_FLUSH_TANK_LEVEL_LOW,
     flushResult);
 }
 
@@ -2309,6 +2329,10 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["enable_flush_valve_off_check"] = this->enableFlushValveOffCheck;
   bom["flush_valve_off_threshold"] = this->flushValveOffThreshold;
   bom["flush_valve_off_delay"] = this->flushValveOffDelay;
+
+  bom["enable_flush_tank_level_low_check"] = this->enableFlushTankLevelLowCheck;
+  bom["flush_tank_level_low_threshold"] = this->flushTankLevelLowThreshold;
+  bom["flush_tank_level_low_delay"] = this->flushTankLevelLowDelay;
 
   bom["enable_battery_level_low_check"] = this->enableBatteryLevelLowCheck;
   bom["battery_level_low_threshold"] = this->batteryLevelLowThreshold;
@@ -3305,6 +3329,29 @@ bool Brineomatic::validateSafeguardsConfigJSON(JsonVariant config,
     }
   }
 
+  if (config["enable_flush_tank_level_low_check"]) {
+    if (!checkIsBool(config, "enable_flush_tank_level_low_check", error, err_size)) {
+      config.remove("enable_flush_tank_level_low_check");
+      ok = false;
+    }
+  }
+
+  if (config["flush_tank_level_low_threshold"]) {
+    if (!checkIsNumber(config, "flush_tank_level_low_threshold", error, err_size) ||
+        !checkNumGT(config, "flush_tank_level_low_threshold", 0.0f, error, err_size)) {
+      config.remove("flush_tank_level_low_threshold");
+      ok = false;
+    }
+  }
+
+  if (config["flush_tank_level_low_delay"]) {
+    if (!checkIsNumber(config, "flush_tank_level_low_delay", error, err_size) ||
+        !checkNumGE(config, "flush_tank_level_low_delay", 0.0f, error, err_size)) {
+      config.remove("flush_tank_level_low_delay");
+      ok = false;
+    }
+  }
+
   // enable_battery_level_low_check
   if (config["enable_battery_level_low_check"]) {
     if (!checkIsBool(config, "enable_battery_level_low_check", error, err_size)) {
@@ -3493,6 +3540,10 @@ void Brineomatic::loadSafeguardsConfigJSON(JsonVariant config)
   this->enableFlushValveOffCheck = config["enable_flush_valve_off_check"] | YB_ENABLE_FLUSH_VALVE_OFF_CHECK;
   this->flushValveOffThreshold = config["flush_valve_off_threshold"] | YB_FLUSH_VALVE_OFF_THRESHOLD;
   this->flushValveOffDelay = config["flush_valve_off_delay"] | YB_FLUSH_VALVE_OFF_DELAY;
+
+  this->enableFlushTankLevelLowCheck = config["enable_flush_tank_level_low_check"] | YB_ENABLE_FLUSH_TANK_LEVEL_LOW_CHECK;
+  this->flushTankLevelLowThreshold = config["flush_tank_level_low_threshold"] | YB_FLUSH_TANK_LEVEL_LOW_THRESHOLD;
+  this->flushTankLevelLowDelay = config["flush_tank_level_low_delay"] | YB_FLUSH_TANK_LEVEL_LOW_DELAY;
 
   this->enableBatteryLevelLowCheck = config["enable_battery_level_low_check"] | YB_ENABLE_BATTERY_LEVEL_LOW_CHECK;
   this->batteryLevelLowThreshold = config["battery_level_low_threshold"] | YB_BATTERY_LEVEL_LOW_THRESHOLD;
