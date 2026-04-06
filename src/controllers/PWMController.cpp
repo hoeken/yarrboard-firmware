@@ -151,20 +151,25 @@ void PWMController::generateStatsHook(JsonVariant output)
   float total_wattage = 0;
 
   // info about each of our channels
+  byte enabled_count = 0;
   JsonArray channels = output[_name].to<JsonArray>();
   for (auto& ch : _channels) {
-    JsonObject jo = channels.add<JsonObject>();
-    ch.generateStats(jo);
+    if (ch.isEnabled) {
+      JsonObject jo = channels.add<JsonObject>();
+      ch.generateStats(jo);
 
-    temperature += ch.getTemperature();
-    if (ch.getAverageAmperage() > 0)
-      total_current += ch.getAverageAmperage();
-    if (ch.getAverageWattage() > 0)
-      total_wattage += ch.getAverageWattage();
+      temperature += ch.getTemperature();
+      if (ch.getAverageAmperage() > 0)
+        total_current += ch.getAverageAmperage();
+      if (ch.getAverageWattage() > 0)
+        total_wattage += ch.getAverageWattage();
+
+      enabled_count++;
+    }
   }
 
   // some summary variables
-  temperature = temperature / _channels.size();
+  temperature = temperature / enabled_count;
   output["avg_temperature"] = temperature;
   output["total_amperage"] = total_current;
   output["total_wattage"] = total_wattage;
