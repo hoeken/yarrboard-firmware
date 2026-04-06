@@ -70,6 +70,7 @@ class Brineomatic
     X(ERR_FLUSH_FLOWRATE_LOW)        \
     X(ERR_FLUSH_FILTER_PRESSURE_LOW) \
     X(ERR_FLUSH_VALVE_ON)            \
+    X(ERR_FLUSH_TANK_LEVEL_LOW)      \
     X(ERR_FLUSH_TIMEOUT)             \
     X(ERR_BRINE_FLOWRATE_LOW)        \
     X(ERR_TOTAL_FLOWRATE_LOW)        \
@@ -349,6 +350,7 @@ class Brineomatic
     uint32_t totalFlowrateLowStart = 0;
     uint32_t flushFilterPressureLowStart = 0;
     uint32_t flushFlowrateLowStart = 0;
+    uint32_t flushTankLevelLowStart = 0;
     uint32_t diverterValveOpenStart = 0;
     uint32_t productSalinityHighStart = 0;
     uint32_t motorTemperatureStart = 0;
@@ -506,6 +508,10 @@ class Brineomatic
     float flushValveOffThreshold = YB_FLUSH_VALVE_OFF_THRESHOLD;
     uint32_t flushValveOffDelay = YB_FLUSH_VALVE_OFF_DELAY;
 
+    bool enableFlushTankLevelLowCheck = YB_ENABLE_FLUSH_TANK_LEVEL_LOW_CHECK;
+    float flushTankLevelLowThreshold = YB_FLUSH_TANK_LEVEL_LOW_THRESHOLD;
+    uint32_t flushTankLevelLowDelay = YB_FLUSH_TANK_LEVEL_LOW_DELAY;
+
     bool enableBatteryLevelLowCheck = YB_ENABLE_BATTERY_LEVEL_LOW_CHECK;
     float batteryLevelLowThreshold = YB_BATTERY_LEVEL_LOW_THRESHOLD;
 
@@ -524,6 +530,7 @@ class Brineomatic
     bool checkRunTotalFlowrateLow();
     bool checkFlushFilterPressureLow();
     bool checkFlushFlowrateLow();
+    bool checkFlushTankLevelLow();
     bool checkDiverterValveClosed();
     bool checkProductSalinityHigh();
     bool checkMotorTemperature(Result& result);
