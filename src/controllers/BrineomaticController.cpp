@@ -35,6 +35,7 @@ bool BrineomaticController::setup()
   _app.protocol.registerCommand(GUEST, "idle_watermaker", this, &BrineomaticController::handleIdleWatermaker);
   _app.protocol.registerCommand(GUEST, "manual_watermaker", this, &BrineomaticController::handleManualWatermaker);
   _app.protocol.registerCommand(GUEST, "set_watermaker", this, &BrineomaticController::handleSetWatermaker);
+  _app.protocol.registerCommand(GUEST, "brineomatic_save_ui_config", this, &BrineomaticController::handleSaveUIConfig);
   _app.protocol.registerCommand(GUEST, "brineomatic_save_general_config", this, &BrineomaticController::handleSaveGeneralConfig);
   _app.protocol.registerCommand(GUEST, "brineomatic_save_hardware_config", this, &BrineomaticController::handleSaveHardwareConfig);
   _app.protocol.registerCommand(GUEST, "brineomatic_save_safeguards_config", this, &BrineomaticController::handleSaveSafeguardsConfig);
@@ -93,9 +94,7 @@ bool BrineomaticController::loadConfigHook(JsonVariant config, char* error, size
       result = false;
     }
 
-    wm.loadGeneralConfigJSON(bom);
-    wm.loadHardwareConfigJSON(bom);
-    wm.loadSafeguardsConfigJSON(bom);
+    wm.loadConfigJSON(bom);
 
     if (_cfg.app_enable_mqtt) {
       MQTTController* mqtt = (MQTTController*)_app.getController("mqtt");
@@ -1074,6 +1073,22 @@ void BrineomaticController::handleSetWatermaker(JsonVariantConst input, JsonVari
     } else
       return _app.protocol.generateErrorJSON(output, "Watermaker does not have a cooling fan.");
   }
+}
+
+void BrineomaticController::handleSaveUIConfig(JsonVariantConst input, JsonVariant output, ProtocolContext context)
+{
+  // we need a mutable format for the validation
+  JsonDocument doc;
+  doc.set(input);
+
+  char error[128];
+  if (!wm.validateUIConfigJSON(doc, error, sizeof(error)))
+    return _app.protocol.generateErrorJSON(output, error);
+
+  wm.loadUIConfigJSON(doc);
+
+  if (!_cfg.saveConfig(error, sizeof(error)))
+    return _app.protocol.generateErrorJSON(output, error);
 }
 
 void BrineomaticController::handleSaveGeneralConfig(JsonVariantConst input, JsonVariant output, ProtocolContext context)

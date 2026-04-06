@@ -96,6 +96,7 @@ class BrineomaticController : public BaseController
     void handleIdleWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
     void handleManualWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
     void handleSetWatermaker(JsonVariantConst input, JsonVariant output, ProtocolContext context);
+    void handleSaveUIConfig(JsonVariantConst input, JsonVariant output, ProtocolContext context);
     void handleSaveGeneralConfig(JsonVariantConst input, JsonVariant output, ProtocolContext context);
     void handleSaveHardwareConfig(JsonVariantConst input, JsonVariant output, ProtocolContext context);
     void handleSaveSafeguardsConfig(JsonVariantConst input, JsonVariant output, ProtocolContext context);

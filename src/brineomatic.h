@@ -280,11 +280,13 @@ class Brineomatic
     void generateConfigJSON(JsonVariant output);
 
     bool validateConfigJSON(JsonVariant config, char* error, size_t err_size);
+    bool validateUIConfigJSON(JsonVariant config, char* error, size_t err_size);
     bool validateGeneralConfigJSON(JsonVariant config, char* error, size_t err_size);
     bool validateHardwareConfigJSON(JsonVariant config, char* error, size_t err_size);
     bool validateSafeguardsConfigJSON(JsonVariant config, char* error, size_t err_size);
 
     void loadConfigJSON(JsonVariant config);
+    void loadUIConfigJSON(JsonVariant config);
     void loadGeneralConfigJSON(JsonVariant config);
     void loadHardwareConfigJSON(JsonVariant config);
     void loadSafeguardsConfigJSON(JsonVariant config);
@@ -354,6 +356,8 @@ class Brineomatic
     uint32_t diverterValveOpenStart = 0;
     uint32_t productSalinityHighStart = 0;
     uint32_t motorTemperatureStart = 0;
+
+    String gaugeOrder = "";
 
     //
     // Configuration variables

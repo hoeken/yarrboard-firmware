@@ -2183,6 +2183,8 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["has_flush_valve"] = this->hasFlushValve();
   bom["has_cooling_fan"] = this->hasCoolingFan();
 
+  bom["gauge_order"] = this->gaugeOrder;
+
   bom["autoflush_mode"] = this->autoflushMode;
   bom["autoflush_salinity"] = this->autoflushSalinity;
   bom["autoflush_duration"] = this->autoflushDuration;
@@ -2342,6 +2344,8 @@ bool Brineomatic::validateConfigJSON(JsonVariant config, char* error, size_t err
 {
   bool ok = true;
 
+  if (!validateUIConfigJSON(config, error, err_size))
+    ok = false;
   if (!validateGeneralConfigJSON(config, error, err_size))
     ok = false;
   if (!validateHardwareConfigJSON(config, error, err_size))
@@ -2350,6 +2354,13 @@ bool Brineomatic::validateConfigJSON(JsonVariant config, char* error, size_t err
     ok = false;
 
   return true;
+}
+
+bool Brineomatic::validateUIConfigJSON(JsonVariant config, char* error, size_t err_size)
+{
+  bool ok = true;
+
+  return ok;
 }
 
 bool Brineomatic::validateGeneralConfigJSON(JsonVariant config, char* error, size_t err_size)
@@ -3373,9 +3384,15 @@ bool Brineomatic::validateSafeguardsConfigJSON(JsonVariant config,
 
 void Brineomatic::loadConfigJSON(JsonVariant config)
 {
+  this->loadUIConfigJSON(config);
   this->loadGeneralConfigJSON(config);
   this->loadHardwareConfigJSON(config);
   this->loadSafeguardsConfigJSON(config);
+}
+
+void Brineomatic::loadUIConfigJSON(JsonVariant config)
+{
+  this->gaugeOrder = config["gauge_order"] | "";
 }
 
 void Brineomatic::loadGeneralConfigJSON(JsonVariant config)
