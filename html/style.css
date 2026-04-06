@@ -113,3 +113,44 @@ html[data-bs-theme="dark"] .c3 .c3-axis text {
 .batteryLevelError>.d-flex {
     height: 100px;
 }
+
+/* Gauge edit mode */
+.bomGaugeItem {
+    position: relative;
+}
+
+.bomGaugeItem .gauge-hide-btn {
+    display: none;
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    z-index: 10;
+}
+
+#bomGauges.gauge-editing .gauge-hide-btn,
+#bomGaugesMFD.gauge-editing .gauge-hide-btn {
+    display: block;
+}
+
+#bomGauges.gauge-editing .bomGaugeItem,
+#bomGaugesMFD.gauge-editing .bomGaugeItem {
+    cursor: grab;
+}
+
+#bomGauges.gauge-editing .bomGaugeItem:active,
+#bomGaugesMFD.gauge-editing .bomGaugeItem:active {
+    cursor: grabbing;
+}
+
+.bomAddGaugeTile {
+    min-height: 80px;
+    border: 2px dashed var(--bs-border-color);
+    border-radius: 0.375rem;
+    cursor: pointer;
+}
+
+.bomAddGaugeTile .bom-add-gauge-plus {
+    font-size: 2rem;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
