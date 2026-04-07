@@ -2119,6 +2119,10 @@
   }
 
   Brineomatic.prototype.startGaugeEditMode = function () {
+
+    if (YB.App.isMFD())
+      return;
+
     this.gaugeEditMode = true;
     $('#bomGauges, #bomGaugesMFD').addClass('gauge-editing');
 
@@ -2144,6 +2148,10 @@
   };
 
   Brineomatic.prototype.endGaugeEditMode = function () {
+
+    if (YB.App.isMFD())
+      return;
+
     this.gaugeEditMode = false;
     $('#bomGauges, #bomGaugesMFD').removeClass('gauge-editing');
 
@@ -2151,12 +2159,6 @@
     if (this.sortableGaugesMFD) { this.sortableGaugesMFD.destroy(); this.sortableGaugesMFD = null; }
 
     $('#bomAddGaugeTile, #bomAddGaugeTileMFD').remove();
-
-    // Read new order from DOM
-    this.gaugeOrder = $('#bomGauges [data-gauge]:not(.d-none)')
-      .map((_i, el) => el.dataset.gauge).toArray();
-
-    this.onGaugeOrderChanged(this.gaugeOrder);
   };
 
   Brineomatic.prototype.hideGauge = function (key) {
