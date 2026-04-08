@@ -1358,7 +1358,7 @@
                           <th>Flush Result</th>
                           <td><span id="bomFlushResult"></span></td>
                       </tr>
-                      <tr id="bomPickleResultRow" class="bomPICKLED" style="display: none">
+                      <tr id="bomPickleResultRow" class="bomIDLE bomPICKLED" style="display: none">
                           <th>Pickle Result</th>
                           <td><span id="bomPickleResult"></span></td>
                       </tr>
