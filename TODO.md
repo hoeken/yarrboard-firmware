@@ -1,3 +1,10 @@
+# v2.5
+
+* add explanation / tooltips to safeguards
+* add explanation to sensor checks, including which sensors are required.
+* show/hide data fields on sensor checks based on enable/disable
+* enable/disable data fields on sensor check based on if sensor is enabled/disabled.
+
 # v2.6
 
 ## Brineomatic
@@ -6,7 +13,6 @@
     * make sure it also respects it in code
 * flush valve should have a servo option as well with open/close angles
 * custom gauges for each state?  idle, running, stopping, pickling, etc?
-* add explanation / tooltips to safeguards
 
 # LONG TERM:
 
