@@ -2310,8 +2310,6 @@
           <div class="invalid-feedback"></div>
       </div>
 
-      <hr class="bold">
-
       <div class="form-floating mb-3">
           <select id="success_melody" class="form-select" aria-label="Success Melody">
           </select>
@@ -2549,6 +2547,8 @@
       <div id="hardwareSettingsDisabled" class="alert alert-warning" role="alert" style="display: none">
         Hardware configuration disabled. <b>IDLE</b> or <b>MANUAL</b> mode only.
       </div>
+      <h6 class="border-start border-primary border-3 ps-2 mb-2">Boost Pump</h6>
+
       <div class="form-floating mb-3">
           <select id="boost_pump_control" class="form-select" aria-label="Boost Pump">
               <option value="NONE">None</option>
@@ -2584,7 +2584,7 @@
         </div>
       </div>
 
-      <hr class="bold">
+      <h6 class="border-start border-primary border-3 ps-2 mb-2 mt-5">High Pressure Pump</h6>
 
       <div class="form-floating mb-3">
           <select id="high_pressure_pump_control" class="form-select" aria-label="High Pressure Pump Control">
@@ -2649,7 +2649,7 @@
         </div>
       </div>
 
-      <hr class="bold">
+      <h6 class="border-start border-primary border-3 ps-2 mb-2 mt-5">High Pressure Valve</h6>
 
       <div class="form-floating mb-3">
           <select id="high_pressure_valve_control" class="form-select" aria-label="High Pressure Valve Control">
@@ -2767,7 +2767,7 @@
         </div>
       </div>
 
-      <hr class="bold">
+      <h6 class="border-start border-primary border-3 ps-2 mb-2 mt-5">Diverter Valve</h6>
 
       <div class="form-floating mb-3">
           <select id="diverter_valve_control" class="form-select" aria-label="Diverter Valve Control">
@@ -2826,7 +2826,7 @@
         </div>
       </div>
 
-      <hr class="bold">
+      <h6 class="border-start border-primary border-3 ps-2 mb-2 mt-5">Flush Valve</h6>
 
       <div class="form-floating mb-3">
           <select id="flush_valve_control" class="form-select" aria-label="Flush Valve Control">
@@ -2911,7 +2911,7 @@
         </div>
       </div>
       
-      <hr class="bold">
+      <h6 class="border-start border-primary border-3 ps-2 mb-2 mt-5">Cooling Fan</h6>
 
       <div class="form-floating mb-3">
           <select id="cooling_fan_control" class="form-select" aria-label="Cooling Fan Control">
@@ -2959,18 +2959,27 @@
         </div>
       </div>
 
-      <hr class="bold">
+      <h6 class="border-start border-primary border-3 ps-2 mb-2 mt-5">Pressure Sensors</h6>
 
       ${membranePressure}
       ${filterPressure}
+ 
+      <h6 class="border-start border-primary border-3 ps-2 mb-2 mt-5">Flowrate Sensors</h6>
+
       ${productFlow}
       ${brineFlow}
+ 
+      <h6 class="border-start border-primary border-3 ps-2 mb-2 mt-5">TDS Sensors</h6>
+
       ${productTDS}
       ${brineTDS}
+
+     <h6 class="border-start border-primary border-3 ps-2 mb-2 mt-5">Temperature Sensors</h6>
+
       ${motorTemperature}
       ${waterTemperature}
 
-      <hr class="bold">
+      <h6 class="border-start border-primary border-3 ps-2 mb-2 mt-5">Tank Level</h6>
 
       <div class="form-floating mb-3">
           <select id="tank_level_sensor_type" class="form-select" aria-label="Tank Level Sensor">
@@ -3001,7 +3010,7 @@
         </div>
       </div>
 
-      <hr class="bold">
+      <h6 class="border-start border-primary border-3 ps-2 mb-2 mt-5">Battery Level</h6>
 
       <div class="form-floating mb-3">
           <select id="battery_level_sensor_type" class="form-select" aria-label="Battery Level Sensor">
