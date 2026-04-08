@@ -2833,6 +2833,7 @@
               <option value="NONE">None</option>
               <option value="MANUAL">Manual</option>
               <option value="RELAY">Relay</option>
+              <option value="SERVO">Servo</option>
           </select>
           <label for="flush_valve_control">Flush Valve Control</label>
           <div class="invalid-feedback"></div>
@@ -2852,6 +2853,36 @@
               Is Flush Valve Relay Inverted?
           </label>
           <div class="invalid-feedback"></div>
+      </div>
+
+      <div class="form-floating mb-3">
+          <select id="flush_valve_servo_id" class="form-select" aria-label="Flush Valve Servo Channel">
+            ${servoOptions}
+          </select>
+          <label for="flush_valve_servo_id">Flush Valve Servo Channel</label>
+          <div class="invalid-feedback"></div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <h6>Flush Valve Settings</h6>
+
+        <div class="col-12 col-md-6 mt-1">
+          <div class="input-group has-validation">
+            <span class="input-group-text">Open</span>
+            <input type="text" class="form-control text-end" id="flush_valve_open_angle">
+            <span class="input-group-text">°</span>
+            <div class="invalid-feedback"></div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6 mt-1">
+          <div class="input-group has-validation">
+            <span class="input-group-text">Close</span>
+            <input type="text" class="form-control text-end" id="flush_valve_close_angle">
+            <span class="input-group-text">°</span>
+            <div class="invalid-feedback"></div>
+          </div>
+        </div>
       </div>
 
       <div id="autoflush_form">
@@ -3597,6 +3628,9 @@
     $("#flush_valve_control").val(data.flush_valve_control);
     $("#flush_valve_relay_id").val(data.flush_valve_relay_id);
     $("#flush_valve_relay_inverted").prop('checked', data.flush_valve_relay_inverted);
+    $("#flush_valve_servo_id").val(data.flush_valve_servo_id);
+    $("#flush_valve_open_angle").val(data.flush_valve_open_angle);
+    $("#flush_valve_close_angle").val(data.flush_valve_close_angle);
 
     $("#autoflush_mode").val(data.autoflush_mode);
     $("#autoflush_salinity").val(data.autoflush_salinity);
@@ -4290,13 +4324,30 @@
   Brineomatic.prototype.updateFlushValveVisibility = function (mode) {
     const relayDiv = $("#flush_valve_relay_id").closest(".form-floating");
     const invertedDiv = $("#flush_valve_relay_inverted").closest(".form-check");
+    const servoDiv = $("#flush_valve_servo_id").closest(".form-floating");
+    const angleDiv = $("#flush_valve_open_angle").closest(".row");
 
     relayDiv.hide();
     invertedDiv.hide();
+    servoDiv.hide();
+    angleDiv.hide();
 
-    if (mode === "RELAY") {
-      relayDiv.show();
-      invertedDiv.show();
+    switch (mode) {
+      case "RELAY":
+        relayDiv.show();
+        invertedDiv.show();
+        break;
+
+      case "SERVO":
+        servoDiv.show();
+        angleDiv.show();
+        break;
+
+      case "MANUAL":
+      case "NONE":
+      default:
+        // nothing shown
+        break;
     }
 
     let tank_level_sensor_type = $('#tank_level_sensor_type').val();
@@ -4514,6 +4565,9 @@
     data.flush_valve_control = $("#flush_valve_control").val();
     data.flush_valve_relay_id = parseInt($("#flush_valve_relay_id").val());
     data.flush_valve_relay_inverted = $("#flush_valve_relay_inverted").prop("checked");
+    data.flush_valve_servo_id = parseInt($("#flush_valve_servo_id").val());
+    data.flush_valve_open_angle = parseFloat($("#flush_valve_open_angle").val());
+    data.flush_valve_close_angle = parseFloat($("#flush_valve_close_angle").val());
 
     data.autoflush_mode = $("#autoflush_mode").val();
     data.autoflush_salinity = parseFloat($("#autoflush_salinity").val());
@@ -4837,7 +4891,8 @@
         numericality: {
           onlyInteger: true,
           greaterThanOrEqualTo: 0
-        }
+        },
+        relayUnique: {}
       },
 
       diverter_valve_relay_inverted: {
@@ -4848,7 +4903,8 @@
         numericality: {
           onlyInteger: true,
           greaterThanOrEqualTo: 0
-        }
+        },
+        servoUnique: {}
       },
 
       diverter_valve_open_angle: {
@@ -4867,7 +4923,7 @@
 
       flush_valve_control: {
         presence: true,
-        inclusion: ["NONE", "MANUAL", "RELAY"]
+        inclusion: ["NONE", "MANUAL", "RELAY", "SERVO"]
       },
 
       flush_valve_relay_id: {
@@ -4880,6 +4936,28 @@
 
       flush_valve_relay_inverted: {
         inclusion: [true, false]
+      },
+
+      flush_valve_servo_id: {
+        numericality: {
+          onlyInteger: true,
+          greaterThanOrEqualTo: 0
+        },
+        servoUnique: {}
+      },
+
+      flush_valve_open_angle: {
+        numericality: {
+          greaterThanOrEqualTo: 0,
+          lessThanOrEqualTo: 180
+        }
+      },
+
+      flush_valve_close_angle: {
+        numericality: {
+          greaterThanOrEqualTo: 0,
+          lessThanOrEqualTo: 180
+        }
       },
 
       autoflush_mode: {
@@ -5528,6 +5606,39 @@
       if (attributes[relayKey] === value) {
         // Duplicate found
         return `must be unique; also used by ${relayKey}`;
+      }
+    }
+
+    // undefined = no error
+  };
+
+  validate.validators.servoUnique = function (value, options, key, attributes) {
+    const map = {
+      diverter_valve_servo_id: "diverter_valve_control",
+      flush_valve_servo_id: "flush_valve_control"
+    };
+
+    const controlField = map[key];
+    if (!controlField) return; // not a monitored field
+
+    // Only enforce uniqueness if this control is set to SERVO
+    if (attributes[controlField] !== "SERVO") {
+      return;
+    }
+
+    // Let numericality/presence handle empty/invalid
+    if (value === null || value === undefined || value === "") {
+      return;
+    }
+
+    // Check other fields that are also SERVO
+    for (const [servoKey, ctrlKey] of Object.entries(map)) {
+      if (servoKey === key) continue; // skip self
+      if (attributes[ctrlKey] !== "SERVO") continue;
+
+      if (attributes[servoKey] === value) {
+        // Duplicate found
+        return `must be unique; also used by ${servoKey}`;
       }
     }
 
