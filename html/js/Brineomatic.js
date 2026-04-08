@@ -2545,7 +2545,7 @@
 
     return /*html*/ `
       <div id="hardwareSettingsDisabled" class="alert alert-warning" role="alert" style="display: none">
-        Hardware configuration disabled. <b>IDLE</b> or <b>MANUAL</b> mode only.
+        Hardware configuration disabled. <span class="badge text-bg-secondary">IDLE</span> or <span class="badge text-bg-secondary">MANUAL</span> mode only.
       </div>
       <h6 class="border-start border-primary border-3 ps-2 mb-2">Boost Pump</h6>
 
@@ -3107,10 +3107,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>membrane pressure sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">membrane pressure sensor</span>.  Checked during <span class="badge text-bg-success">RUNNING</span> mode.</div>
       </div>
 
-      <div id="enable_membrane_pressure_high_check_form" class="row">
+      <div id="enable_membrane_pressure_high_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="membrane_pressure_high_threshold">
@@ -3135,10 +3135,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>membrane pressure sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">membrane pressure sensor</span>.  Checked during <span class="badge text-bg-success">RUNNING</span> mode.</div>
       </div>
 
-      <div id="enable_membrane_pressure_low_check_form" class="row">
+      <div id="enable_membrane_pressure_low_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="membrane_pressure_low_threshold">
@@ -3163,10 +3163,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>filter pressure sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">filter pressure sensor</span>.  Checked during <span class="badge text-bg-success">RUNNING</span> mode.</div>
       </div>
 
-      <div id="enable_filter_pressure_high_check_form" class="row">
+      <div id="enable_filter_pressure_high_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="filter_pressure_high_threshold">
@@ -3191,10 +3191,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>filter pressure sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">filter pressure sensor</span>.  Checked during <span class="badge text-bg-success">RUNNING</span> mode.</div>
       </div>
 
-      <div id="enable_filter_pressure_low_check_form" class="row">
+      <div id="enable_filter_pressure_low_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="filter_pressure_low_threshold">
@@ -3219,10 +3219,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>product flow sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">product flow sensor</span>.  Checked during <span class="badge text-bg-success">RUNNING</span> mode.</div>
       </div>
 
-      <div id="enable_product_flowrate_high_check_form" class="row">
+      <div id="enable_product_flowrate_high_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="product_flowrate_high_threshold">
@@ -3247,10 +3247,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>product flow sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">product flow sensor</span>.  Checked during <span class="badge text-bg-success">RUNNING</span> mode.</div>
       </div>
 
-      <div id="enable_product_flowrate_low_check_form" class="row">
+      <div id="enable_product_flowrate_low_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="product_flowrate_low_threshold">
@@ -3275,10 +3275,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>brine flow sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">brine flow sensor</span>.  Checked during <span class="badge text-bg-success">RUNNING</span> mode.</div>
       </div>
 
-      <div id="enable_run_total_flowrate_low_check_form" class="row">
+      <div id="enable_run_total_flowrate_low_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="run_total_flowrate_low_threshold">
@@ -3303,10 +3303,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>brine flow sensor</b>.  Checked during <b>PICKLING</b> and <b>DEPICKLING</b> modes.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">brine flow sensor</span>.  Checked during <span class="badge text-bg-warning">PICKLING</span> and <span class="badge text-bg-warning">DEPICKLING</span> modes.</div>
       </div>
 
-      <div id="enable_pickle_total_flowrate_low_check_form" class="row">
+      <div id="enable_pickle_total_flowrate_low_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="pickle_total_flowrate_low_threshold">
@@ -3331,10 +3331,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>product flow sensor</b> and <b>brine flow sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">product flow sensor</span> and <span class="badge text-bg-secondary">brine flow sensor</span>.  Checked during <span class="badge text-bg-success">RUNNING</span> mode.</div>
       </div>
 
-      <div id="enable_diverter_valve_closed_check_form" class="row">
+      <div id="enable_diverter_valve_closed_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="diverter_valve_closed_delay">
@@ -3352,10 +3352,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>product TDS sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">product TDS sensor</span>.  Checked during <span class="badge text-bg-success">RUNNING</span> mode.</div>
       </div>
 
-      <div id="enable_product_salinity_high_check_form" class="row">
+      <div id="enable_product_salinity_high_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="product_salinity_high_threshold">
@@ -3380,10 +3380,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>motor temperature sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">motor temperature sensor</span>.  Checked during <span class="badge text-bg-success">RUNNING</span> mode.</div>
       </div>
 
-      <div id="enable_motor_temperature_check_form" class="row">
+      <div id="enable_motor_temperature_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="motor_temperature_high_threshold">
@@ -3408,10 +3408,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>brine flow sensor</b>.  Checked during <b>FLUSHING</b> mode.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">brine flow sensor</span>.  Checked during <span class="badge text-bg-primary">FLUSHING</span> mode.</div>
       </div>
 
-      <div id="enable_flush_flowrate_low_check_form" class="row">
+      <div id="enable_flush_flowrate_low_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="flush_flowrate_low_threshold">
@@ -3436,10 +3436,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>filter pressure sensor</b>.  Checked during <b>FLUSHING</b> mode.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">filter pressure sensor</span>.  Checked during <span class="badge text-bg-primary">FLUSHING</span> mode.</div>
       </div>
 
-      <div id="enable_flush_filter_pressure_low_check_form" class="row">
+      <div id="enable_flush_filter_pressure_low_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="flush_filter_pressure_low_threshold">
@@ -3464,10 +3464,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>filter pressure sensor</b> or <b>brine flow sensor</b>.  Checked during <b>FLUSHING</b> mode.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">filter pressure sensor</span> or <span class="badge text-bg-secondary">brine flow sensor</span>.  Checked during <span class="badge text-bg-primary">FLUSHING</span> mode.</div>
       </div>
 
-      <div id="enable_flush_valve_off_check_form" class="row">
+      <div id="enable_flush_valve_off_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="flush_valve_off_threshold">
@@ -3492,10 +3492,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>tank level sensor</b>.  Checked during <b>FLUSHING</b> mode.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">tank level sensor</span>.  Checked during <span class="badge text-bg-primary">FLUSHING</span> mode.</div>
       </div>
 
-      <div id="enable_flush_tank_level_low_check_form" class="row">
+      <div id="enable_flush_tank_level_low_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="flush_tank_level_low_threshold">
@@ -3520,10 +3520,10 @@
           </label>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="form-text">Requires <b>battery level sensor</b>.  Checked during all operating modes.</div>
+        <div class="form-text">Requires <span class="badge text-bg-secondary">battery level sensor</span>.  Checked during all operating modes.</div>
       </div>
 
-      <div id="enable_battery_level_low_check_form" class="row">
+      <div id="enable_battery_level_low_check_form" class="row mb-3">
         <div class="col-12 col-md-6">
           <div class="input-group has-validation mb-3">
             <input type="text" class="form-control text-end" id="battery_level_low_threshold">
@@ -3788,13 +3788,11 @@
   }
 
   Brineomatic.prototype.updateSafeguardChecks = function () {
-    //sub forms for each checkbox
-    $('#bomConfigForm input.form-check-input').each(function () { });
-    $('#bomConfigForm input.form-check-input').each(function () {
+    $('#safeguardsSettingsPanel input.form-check-input').each(function () {
       if (!this.checked || this.disabled)
-        $('#bomConfigForm #' + this.id + '_form').hide();
+        $('#' + this.id + '_form').hide();
       else
-        $('#bomConfigForm #' + this.id + '_form').show();
+        $('#' + this.id + '_form').show();
     });
   }
 
@@ -3985,7 +3983,7 @@
       YB.bom.updateSafeguardChecks();
     });
 
-    $('#bomConfigForm input.form-check-input').on('change', function () { $('#bomConfigForm #' + this.id + '_form').toggle(this.checked); });
+    $('#safeguardsSettingsPanel input.form-check-input').on('change', function () { $('#' + this.id + '_form').toggle(this.checked); });
 
     $("#saveBrineomaticSettings").on('click', this.handleBrineomaticConfigSave);
     $("#saveHardwareSettings").on('click', this.handleHardwareConfigSave);
