@@ -4326,6 +4326,9 @@
         break;
 
       case "MANUAL":
+        tempDiv.show();
+        break;
+
       case "NONE":
       default:
         break;
@@ -4337,6 +4340,12 @@
   Brineomatic.prototype.updateMembranePressureVisibility = function (hasSensor) {
     $("#enable_membrane_pressure_high_check").prop("disabled", !hasSensor);
     $("#enable_membrane_pressure_low_check").prop("disabled", !hasSensor);
+
+    if (!hasSensor) {
+      $("#enable_membrane_pressure_high_check").prop("checked", false);
+      $("#enable_membrane_pressure_low_check").prop("checked", false);
+    }
+
     $("#has_membrane_pressure_sensor_form").toggle(hasSensor);
   }
 
@@ -4344,12 +4353,25 @@
     $("#enable_filter_pressure_high_check").prop("disabled", !hasSensor);
     $("#enable_filter_pressure_low_check").prop("disabled", !hasSensor);
     $("#enable_flush_filter_pressure_low_check").prop("disabled", !hasSensor);
+
+    if (!hasSensor) {
+      $("#enable_filter_pressure_high_check").prop("checked", false);
+      $("#enable_filter_pressure_low_check").prop("checked", false);
+      $("#enable_flush_filter_pressure_low_check").prop("checked", false);
+    }
+
     $("#has_filter_pressure_sensor_form").toggle(hasSensor);
   }
 
   Brineomatic.prototype.updateProductFlowrateVisibility = function (hasSensor) {
     $("#enable_product_flowrate_high_check").prop("disabled", !hasSensor);
     $("#enable_product_flowrate_low_check").prop("disabled", !hasSensor);
+
+    if (!hasSensor) {
+      $("#enable_product_flowrate_high_check").prop("checked", false);
+      $("#enable_product_flowrate_low_check").prop("checked", false);
+    }
+
     $("#startRunVolumeDialog").toggle(hasSensor);
     $("#has_product_flow_sensor_form").toggle(hasSensor);
   }
@@ -4358,12 +4380,24 @@
     $("#enable_run_total_flowrate_low_check").prop("disabled", !hasSensor);
     $("#enable_pickle_total_flowrate_low_check").prop("disabled", !hasSensor);
     $("#enable_flush_flowrate_low_check").prop("disabled", !hasSensor);
+
+    if (!hasSensor) {
+      $("#enable_run_total_flowrate_low_check").prop("checked", false);
+      $("#enable_pickle_total_flowrate_low_check").prop("checked", false);
+      $("#enable_flush_flowrate_low_check").prop("checked", false);
+    }
+
     $("#startFlushVolumeDialog").toggle(hasSensor);
     $("#has_brine_flow_sensor_form").toggle(hasSensor);
   }
 
   Brineomatic.prototype.updateProductTDSVisibility = function (hasSensor) {
     $("#enable_product_salinity_high_check").prop("disabled", !hasSensor);
+
+    if (!hasSensor) {
+      $("#enable_product_salinity_high_check").prop("checked", false);
+    }
+
     $("#has_product_tds_sensor_form").toggle(hasSensor);
   }
 
@@ -4373,7 +4407,12 @@
   }
 
   Brineomatic.prototype.updateMotorTemperatureVisibility = function (type) {
-    $("#enable_motor_temperature_check").prop("disabled", type == "NONE");
+    const hasSensor = (type !== "NONE");
+    $("#enable_motor_temperature_check").prop("disabled", !hasSensor);
+    if (!hasSensor) {
+      $("#enable_motor_temperature_check").prop("checked", false);
+    }
+
     $("#motor_temperature_mqtt_path_form").toggle(type === "MQTT");
   }
 
@@ -4382,17 +4421,28 @@
   }
 
   Brineomatic.prototype.updateDiverterValveClosedCheckVisibility = function (has_product_flow_sensor, has_brine_flow_sensor) {
-    $("#enable_diverter_valve_closed_check").prop("disabled", !(has_product_flow_sensor && has_brine_flow_sensor));
+    const hasSensor = (has_product_flow_sensor && has_brine_flow_sensor);
+
+    $("#enable_diverter_valve_closed_check").prop("disabled", !hasSensor);
+    if (!hasSensor) {
+      $("#enable_diverter_valve_closed_check").prop("checked", false);
+    }
   }
 
   Brineomatic.prototype.updateFlushValveClosedCheckVisibility = function (has_filter_pressure_sensor, has_brine_flow_sensor) {
-    const disabled = !(has_filter_pressure_sensor || has_brine_flow_sensor);
-    $("#enable_flush_valve_off_check").prop("disabled", disabled);
+    const hasSensor = (has_filter_pressure_sensor || has_brine_flow_sensor);
+    $("#enable_flush_valve_off_check").prop("disabled", !hasSensor);
+    if (!hasSensor) {
+      $("#enable_flush_valve_off_check").prop("checked", false);
+    }
   }
 
   Brineomatic.prototype.updateFlushTankLowCheckVisibility = function (tank_level_sensor_type, flush_valve_control) {
-    const disabled = (tank_level_sensor_type === "NONE" || flush_valve_control === "NONE");
-    $("#enable_flush_tank_level_low_check").prop("disabled", disabled);
+    const hasSensor = (tank_level_sensor_type !== "NONE" && flush_valve_control !== "NONE");
+    $("#enable_flush_tank_level_low_check").prop("disabled", !hasSensor);
+    if (!hasSensor) {
+      $("#enable_flush_tank_level_low_check").prop("checked", false);
+    }
   }
 
   Brineomatic.prototype.updateTankVisibility = function (tank_level_sensor_type) {
@@ -4402,7 +4452,11 @@
   }
 
   Brineomatic.prototype.updateBatteryLevelVisibility = function (battery_level_sensor_type) {
-    $("#enable_battery_level_low_check").prop("disabled", battery_level_sensor_type === "NONE");
+    const hasSensor = (battery_level_sensor_type !== "NONE");
+    $("#enable_battery_level_low_check").prop("disabled", !hasSensor);
+    if (!hasSensor) {
+      $("#enable_battery_level_low_check").prop("checked", false);
+    }
     $("#battery_level_mqtt_path_form").toggle(battery_level_sensor_type === "MQTT");
   }
 

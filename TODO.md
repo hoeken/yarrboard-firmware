@@ -2,13 +2,11 @@
 
 ## Brineomatic
 
-* cooling fan -> manual should show on/off temps in UI
-    * make sure it also respects it in code
 * flush valve should have a servo option as well with open/close angles
-* custom gauges for each state?  idle, running, stopping, pickling, etc?
 
 # LONG TERM:
 
+* custom gauge layout for each state?  idle, running, stopping, pickling, etc?
 * fork repo into brineomatic-firmware, frothfet-firmware, and sendit-firmware
 * update yarrboard client if any changes needed - probably for state
 * update signalk plugin - same
