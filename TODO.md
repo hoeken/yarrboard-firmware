@@ -1,10 +1,3 @@
-# v2.5
-
-* add explanation / tooltips to safeguards
-* add explanation to sensor checks, including which sensors are required.
-* show/hide data fields on sensor checks based on enable/disable
-* enable/disable data fields on sensor check based on if sensor is enabled/disabled.
-
 # v2.6
 
 ## Brineomatic
