@@ -3044,13 +3044,17 @@
 
   Brineomatic.prototype.generateSafeguardsSettingsUI = function () {
     return /*html*/ `
-      <div class="mb-3">
+
+    <h6 class="border-start border-primary border-3 ps-2 mb-2">Timeouts</h6>
+
+    <div class="mb-3">
         <div class="input-group has-validation">
           <span class="input-group-text">Flush Timeout</span>
           <input id="flush_timeout" type="text" class="form-control text-end">
           <span class="input-group-text">seconds</span>
           <div class="invalid-feedback"></div>
         </div>
+        <div class="form-text">Maximum time a flush cycle can run.</div>
       </div>
 
       <div class="mb-3">
@@ -3059,6 +3063,7 @@
           <input id="membrane_pressure_timeout" type="text" class="form-control text-end">
           <span class="input-group-text">seconds</span>
           <div class="invalid-feedback"></div>
+          <div class="form-text">Maximum time to wait for membrane pressure.</div>
         </div>
       </div>
 
@@ -3068,6 +3073,7 @@
           <input id="product_flowrate_timeout" type="text" class="form-control text-end">
           <span class="input-group-text">seconds</span>
           <div class="invalid-feedback"></div>
+          <div class="form-text">Maximum time to wait for product flowrate.</div>
         </div>
       </div>
 
@@ -3077,6 +3083,7 @@
           <input id="product_salinity_timeout" type="text" class="form-control text-end">
           <span class="input-group-text">seconds</span>
           <div class="invalid-feedback"></div>
+          <div class="form-text">Maximum time to wait for product salinity.</div>
         </div>
       </div>
 
@@ -3086,10 +3093,11 @@
           <input id="production_runtime_timeout" type="text" class="form-control text-end">
           <span class="input-group-text">hours</span>
           <div class="invalid-feedback"></div>
+          <div class="form-text">Maximum time a run cycle can take.</div>
         </div>
       </div>
 
-      <hr class="bold">
+      <h6 class="border-start border-primary border-3 ps-2 mb-2 mt-5">Sensor Checks</h6>
 
       <div class="form-check form-switch mb-3">
           <input class="form-check-input" type="checkbox" id="enable_membrane_pressure_high_check">
