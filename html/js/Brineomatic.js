@@ -3063,8 +3063,8 @@
           <input id="membrane_pressure_timeout" type="text" class="form-control text-end">
           <span class="input-group-text">seconds</span>
           <div class="invalid-feedback"></div>
-          <div class="form-text">Maximum time to wait for membrane pressure.</div>
         </div>
+        <div class="form-text">Maximum time to wait for membrane pressure.</div>
       </div>
 
       <div class="mb-3">
@@ -3073,8 +3073,8 @@
           <input id="product_flowrate_timeout" type="text" class="form-control text-end">
           <span class="input-group-text">seconds</span>
           <div class="invalid-feedback"></div>
-          <div class="form-text">Maximum time to wait for product flowrate.</div>
         </div>
+        <div class="form-text">Maximum time to wait for product flowrate.</div>
       </div>
 
       <div class="mb-3">
@@ -3083,8 +3083,8 @@
           <input id="product_salinity_timeout" type="text" class="form-control text-end">
           <span class="input-group-text">seconds</span>
           <div class="invalid-feedback"></div>
-          <div class="form-text">Maximum time to wait for product salinity.</div>
         </div>
+        <div class="form-text">Maximum time to wait for product salinity.</div>
       </div>
 
       <div class="mb-3">
@@ -3093,18 +3093,21 @@
           <input id="production_runtime_timeout" type="text" class="form-control text-end">
           <span class="input-group-text">hours</span>
           <div class="invalid-feedback"></div>
-          <div class="form-text">Maximum time a run cycle can take.</div>
         </div>
+        <div class="form-text">Maximum time a run cycle can take.</div>
       </div>
 
       <h6 class="border-start border-primary border-3 ps-2 mb-2 mt-5">Sensor Checks</h6>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_membrane_pressure_high_check">
           <label class="form-check-label" for="enable_membrane_pressure_high_check">
-              Membrane Pressure High
+            Membrane Pressure High
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>membrane pressure sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
       </div>
 
       <div id="enable_membrane_pressure_high_check_form" class="row">
@@ -3124,12 +3127,15 @@
         </div>
       </div>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_membrane_pressure_low_check">
           <label class="form-check-label" for="enable_membrane_pressure_low_check">
-              Membrane Pressure Low
+            Membrane Pressure Low
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>membrane pressure sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
       </div>
 
       <div id="enable_membrane_pressure_low_check_form" class="row">
@@ -3149,12 +3155,15 @@
         </div>
       </div>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_filter_pressure_high_check">
           <label class="form-check-label" for="enable_filter_pressure_high_check">
-              Filter Pressure High
+            Filter Pressure High
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>filter pressure sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
       </div>
 
       <div id="enable_filter_pressure_high_check_form" class="row">
@@ -3174,12 +3183,15 @@
         </div>
       </div>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_filter_pressure_low_check">
           <label class="form-check-label" for="enable_filter_pressure_low_check">
-              Filter Pressure Low
+            Filter Pressure Low
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>filter pressure sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
       </div>
 
       <div id="enable_filter_pressure_low_check_form" class="row">
@@ -3199,12 +3211,15 @@
         </div>
       </div>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_product_flowrate_high_check">
           <label class="form-check-label" for="enable_product_flowrate_high_check">
-              Product Flowrate High
+            Product Flowrate High
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>product flow sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
       </div>
 
       <div id="enable_product_flowrate_high_check_form" class="row">
@@ -3224,12 +3239,15 @@
         </div>
       </div>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_product_flowrate_low_check">
           <label class="form-check-label" for="enable_product_flowrate_low_check">
-              Product Flowrate Low
+            Product Flowrate Low
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>product flow sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
       </div>
 
       <div id="enable_product_flowrate_low_check_form" class="row">
@@ -3249,12 +3267,15 @@
         </div>
       </div>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_run_total_flowrate_low_check">
           <label class="form-check-label" for="enable_run_total_flowrate_low_check">
-              Run Total Flowrate Low
+            Run Total Flowrate Low
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>brine flow sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
       </div>
 
       <div id="enable_run_total_flowrate_low_check_form" class="row">
@@ -3274,12 +3295,15 @@
         </div>
       </div>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_pickle_total_flowrate_low_check">
           <label class="form-check-label" for="enable_pickle_total_flowrate_low_check">
-              De/Pickle Total Flowrate Low
+            De/Pickle Total Flowrate Low
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>brine flow sensor</b>.  Checked during <b>PICKLING</b> and <b>DEPICKLING</b> modes.</div>
       </div>
 
       <div id="enable_pickle_total_flowrate_low_check_form" class="row">
@@ -3299,12 +3323,15 @@
         </div>
       </div>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_diverter_valve_closed_check">
           <label class="form-check-label" for="enable_diverter_valve_closed_check">
-              Diverter Valve Opening / Closing
+            Diverter Valve Opening / Closing
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>product flow sensor</b> and <b>brine flow sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
       </div>
 
       <div id="enable_diverter_valve_closed_check_form" class="row">
@@ -3317,12 +3344,15 @@
         </div>
       </div>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_product_salinity_high_check">
           <label class="form-check-label" for="enable_product_salinity_high_check">
-              Product Salinity High
+            Product Salinity High
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>product TDS sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
       </div>
 
       <div id="enable_product_salinity_high_check_form" class="row">
@@ -3342,12 +3372,15 @@
         </div>
       </div>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_motor_temperature_check">
           <label class="form-check-label" for="enable_motor_temperature_check">
-              Motor Temperature
+            Motor Temperature
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>motor temperature sensor</b>.  Checked during <b>RUNNING</b> mode.</div>
       </div>
 
       <div id="enable_motor_temperature_check_form" class="row">
@@ -3367,12 +3400,15 @@
         </div>
       </div>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_flush_flowrate_low_check">
           <label class="form-check-label" for="enable_flush_flowrate_low_check">
-              Flush Flowrate Low
+            Flush Flowrate Low
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>brine flow sensor</b>.  Checked during <b>FLUSHING</b> mode.</div>
       </div>
 
       <div id="enable_flush_flowrate_low_check_form" class="row">
@@ -3392,12 +3428,15 @@
         </div>
       </div>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_flush_filter_pressure_low_check">
           <label class="form-check-label" for="enable_flush_filter_pressure_low_check">
-              Flush Filter Pressure Low
+            Flush Filter Pressure Low
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>filter pressure sensor</b>.  Checked during <b>FLUSHING</b> mode.</div>
       </div>
 
       <div id="enable_flush_filter_pressure_low_check_form" class="row">
@@ -3417,12 +3456,15 @@
         </div>
       </div>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_flush_valve_off_check">
           <label class="form-check-label" for="enable_flush_valve_off_check">
-              Flush Valve Off
+            Flush Valve Off
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>filter pressure sensor</b> or <b>brine flow sensor</b>.  Checked during <b>FLUSHING</b> mode.</div>
       </div>
 
       <div id="enable_flush_valve_off_check_form" class="row">
@@ -3442,12 +3484,15 @@
         </div>
       </div>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_flush_tank_level_low_check">
           <label class="form-check-label" for="enable_flush_tank_level_low_check">
-              Flush Tank Level Low
+            Flush Tank Level Low
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>tank level sensor</b>.  Checked during <b>FLUSHING</b> mode.</div>
       </div>
 
       <div id="enable_flush_tank_level_low_check_form" class="row">
@@ -3467,12 +3512,15 @@
         </div>
       </div>
 
-      <div class="form-check form-switch mb-3">
+      <div class="mb-3">
+        <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="enable_battery_level_low_check">
           <label class="form-check-label" for="enable_battery_level_low_check">
-              Battery Level Low
+            Battery Level Low
           </label>
           <div class="invalid-feedback"></div>
+        </div>
+        <div class="form-text">Requires <b>battery level sensor</b>.  Checked during all operating modes.</div>
       </div>
 
       <div id="enable_battery_level_low_check_form" class="row">
