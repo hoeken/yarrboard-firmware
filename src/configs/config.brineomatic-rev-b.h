@@ -12,6 +12,8 @@
 #define YB_HARDWARE_URL     "https://github.com/hoeken/brineomatic/releases/tag/Rev-B"
 #define YB_PROJECT_NAME     "Brineomatic"
 #define YB_PROJECT_URL      "https://github.com/hoeken/brineomatic"
+#define YB_GIT_URL          "https://github.com/hoeken/brineomatic-firmware"
+#define YB_OTA_MANIFEST_URL "https://hoeken.github.io/brineomatic-firmware/releases/ota_manifest.json";
 
 #define YB_BOM_DATA_SIZE     300
 #define YB_BOM_DATA_INTERVAL 5000
@@ -57,7 +59,7 @@
 #define YB_PRODUCT_TDS_CHANNEL 1
 #define YB_LP_SENSOR_CHANNEL   2
 #define YB_HP_SENSOR_CHANNEL   3
-#define YB_420_RESISTOR 165.0
+#define YB_420_RESISTOR        165.0
 
 static const float YB_ADC_VREF[4] = {ADS1x15_GAIN_4096MV_FSRANGE_V, ADS1x15_GAIN_4096MV_FSRANGE_V, ADS1x15_GAIN_4096MV_FSRANGE_V, ADS1x15_GAIN_4096MV_FSRANGE_V};
 static const uint8_t YB_ADC_GAIN[4] = {ADS1X15_GAIN_4096MV, ADS1X15_GAIN_4096MV, ADS1X15_GAIN_4096MV, ADS1X15_GAIN_4096MV};

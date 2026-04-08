@@ -10,6 +10,8 @@
 #define YB_HARDWARE_URL     "https://github.com/hoeken/sendit/releases/tag/REV-C"
 #define YB_PROJECT_NAME     "Sendit"
 #define YB_PROJECT_URL      "https://github.com/hoeken/sendit"
+#define YB_GIT_URL          "https://github.com/hoeken/sendit-firmware"
+#define YB_OTA_MANIFEST_URL "https://hoeken.github.io/sendit-firmware/releases/ota_manifest.json";
 
 #define YB_HAS_STATUS_RGB
 #define YB_STATUS_RGB_PIN 38

@@ -92,6 +92,7 @@ void setup()
   yba.registerController(fans);
 
   yba.http.registerGulpedFile(&logo_frothfet_png, "/logo.png");
+  yba.ota.firmware_manifest_url = "https://hoeken.github.io/frothfet-firmware/releases/ota_manifest.json";
 
 #elifdef YB_IS_BRINEOMATIC
   yba.registerController(relays);
@@ -100,6 +101,7 @@ void setup()
   yba.registerController(bom);
 
   yba.http.registerGulpedFile(&logo_brineomatic_png, "/logo.png");
+  yba.ota.firmware_manifest_url = "https://hoeken.github.io/brineomatic-firmware/releases/ota_manifest.json";
 
 #elifdef YB_IS_SENDIT
   yba.registerController(adc);
@@ -117,7 +119,7 @@ void setup()
   yba.project_url = YB_PROJECT_URL;
   yba.git_url = YB_GIT_URL;
 
-  yba.ota.firmware_manifest_url = "https://hoeken.github.io/yarrboard-firmware/releases/ota_manifest.json";
+  yba.ota.firmware_manifest_url = YB_OTA_MANIFEST_URL;
   yba.ota.public_key = R"PUBLIC_KEY(
 -----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAjsPaBVvAoSlNEdxLnKl5
