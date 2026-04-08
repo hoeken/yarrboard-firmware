@@ -1,32 +1,32 @@
 [
     {
         "type": "BRINEOMATIC_REV_B",
-        "version": "2.4.0",
-        "url": "https://hoeken.github.io/yarrboard-firmware/releases/BRINEOMATIC_REV_B/2.4.0.bin",
-        "changelog": "https://hoeken.github.io/yarrboard-firmware/releases/BRINEOMATIC_REV_B/CHANGELOG-2.4.0.md"
+        "version": "2.5.0",
+        "url": "https://hoeken.github.io/yarrboard-firmware/releases/BRINEOMATIC_REV_B/2.5.0.bin",
+        "changelog": "https://hoeken.github.io/yarrboard-firmware/releases/BRINEOMATIC_REV_B/CHANGELOG-2.5.0.md"
     },
     {
         "type": "BRINEOMATIC_REV_C",
-        "version": "2.4.0",
-        "url": "https://hoeken.github.io/yarrboard-firmware/releases/BRINEOMATIC_REV_C/2.4.0.bin",
-        "changelog": "https://hoeken.github.io/yarrboard-firmware/releases/BRINEOMATIC_REV_C/CHANGELOG-2.4.0.md"
+        "version": "2.5.0",
+        "url": "https://hoeken.github.io/yarrboard-firmware/releases/BRINEOMATIC_REV_C/2.5.0.bin",
+        "changelog": "https://hoeken.github.io/yarrboard-firmware/releases/BRINEOMATIC_REV_C/CHANGELOG-2.5.0.md"
     },
     {
         "type": "FROTHFET_REV_E",
-        "version": "2.4.0",
-        "url": "https://hoeken.github.io/yarrboard-firmware/releases/FROTHFET_REV_E/2.4.0.bin",
-        "changelog": "https://hoeken.github.io/yarrboard-firmware/releases/FROTHFET_REV_E/CHANGELOG-2.4.0.md"
+        "version": "2.5.0",
+        "url": "https://hoeken.github.io/yarrboard-firmware/releases/FROTHFET_REV_E/2.5.0.bin",
+        "changelog": "https://hoeken.github.io/yarrboard-firmware/releases/FROTHFET_REV_E/CHANGELOG-2.5.0.md"
     },
     {
         "type": "FROTHFET_REV_F",
-        "version": "2.4.0",
-        "url": "https://hoeken.github.io/yarrboard-firmware/releases/FROTHFET_REV_F/2.4.0.bin",
-        "changelog": "https://hoeken.github.io/yarrboard-firmware/releases/FROTHFET_REV_F/CHANGELOG-2.4.0.md"
+        "version": "2.5.0",
+        "url": "https://hoeken.github.io/yarrboard-firmware/releases/FROTHFET_REV_F/2.5.0.bin",
+        "changelog": "https://hoeken.github.io/yarrboard-firmware/releases/FROTHFET_REV_F/CHANGELOG-2.5.0.md"
     },
     {
         "type": "SENDIT_REV_C",
-        "version": "2.4.0",
-        "url": "https://hoeken.github.io/yarrboard-firmware/releases/SENDIT_REV_C/2.4.0.bin",
-        "changelog": "https://hoeken.github.io/yarrboard-firmware/releases/SENDIT_REV_C/CHANGELOG-2.4.0.md"
+        "version": "2.5.0",
+        "url": "https://hoeken.github.io/yarrboard-firmware/releases/SENDIT_REV_C/2.5.0.bin",
+        "changelog": "https://hoeken.github.io/yarrboard-firmware/releases/SENDIT_REV_C/CHANGELOG-2.5.0.md"
     }
 ]
