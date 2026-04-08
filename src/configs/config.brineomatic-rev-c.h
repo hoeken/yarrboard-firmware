@@ -12,6 +12,8 @@
 #define YB_HARDWARE_URL     "https://github.com/hoeken/brineomatic/releases/tag/Rev-C"
 #define YB_PROJECT_NAME     "Brineomatic"
 #define YB_PROJECT_URL      "https://github.com/hoeken/brineomatic"
+#define YB_GIT_URL          "https://github.com/hoeken/brineomatic-firmware"
+#define YB_OTA_MANIFEST_URL "https://hoeken.github.io/brineomatic-firmware/releases/ota_manifest.json";
 
 #define YB_BOM_DATA_SIZE     300
 #define YB_BOM_DATA_INTERVAL 5000
