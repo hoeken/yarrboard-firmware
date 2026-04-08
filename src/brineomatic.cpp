@@ -357,7 +357,12 @@ void Brineomatic::initChannels()
       YBP.printf("Couldnt load bp relay %d\n", boostPumpRelayId);
   }
 
-  if (flushValveControl.equals("RELAY")) {
+  if (flushValveControl.equals("SERVO")) {
+    flushValveServo = _servos.getChannelById(flushValveServoId);
+    flushValveServo->isEnabled = true;
+    flushValveServo->setName("Flush Valve");
+    flushValveServo->setKey("flush_valve");
+  } else if (flushValveControl.equals("RELAY")) {
     flushValve = _relays.getChannelById(flushValveRelayId);
     flushValve->isEnabled = true;
     flushValve->inverted = flushValveRelayInverted;
@@ -741,7 +746,9 @@ void Brineomatic::openFlushValve()
 {
   if (hasFlushValve()) {
     YBP.println("Flush Valve Open");
-    if (flushValveControl.equals("RELAY"))
+    if (flushValveControl.equals("SERVO"))
+      flushValveServo->write(flushValveOpenAngle);
+    else if (flushValveControl.equals("RELAY"))
       flushValve->setState(true);
   }
   flushValveOpenState = true;
@@ -751,7 +758,9 @@ void Brineomatic::closeFlushValve()
 {
   if (hasFlushValve()) {
     YBP.println("Flush Valve Closed");
-    if (flushValveControl.equals("RELAY"))
+    if (flushValveControl.equals("SERVO"))
+      flushValveServo->write(flushValveCloseAngle);
+    else if (flushValveControl.equals("RELAY"))
       flushValve->setState(false);
   }
   flushValveOpenState = false;
@@ -2241,6 +2250,9 @@ void Brineomatic::generateConfigJSON(JsonVariant output)
   bom["flush_valve_control"] = this->flushValveControl;
   bom["flush_valve_relay_id"] = this->flushValveRelayId;
   bom["flush_valve_relay_inverted"] = this->flushValveRelayInverted;
+  bom["flush_valve_servo_id"] = this->flushValveServoId;
+  bom["flush_valve_open_angle"] = this->flushValveOpenAngle;
+  bom["flush_valve_close_angle"] = this->flushValveCloseAngle;
 
   bom["cooling_fan_control"] = this->coolingFanControl;
   bom["cooling_fan_relay_id"] = this->coolingFanRelayId;
@@ -3442,6 +3454,9 @@ void Brineomatic::loadHardwareConfigJSON(JsonVariant config)
   this->flushValveControl = config["flush_valve_control"] | YB_FLUSH_VALVE_CONTROL;
   this->flushValveRelayId = config["flush_valve_relay_id"] | YB_FLUSH_VALVE_RELAY_ID;
   this->flushValveRelayInverted = config["flush_valve_relay_inverted"] | YB_FLUSH_VALVE_RELAY_INVERTED;
+  this->flushValveServoId = config["flush_valve_servo_id"] | YB_FLUSH_VALVE_SERVO_ID;
+  this->flushValveOpenAngle = config["flush_valve_open_angle"] | YB_FLUSH_VALVE_OPEN_ANGLE;
+  this->flushValveCloseAngle = config["flush_valve_close_angle"] | YB_FLUSH_VALVE_CLOSE_ANGLE;
 
   this->autoflushMode = config["autoflush_mode"] | YB_AUTOFLUSH_MODE;
   this->autoflushSalinity = config["autoflush_salinity"] | YB_AUTOFLUSH_SALINITY;

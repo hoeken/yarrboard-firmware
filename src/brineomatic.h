@@ -98,7 +98,7 @@ class Brineomatic
     static constexpr const char* HIGH_PRESSURE_PUMP_MODBUS_DEVICES[] = {"GD20"};
     static constexpr const char* HIGH_PRESSURE_VALVE_CONTROLS[] = {"NONE", "MANUAL", "STEPPER"};
     static constexpr const char* DIVERTER_VALVE_CONTROLS[] = {"NONE", "MANUAL", "RELAY", "SERVO"};
-    static constexpr const char* FLUSH_VALVE_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
+    static constexpr const char* FLUSH_VALVE_CONTROLS[] = {"NONE", "MANUAL", "RELAY", "SERVO"};
     static constexpr const char* COOLING_FAN_CONTROLS[] = {"NONE", "MANUAL", "RELAY"};
     static constexpr const char* MOTOR_TEMPERATURE_TYPES[] = {"NONE", "EXTERNAL", "DS18B20", "MQTT"};
     static constexpr const char* WATER_TEMPERATURE_TYPES[] = {"NONE", "EXTERNAL", "DS18B20", "MQTT"};
@@ -109,6 +109,7 @@ class Brineomatic
     int64_t pickledOnTimestamp = 0;
 
     RelayChannel* flushValve = NULL;
+    ServoChannel* flushValveServo = NULL;
     RelayChannel* boostPump = NULL;
     RelayChannel* highPressurePump = NULL;
     RelayChannel* coolingFan = NULL;
@@ -415,6 +416,9 @@ class Brineomatic
     String flushValveControl = YB_FLUSH_VALVE_CONTROL;
     uint8_t flushValveRelayId = YB_FLUSH_VALVE_RELAY_ID;
     bool flushValveRelayInverted = YB_FLUSH_VALVE_RELAY_INVERTED;
+    uint8_t flushValveServoId = YB_FLUSH_VALVE_SERVO_ID;
+    float flushValveOpenAngle = YB_FLUSH_VALVE_OPEN_ANGLE;
+    float flushValveCloseAngle = YB_FLUSH_VALVE_CLOSE_ANGLE;
 
     String coolingFanControl = YB_COOLING_FAN_CONTROL;
     uint8_t coolingFanRelayId = YB_COOLING_FAN_RELAY_ID;
